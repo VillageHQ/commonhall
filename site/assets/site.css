@@ -140,13 +140,13 @@ h1 { font: 500 56px/1.05 var(--serif); letter-spacing: -.6px; max-width: 15em; t
 .p:hover, .p:focus-visible, .p.on { z-index: 5; }
 .p:hover::after, .p:focus-visible::after, .p.on::after { content: ""; position: absolute; inset: -5px; border-radius: 50%; border: 1.5px solid var(--ink); }
 .p:focus-visible { outline: none; }
-.tip { position: absolute; left: 50%; bottom: calc(100% + 11px); transform: translateX(var(--tx, -50%)); background: var(--card-bg); color: var(--card-ink); border: 1px solid var(--card-line); border-radius: 6px; padding: 8px 11px; white-space: nowrap; text-align: left; box-shadow: var(--shadow); opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .12s; }
+.tip { position: absolute; left: 50%; bottom: calc(100% + 11px); transform: translateX(var(--tx, -50%)); background: var(--card-bg); color: var(--card-ink); border: 1px solid var(--card-line); border-radius: 6px; padding: 8px 11px; white-space: nowrap; text-align: left; box-shadow: var(--shadow); display: none; pointer-events: none; }
 .tip b { display: block; font: 600 12.5px/1.2 var(--sans); }
 .tip i { display: block; font: 400 11.5px/1.3 var(--sans); font-style: normal; color: var(--card-sub); margin-top: 2px; }
 .tip::after { content: ""; position: absolute; left: var(--ax, 50%); bottom: -5px; width: 8px; height: 8px; background: var(--card-bg); border: solid var(--card-line); border-width: 0 1px 1px 0; transform: translateX(-50%) rotate(45deg); }
 .tip.down { bottom: auto; top: calc(100% + 11px); }
 .tip.down::after { bottom: auto; top: -5px; border-width: 1px 0 0 1px; }
-.p:hover .tip, .p:focus-visible .tip, .p.on .tip { opacity: 1; visibility: visible; }
+.p:hover .tip, .p:focus-visible .tip, .p.on .tip { display: block; }
 
 .deal { position: absolute; width: 190px; background: var(--card-bg); color: var(--card-ink); border: 1px solid var(--card-line); border-radius: 8px; padding: 11px 13px 12px; box-shadow: var(--shadow); z-index: 4; transform: translateX(-50%); pointer-events: none; }
 .deal .k { display: flex; align-items: center; gap: 7px; font: 600 9.5px/1 var(--sans); letter-spacing: 1.2px; text-transform: uppercase; color: var(--card-sub); }
@@ -211,7 +211,7 @@ h2 { font: 500 40px/1.12 var(--serif); letter-spacing: -.4px; max-width: 20em; t
 .pc-k { font: 600 12px/1 var(--sans); letter-spacing: 1.4px; text-transform: uppercase; color: var(--muted); }
 .plan-card h3 { font: 500 44px/1 var(--serif); letter-spacing: -.5px; }
 .plan-card .per { font: 400 16px/1 var(--sans); color: var(--muted); letter-spacing: 0; }
-.plan-card ul { list-style: none; display: grid; gap: 10px; font-size: 15.5px; color: var(--muted); flex: 1; }
+.plan-card ul { list-style: none; display: grid; align-content: start; gap: 10px; font-size: 15.5px; color: var(--muted); flex: 1; }
 .plan-card li { padding-left: 20px; position: relative; }
 .plan-card li::before { content: ""; position: absolute; left: 0; top: .6em; width: 9px; height: 5px; border-left: 1.8px solid var(--ink); border-bottom: 1.8px solid var(--ink); transform: rotate(-45deg) translateY(-2px); }
 .plan-card .btn { align-self: flex-start; }
@@ -322,7 +322,7 @@ h2 { font: 500 40px/1.12 var(--serif); letter-spacing: -.4px; max-width: 20em; t
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .btn, .tip, .gh, .deal.live { transition: none; }
+  .btn, .gh, .deal.live { transition: none; }
 }
 @media print {
   .field, .theme-toggle, .skip-link, .dlg { display: none !important; }

@@ -119,7 +119,7 @@
       if (typeof dialog.close === "function") dialog.close();
       else dialog.removeAttribute("open");
     }
-    dialog.addEventListener("close", () => { if (opener && document.contains(opener)) opener.focus(); });
+    dialog.addEventListener("close", () => { setTimeout(() => { if (opener && document.contains(opener)) opener.focus(); }, 0); });
     dialog.querySelector("[data-close]").addEventListener("click", closeDialog);
     // a click on the backdrop (the dialog element itself, outside its content) closes it
     dialog.addEventListener("click", (event) => { if (event.target === dialog) closeDialog(); });
