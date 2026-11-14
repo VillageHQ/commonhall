@@ -49,7 +49,8 @@ Each open item gets these yes/no checks; code adds the points (change a number t
 - [ ] Installer fixes from the real-machine test: the real cause of a failed build, a safe memory step, the setup token until setup is done, DNS advice behind NAT and several server addresses, a working resolver for the build, a plain warning before a long build — fix-installer — open pull request — [spec](features/fix-installer/SPEC.md)
 - [ ] Asks board tabs (Open, Mine, Answered, Closed), search over every ask and answer, admin pin, reopen, and an Admin › Asks page — asks-tools — open pull request, [PR #39](https://github.com/VillageHQ/community/pull/39) — [charter](features/asks-tools/CHARTER.md) · [spec](features/asks-board-tools/SPEC.md)
 
-- [ ] The landing page becomes Common Hall by Village: the blueprint drawing set (design v15), founders walking between rooms, Schedule call and GitHub, the sign-up form kept — common-hall-site — open pull request — [spec](features/common-hall-site/SPEC.md)
+- [ ] Landing page v2: paper and ink, light and dark, blueprint hero with real faces, comparison and pricing — common-hall-v2 — open pull request — [spec](features/common-hall-v2/SPEC.md)
+- [x] (superseded by v2) The landing page becomes Common Hall by Village: the blueprint drawing set (design v15), founders walking between rooms, Schedule call and GitHub, the sign-up form kept — common-hall-site — open pull request — [spec](features/common-hall-site/SPEC.md)
 
 ## Next (queued)
 - [ ] RIGHT / HIDE / FIX for filled-in lines in the weekly email, and a jobs card on Today (Today's "Check your card" now fills: fix-small) — parity — [spec](features/profile-confirm-lines/SPEC.md)
@@ -79,7 +80,11 @@ Each open item gets these yes/no checks; code adds the points (change a number t
 - [ ] Hosting and data settings: region and data-protection contact (built; the agreement link is still open) — parity — [spec](features/hosting-data-settings/SPEC.md)
 - [ ] Managed-plan sign-up on the website — parity — [spec](features/site-signup/SPEC.md)
 - [ ] Rename the product to Common Hall across the app, README and docs (the landing page already says it)
-- [ ] A dark version of the blueprint landing page
+- [ ] Landing page: named customers and references once there are real ones
+- [ ] SOC 2 and SSO (then the landing page may say so)
+- [ ] Import tools: Hivebrite, Affinity, Slack
+- [ ] Hires and deals counted in the admin home (the landing page says "coming")
+- [ ] An EU hosting statement for the managed plan (the page says "ask us about EU hosting")
 - Gaps neither product had (merge plan): Google/Microsoft sign-in and SSO, groups inside one community, CRM export, events, other languages.
 
 ## Done
