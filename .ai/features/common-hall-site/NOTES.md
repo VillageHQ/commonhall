@@ -1,4 +1,5 @@
 # Common Hall landing page: how the motion is built
+n> The page it describes is superseded by [common-hall-v2](../common-hall-v2/NOTES.md) (paper and ink, no pen or sheets). Kept for history.
 
 All of it lives in `site/assets/site.js`, the page's own script with no library. The source design is
 business-builder run 2026-11-13-founderhall-v2, design v15 (one inline HTML file that used an animation library from a

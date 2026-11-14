@@ -1,5 +1,7 @@
 # Common Hall landing page
 
+> Superseded by [common-hall-v2](../common-hall-v2/SPEC.md) (paper and ink, light and dark). Kept for history.
+
 What it does now (since 2026-11-13; replaces the Founderhall page in [one-site](../one-site/SPEC.md)).
 
 - `site/` is one static page (`index.html`, `assets/site.css`, `assets/boot.js`, `assets/site.js`) that sells the app
