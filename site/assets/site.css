@@ -103,6 +103,10 @@ h1 { font: 500 56px/1.05 var(--serif); letter-spacing: -.6px; max-width: 15em; t
 .btn:active { transform: translateY(1px); }
 .btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 .split { display: inline-flex; position: relative; }
+/* No script: the split button and its caret would be dead, so a plain link to the self-host guide takes their place. */
+.nojs-only { display: none; }
+html:not(.js) .nojs-only { display: inline-flex; }
+html:not(.js) .split { display: none; }
 .split .main { border-radius: 6px 0 0 6px; padding: 0 20px 0 16px; }
 .split .caret { border-radius: 0 6px 6px 0; border-left: 1px solid color-mix(in srgb, var(--btn-fg) 30%, transparent); padding: 0; width: 46px; }
 .split .caret svg { width: 12px; height: 12px; }
@@ -182,7 +186,8 @@ h2 { font: 500 40px/1.12 var(--serif); letter-spacing: -.4px; max-width: 20em; t
 .fine { font-size: 14px; color: var(--muted); margin-top: 10px; }
 .strong-link { font-weight: 600; text-underline-offset: 3px; }
 
-.shots { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 36px 28px; margin-top: 44px; }
+/* One screen per row, up to 880 px wide, so the app's small text stays readable (two per row came out at 550 px and about 8 px text). */
+.shots { display: grid; grid-template-columns: minmax(0, 1fr); max-width: 880px; gap: 44px; margin-top: 44px; }
 .shots figure { display: flex; flex-direction: column; gap: 14px; }
 .frame { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--bg-alt); box-shadow: 0 1px 0 var(--line); }
 .frame img { display: block; width: 100%; height: auto; }
@@ -278,7 +283,6 @@ h2 { font: 500 40px/1.12 var(--serif); letter-spacing: -.4px; max-width: 20em; t
   .hero-in { grid-template-columns: minmax(0, 1fr); gap: 44px; padding-top: 44px; }
   .plan-fig { justify-self: center; }
   h1 { max-width: none; }
-  .shots { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .nav { gap: 18px; }
 }
 @media (max-width: 760px) {
@@ -310,7 +314,6 @@ h2 { font: 500 40px/1.12 var(--serif); letter-spacing: -.4px; max-width: 20em; t
   .tip i { font-size: 10.5px; }
   .deal { width: 160px; padding: 9px 10px 10px; }
   .deal h3 { font-size: 14px; }
-  .shots { grid-template-columns: minmax(0, 1fr); }
   .f2 { grid-template-columns: minmax(0, 1fr); }
   .door-card { padding: 22px 20px; }
   .plan-card { padding: 26px 22px; }

@@ -50,10 +50,10 @@
   <canvas class="hero-field" id="field" aria-hidden="true"></canvas>
   <div class="hero-in">
     <div class="copy">
-      <p class="eyebrow">Open-source founder community portal</p>
-      <h1 id="h1">Everything your founder community needs to grow and succeed.</h1>
+      <p class="eyebrow" data-skip-text>Open-source founder community portal</p>
+      <h1 id="h1" data-skip-text>Everything your founder community needs to grow and succeed.</h1>
       <div class="rule" aria-hidden="true"></div>
-      <p class="sub">Your own portal, under your name. Warm intros, member directory, asks, jobs and perks. Village runs it, or you do.</p>
+      <p class="sub" data-skip-text>Your own portal, under your name. Warm intros, member directory, asks, jobs and perks. Village runs it, or you do.</p>
       <div class="acts" data-skip>
         <div class="split" id="split">
           <button class="btn main" type="button" id="setup-main" data-ai="claude" aria-haspopup="dialog">
@@ -68,6 +68,7 @@
             <button class="mi" type="button" role="menuitem" data-ai="openai"><span class="ai" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M8 1.6l5.5 3.2v6.4L8 14.4l-5.5-3.2V4.8z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="8" cy="8" r="2" fill="none" stroke="currentColor" stroke-width="1.4"/></svg></span>OpenAI</button>
           </div>
         </div>
+        <a class="btn solid nojs-only" href="https://github.com/VillageHQ/community/blob/main/docs/self-host-vps.md" target="_blank" rel="noopener">Set up on your own server</a>
         <a class="btn out" href="#door-managed">Schedule call</a>
       </div>
       <a class="gh" href="https://github.com/VillageHQ/community" target="_blank" rel="noopener" data-skip>
@@ -105,12 +106,12 @@
     <h2 id="h-screens">Six screens of the portal, as members and admins see them.</h2>
     <p class="lead">Screenshots of the app's demo, which runs on made-up people and companies.</p>
     <div class="shots">
-      <figure><div class="frame"><picture><source media="(max-width: 600px)" srcset="assets/screens/members-directory-390.webp" width="520" height="1056"><img src="assets/screens/members-directory-1280.webp" alt="The member directory: twenty members of a community with filters for stage, sector, city and cohort." width="1100" height="658" loading="lazy"></picture></div><figcaption><b>Member directory.</b> Every member on a card, filtered by stage, sector, city and cohort.</figcaption></figure>
-      <figure><div class="frame"><picture><source media="(max-width: 600px)" srcset="assets/screens/network-search-390.webp" width="520" height="1056"><img src="assets/screens/network-search-1280.webp" alt="Network search for someone at a company, showing three people in reach with the path through a member who can introduce you." width="1100" height="658" loading="lazy"></picture></div><figcaption><b>Network search.</b> Who in reach works at a company, and the member who can introduce you.</figcaption></figure>
-      <figure><div class="frame"><picture><source media="(max-width: 600px)" srcset="assets/screens/intro-thread-390.webp" width="520" height="1056"><img src="assets/screens/intro-thread-1280.webp" alt="An introduction thread showing who is introduced to whom, through which member, and its status." width="1100" height="658" loading="lazy"></picture></div><figcaption><b>Intro thread.</b> Who asked, through whom, and where it stands. Both sides say yes first.</figcaption></figure>
-      <figure><div class="frame"><picture><source media="(max-width: 600px)" srcset="assets/screens/asks-board-390.webp" width="520" height="1056"><img src="assets/screens/asks-board-1280.webp" alt="The asks and updates board with open asks, updates and answered asks, each with its author and answer count." width="1100" height="658" loading="lazy"></picture></div><figcaption><b>Asks and updates.</b> Members ask the community for help; answers stay with the ask.</figcaption></figure>
-      <figure><div class="frame"><picture><source media="(max-width: 600px)" srcset="assets/screens/admin-home-390.webp" width="520" height="1056"><img src="assets/screens/admin-home-1280.webp" alt="The admin home counting every intro: how many were asked, accepted, introduced, declined or are still open." width="1100" height="658" loading="lazy"></picture></div><figcaption><b>Admin home.</b> Every intro counted: asked, accepted, introduced, declined. Hires and deals are not counted yet.</figcaption></figure>
-      <figure><div class="frame"><picture><source media="(max-width: 600px)" srcset="assets/screens/member-home-390.webp" width="520" height="1056"><img src="assets/screens/member-home-1280.webp" alt="A member's Today page: what they could help with this week, an intro waiting for their answer and a profile reminder." width="1100" height="658" loading="lazy"></picture></div><figcaption><b>Today, for a member.</b> What to help with this week, and an intro waiting for a yes.</figcaption></figure>
+      <figure><div class="frame"><picture><source media="(max-width: 600px)" srcset="assets/screens/members-directory-390.webp" width="780" height="1100"><img src="assets/screens/members-directory-1280.webp" alt="The member directory: twenty members of a community with filters for stage, sector, city and cohort." width="1016" height="640" loading="lazy"></picture></div><figcaption><b>Member directory.</b> Every member on a card, filtered by stage, sector, city and cohort.</figcaption></figure>
+      <figure><div class="frame"><picture><source media="(max-width: 600px)" srcset="assets/screens/network-search-390.webp" width="780" height="1100"><img src="assets/screens/network-search-1280.webp" alt="Network search for someone at a company, showing three people in reach with the path through a member who can introduce you." width="1016" height="640" loading="lazy"></picture></div><figcaption><b>Network search.</b> Who in reach works at a company, and the member who can introduce you.</figcaption></figure>
+      <figure><div class="frame"><picture><source media="(max-width: 600px)" srcset="assets/screens/intro-thread-390.webp" width="780" height="1100"><img src="assets/screens/intro-thread-1280.webp" alt="An introduction thread showing who is introduced to whom, through which member, and its status." width="1016" height="640" loading="lazy"></picture></div><figcaption><b>Intro thread.</b> Who asked, through whom, and where it stands. Both sides say yes first.</figcaption></figure>
+      <figure><div class="frame"><picture><source media="(max-width: 600px)" srcset="assets/screens/asks-board-390.webp" width="780" height="1100"><img src="assets/screens/asks-board-1280.webp" alt="The asks and updates board with open asks, updates and answered asks, each with its author and answer count." width="1016" height="640" loading="lazy"></picture></div><figcaption><b>Asks and updates.</b> Members ask the community for help; answers stay with the ask.</figcaption></figure>
+      <figure><div class="frame"><picture><source media="(max-width: 600px)" srcset="assets/screens/admin-home-390.webp" width="780" height="1100"><img src="assets/screens/admin-home-1280.webp" alt="The admin home counting every intro: how many were asked, accepted, introduced, declined or are still open." width="1016" height="640" loading="lazy"></picture></div><figcaption><b>Admin home.</b> Every intro counted: asked, accepted, introduced, declined. Hires and deals are not counted yet.</figcaption></figure>
+      <figure><div class="frame"><picture><source media="(max-width: 600px)" srcset="assets/screens/member-home-390.webp" width="780" height="1100"><img src="assets/screens/member-home-1280.webp" alt="A member's Today page: what they could help with this week, an intro waiting for their answer and a profile reminder." width="1016" height="640" loading="lazy"></picture></div><figcaption><b>Today, for a member.</b> What to help with this week, and an intro waiting for a yes.</figcaption></figure>
     </div>
   </div>
 </section>
