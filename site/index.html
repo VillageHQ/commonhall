@@ -3,22 +3,23 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
-<title>Common Hall by Village: read every room before you move in</title>
-<meta name="description" content="An open-source founder portal under AGPL-3.0, in your fund's name. Village runs it, or you run it on your own server.">
-<meta name="color-scheme" content="light">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<title>Common Hall by Village: open-source founder community portal</title>
+<meta name="description" content="Everything your founder community needs to grow and succeed. An open-source portal under your own name: warm intros, member directory, asks, jobs and perks. Village runs it, or you do.">
+<meta name="color-scheme" content="light dark">
 <meta name="theme-color" content="#FAFAF7">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Common Hall by Village">
-<meta property="og:title" content="Read every room before you move in">
-<meta property="og:description" content="An open-source founder portal under AGPL-3.0, in your fund's name. Village runs it, or you run it on your own server.">
+<meta property="og:title" content="Everything your founder community needs to grow and succeed">
+<meta property="og:description" content="An open-source founder community portal under your own name. Village runs it, or you do.">
 <meta property="og:image" content="assets/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Common Hall by Village: read every room before you move in, beside a floor plan of the portal's ten rooms.">
+<meta property="og:image:alt" content="Common Hall by Village: open-source founder community portal, beside a floor plan of the portal's ten rooms with member portraits.">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-<link rel="preload" href="assets/fonts/figtree-latin-variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/newsreader-latin-500-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/ibm-plex-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="assets/site.css">
 <script src="assets/boot.js"></script>
 <script src="assets/site.js" defer></script>
@@ -26,246 +27,264 @@
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
 
-<!-- the mark and the key-plan walls, once, reused by <use> -->
-<svg class="defs" width="0" height="0" aria-hidden="true" focusable="false">
-  <defs>
-    <symbol id="lt-mark" viewBox="0 0 24 24">
-      <g fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round"><path d="M3.5 7.5H20.5"/><path d="M7.5 7.5L5.5 18"/><path d="M16.5 7.5L18.5 18"/></g>
-      <g fill="currentColor"><circle cx="3.5" cy="7.5" r="2.5"/><circle cx="12" cy="7.5" r="2.5"/><circle cx="20.5" cy="7.5" r="2.5"/></g>
-    </symbol>
-    <g id="kp-walls"><path fill="none" stroke="#1B2420" stroke-width="9" d="M10 10H350V290H10Z M10 95H350 M110 10V95 M210 10V95 M250 95V195 M10 195H350 M85 195V290 M170 195V290 M240 195V290 M295 195V290"/></g>
-    <filter id="ink" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="4"/><feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -0.75 1.32"/><feComposite in="SourceGraphic" operator="in"/></filter>
-  </defs>
-</svg>
-
-<!-- the pen's own layer: site.js draws every sheet frame here, as one line down the page -->
-<svg id="pen" aria-hidden="true" focusable="false"></svg>
-
 <header class="top">
-  <a class="lockup brand" href="#plan" aria-label="Common Hall by Village">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#lt-mark"/></svg>
+  <a class="lockup" href="#top" aria-label="Common Hall by Village, top of the page">
+    <svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><path d="M4 8H60V56H40V48H52V16H12V48H24V56H4z"/></svg>
     <span class="w">Common Hall</span><span class="b">by Village</span>
   </a>
-  <a class="top-link" href="#doors">Two ways in</a>
+  <nav class="nav" aria-label="Page sections">
+    <a href="#screens">Screens</a>
+    <a href="#compare">Compare</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#doors">Two ways in</a>
+  </nav>
+  <button class="theme-toggle" type="button" id="theme-toggle" aria-label="Switch to dark theme" hidden>
+    <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.6M12 18.9v2.6M2.5 12h2.6M18.9 12h2.6M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"/></svg>
+    <svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.2A8.2 8.2 0 0 1 9.8 4a8.2 8.2 0 1 0 10.2 10.2z"/></svg>
+  </button>
 </header>
 
 <main id="main">
-<!-- ============ SHEET 1: PLAN ============ -->
-<section class="sheet hero" id="plan" aria-labelledby="h1">
-  <div class="sheet-tag" aria-hidden="true"><span>Sheet 1 of 4</span><span>Plan</span></div>
-  <div class="hero-grid">
-    <h1 id="h1"><span class="ln">Read every room</span> <span class="ln"><em>before</em> you</span> <span class="ln">move in.</span></h1>
-    <p class="sub">Your own founder portal, no dev team. <span class="brand">Village</span> runs it, or you do.</p>
-    <div class="acts">
-      <div class="go">
-        <a class="btn btn-p" href="#door-managed">Schedule call</a>
-        <a class="btn btn-gh" href="https://github.com/VillageHQ/community" target="_blank" rel="noopener"><svg class="gh" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>GitHub</a>
+<!-- ============ FIRST SCREEN ============ -->
+<section class="hero" id="top" aria-labelledby="h1">
+  <canvas class="field" id="field" aria-hidden="true"></canvas>
+  <div class="hero-in">
+    <div class="copy">
+      <p class="eyebrow">Open-source founder community portal</p>
+      <h1 id="h1">Everything your founder community needs to grow and succeed.</h1>
+      <div class="rule" aria-hidden="true"></div>
+      <p class="sub">Your own portal, under your name. Warm intros, member directory, asks, jobs and perks. Village runs it, or you do.</p>
+      <div class="acts" data-skip>
+        <div class="split" id="split">
+          <button class="btn main" type="button" id="setup-main" data-ai="claude" aria-haspopup="dialog">
+            <span class="ai" aria-hidden="true"><svg viewBox="0 0 16 16" data-glyph="claude"><path d="M8 1.8v12.4M1.8 8h12.4M3.6 3.6l8.8 8.8M12.4 3.6l-8.8 8.8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span><span id="setup-label">Set up with Claude</span>
+          </button>
+          <button class="btn caret" type="button" id="setup-caret" aria-label="Choose an assistant" aria-haspopup="menu" aria-expanded="false" aria-controls="setup-menu">
+            <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="menu" id="setup-menu" role="menu" aria-label="Set up with" hidden>
+            <p class="menu-h" aria-hidden="true">Set up with</p>
+            <button class="mi" type="button" role="menuitem" data-ai="claude"><span class="ai" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M8 1.8v12.4M1.8 8h12.4M3.6 3.6l8.8 8.8M12.4 3.6l-8.8 8.8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>Claude</button>
+            <button class="mi" type="button" role="menuitem" data-ai="openai"><span class="ai" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M8 1.6l5.5 3.2v6.4L8 14.4l-5.5-3.2V4.8z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="8" cy="8" r="2" fill="none" stroke="currentColor" stroke-width="1.4"/></svg></span>OpenAI</button>
+          </div>
+        </div>
+        <a class="btn out" href="#door-managed">Schedule call</a>
       </div>
-      <div class="stamp pre" role="img" aria-label="Open source, AGPL-3.0 licence">
-        <svg viewBox="0 0 120 120" aria-hidden="true">
-          <g filter="url(#ink)">
-            <circle cx="60" cy="60" r="55" fill="none" stroke="currentColor" stroke-width="3"/>
-            <circle cx="60" cy="60" r="42" fill="none" stroke="currentColor" stroke-width="1.2"/>
-            <path id="stampArc" d="M60 60 m-48 0 a48 48 0 1 1 96 0 a48 48 0 1 1 -96 0" fill="none"/>
-            <text font-family="Figtree, Arial, sans-serif" font-weight="700" font-size="9" letter-spacing="1.6" fill="currentColor"><textPath href="#stampArc" startOffset="0" textLength="296" lengthAdjust="spacing">OPEN SOURCE ✦ YOURS TO KEEP ✦ PUBLIC REPO ✦</textPath></text>
-            <text x="60" y="58" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="700" font-size="15" fill="currentColor">AGPL</text>
-            <text x="60" y="75" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="700" font-size="15" fill="currentColor">3.0</text>
-            <path d="M34 63H86" stroke="currentColor" stroke-width="1"/>
-          </g>
-        </svg>
-      </div>
+      <a class="gh" href="https://github.com/VillageHQ/community" target="_blank" rel="noopener" data-skip>
+        <svg class="mark" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        <span class="t"><span class="n">VillageHQ/community</span><span class="m">AGPL-3.0 · Star and fork</span></span>
+        <svg class="arr" viewBox="0 0 18 18" aria-hidden="true"><path d="M5 13L13 5M6.5 5H13v6.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
     </div>
 
-    <div class="plan-wrap">
-      <div class="fm-tip" aria-hidden="true"><b></b><span></span></div>
-      <svg class="plan pre" viewBox="0 0 384 336" role="group" aria-label="Floor plan of the portal: ten rooms, one for each module: Asks, Intros, Network, Members, Messages, Feed, Job board, Perks, Chat, Admin.">
-        <g class="dim" transform="translate(22 30)">
-          <path class="dim-l" d="M10 -16H350M10 -21V-11M350 -21V-11M7 -13L13 -19M347 -13L353 -19"/>
-          <text class="dim-t" x="180" y="-21">10 rooms, one public repo</text>
-          <path class="dim-l" d="M-10 10V290M-15 10H-5M-15 290H-5M-13 13L-7 7M-13 293L-7 287"/>
-          <text class="dim-t" transform="translate(-14 150) rotate(-90)">self-host or managed</text>
-        </g>
-        <g transform="translate(22 30)">
-<g class="walls"><path class="wall" d="M10 130V10H350V290H10V160"/><path class="wall" d="M10 95H50M70 95H150M170 95H260M280 95H350"/><path class="wall" d="M110 10V95"/><path class="wall" d="M210 10V95"/><path class="wall" d="M250 95V130M250 155V195"/><path class="wall" d="M10 195H35M55 195H115M135 195H195M215 195H258M276 195H313M331 195H350"/><path class="wall" d="M85 195V290"/><path class="wall" d="M170 195V290"/><path class="wall" d="M240 195V290"/><path class="wall" d="M295 195V290"/></g>
-<g class="doors"><path class="door" d="M50 95V75"/><path class="door" d="M70 95A20 20 0 0 0 50 75"/><path class="door" d="M150 95V75"/><path class="door" d="M170 95A20 20 0 0 0 150 75"/><path class="door" d="M260 95V75"/><path class="door" d="M280 95A20 20 0 0 0 260 75"/><path class="door" d="M250 130H275"/><path class="door" d="M250 155A25 25 0 0 0 275 130"/><path class="door" d="M35 195V215"/><path class="door" d="M55 195A20 20 0 0 1 35 215"/><path class="door" d="M115 195V215"/><path class="door" d="M135 195A20 20 0 0 1 115 215"/><path class="door" d="M195 195V215"/><path class="door" d="M215 195A20 20 0 0 1 195 215"/><path class="door" d="M258 195V213"/><path class="door" d="M276 195A18 18 0 0 1 258 213"/><path class="door" d="M313 195V213"/><path class="door" d="M331 195A18 18 0 0 1 313 213"/><path class="door" d="M10 130H40"/><path class="door" d="M10 160A30 30 0 0 0 40 130"/></g>
-<g class="furniture"><rect class="table" x="50" y="149" width="180" height="20" rx="3"/><circle class="chair" cx="62" cy="140" r="4.5"/><circle class="chair" cx="62" cy="178" r="4.5"/><circle class="chair" cx="88" cy="140" r="4.5"/><circle class="chair" cx="88" cy="178" r="4.5"/><circle class="chair" cx="114" cy="140" r="4.5"/><circle class="chair" cx="114" cy="178" r="4.5"/><circle class="chair" cx="140" cy="140" r="4.5"/><circle class="chair" cx="140" cy="178" r="4.5"/><circle class="chair" cx="166" cy="140" r="4.5"/><circle class="chair" cx="166" cy="178" r="4.5"/><circle class="chair" cx="192" cy="140" r="4.5"/><circle class="chair" cx="192" cy="178" r="4.5"/><circle class="chair" cx="218" cy="140" r="4.5"/><circle class="chair" cx="218" cy="178" r="4.5"/></g>
-<g class="labels"><text class="rl" x="60" y="56" data-text="Asks">Asks</text><text class="rl" x="160" y="56" data-text="Intros">Intros</text><text class="rl" x="280" y="56" data-text="Network">Network</text><text class="rl rl-big" x="140" y="122" data-text="Members">Members</text><text class="rl" x="300" y="172" data-text="Messages">Messages</text><text class="rl" x="47.5" y="247" data-text="Feed">Feed</text><text class="rl" x="127.5" y="247" data-text="Job board">Job board</text><text class="rl" x="205" y="247" data-text="Perks">Perks</text><text class="rl" x="267.5" y="247" data-text="Chat">Chat</text><text class="rl" x="322.5" y="247" data-text="Admin">Admin</text></g>
-<g class="ricons"><g class="ric" transform="translate(60 37)"><g class="ric-s"><path d="M-7 -6.5h14v9.5h-6.5l-4 3.5v-3.5h-3.5z"/><path d="M-2.1 -3.4a2.1 2.1 0 1 1 2.7 2c-.6.3-.6.7-.6 1.4"/><path d="M0 1.6v.2"/></g></g><g class="ric" transform="translate(160 37)"><g class="ric-s"><circle cx="-5" cy="0" r="2.6"/><circle cx="5" cy="0" r="2.6"/><path d="M-2.4 0H2.4"/></g></g><g class="ric" transform="translate(280 37)"><g class="ric-s"><circle cx="0" cy="-5" r="2"/><circle cx="-5.5" cy="4" r="2"/><circle cx="5.5" cy="4" r="2"/><path d="M-1 -3.3L-4.5 2.3M1 -3.3L4.5 2.3M-3.5 4H3.5"/></g></g><g class="ric" transform="translate(93 118)"><g class="ric-s"><circle cx="-3.5" cy="-3.2" r="2.3"/><circle cx="4" cy="-2.2" r="1.9"/><path d="M-8 6.5c0-3 2-5 4.5-5s4.5 2 4.5 5"/><path d="M2.3 6.5c.3-2.3 1.4-3.8 3.3-3.8s2.6 1.5 2.9 3.8"/></g></g><g class="ric" transform="translate(300 153)"><g class="ric-s"><rect x="-7" y="-5" width="14" height="10" rx="1"/><path d="M-7 -4.5l7 5.3 7-5.3"/></g></g><g class="ric" transform="translate(47.5 262)"><g class="ric-s"><path d="M-6 -4h12M-6 0h12M-6 4h8"/></g></g><g class="ric" transform="translate(127.5 262)"><g class="ric-s"><rect x="-7" y="-3.5" width="14" height="10" rx="1"/><path d="M-2.5 -3.5v-2.5h5v2.5M-7 1h14"/></g></g><g class="ric" transform="translate(205 262)"><g class="ric-s"><path d="M-7 -1.2V-7h5.8l7.7 7.7-5.8 5.8z"/><circle cx="-4" cy="-4" r="1"/></g></g><g class="ric" transform="translate(267.5 262)"><g class="ric-s"><path d="M-7.5 -6h9v6h-5l-3 3v-3h-1z"/><path d="M-1 -2.2h8.5v6.2h-1v3l-3-3h-4.5"/></g></g><g class="ric" transform="translate(322.5 262)"><g class="ric-s"><path d="M-7 -3h14M-7 3h14"/><circle class="knob" cx="-2" cy="-3" r="2"/><circle class="knob" cx="3" cy="3" r="2"/></g></g></g>
-<path class="meet" d="M147 68H173"/><text class="fm-q" x="69" y="58">?</text>
-<g class="founders"><g class="fm" data-i="0" transform="translate(60 66)" tabindex="0" role="button" aria-label="Priya, Ledgerline. Asking: a buyer at Halden Health" data-name="Priya · Ledgerline" data-line="Asking: a buyer at Halden Health"><g class="fm-s"><circle r="7" fill="#1E2A55"/><text y="1.95">PR</text><circle class="fm-hit" r="16"/></g></g><g class="fm" data-i="1" transform="translate(180 68)" tabindex="0" role="button" aria-label="Marcus, Fernway. Offering: intros to hospital buyers" data-name="Marcus · Fernway" data-line="Offering: intros to hospital buyers"><g class="fm-s"><circle r="7" fill="#1F6B4E"/><text y="1.95">ML</text><circle class="fm-hit" r="16"/></g></g><g class="fm" data-i="2" transform="translate(114 178)" tabindex="0" role="button" aria-label="Lena, Quillbase. Hiring: a first sales lead" data-name="Lena · Quillbase" data-line="Hiring: a first sales lead"><g class="fm-s"><circle r="7" fill="#3A6E8F"/><text y="1.95">LP</text><circle class="fm-hit" r="16"/></g></g><g class="fm" data-i="3" transform="translate(45 226)" tabindex="0" role="button" aria-label="Tomás, Sablework. Asking: advice on pricing" data-name="Tomás · Sablework" data-line="Asking: advice on pricing"><g class="fm-s"><circle r="7" fill="#7A5C2E"/><text y="1.95">TH</text><circle class="fm-hit" r="16"/></g></g><g class="fm" data-i="4" transform="translate(330 118)" tabindex="0" role="button" aria-label="Ruth, Fieldnote. Offering: CFO office hours" data-name="Ruth · Fieldnote" data-line="Offering: CFO office hours"><g class="fm-s"><circle r="7" fill="#6B4E7A"/><text y="1.95">RA</text><circle class="fm-hit" r="16"/></g></g><g class="fm" data-i="5" transform="translate(270 66)" tabindex="0" role="button" aria-label="Jordan, Lumetry. Asking: a seed lead investor" data-name="Jordan · Lumetry" data-line="Asking: a seed lead investor"><g class="fm-s"><circle r="7" fill="#56605B"/><text y="1.95">JB</text><circle class="fm-hit" r="16"/></g></g></g>
-        </g>
-      </svg>
-    </div>
+    <figure class="plan-fig" data-skip>
+      <div class="plan" id="plan" role="group" aria-label="A floor plan of the portal's ten rooms. Eight made-up members move between the rooms; now and then two meet and an example moment is announced. Each member can be focused to read their name and role.">
+<svg class="plan-svg" viewBox="0 0 360 300" aria-hidden="true" focusable="false">
+<g class="walls"><path d="M10 130V10H350V290H10V160"/><path d="M10 95H50M70 95H150M170 95H260M280 95H350"/><path d="M110 10V95M210 10V95"/><path d="M250 95V130M250 155V195"/><path d="M10 195H35M55 195H115M135 195H195M215 195H258M276 195H313M331 195H350"/><path d="M85 195V290M170 195V290M240 195V290M295 195V290"/></g><rect class="table" x="50" y="149" width="180" height="20" rx="3"/>
+<g class="doors"><g class="door" data-sweep="90"><path class="arc" d="M70 95A20 20 0 0 0 50 75"/><line class="leaf" x1="50" y1="95" x2="50" y2="75" data-hx="50" data-hy="95"/></g><g class="door" data-sweep="90"><path class="arc" d="M170 95A20 20 0 0 0 150 75"/><line class="leaf" x1="150" y1="95" x2="150" y2="75" data-hx="150" data-hy="95"/></g><g class="door" data-sweep="90"><path class="arc" d="M280 95A20 20 0 0 0 260 75"/><line class="leaf" x1="260" y1="95" x2="260" y2="75" data-hx="260" data-hy="95"/></g><g class="door" data-sweep="90"><path class="arc" d="M250 155A25 25 0 0 0 275 130"/><line class="leaf" x1="250" y1="130" x2="275" y2="130" data-hx="250" data-hy="130"/></g><g class="door" data-sweep="-90"><path class="arc" d="M55 195A20 20 0 0 1 35 215"/><line class="leaf" x1="35" y1="195" x2="35" y2="215" data-hx="35" data-hy="195"/></g><g class="door" data-sweep="-90"><path class="arc" d="M135 195A20 20 0 0 1 115 215"/><line class="leaf" x1="115" y1="195" x2="115" y2="215" data-hx="115" data-hy="195"/></g><g class="door" data-sweep="-90"><path class="arc" d="M215 195A20 20 0 0 1 195 215"/><line class="leaf" x1="195" y1="195" x2="195" y2="215" data-hx="195" data-hy="195"/></g><g class="door" data-sweep="-90"><path class="arc" d="M276 195A18 18 0 0 1 258 213"/><line class="leaf" x1="258" y1="195" x2="258" y2="213" data-hx="258" data-hy="195"/></g><g class="door" data-sweep="-90"><path class="arc" d="M331 195A18 18 0 0 1 313 213"/><line class="leaf" x1="313" y1="195" x2="313" y2="213" data-hx="313" data-hy="195"/></g><g class="door" data-sweep="90"><path class="arc" d="M10 160A30 30 0 0 0 40 130"/><line class="leaf" x1="10" y1="130" x2="40" y2="130" data-hx="10" data-hy="130"/></g></g>
+<g class="labels"><text class="rl" x="18" y="27">ASKS</text><text class="rl" x="118" y="27">INTROS</text><text class="rl" x="218" y="27">NETWORK</text><text class="rl" x="18" y="112">MEMBERS</text><text class="rl" x="258" y="112">MESSAGES</text><text class="rl" x="18" y="211">FEED</text><text class="rl" x="93" y="211">JOB BOARD</text><text class="rl" x="178" y="211">PERKS</text><text class="rl" x="248" y="211">CHAT</text><text class="rl" x="303" y="211">ADMIN</text></g><g class="ricons"><g class="ric" transform="translate(96 24)"><path d="M-7 -6.5h14v9.5h-6.5l-4 3.5v-3.5h-3.5z"/><path d="M-2.1 -3.4a2.1 2.1 0 1 1 2.7 2c-.6.3-.6.7-.6 1.4"/><path d="M0 1.6v.2"/></g><g class="ric" transform="translate(196 24)"><circle cx="-5" cy="0" r="2.6"/><circle cx="5" cy="0" r="2.6"/><path d="M-2.4 0H2.4"/></g><g class="ric" transform="translate(336 24)"><circle cx="0" cy="-5" r="2"/><circle cx="-5.5" cy="4" r="2"/><circle cx="5.5" cy="4" r="2"/><path d="M-1 -3.3L-4.5 2.3M1 -3.3L4.5 2.3M-3.5 4H3.5"/></g><g class="ric" transform="translate(232 110)"><circle cx="-3.5" cy="-3.2" r="2.3"/><circle cx="4" cy="-2.2" r="1.9"/><path d="M-8 6.5c0-3 2-5 4.5-5s4.5 2 4.5 5"/><path d="M2.3 6.5c.3-2.3 1.4-3.8 3.3-3.8s2.6 1.5 2.9 3.8"/></g><g class="ric" transform="translate(336 110)"><rect x="-7" y="-5" width="14" height="10" rx="1"/><path d="M-7 -4.5l7 5.3 7-5.3"/></g><g class="ric" transform="translate(71 207)"><path d="M-6 -4h12M-6 0h12M-6 4h8"/></g><g class="ric" transform="translate(156 207)"><rect x="-7" y="-3.5" width="14" height="10" rx="1"/><path d="M-2.5 -3.5v-2.5h5v2.5M-7 1h14"/></g><g class="ric" transform="translate(227 207)"><path d="M-7 -1.2V-7h5.8l7.7 7.7-5.8 5.8z"/><circle cx="-4" cy="-4" r="1"/></g><g class="ric" transform="translate(284 207)"><path d="M-7.5 -6h9v6h-5l-3 3v-3h-1z"/><path d="M-1 -2.2h8.5v6.2h-1v3l-3-3h-4.5"/></g><g class="ric" transform="translate(322 233)"><path d="M-7 -3h14M-7 3h14"/><circle class="knob" cx="-2" cy="-3" r="2"/><circle class="knob" cx="3" cy="3" r="2"/></g></g></svg>
+        <button class="p pos-ada" type="button" data-name="Ada Okafor" data-role="COO, Sablework" aria-label="Ada Okafor, COO, Sablework"><img src="assets/faces/ada-okafor.webp" alt="" width="256" height="256"><span class="tip" aria-hidden="true"><b>Ada Okafor</b><i>COO, Sablework</i></span></button>
+        <button class="p pos-priya" type="button" data-name="Priya Shah" data-role="Co-founder and CEO, Ledgerline" aria-label="Priya Shah, Co-founder and CEO, Ledgerline"><img src="assets/faces/priya-shah.webp" alt="" width="256" height="256"><span class="tip" aria-hidden="true"><b>Priya Shah</b><i>Co-founder and CEO, Ledgerline</i></span></button>
+        <button class="p pos-marcus" type="button" data-name="Marcus Webb" data-role="Partner, Fieldstone Ventures" aria-label="Marcus Webb, Partner, Fieldstone Ventures"><img src="assets/faces/marcus-webb.webp" alt="" width="256" height="256"><span class="tip" aria-hidden="true"><b>Marcus Webb</b><i>Partner, Fieldstone Ventures</i></span></button>
+        <button class="p pos-maya" type="button" data-name="Maya Ortiz" data-role="Head of Platform, Fieldstone Ventures" aria-label="Maya Ortiz, Head of Platform, Fieldstone Ventures"><img src="assets/faces/maya-ortiz.webp" alt="" width="256" height="256"><span class="tip" aria-hidden="true"><b>Maya Ortiz</b><i>Head of Platform, Fieldstone Ventures</i></span></button>
+        <button class="p pos-lena" type="button" data-name="Lena Fischer" data-role="Founder and CTO, Kestrel Labs" aria-label="Lena Fischer, Founder and CTO, Kestrel Labs"><img src="assets/faces/lena-fischer.webp" alt="" width="256" height="256"><span class="tip" aria-hidden="true"><b>Lena Fischer</b><i>Founder and CTO, Kestrel Labs</i></span></button>
+        <button class="p pos-oliver" type="button" data-name="Oliver Grant" data-role="Advisor, former CRO" aria-label="Oliver Grant, Advisor, former CRO"><img src="assets/faces/oliver-grant.webp" alt="" width="256" height="256"><span class="tip" aria-hidden="true"><b>Oliver Grant</b><i>Advisor, former CRO</i></span></button>
+        <button class="p pos-elena" type="button" data-name="Elena Rossi" data-role="Founder, Orchard Bio" aria-label="Elena Rossi, Founder, Orchard Bio"><img src="assets/faces/elena-rossi.webp" alt="" width="256" height="256"><span class="tip" aria-hidden="true"><b>Elena Rossi</b><i>Founder, Orchard Bio</i></span></button>
+        <button class="p pos-sam" type="button" data-name="Sam Lee" data-role="Head of Product, Fernway" aria-label="Sam Lee, Head of Product, Fernway"><img src="assets/faces/sam-lee.webp" alt="" width="256" height="256"><span class="tip" aria-hidden="true"><b>Sam Lee</b><i>Head of Product, Fernway</i></span></button>
+        <div class="deal static" id="deal" aria-hidden="true"><p class="k"><span class="chk"><svg viewBox="0 0 8 8"><path d="M1.2 4.2l1.8 1.8 3.8-4.2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span data-deal-kicker>Example moment</span></p><h3 data-deal-title>New hire: head of sales</h3></div>
+      </div>
+      <figcaption>Made-up members and example moments. Every room is a module of the app.</figcaption>
+    </figure>
+  </div>
+</section>
 
-    <ul class="facts" aria-label="Three facts">
-      <li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M10 9.5L7.5 12l2.5 2.5M14 9.5l2.5 2.5-2.5 2.5"/></svg><span>Open source under AGPL-3.0.</span></li>
-      <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 21V3.5h12V21M3 21h18"/><rect x="8.5" y="7" width="7" height="3" rx=".5"/><path d="M14.5 14.5h1"/></svg><span>Your fund's name on the door.</span></li>
-      <li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M8.5 15.5l2 2 4-4.5"/></svg><span><span class="brand">Village</span> sets it up in week one.</span></li>
+<!-- ============ REAL SCREENS ============ -->
+<section class="sec" id="screens" aria-labelledby="h-screens">
+  <div class="wrap">
+    <p class="eyebrow">The real app</p>
+    <h2 id="h-screens">Six screens of the portal, as members and admins see them.</h2>
+    <p class="lead">Screenshots of the app's demo, which runs on made-up people and companies.</p>
+    <div class="shots">
+      <figure><div class="frame"><picture><source media="(max-width: 600px)" srcset="assets/screens/members-directory-390.webp" width="520" height="1080"><img src="assets/screens/members-directory-1280.webp" alt="The member directory: twenty members of a community with filters for stage, sector, city and cohort." width="1100" height="658" loading="lazy"></picture></div><figcaption><b>Member directory.</b> Every member on a card, filtered by stage, sector, city and cohort.</figcaption></figure>
+      <figure><div class="frame"><picture><source media="(max-width: 600px)" srcset="assets/screens/network-search-390.webp" width="520" height="1080"><img src="assets/screens/network-search-1280.webp" alt="Network search for someone at a company, showing three people in reach with the path through a member who can introduce you." width="1100" height="658" loading="lazy"></picture></div><figcaption><b>Network search.</b> Who in reach works at a company, and the member who can introduce you.</figcaption></figure>
+      <figure><div class="frame"><picture><source media="(max-width: 600px)" srcset="assets/screens/intro-thread-390.webp" width="520" height="1080"><img src="assets/screens/intro-thread-1280.webp" alt="An introduction thread showing who is introduced to whom, through which member, and its status." width="1100" height="658" loading="lazy"></picture></div><figcaption><b>Intro thread.</b> Who asked, through whom, and where it stands. Both sides say yes first.</figcaption></figure>
+      <figure><div class="frame"><picture><source media="(max-width: 600px)" srcset="assets/screens/asks-board-390.webp" width="520" height="1080"><img src="assets/screens/asks-board-1280.webp" alt="The asks and updates board with open asks, updates and answered asks, each with its author and answer count." width="1100" height="658" loading="lazy"></picture></div><figcaption><b>Asks and updates.</b> Members ask the community for help; answers stay with the ask.</figcaption></figure>
+      <figure><div class="frame"><picture><source media="(max-width: 600px)" srcset="assets/screens/admin-home-390.webp" width="520" height="1080"><img src="assets/screens/admin-home-1280.webp" alt="The admin home counting every intro: how many were asked, accepted, introduced, declined or are still open." width="1100" height="658" loading="lazy"></picture></div><figcaption><b>Admin home.</b> Every intro counted: asked, accepted, introduced, declined. Hires and deals are not counted yet.</figcaption></figure>
+      <figure><div class="frame"><picture><source media="(max-width: 600px)" srcset="assets/screens/member-home-390.webp" width="520" height="1080"><img src="assets/screens/member-home-1280.webp" alt="A member's Today page: what they could help with this week, an intro waiting for their answer and a profile reminder." width="1100" height="658" loading="lazy"></picture></div><figcaption><b>Today, for a member.</b> What to help with this week, and an intro waiting for a yes.</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============ COMPARISON ============ -->
+<section class="sec alt" id="compare" aria-labelledby="h-compare">
+  <div class="wrap">
+    <p class="eyebrow">Compared</p>
+    <h2 id="h-compare">Compared with Getro, Cabal, Metal and Discord.</h2>
+    <p class="lead">Read from each product's own site, docs and pricing page on 14 November 2026.</p>
+    <div class="table-wrap" role="region" aria-labelledby="h-compare" tabindex="0">
+      <table class="cmp">
+        <caption class="sr">Features of Common Hall compared with four other products</caption>
+        <thead><tr>
+          <th scope="col">What you get</th>
+          <th scope="col" class="us">Common Hall</th>
+          <th scope="col"><a href="https://www.getro.com/" rel="noopener">Getro</a></th>
+          <th scope="col"><a href="https://getcabal.com/" rel="noopener">Cabal</a></th>
+          <th scope="col"><a href="https://www.metal.so/" rel="noopener">Metal</a></th>
+          <th scope="col"><a href="https://discord.com/" rel="noopener">Discord</a></th>
+        </tr></thead>
+        <tbody>
+          <tr><th scope="row">Warm intros, both sides say yes</th><td class="us y">Yes</td><td>Yes, consent flow not described</td><td>Earlier product only</td><td>For one founder's raise</td><td class="n">—</td></tr>
+          <tr><th scope="row">Search the network's connections</th><td class="us y">Yes</td><td>Yes</td><td>Earlier product only</td><td>Own contacts only</td><td class="n">—</td></tr>
+          <tr><th scope="row">Member directory that fills itself</th><td class="us y">Yes</td><td>Admin CRM, not member-facing</td><td class="n">—</td><td class="n">—</td><td>Member list only</td></tr>
+          <tr><th scope="row">Startup perks</th><td class="us">Partly</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n">—</td></tr>
+          <tr><th scope="row">Admin dashboard: intros counted</th><td class="us y">Yes <span class="sm">(hires and deals: coming)</span></td><td>Yes, intro tracking by hand</td><td>Email opens only</td><td>Per founder</td><td>Engagement only</td></tr>
+          <tr><th scope="row">Mentor network</th><td class="us">Not yet</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n">—</td></tr>
+          <tr><th scope="row">Job board from your hiring tools</th><td class="us y">Yes</td><td>Yes, daily, 850+ teams</td><td class="n">—</td><td class="n">—</td><td class="n">—</td></tr>
+          <tr><th scope="row">Asks and answers board</th><td class="us y">Yes <span class="sm">(posts to Slack and Discord)</span></td><td>Intro target lists</td><td>Earlier product only</td><td class="n">—</td><td>Forum channels, by hand</td></tr>
+          <tr><th scope="row">Under your own name and domain</th><td class="us y">Yes, the whole portal</td><td>Job board only</td><td class="n">—</td><td class="n">—</td><td>No</td></tr>
+          <tr><th scope="row">Open source, self-host</th><td class="us y">Yes, AGPL</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n">—</td></tr>
+          <tr><th scope="row">Public price</th><td class="us y">Free / $10,000 a year</td><td>$2,520 to $9,100 a year</td><td>$19 a month per user <span class="sm">(email product)</span></td><td>Not public</td><td>Free</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <ul class="notes">
+      <li>A dash means not found on the product's own site, docs or pricing page on 14 November 2026.</li>
+      <li>Cabal today sells investor-update email; its intro and search features are from its earlier product and are labelled so.</li>
+      <li>Metal is a fundraising tool for one founder that accelerators hand out, not a community portal.</li>
+      <li>Getro is the stronger choice for job-board reach (850+ teams) and for contact data. It was bought by Findem in December 2025.</li>
     </ul>
   </div>
 </section>
 
-<!-- ============ SHEET 2: ROOMS ============ -->
-<section class="sheet rooms barred" id="rooms" aria-labelledby="h-rooms">
-  <div class="sheet-tag" aria-hidden="true"><span>Sheet 2 of 4</span><span>Rooms</span></div>
-  <div class="rooms-in">
-    <div class="side">
-      <h2 class="h2" id="h-rooms">Every room, marked as it stands.</h2>
-      <p class="kn-line"><span class="kn" aria-hidden="true">1</span><span>Paths and wider search need <span class="brand">Village</span>.</span></p>
-    </div>
-    <div>
-      <div class="dim-h" aria-hidden="true"><span>10 rooms, 10 modules</span><i class="rule pen-r"></i><b></b><b></b></div>
-      <div class="sched" aria-label="Room schedule: the ten modules and their status">
-      <article class="room">
-        <svg class="kp" viewBox="0 0 360 300" aria-hidden="true"><rect class="lit" x="10" y="10" width="100" height="85"/><path class="hatch pen" d="M10 25L25 10M10 55L55 10M10 85L85 10M30 95L110 15M60 95L110 45M90 95L110 75"/><use href="#kp-walls"/></svg>
-        <div class="rm"><div class="rm-top"><h3>Asks</h3><span class="stp built">Built</span></div><p>Five kinds of ask. Answers kept.</p></div>
-        <i class="rule pen-r" aria-hidden="true"></i>
+<!-- ============ PRICING ============ -->
+<section class="sec" id="pricing" aria-labelledby="h-pricing">
+  <div class="wrap">
+    <p class="eyebrow">Pricing</p>
+    <h2 id="h-pricing">Free to run yourself. Or Village runs it.</h2>
+    <div class="plans">
+      <article class="plan-card" aria-labelledby="p-community">
+        <p class="pc-k">Community</p>
+        <h3 id="p-community"><span class="price">Free</span></h3>
+        <ul>
+          <li>The whole app, under the AGPL open-source licence.</li>
+          <li>Your own server, with one install line.</li>
+          <li>Your own Village account key for network search and profile filling, pay as you go.</li>
+          <li>Updates from the repo.</li>
+          <li>Community support on GitHub.</li>
+        </ul>
+        <a class="btn out" href="#door-self">Run it yourself</a>
       </article>
-      <article class="room">
-        <svg class="kp" viewBox="0 0 360 300" aria-hidden="true"><rect class="lit" x="110" y="10" width="100" height="85"/><path class="hatch pen" d="M110 25L125 10M110 55L155 10M110 85L185 10M130 95L210 15M160 95L210 45M190 95L210 75"/><use href="#kp-walls"/></svg>
-        <div class="rm"><div class="rm-top"><h3>Intros</h3><span class="stp built">Built</span></div><p>Nobody is introduced without saying yes.</p></div>
-        <i class="rule pen-r" aria-hidden="true"></i>
+      <article class="plan-card feature" aria-labelledby="p-enterprise">
+        <p class="pc-k">Enterprise</p>
+        <h3 id="p-enterprise"><span class="price">$10,000</span> <span class="per">a year</span></h3>
+        <ul>
+          <li>Village hosts and runs it under your domain.</li>
+          <li>Set-up in week one, backups, updates and support.</li>
+          <li>7,500 credits a month. One credit is one network search or one profile filled from Village's data.</li>
+          <li>Up to 500 members; a quote above that.</li>
+        </ul>
+        <a class="btn solid" href="#door-managed">Schedule a call</a>
       </article>
-      <article class="room">
-        <svg class="kp" viewBox="0 0 360 300" aria-hidden="true"><rect class="lit" x="210" y="10" width="140" height="85"/><path class="hatch pen" d="M210 25L225 10M210 55L255 10M210 85L285 10M230 95L315 10M260 95L345 10M290 95L350 35M320 95L350 65"/><use href="#kp-walls"/></svg>
-        <div class="rm"><div class="rm-top"><h3>Network</h3><span class="stp built">Built</span></div><p>Paths through people, never contact lists.</p></div>
-        <i class="rule pen-r" aria-hidden="true"></i>
-      </article>
-      <article class="room">
-        <svg class="kp" viewBox="0 0 360 300" aria-hidden="true"><rect class="lit" x="10" y="95" width="240" height="100"/><path class="hatch pen" d="M10 110L25 95M10 140L55 95M10 170L85 95M15 195L115 95M45 195L145 95M75 195L175 95M105 195L205 95M135 195L235 95M165 195L250 110M195 195L250 140M225 195L250 170"/><use href="#kp-walls"/></svg>
-        <div class="rm"><div class="rm-top"><h3>Members</h3><span class="stp built">Built</span></div><p>Who is here, and how they help.</p></div>
-        <i class="rule pen-r" aria-hidden="true"></i>
-      </article>
-      <article class="room">
-        <svg class="kp" viewBox="0 0 360 300" aria-hidden="true"><rect class="lit" x="250" y="95" width="100" height="100"/><path class="hatch pen" d="M250 110L265 95M250 140L295 95M250 170L325 95M255 195L350 100M285 195L350 130M315 195L350 160M345 195L350 190"/><use href="#kp-walls"/></svg>
-        <div class="rm"><div class="rm-top"><h3>Messages</h3><span class="stp built">Built</span></div><p>One-to-one, between members.</p></div>
-        <i class="rule pen-r" aria-hidden="true"></i>
-      </article>
-      <article class="room">
-        <svg class="kp" viewBox="0 0 360 300" aria-hidden="true"><rect class="lit" x="10" y="195" width="75" height="95"/><path class="hatch pen" d="M10 210L25 195M10 240L55 195M10 270L85 195M20 290L85 225M50 290L85 255M80 290L85 285"/><use href="#kp-walls"/></svg>
-        <div class="rm"><div class="rm-top"><h3>Feed</h3><span class="stp built">Built</span></div><p>Ask, Win and Offer posts.</p></div>
-        <i class="rule pen-r" aria-hidden="true"></i>
-      </article>
-      <article class="room">
-        <svg class="kp" viewBox="0 0 360 300" aria-hidden="true"><rect class="lit" x="85" y="195" width="85" height="95"/><path class="hatch pen" d="M85 210L100 195M85 240L130 195M85 270L160 195M95 290L170 215M125 290L170 245M155 290L170 275"/><use href="#kp-walls"/></svg>
-        <div class="rm"><div class="rm-top"><h3>Job board</h3><span class="stp built">Built</span></div><p>12 hiring tools, read every hour.</p></div>
-        <i class="rule pen-r" aria-hidden="true"></i>
-      </article>
-      <article class="room">
-        <svg class="kp" viewBox="0 0 360 300" aria-hidden="true"><rect class="lit" x="170" y="195" width="70" height="95"/><path class="hatch pen" d="M170 210L185 195M170 240L215 195M170 270L240 200M180 290L240 230M210 290L240 260"/><use href="#kp-walls"/></svg>
-        <div class="rm"><div class="rm-top"><h3>Perks</h3><span class="stp partly">Partly</span></div><p>Your BuiltFirst perks, inside the portal.</p></div>
-        <i class="rule pen-r" aria-hidden="true"></i>
-      </article>
-      <article class="room">
-        <svg class="kp" viewBox="0 0 360 300" aria-hidden="true"><rect class="lit" x="240" y="195" width="55" height="95"/><path class="hatch pen" d="M240 210L255 195M240 240L285 195M240 270L295 215M250 290L295 245M280 290L295 275"/><use href="#kp-walls"/></svg>
-        <div class="rm"><div class="rm-top"><h3>Chat</h3><span class="stp partly">Partly</span></div><p>Asks go out to Slack and Discord.</p><p class="soon"><span class="stp coming">Coming</span>WhatsApp, Telegram, Signal</p></div>
-        <i class="rule pen-r" aria-hidden="true"></i>
-      </article>
-      <article class="room">
-        <svg class="kp" viewBox="0 0 360 300" aria-hidden="true"><rect class="lit" x="295" y="195" width="55" height="95"/><path class="hatch pen" d="M295 210L310 195M295 240L340 195M295 270L350 215M305 290L350 245M335 290L350 275"/><use href="#kp-walls"/></svg>
-        <div class="rm"><div class="rm-top"><h3>Admin</h3><span class="stp built">Built</span></div><p>Every intro, ask and outcome, counted.</p></div>
-        <i class="rule pen-r" aria-hidden="true"></i>
-      </article>
-      </div>
     </div>
   </div>
 </section>
 
-<!-- ============ SHEET 3: RECORD ============ -->
-<section class="sheet record barred" id="record" aria-labelledby="h-rec">
-  <div class="sheet-tag" aria-hidden="true"><span>Sheet 3 of 4</span><span>Record</span></div>
-  <div class="rec-in">
-    <div class="side">
-      <h2 class="h2" id="h-rec">Merged in public. Counted for partners.</h2>
-      <div class="rec-foot">
-        <p class="kn-line"><span class="kn" aria-hidden="true">2</span><span>Your Postgres. Members export their data.</span></p>
-        <a class="textlink" href="https://github.com/VillageHQ/community/pulls?q=is%3Apr+is%3Amerged">Read the merge history</a>
-      </div>
-    </div>
-    <div class="ledger" role="table" aria-label="The record: merged changes and a sample quarter">
-      <div class="lg lg-h" role="row"><span role="columnheader">Rev</span><span role="columnheader">Merged change</span><span role="columnheader" class="ref">Ref</span><i class="rule ink pen-r" aria-hidden="true"></i></div>
-      <div class="lg" role="row"><span role="cell"><svg class="tri" viewBox="0 0 22 20" aria-hidden="true"><path d="M11 2L20 18H2Z"/><text x="11" y="15.5">A</text></svg></span><span role="cell">Licence switched to AGPL-3.0</span><span role="cell"><a class="ref" href="https://github.com/VillageHQ/community/pull/11">PR #11</a></span><i class="rule pen-r" aria-hidden="true"></i></div>
-      <div class="lg" role="row"><span role="cell"><svg class="tri" viewBox="0 0 22 20" aria-hidden="true"><path d="M11 2L20 18H2Z"/><text x="11" y="15.5">B</text></svg></span><span role="cell">Today page and weekly email</span><span role="cell"><a class="ref" href="https://github.com/VillageHQ/community/pull/17">PR #17</a></span><i class="rule pen-r" aria-hidden="true"></i></div>
-      <div class="lg" role="row"><span role="cell"><svg class="tri" viewBox="0 0 22 20" aria-hidden="true"><path d="M11 2L20 18H2Z"/><text x="11" y="15.5">C</text></svg></span><span role="cell">Asks post to Slack and Discord</span><span role="cell"><a class="ref" href="https://github.com/VillageHQ/community/pull/18">PR #18</a></span><i class="rule pen-r" aria-hidden="true"></i></div>
-      <div class="lg" role="row"><span role="cell"><svg class="tri" viewBox="0 0 22 20" aria-hidden="true"><path d="M11 2L20 18H2Z"/><text x="11" y="15.5">D</text></svg></span><span role="cell">Export and delete your data</span><span role="cell"><a class="ref" href="https://github.com/VillageHQ/community/pull/20">PR #20</a></span><i class="rule pen-r" aria-hidden="true"></i></div>
-      <div class="lg" role="row"><span role="cell"><svg class="tri" viewBox="0 0 22 20" aria-hidden="true"><path d="M11 2L20 18H2Z"/><text x="11" y="15.5">E</text></svg></span><span role="cell">Job board</span><span role="cell"><a class="ref" href="https://github.com/VillageHQ/community/pull/21">PR #21</a></span><i class="rule ink pen-r" aria-hidden="true"></i></div>
-      <div class="lg-gap" aria-hidden="true"></div>
-      <div class="lg lg-h" role="row"><span role="columnheader" class="wide">Intros this quarter <span class="sample">Sample</span></span><span role="columnheader" class="ref">Count</span><i class="rule ink pen-r" aria-hidden="true"></i></div>
-      <div class="lg" role="row"><span role="cell" class="lab">Asked</span><span role="cell" class="fig" data-n="42">42</span><i class="rule pen-r" aria-hidden="true"></i></div>
-      <div class="lg" role="row"><span role="cell" class="lab">Introduced</span><span role="cell" class="fig" data-n="24">24</span><i class="rule pen-r" aria-hidden="true"></i></div>
-      <div class="lg" role="row"><span role="cell" class="lab">Declined</span><span role="cell" class="fig" data-n="9">9</span><i class="rule pen-r" aria-hidden="true"></i></div>
-      <div class="lg" role="row"><span role="cell" class="lab">No answer</span><span role="cell" class="fig" data-n="9">9</span><i class="rule pen-r" aria-hidden="true"></i></div>
-      <div class="lg" role="row"><span role="cell" class="lab">Lead investor found</span><span role="cell" class="fig" data-n="1">1</span><i class="rule ink pen-r" aria-hidden="true"></i></div>
-    </div>
+<!-- ============ YOUR DATA ============ -->
+<section class="sec alt" id="data" aria-labelledby="h-data">
+  <div class="wrap">
+    <p class="eyebrow">Your data</p>
+    <h2 id="h-data">Your name, your domain, your members' consent.</h2>
+    <ul class="facts">
+      <li><b>Under your name and domain.</b> Members see your community, not ours.</li>
+      <li><b>Self-host anywhere,</b> the EU included. For the managed plan, ask us about EU hosting.</li>
+      <li><b>Intros need both sides' yes.</b> Nobody is introduced who did not agree.</li>
+      <li><b>An admin audit log</b> records what admins do.</li>
+      <li><b>Sign-in by email link</b> for members.</li>
+      <li><b>Village</b> is the company behind the optional network search and profile filling.</li>
+    </ul>
   </div>
 </section>
 
-<!-- ============ SHEET 4: ENTRANCES ============ -->
-<section class="sheet doors" id="doors" aria-labelledby="h-doors">
-  <div class="sheet-tag" aria-hidden="true"><span>Sheet 4 of 4</span><span>Entrances</span></div>
-  <div class="doors-in">
-    <h2 class="h2" id="h-doors">Run it yourself, or <span class="brand">Village</span> runs it.</h2>
+<!-- ============ TWO WAYS IN ============ -->
+<section class="sec" id="doors" aria-labelledby="h-doors">
+  <div class="wrap">
+    <p class="eyebrow">Two ways in</p>
+    <h2 id="h-doors">Schedule a call, or install it today.</h2>
     <div class="doors-grid">
-      <div class="door-card v" id="door-managed">
-        <div class="door-head">
-          <svg class="door-plan" viewBox="0 0 64 44" aria-hidden="true"><path class="wl pen" d="M2 40H12"/><path class="wl pen" d="M52 40H62"/><path class="arc pen" d="M52 40A40 40 0 0 0 12 0"/><line class="leaf" x1="12" y1="40" x2="52" y2="40"/></svg>
-          <div><h3>Schedule a call</h3><p class="fine"><span class="brand">Village</span> runs it: <span data-plan-price>$1,000 a month, billed yearly</span></p></div>
-        </div>
+      <div class="door-card" id="door-managed">
+        <h3>Schedule a call</h3>
+        <p class="fine">Village runs it: <span data-plan-price>$10,000 a year, 7,500 credits a month</span></p>
         <noscript><p class="fine">The form needs JavaScript. You can still <a class="strong-link" href="#door-self">run it on your own server</a>.</p></noscript>
         <form class="signup-form" id="signup-form" data-endpoint="" novalidate hidden>
-          <div class="f2 f2-even">
+          <div class="f2">
             <div class="field"><label for="f-name">Name</label><input id="f-name" name="name" autocomplete="name" placeholder="Sam Ortiz" required maxlength="120"><p class="field-error" id="e-name">Add your name so we know who to answer.</p></div>
-            <div class="field"><label for="f-fund">Fund</label><input id="f-fund" name="community" autocomplete="organization" placeholder="Fieldstone Ventures" required maxlength="160"><p class="field-error" id="e-fund">Add the fund or community the portal is for.</p></div>
+            <div class="field"><label for="f-fund">Fund or community</label><input id="f-fund" name="community" autocomplete="organization" placeholder="Fieldstone Ventures" required maxlength="160"><p class="field-error" id="e-fund">Add the fund or community the portal is for.</p></div>
           </div>
           <div class="f2">
-            <div class="field"><label for="f-email">Work email</label><input id="f-email" name="email" type="email" autocomplete="email" inputmode="email" placeholder="sam@example.com" required maxlength="254"><p class="field-error" id="e-email">That doesn't look like an email address. Check for a missing @ or domain.</p></div>
+            <div class="field"><label for="f-email">Work email</label><input id="f-email" name="email" type="email" autocomplete="email" inputmode="email" placeholder="sam@example.com" required maxlength="254"><p class="field-error" id="e-email">That doesn't look like an email address. Check for a missing @ or dot.</p></div>
             <div class="field"><label for="f-members">Members</label><input id="f-members" name="members" type="number" inputmode="numeric" min="1" max="1000000" step="1" placeholder="About 120" required><p class="field-error" id="e-members">Add roughly how many members, as a number.</p></div>
           </div>
           <input type="hidden" name="plan" value="managed">
           <div class="honeypot" aria-hidden="true"><label for="f-website">Leave this empty</label><input id="f-website" name="website" tabindex="-1" autocomplete="off"></div>
-          <button class="btn btn-p" type="submit">Schedule call</button>
+          <button class="btn solid" type="submit">Schedule a call</button>
           <p class="form-error" id="form-error" role="alert" hidden></p>
-          <p class="fine"><span class="brand">Village</span> replies within 1 business day with a time for the call. Your details are used only for this request.</p>
+          <p class="fine">Village replies within 1 business day with a time for the call. Your details are used only for this request.</p>
         </form>
         <div class="confirm" id="signup-confirm" role="status" aria-live="polite" tabindex="-1" hidden>
           <p class="confirm-title"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg><span data-confirm-title>Request received.</span></p>
           <p class="confirm-body" data-confirm-body></p>
           <ol class="confirm-steps" data-confirm-steps></ol>
-          <button class="btn btn-s" type="button" id="signup-again">Change something and send again</button>
+          <button class="btn out" type="button" id="signup-again">Change something and send again</button>
         </div>
       </div>
 
       <div class="door-card" id="door-self">
-        <div class="door-head">
-          <svg class="door-plan" viewBox="0 0 64 44" aria-hidden="true"><path class="wl pen" d="M2 40H12"/><path class="wl pen" d="M52 40H62"/><path class="arc pen" d="M52 40A40 40 0 0 0 12 0"/><line class="leaf" x1="12" y1="40" x2="52" y2="40"/></svg>
-          <div><h3>Your own server</h3><p class="fine">Free. You pay your host. <a class="strong-link" href="https://github.com/VillageHQ/community">Read the code</a></p></div>
-        </div>
-        <div class="install"><code data-command data-full="curl -fsSL https://raw.githubusercontent.com/VillageHQ/community/main/install.sh | sudo bash" title="curl -fsSL https://raw.githubusercontent.com/VillageHQ/community/main/install.sh | sudo bash"><span class="i-full">curl -fsSL https:/<wbr>/<wbr>raw.githubusercontent.com/<wbr>VillageHQ/<wbr>community/<wbr>main/<wbr>install.sh | sudo bash</span><span class="i-short" aria-hidden="true">curl …/install.sh | sudo bash</span></code><button class="copy" type="button" data-copy hidden>Copy</button></div>
+        <h3>Your own server</h3>
+        <p class="fine">Free. You pay your host. <a class="strong-link" href="https://github.com/VillageHQ/community" target="_blank" rel="noopener">Read the code</a></p>
+        <div class="install"><code id="install-line" data-command data-full="curl -fsSL https://raw.githubusercontent.com/VillageHQ/community/main/install.sh | sudo bash">curl -fsSL https://raw.githubusercontent.com/VillageHQ/community/main/install.sh | sudo bash</code><button class="btn out copy" type="button" data-copy hidden>Copy</button></div>
         <p class="copy-status" role="status" data-copy-status></p>
-        <a class="btn btn-s" href="https://github.com/VillageHQ/community/blob/main/docs/self-host-vps.md">Read the self-host guide</a>
+        <div class="row">
+          <button class="btn solid" type="button" data-open-setup>Set up with an assistant</button>
+          <a class="btn out" href="https://github.com/VillageHQ/community/blob/main/docs/self-host-vps.md" target="_blank" rel="noopener">Read the self-host guide</a>
+        </div>
         <p class="fine">Point a domain at your server and paste one command: it runs on HTTPS, restarts by itself and backs up every day. The guide says what to rent.</p>
       </div>
-    </div>
-    <div class="price">
-      <p>Free to self-host · Managed from $1,000 a month</p>
-      <p>Managed: $1,000 a month billed yearly or $1,200 month-to-month, up to 500 members. Search and paths use <span class="brand">Village</span> credits; 7,500 a month included on Managed.</p>
     </div>
   </div>
 </section>
 </main>
 
-<footer aria-label="Title block">
-  <div class="repo"><p>Every room is in the public repo.</p><a class="textlink" href="https://github.com/VillageHQ/community">Read the code</a></div>
-  <div class="ft">
-    <div class="wide"><small>Project</small><span class="lockup brand"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#lt-mark"/></svg><span class="w">Common Hall</span><span class="b">by Village</span></span></div>
-    <div><small>Drawn by</small><b class="mono-v"><a href="https://github.com/VillageHQ/community"><span class="brand">VillageHQ/community</span></a></b></div>
-    <div><small>Licence</small><b class="mono-v"><a href="https://github.com/VillageHQ/community/blob/main/LICENSE">AGPL-3.0</a></b></div>
-    <div><small>Client (sample)</small><b><span class="fv" aria-hidden="true">FV</span>Fieldstone Ventures</b></div>
-    <div><small>Sheets</small><b>1 to 4</b></div>
+<footer class="foot">
+  <div class="wrap foot-in">
+    <a class="lockup" href="#top" aria-label="Common Hall by Village, top of the page">
+      <svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><path d="M4 8H60V56H40V48H52V16H12V48H24V56H4z"/></svg>
+      <span class="w">Common Hall</span><span class="b">by Village</span>
+    </a>
+    <p><a href="https://github.com/VillageHQ/community" target="_blank" rel="noopener">VillageHQ/community</a> · <a href="https://github.com/VillageHQ/community/blob/main/LICENSE" target="_blank" rel="noopener">AGPL-3.0</a></p>
+    <p class="fine">Every person, fund and company on this page is made up. The portraits are generated and credited in the repo (public/demo/CREDITS.md). This page sets no cookies and has no analytics; it remembers your light or dark choice in your browser.</p>
   </div>
-  <p class="foot-note">Every person, fund and company on this page is made up. This page sets no cookies and has no analytics.</p>
 </footer>
 
-<div class="bar" id="bar" aria-hidden="true"><a href="#door-managed" tabindex="-1">Schedule call</a></div>
+<!-- ============ SET-UP DIALOG ============ -->
+<dialog class="dlg" id="setup-dialog" aria-labelledby="dlg-title">
+  <div class="dlg-in">
+    <div class="dlg-head">
+      <h2 id="dlg-title">Set up with <span data-ai-name>Claude</span></h2>
+      <button class="x" type="button" data-close aria-label="Close">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <p class="dlg-p">Paste this into <span data-ai-app>Claude</span>. It tells the assistant to clone the repo, read the self-host guide and run the install line on a server you own. Nothing is sent from this page.</p>
+    <label class="sr" for="setup-prompt">Set-up prompt</label>
+    <textarea id="setup-prompt" class="prompt" readonly rows="8"></textarea>
+    <div class="row">
+      <button class="btn solid" type="button" data-copy-prompt>Copy prompt</button>
+      <a class="btn out" href="https://github.com/VillageHQ/community/blob/main/docs/self-host-vps.md" target="_blank" rel="noopener">Self-host guide</a>
+    </div>
+    <p class="copy-status" role="status" data-prompt-status></p>
+    <p class="dlg-p small">Or install by hand:</p>
+    <code class="dlg-code">curl -fsSL https://raw.githubusercontent.com/VillageHQ/community/main/install.sh | sudo bash</code>
+  </div>
+</dialog>
 </body>
 </html>

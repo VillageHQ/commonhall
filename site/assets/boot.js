@@ -1,12 +1,18 @@
-// Runs in <head>, before the first paint: pre-animation states (CSS under html.motion) exist only when motion will
-// run. Reduced motion never gets the class; if site.js has not drawn the page after 4 s (it failed to load), the
-// class goes again and the page shows every stroke drawn.
+// Runs in <head>, before the first paint. It sets the theme (the ?theme= link, then the visitor's saved choice, then the
+// system setting) so the page never flashes the wrong one, and adds html.js. Motion needs no class: site.js reads the
+// reduced-motion setting itself, and without JavaScript the page is still and complete.
 (function () {
   var root = document.documentElement;
   root.classList.add("js");
-  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  root.classList.add("motion");
-  setTimeout(function () {
-    if (!root.classList.contains("pen-on")) root.classList.remove("motion");
-  }, 4000);
+  var theme = null;
+  try {
+    var asked = new URLSearchParams(location.search).get("theme");
+    if (asked === "light" || asked === "dark") theme = asked;
+    else {
+      var saved = localStorage.getItem("ch-theme");
+      if (saved === "light" || saved === "dark") theme = saved;
+    }
+  } catch (e) {}
+  if (!theme) theme = window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  root.setAttribute("data-theme", theme);
 })();

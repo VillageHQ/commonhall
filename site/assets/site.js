@@ -1,35 +1,62 @@
-// Common Hall by Village: every behaviour on the landing page, with no library. The sign-up form, the copy button,
-// the founders' labels and the sticky bar always work; the pen, the plan's drawing, the reveals and the founders'
-// walks run on the small motion engine below and never run under reduced motion.
+// Common Hall by Village: every behaviour on the landing page, with no library. The theme toggle, the set-up dialog,
+// the copy buttons and the sign-up form always work. The hover field, the walking faces, the deal cards and the
+// swinging doors run only when the visitor has not asked for reduced motion; without them the page is still and whole.
 (function () {
   const html = document.documentElement;
   const reduceQuery = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)") : null;
-  const motionOn = () => html.classList.contains("motion") && !(reduceQuery && reduceQuery.matches);
+  const motionOn = () => !(reduceQuery && reduceQuery.matches);
 
-  /* ---------- the self-host door: copy the install line ---------- */
-  const COPY_LABEL = "Copy";
-  const COPIED_LABEL = "Copied";
-  const COPIED_LABEL_RESET_MS = 2200;
+  /* ---------- theme ---------- */
+  function setUpTheme() {
+    const button = document.getElementById("theme-toggle");
+    const meta = document.querySelector('meta[name="theme-color"]');
+    function apply(theme, save) {
+      html.setAttribute("data-theme", theme);
+      button.setAttribute("aria-label", theme === "dark" ? "Switch to light theme" : "Switch to dark theme");
+      if (meta) meta.setAttribute("content", theme === "dark" ? "#0E0E0D" : "#FAFAF7");
+      if (save) {
+        try { localStorage.setItem("ch-theme", theme); } catch (e) { /* private mode: it just is not remembered */ }
+      }
+      window.dispatchEvent(new Event("themechange"));
+    }
+    button.hidden = false;
+    apply(html.getAttribute("data-theme") === "dark" ? "dark" : "light", false);
+    button.addEventListener("click", () => apply(html.getAttribute("data-theme") === "dark" ? "light" : "dark", true));
+  }
 
+  /* ---------- copying ---------- */
   function copyText(text) {
     function fallback() {
       const buffer = document.createElement("textarea");
       buffer.value = text;
-      buffer.className = "copy-buffer";
+      buffer.className = "sr";
       buffer.setAttribute("readonly", "");
       document.body.appendChild(buffer);
       buffer.select();
       let copied = false;
-      try {
-        copied = document.execCommand("copy");
-      } catch {
-        copied = false;
-      }
+      try { copied = document.execCommand("copy"); } catch (e) { copied = false; }
       buffer.remove();
       return copied ? Promise.resolve() : Promise.reject(new Error("copy failed"));
     }
     if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(text).catch(fallback);
     return fallback();
+  }
+
+  // One copy button: its label turns to "Copied" for a moment and the status line says what was copied.
+  function wireCopy(button, getText, status, doneMessage) {
+    let timer;
+    const label = button.textContent;
+    button.addEventListener("click", async () => {
+      clearTimeout(timer);
+      try {
+        await copyText(getText());
+        button.textContent = "Copied";
+        status.textContent = doneMessage;
+      } catch (e) {
+        status.textContent = "Select the text to copy it.";
+      }
+      timer = setTimeout(() => { button.textContent = label; status.textContent = ""; }, 2200);
+    });
   }
 
   function setUpCopy() {
@@ -38,31 +65,123 @@
     const status = document.querySelector("[data-copy-status]");
     if (!button || !command || !status) return;
     button.hidden = false;
-    let resetTimer;
-    button.addEventListener("click", async () => {
-      clearTimeout(resetTimer);
-      try {
-        await copyText(command.dataset.full);
-        button.textContent = COPIED_LABEL;
-        status.textContent = "Install line copied. Paste it on your own server.";
-      } catch {
-        status.textContent = "Select the line to copy it.";
-      }
-      resetTimer = setTimeout(() => {
-        button.textContent = COPY_LABEL;
-        status.textContent = "";
-      }, COPIED_LABEL_RESET_MS);
-    });
+    wireCopy(button, () => command.dataset.full, status, "Install line copied. Paste it on your own server.");
   }
 
-  /* ---------- the managed door: the sign-up form ---------- */
-  // Five fields checked in the browser, then posted as JSON to the form's data-endpoint (201 { ok, emailSent, next }
+  /* ---------- set-up with Claude or OpenAI: split button, menu and dialog ---------- */
+  const INSTALL_LINE = "curl -fsSL https://raw.githubusercontent.com/VillageHQ/community/main/install.sh | sudo bash";
+  const AI = {
+    claude: { name: "Claude", app: "Claude or Claude Code" },
+    openai: { name: "OpenAI", app: "ChatGPT or Codex" },
+  };
+  const PROMPT = [
+    "Set up Common Hall, the open-source founder community portal, on a server I own.",
+    "",
+    "1. Clone https://github.com/VillageHQ/community and read docs/self-host-vps.md in it.",
+    "2. Ask me for my server's address and the domain I want to use. Tell me before you run anything that costs money or changes my domain's DNS.",
+    "3. On the server, run the install line:",
+    "   " + INSTALL_LINE,
+    "4. When it finishes, tell me the address to open and how to finish setup.",
+  ].join("\n");
+
+  function setUpSetup() {
+    const main = document.getElementById("setup-main");
+    const caret = document.getElementById("setup-caret");
+    const menu = document.getElementById("setup-menu");
+    const dialog = document.getElementById("setup-dialog");
+    if (!main || !caret || !menu || !dialog) return;
+    const items = Array.from(menu.querySelectorAll('[role="menuitem"]'));
+    const label = document.getElementById("setup-label");
+    const mainGlyph = main.querySelector(".ai");
+    const prompt = document.getElementById("setup-prompt");
+    const promptStatus = dialog.querySelector("[data-prompt-status]");
+    let opener = main;
+    prompt.value = PROMPT;
+
+    function choose(ai) {
+      main.dataset.ai = ai;
+      label.textContent = "Set up with " + AI[ai].name;
+      const source = menu.querySelector('[data-ai="' + ai + '"] .ai');
+      if (source) mainGlyph.innerHTML = source.innerHTML;
+      dialog.querySelector("[data-ai-name]").textContent = AI[ai].name;
+      dialog.querySelector("[data-ai-app]").textContent = AI[ai].app;
+    }
+
+    function openDialog(from) {
+      opener = from || main;
+      promptStatus.textContent = "";
+      if (typeof dialog.showModal === "function") dialog.showModal();
+      else dialog.setAttribute("open", "");
+      prompt.focus();
+      prompt.select();
+    }
+    function closeDialog() {
+      if (typeof dialog.close === "function") dialog.close();
+      else dialog.removeAttribute("open");
+    }
+    dialog.addEventListener("close", () => { if (opener && document.contains(opener)) opener.focus(); });
+    dialog.querySelector("[data-close]").addEventListener("click", closeDialog);
+    // a click on the backdrop (the dialog element itself, outside its content) closes it
+    dialog.addEventListener("click", (event) => { if (event.target === dialog) closeDialog(); });
+    // the native dialog traps Tab and closes on Escape; this keeps Tab inside where showModal is missing
+    dialog.addEventListener("keydown", (event) => {
+      if (event.key !== "Tab") return;
+      const focusable = Array.from(dialog.querySelectorAll("button, a[href], textarea")).filter((el) => !el.disabled && el.offsetParent !== null);
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    });
+    wireCopy(dialog.querySelector("[data-copy-prompt]"), () => PROMPT, promptStatus, "Prompt copied. Paste it into your assistant.");
+
+    main.addEventListener("click", () => openDialog(main));
+    document.querySelectorAll("[data-open-setup]").forEach((button) => button.addEventListener("click", () => openDialog(button)));
+
+    function openMenu(focusIndex) {
+      menu.hidden = false;
+      caret.setAttribute("aria-expanded", "true");
+      if (focusIndex !== undefined) items[focusIndex].focus();
+    }
+    function closeMenu(returnFocus) {
+      if (menu.hidden) return;
+      menu.hidden = true;
+      caret.setAttribute("aria-expanded", "false");
+      if (returnFocus) caret.focus();
+    }
+    caret.addEventListener("click", () => (menu.hidden ? openMenu(0) : closeMenu(false)));
+    caret.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+        event.preventDefault();
+        openMenu(event.key === "ArrowUp" ? items.length - 1 : 0);
+      }
+    });
+    items.forEach((item, index) => {
+      item.addEventListener("click", () => {
+        choose(item.dataset.ai);
+        closeMenu(false);
+        openDialog(main);
+      });
+      item.addEventListener("keydown", (event) => {
+        if (event.key === "ArrowDown") { event.preventDefault(); items[(index + 1) % items.length].focus(); }
+        else if (event.key === "ArrowUp") { event.preventDefault(); items[(index - 1 + items.length) % items.length].focus(); }
+        else if (event.key === "Home") { event.preventDefault(); items[0].focus(); }
+        else if (event.key === "End") { event.preventDefault(); items[items.length - 1].focus(); }
+        else if (event.key === "Escape") { event.preventDefault(); closeMenu(true); }
+        else if (event.key === "Tab") closeMenu(false);
+      });
+    });
+    document.addEventListener("click", (event) => { if (!menu.hidden && !menu.contains(event.target) && !caret.contains(event.target)) closeMenu(false); });
+    document.addEventListener("keydown", (event) => { if (event.key === "Escape" && !menu.hidden) closeMenu(true); });
+  }
+
+  /* ---------- the sign-up form: "Schedule a call" ---------- */
+  // Four fields checked in the browser, then posted as JSON to the form's data-endpoint (201 { ok, emailSent, next }
   // or 400 { errors }). With no endpoint set (this folder has no server), nothing leaves the browser and the page
   // says so.
   const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
   const MAXIMUM_MEMBERS = 1000000;
-  const GROWTH_FROM_MEMBERS = 500;
-  const QUOTE_FROM_MEMBERS = 2000;
+  const ENTERPRISE_UP_TO_MEMBERS = 500;
   const REPLY_LINE = "Village replies from a person within 1 business day.";
   const NEXT_STEPS = [
     `${REPLY_LINE} You get a date for your 45-minute kickoff call.`,
@@ -71,12 +190,10 @@
   ];
   const FIELDS = { name: "f-name", email: "f-email", community: "f-fund", members: "f-members" };
 
-  // The price line names the plan that fits: Managed up to 500 members, Managed Growth up to 2,000, and above that a
-  // plan Village prices for the size.
+  // The price line follows the member count: Enterprise up to 500 members, a quote above.
   function readPlanPrice(members) {
-    if (members > QUOTE_FROM_MEMBERS) return "above 2,000 members, Village quotes a plan with you";
-    if (members > GROWTH_FROM_MEMBERS) return "$2,500 a month, billed yearly (Managed Growth, up to 2,000 members)";
-    return "$1,000 a month, billed yearly";
+    if (members > ENTERPRISE_UP_TO_MEMBERS) return "above 500 members, Village quotes a plan with you";
+    return "$10,000 a year, 7,500 credits a month";
   }
 
   function setUpSignup() {
@@ -156,17 +273,6 @@
       confirmBox.hidden = false;
       confirmBox.focus({ preventScroll: true });
       confirmBox.scrollIntoView({ block: "center" });
-      if (motionOn()) {
-        const tick = confirmBox.querySelector(".confirm-title svg path");
-        const length = tick.getTotalLength();
-        const rise = (el, v) => { el.style.opacity = String(v); el.style.transform = `translateY(${8 * (1 - v)}px)`; };
-        Array.from(confirmBox.children).forEach((el) => rise(el, 0));
-        each(confirmBox.children, { stagger: 0.06, duration: 0.45, ease: EASE.power3Out, apply: rise });
-        tick.style.strokeDasharray = String(length);
-        tick.style.strokeDashoffset = String(length);
-        tween({ delay: 0.1, duration: 0.5, ease: EASE.power2Out, apply: (v) => { tick.style.strokeDashoffset = String(length * (1 - v)); } });
-      }
-      refreshPen();
     }
 
     function bold(text) {
@@ -202,7 +308,7 @@
           return;
         }
         showError(answer.error || "Something went wrong on our side. Please try again in a minute.");
-      } catch {
+      } catch (e) {
         showError("We could not reach the server. Check your connection and try again.");
       } finally {
         button.disabled = false;
@@ -229,615 +335,506 @@
       confirmBox.hidden = true;
       form.hidden = false;
       input(FIELDS.name).focus();
-      refreshPen();
     });
   }
 
-  /* ---------- founders on the plan: hover, focus or tap shows who they are ---------- */
-  const tip = document.querySelector(".fm-tip");
-  const planWrap = document.querySelector(".plan-wrap");
-  let tipOwner = null;
-  function placeTip() {
-    if (!tipOwner) return;
-    const box = planWrap.getBoundingClientRect();
-    const dot = tipOwner.querySelector("circle").getBoundingClientRect();
-    const width = tip.offsetWidth;
-    const height = tip.offsetHeight;
-    const centre = dot.left + dot.width / 2 - box.left;
-    const x = Math.max(0, Math.min(box.width - width, centre - width / 2));
-    let y = dot.top - box.top - height - 6;
-    if (y < 0) y = dot.bottom - box.top + 6;
-    tip.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`;
-  }
-  function showTip(marker) {
-    tipOwner = marker;
-    tip.querySelector("b").textContent = marker.dataset.name;
-    tip.querySelector("span").textContent = marker.dataset.line;
-    tip.classList.add("on");
-    placeTip();
-  }
-  function hideTip(marker) {
-    if (marker && tipOwner !== marker) return;
-    tipOwner = null;
-    tip.classList.remove("on");
-  }
-  function setUpFounderLabels() {
-    if (!tip || !planWrap) return;
-    document.querySelectorAll(".plan .fm").forEach((marker) => {
-      marker.addEventListener("pointerenter", (event) => { if (event.pointerType === "mouse") showTip(marker); });
-      marker.addEventListener("pointerleave", (event) => { if (event.pointerType === "mouse") hideTip(marker); });
-      marker.addEventListener("focus", () => showTip(marker));
-      marker.addEventListener("blur", () => hideTip(marker));
-      // A tap focuses the marker before its click, so the click toggles from the state before the tap.
-      let openBeforeTap = false;
-      marker.addEventListener("pointerdown", () => { openBeforeTap = tipOwner === marker; });
-      marker.addEventListener("click", (event) => {
-        event.stopPropagation();
-        if (openBeforeTap && event.pointerType !== "mouse") hideTip(marker);
-        else showTip(marker);
-        openBeforeTap = false;
-      });
-      marker.addEventListener("keydown", (event) => {
-        if (event.key !== "Enter" && event.key !== " ") return;
-        event.preventDefault();
-        if (tipOwner === marker) hideTip(marker);
-        else showTip(marker);
-      });
-    });
-    document.addEventListener("click", () => hideTip());
-    document.addEventListener("keydown", (event) => { if (event.key === "Escape") hideTip(); });
-  }
-
-  /* ---------- sticky bar on phones: after the opening's buttons, never over the doors ---------- */
-  function setUpBar() {
-    const bar = document.getElementById("bar");
-    if (!bar || !("IntersectionObserver" in window)) return;
-    const link = bar.querySelector("a");
-    let heroOut = false;
-    let doorsIn = false;
-    const update = () => {
-      const on = heroOut && !doorsIn;
-      bar.classList.toggle("on", on);
-      bar.setAttribute("aria-hidden", on ? "false" : "true");
-      link.tabIndex = on ? 0 : -1;
-    };
-    new IntersectionObserver((entries) => {
-      heroOut = !entries[0].isIntersecting && entries[0].boundingClientRect.top < 0;
-      update();
-    }).observe(document.querySelector(".hero .acts"));
-    new IntersectionObserver((entries) => {
-      doorsIn = entries[0].isIntersecting;
-      update();
-    }, { rootMargin: "0px 0px -12% 0px" }).observe(document.getElementById("doors"));
-  }
-
-  setUpCopy();
-  setUpSignup();
-  setUpFounderLabels();
-  setUpBar();
-
-
-  /* =================================================================================================================
-     THE MOTION ENGINE. A few lines instead of a library: every animation is a tween on one requestAnimationFrame
-     loop. A tween has a delay, a duration, an easing and an apply(v) for v from 0 to 1; it can be paused, resumed and
-     killed. Easing names: power2 = cubic, power3 = quartic, as the design's motion notes call them.
-     ================================================================================================================= */
-  const EASE = {
-    linear: (t) => t,
-    power1Out: (t) => 1 - (1 - t) ** 2,
-    power2In: (t) => t ** 3,
-    power2Out: (t) => 1 - (1 - t) ** 3,
-    power2InOut: (t) => (t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2),
-    power3Out: (t) => 1 - (1 - t) ** 4,
-    sineInOut: (t) => -(Math.cos(Math.PI * t) - 1) / 2,
+  /* ---------- the house: faces, tooltips, walks, deals, doors ---------- */
+  // The plan is 360 by 300 units. A face stands on a "spot" in a room; a walk goes spot -> the room's door -> along the
+  // corridor lanes inside the big room -> the other room's door -> spot, along the shortest route through this graph.
+  const NODES = {
+    dAsks: [60, 95], a1: [60, 108], dIntros: [160, 95], i1: [160, 108], t1: [235, 108], j: [235, 142],
+    dNet: [270, 95], m1: [270, 110], mj: [270, 142], dMM: [250, 142], mc: [270, 184], ma: [322, 184],
+    b1: [235, 184], p1: [205, 184], jb1: [125, 184], f1: [45, 184],
+    dPerks: [205, 195], dJobs: [125, 195], dFeed: [45, 195], dChat: [267, 195], dAdmin: [322, 195],
   };
-  const tweens = new Set();
-  let tickerFrame = 0;
-  let tickerLast = 0;
-  function tickerStep(now) {
-    const dt = tickerLast ? Math.min(0.1, (now - tickerLast) / 1000) : 0;
-    tickerLast = now;
-    let running = false;
-    for (const t of Array.from(tweens)) {
-      if (t.paused || !tweens.has(t)) continue;
-      running = true;
-      t.time += dt;
-      if (t.time < t.delay) continue;
-      const p = t.duration > 0 ? Math.min(1, (t.time - t.delay) / t.duration) : 1;
-      if (t.apply) t.apply(t.ease(p));
-      if (p >= 1) {
-        tweens.delete(t);
-        if (t.done) t.done();
-      }
+  const EDGES = [["dAsks", "a1"], ["a1", "i1"], ["dIntros", "i1"], ["i1", "t1"], ["t1", "j"], ["j", "b1"], ["b1", "p1"], ["p1", "jb1"], ["jb1", "f1"],
+    ["dPerks", "p1"], ["dJobs", "jb1"], ["dFeed", "f1"], ["dNet", "m1"], ["m1", "mj"], ["mj", "dMM"], ["dMM", "j"], ["mj", "mc"], ["mc", "ma"], ["dChat", "mc"], ["dAdmin", "ma"]];
+  const ADJ = {};
+  EDGES.forEach(([a, b]) => { (ADJ[a] = ADJ[a] || []).push(b); (ADJ[b] = ADJ[b] || []).push(a); });
+  // each room: its door node (members: the lane node nearest each spot) and its spots; the first two spots of a room
+  // are where two people stand to meet.
+  const ROOMS = {
+    asks: { entry: "dAsks", spots: [[45, 70], [75, 70]] },
+    intros: { entry: "dIntros", spots: [[145, 70], [175, 70]] },
+    net: { entry: "dNet", spots: [[262, 70], [292, 70], [325, 70]] },
+    members: { entry: null, spots: [[100, 128], [130, 128], [190, 128], [60, 128]] },
+    msgs: { entry: "mj", spots: [[312, 128], [312, 158]] },
+    feed: { entry: "dFeed", spots: [[30, 256], [60, 256]] },
+    jobs: { entry: "dJobs", spots: [[105, 256], [135, 256]] },
+    perks: { entry: "dPerks", spots: [[190, 256], [220, 256]] },
+    chat: { entry: "dChat", spots: [[267, 256]] },
+    admin: { entry: "dAdmin", spots: [[322, 256]] },
+  };
+  const START = { ada: ["asks", 0], priya: ["net", 1], marcus: ["intros", 0], maya: ["msgs", 0], lena: ["jobs", 0], oliver: ["jobs", 1], elena: ["feed", 0], sam: ["chat", 0] };
+  const DEALS = [
+    { title: "New hire: head of sales", rooms: ["jobs", "intros", "members"] },
+    { title: "Raised $10M Series A", rooms: ["members", "intros", "net"] },
+    { title: "Closed a Fortune 100 client", rooms: ["perks", "intros", "jobs", "net"] },
+    { title: "Found a co-founder coach", rooms: ["asks", "members", "feed", "intros"] },
+  ];
+  const PLAN_W = 360;
+  const PLAN_H = 300;
+  const WALK_PX_PER_SECOND = 44;
+
+  function nearestLaneNode(point) {
+    return ["a1", "i1", "t1"].reduce((best, key) => (Math.hypot(NODES[key][0] - point[0], NODES[key][1] - point[1]) < Math.hypot(NODES[best][0] - point[0], NODES[best][1] - point[1]) ? key : best));
+  }
+  function entryOf(spot) { return spot.room.entry || nearestLaneNode(spot.pos); }
+  function shortestNodes(from, to) {
+    const seen = { [from]: null };
+    const queue = [from];
+    while (queue.length) {
+      const here = queue.shift();
+      if (here === to) break;
+      (ADJ[here] || []).forEach((next) => { if (!(next in seen)) { seen[next] = here; queue.push(next); } });
     }
-    if (running && tweens.size) tickerFrame = requestAnimationFrame(tickerStep);
-    else { tickerFrame = 0; tickerLast = 0; }
+    const path = [];
+    for (let at = to; at !== null && at !== undefined; at = seen[at]) path.unshift(at);
+    return path;
   }
-  function wake() {
-    if (!tickerFrame) { tickerLast = 0; tickerFrame = requestAnimationFrame(tickerStep); }
+  function routeBetween(a, b) {
+    if (a === b) return [a.pos];
+    const nodes = shortestNodes(entryOf(a), entryOf(b));
+    const points = [a.pos, ...nodes.map((n) => NODES[n]), b.pos];
+    return points.filter((p, i) => i === 0 || p[0] !== points[i - 1][0] || p[1] !== points[i - 1][1]);
   }
-  function tween({ delay = 0, duration = 0, ease = EASE.linear, apply = null, done = null }) {
-    const t = {
-      delay, duration, ease, apply, done, time: 0, paused: false,
-      pause() { this.paused = true; },
-      resume() { this.paused = false; wake(); },
-      kill() { tweens.delete(this); },
-      get active() { return tweens.has(this); },
-    };
-    tweens.add(t);
-    wake();
-    return t;
-  }
-  // the same tween on a list of elements, each starting `stagger` seconds after the one before
-  function each(elements, { at = 0, stagger = 0, duration, ease, apply, done }) {
-    return Array.from(elements).map((el, i) => tween({ delay: at + i * stagger, duration, ease, apply: (v) => apply(el, v), done: done && (() => done(el)) }));
-  }
-  const touched = new Set(); // every element the motion styled, so reduced motion can put it all back
-  function style(el, props) {
-    touched.add(el);
-    Object.assign(el.style, props);
-  }
-  const strokeLengths = new WeakMap();
-  function prepStroke(el) {
-    const length = el.getTotalLength ? el.getTotalLength() : 0;
-    strokeLengths.set(el, length);
-    style(el, { strokeDasharray: `${length} ${length + 1}`, strokeDashoffset: String(length) });
-  }
-  const drawStroke = (el, v) => { el.style.strokeDashoffset = String(strokeLengths.get(el) * (1 - v)); };
-  const fadeIn = (el, v) => { el.style.opacity = String(v); };
 
-  /* =================================================================================================================
-     THE PEN. One drawing runs down the page: every sheet frame, the room schedule's dimension line, each room's
-     hatch, the ledger rules and the two entrance doors. Each stroke gets a "key" on one scroll axis. The pen's tip
-     is scroll + 65% of the viewport; the scroll it follows is smoothed (it catches up in about half a second, like
-     a scrub). A sheet's strokes are keyed so the whole sheet is drawn by the time the sheet rests (its top at the top
-     of the screen): no resting frame is ever half drawn. Without motion every stroke is simply drawn.
-     ================================================================================================================= */
-  const NS = "http://www.w3.org/2000/svg";
-  const penSvg = document.getElementById("pen");
-  const sheets = Array.from(document.querySelectorAll(".sheet"));
-  const TIP = 0.65; // where the tip rides in the viewport
-  const LEAD = 70; // short strokes draw over 70 px of scroll
-  const BAR_IN = 72; // phone frame bottom inset on sheets the sticky bar covers
-  const SCRUB = 0.15; // the smoothing time constant, in seconds
-  let items = []; // { el, svg, len, k0, k1 }
-  let frameCount = 0; // the frame strokes come first; the nib rides the tip of the newest one
-  let nib = null;
+  function setUpPlan() {
+    const plan = document.getElementById("plan");
+    if (!plan) return;
+    const people = Array.from(plan.querySelectorAll(".p"));
+    const staticDeal = document.getElementById("deal");
 
-  const docTop = (el) => el.getBoundingClientRect().top + window.scrollY;
-
-  function build() {
-    penSvg.style.height = "0px";
-    const H = window.innerHeight;
-    const maxScroll = Math.max(0, document.documentElement.scrollHeight - H);
-    const inset = parseFloat(getComputedStyle(html).getPropertyValue("--inset")) || 8;
-    const W = document.documentElement.clientWidth;
-    penSvg.replaceChildren();
-    items = [];
-    // key map per sheet: its own y range is laid onto [k0, k1] of the tip's travel
-    const maps = sheets.map((sheet, i) => {
-      const T = docTop(sheet);
-      const B = T + sheet.offsetHeight;
-      const rest = i === 0 ? 0 : Math.min(T, maxScroll);
-      const k0 = i === 0 ? 0 : T;
-      const k1 = Math.max(rest + TIP * H, k0 + 120);
-      return { T, B, k0, k1 };
-    });
-    function key(y) {
-      for (let i = maps.length - 1; i >= 0; i--) {
-        const m = maps[i];
-        if (y < m.T) continue;
-        if (y >= m.B) return i < maps.length - 1 ? Math.min(maps[i + 1].k0, m.k1 + (y - m.B)) : m.k1 + (y - m.B);
-        return m.k0 + ((y - m.T) / (m.B - m.T)) * (m.k1 - m.k0);
-      }
-      return maps[0].k0 - (maps[0].T - y);
+    /* labels: hover and focus are CSS; a tap toggles, a click elsewhere or Escape hides */
+    function placeTip(person) {
+      const tip = person.querySelector(".tip");
+      const x = parseFloat(person.dataset.x || "0") / PLAN_W;
+      const y = parseFloat(person.dataset.y || "0") / PLAN_H;
+      tip.classList.toggle("down", y < 0.34);
+      const shift = x > 0.72 ? "-82%" : x < 0.22 ? "-18%" : "-50%";
+      tip.style.setProperty("--tx", shift);
+      tip.style.setProperty("--ax", shift === "-82%" ? "82%" : shift === "-18%" ? "18%" : "50%");
     }
-    function add(el, k0, k1, isSvg) {
-      const start = k1 - k0 < LEAD ? k1 - LEAD : k0;
-      const len = isSvg && el.getTotalLength ? el.getTotalLength() : 0;
-      items.push({ el, svg: isSvg, len, k0: start, k1 });
-    }
-    function path(d, k0, k1) {
-      const p = document.createElementNS(NS, "path");
-      p.setAttribute("d", d);
-      penSvg.appendChild(p);
-      add(p, k0, k1, true);
-    }
-
-    // 1. the frames: one line in, along the top, down both sides, back along the bottom, then on to the next sheet
-    maps.forEach((m, i) => {
-      const bottomInset = W < 900 && sheets[i].classList.contains("barred") ? BAR_IN : inset; // phones: above the bar
-      const L = inset + 0.5;
-      const R = W - inset - 0.5;
-      const T = m.T + inset + 0.5;
-      const B = m.B - bottomInset - 0.5;
-      const kT = key(T);
-      const kB = key(B);
-      path(`M${L} ${T}H${R}`, kT - LEAD, kT); // top, left to right
-      path(`M${R} ${T}V${B}`, kT, kB); // right side
-      path(`M${L} ${T}V${B}`, kT, kB); // left side
-      path(`M${R} ${B}H${L}`, kB - LEAD, kB); // bottom, right to left, closing the sheet
-      const next = maps[i + 1];
-      if (next) path(`M${L} ${B}V${next.T + inset + 0.5}`, kB - LEAD / 2, kB); // on to the next sheet
-    });
-    frameCount = items.length;
-    nib = document.createElementNS(NS, "circle");
-    nib.setAttribute("r", "3.4");
-    nib.setAttribute("class", "nib");
-    penSvg.appendChild(nib);
-    if (!motionOn()) nib.style.display = "none";
-    // 2. strokes inside the sheets (dimension line, hatch, door walls and swings) and the ledger / schedule rules
-    document.querySelectorAll("main .pen").forEach((el) => {
-      const r = el.getBoundingClientRect();
-      add(el, key(r.top + window.scrollY), key(r.bottom + window.scrollY), true);
-    });
-    document.querySelectorAll("main .pen-r").forEach((el) => {
-      const k = key(el.getBoundingClientRect().bottom + window.scrollY);
-      add(el, k - LEAD, k, false);
-    });
-    penSvg.style.height = `${document.documentElement.scrollHeight}px`;
-    html.classList.add("pen-on");
-    // dashes only while the pen moves
-    items.forEach((it) => {
-      if (!it.svg) return;
-      if (motionOn()) it.el.style.strokeDasharray = `${it.len} ${it.len + 2}`;
-      else {
-        it.el.style.strokeDasharray = "";
-        it.el.style.strokeDashoffset = "";
-      }
-    });
-  }
-
-  function render(V) {
-    let newest = -1;
-    for (let i = 0; i < items.length; i++) {
-      const it = items[i];
-      const f = Math.min(1, Math.max(0, (V - it.k0) / (it.k1 - it.k0)));
-      if (i < frameCount && f > 0) newest = i;
-      if (it.svg) it.el.style.strokeDashoffset = (it.len * (1 - f)).toFixed(2);
-      else it.el.style.setProperty("--p", f.toFixed(4));
-    }
-    if (!nib || !motionOn()) return;
-    const stroke = newest < 0 ? null : items[newest];
-    const f = stroke ? Math.min(1, Math.max(0, (V - stroke.k0) / (stroke.k1 - stroke.k0))) : 0;
-    if (!stroke || f >= 1) {
-      nib.style.opacity = "0"; // parked: the stroke is finished, so the tip is gone
-      return;
-    }
-    const point = stroke.el.getPointAtLength(stroke.len * f);
-    nib.setAttribute("cx", point.x.toFixed(1));
-    nib.setAttribute("cy", point.y.toFixed(1));
-    nib.style.opacity = "1";
-  }
-
-  // the tip: `load` pulls it down from above the page on the first visit; `followed` is the smoothed scroll
-  const pen = { load: 1, followed: window.scrollY, target: window.scrollY, frame: 0, last: 0 };
-  function tipV() {
-    const H = window.innerHeight;
-    return pen.followed + TIP * H - (1 - pen.load) * (TIP * H + 90);
-  }
-  const draw = () => render(motionOn() ? tipV() : 1e9);
-  function followStep(now) {
-    const dt = pen.last ? Math.min(0.1, (now - pen.last) / 1000) : 1 / 60;
-    pen.last = now;
-    const gap = pen.target - pen.followed;
-    pen.followed = Math.abs(gap) < 0.5 ? pen.target : pen.followed + gap * (1 - Math.exp(-dt / SCRUB));
-    draw();
-    if (pen.followed !== pen.target) pen.frame = requestAnimationFrame(followStep);
-    else { pen.frame = 0; pen.last = 0; }
-  }
-  function onScroll() {
-    pen.target = Math.max(0, Math.min(window.scrollY, document.documentElement.scrollHeight - window.innerHeight));
-    if (!motionOn()) return;
-    if (!pen.frame) pen.frame = requestAnimationFrame(followStep);
-  }
-  let refreshFrame = 0;
-  // re-measure after anything changes the page's height (resize, fonts, the form's confirmation)
-  function refreshPen() {
-    if (refreshFrame) return;
-    refreshFrame = requestAnimationFrame(() => {
-      refreshFrame = 0;
-      build();
-      onScroll();
-      if (!motionOn()) pen.followed = pen.target;
-      draw();
-    });
-  }
-
-  build();
-  draw();
-  window.addEventListener("scroll", onScroll, { passive: true });
-  window.addEventListener("resize", refreshPen);
-  // any change in the page's height (the form's field errors, a server error, the confirmation) redraws the frames
-  if ("ResizeObserver" in window) new ResizeObserver(refreshPen).observe(document.querySelector("main"));
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(refreshPen);
-  if (!motionOn()) {
-    html.classList.remove("motion");
-    return;
-  }
-
-  /* ----- sheet 1: the plan draws itself, labels type in, the stamp lands ----- */
-  const walls = document.querySelectorAll(".plan .wall");
-  const doors = document.querySelectorAll(".plan .door");
-  const dims = document.querySelectorAll(".plan .dim-l");
-  const dimTexts = document.querySelectorAll(".plan .dim-t");
-  const table = document.querySelector(".plan .table");
-  const chairs = document.querySelectorAll(".plan .chair");
-  const labels = document.querySelectorAll(".plan .rl");
-  const icons = document.querySelectorAll(".plan .ric path, .plan .ric circle, .plan .ric rect");
-  const markers = document.querySelectorAll(".plan .fm");
-  const facts = document.querySelectorAll(".facts li");
-  const stamp = document.querySelector(".stamp");
-  [...walls, ...dims, table, ...icons].forEach(prepStroke);
-  [...doors, ...dimTexts, ...markers].forEach((el) => style(el, { opacity: "0" }));
-  chairs.forEach((el) => style(el, { transform: "scale(0)" }));
-  labels.forEach((t) => { t.textContent = ""; });
-  style(stamp, { opacity: "0", transform: "rotate(-14deg) scale(1.6)" });
-  facts.forEach((el) => style(el, { opacity: "0", transform: "translateY(6px)" }));
-  document.querySelectorAll(".pre").forEach((el) => style(el, { visibility: "visible" }));
-
-  const START = 0.2; // the opening's delay, as on the design
-  pen.load = 0;
-  draw();
-  tween({ delay: START, duration: 2.2, ease: EASE.power2InOut, apply: (v) => { pen.load = v; draw(); } });
-  each(walls, { at: START + 0.1, stagger: 0.05, duration: 1.5, ease: EASE.power2InOut, apply: drawStroke });
-  each(doors, { at: START + 1.0, stagger: 0.02, duration: 0.4, ease: EASE.power2Out, apply: fadeIn });
-  each(dims, { at: START + 1.05, stagger: 0.1, duration: 0.7, ease: EASE.power2Out, apply: drawStroke });
-  each(dimTexts, { at: START + 1.45, stagger: 0.1, duration: 0.4, ease: EASE.power1Out, apply: fadeIn });
-  each([table], { at: START + 1.25, duration: 0.6, ease: EASE.power2InOut, apply: drawStroke });
-  each(chairs, { at: START + 1.5, stagger: 0.025, duration: 0.35, ease: EASE.power3Out, apply: (el, v) => { el.style.transform = `scale(${v})`; } });
-  labels.forEach((t, i) => {
-    const full = t.dataset.text;
-    tween({ delay: START + 1.1 + i * 0.08, duration: Math.max(0.25, full.length * 0.045), apply: (v) => { t.textContent = full.slice(0, Math.round(v * full.length)); } });
-  });
-  each(icons, { at: START + 0.9, stagger: 0.02, duration: 0.9, ease: EASE.power2InOut, apply: drawStroke });
-  each(markers, { at: START + 2.2, stagger: 0.08, duration: 0.5, ease: EASE.power2Out, apply: fadeIn });
-  each(facts, { at: START + 2.0, stagger: 0.1, duration: 0.45, ease: EASE.power2Out, apply: (el, v) => { el.style.opacity = String(v); el.style.transform = `translateY(${(1 - v) * 6}px)`; } });
-  tween({ delay: START + 2.5, duration: 0.5, ease: EASE.power3Out, apply: (v) => { stamp.style.opacity = String(v); stamp.style.transform = `rotate(${-14 + 8 * v}deg) scale(${1.6 - 0.6 * v})`; } });
-
-  /* ----- sheets 2 to 4: one reveal each, when the section comes into view (once) ----- */
-  // `edge` is how far from the bottom of the screen the element's top must come, so 12 means "top at 88% of the screen"
-  // An IntersectionObserver plays it when it comes into view; a jump past it (an anchor link, a fast fling) is caught
-  // on the next scroll, since the observer never sees an element it skipped.
-  const pendingReveals = new Set();
-  function reveal(elements, edge, onEnter) {
-    const group = { elements: new Set(elements), edge, onEnter, io: null };
-    const play = (targets) => {
-      const fresh = targets.filter((el) => group.elements.delete(el));
-      fresh.forEach((el) => group.io.unobserve(el));
-      if (!group.elements.size) { group.io.disconnect(); pendingReveals.delete(group); }
-      if (fresh.length) onEnter(fresh);
-    };
-    group.play = play;
-    group.io = new IntersectionObserver((entries) => play(entries.filter((e) => e.isIntersecting).map((e) => e.target)), { rootMargin: `0px 0px -${edge}% 0px` });
-    group.elements.forEach((el) => group.io.observe(el));
-    pendingReveals.add(group);
-  }
-  function revealPassed() {
-    const line = window.innerHeight * 0.12; // above this, the observer has had its chance: the element was skipped
-    pendingReveals.forEach((group) => group.play(Array.from(group.elements).filter((el) => el.getBoundingClientRect().top < line)));
-  }
-  window.addEventListener("scroll", revealPassed, { passive: true });
-  // rooms: each row lights its room on the key plan; its stamp lands
-  document.querySelectorAll(".room .lit").forEach((el) => style(el, { opacity: "0" }));
-  document.querySelectorAll(".rm-top .stp").forEach((el) => style(el, { opacity: "0", transform: "scale(1.4)" }));
-  reveal(document.querySelectorAll(".room"), 12, (rows) => {
-    each(rows.map((r) => r.querySelector(".lit")), { stagger: 0.06, duration: 0.5, ease: EASE.power2Out, apply: fadeIn });
-    each(rows.map((r) => r.querySelector(".rm-top .stp")), { at: 0.1, stagger: 0.06, duration: 0.45, ease: EASE.power3Out, apply: (el, v) => { el.style.opacity = String(v); el.style.transform = `scale(${1.4 - 0.4 * v})`; } });
-  });
-  // record: rows rule in, the revision triangles place (the sample figures stay still, as on the design)
-  const ledgerRows = document.querySelectorAll(".ledger .lg");
-  const triangles = document.querySelectorAll(".ledger .tri");
-  ledgerRows.forEach((el) => style(el, { opacity: "0", transform: "translateX(-12px)" }));
-  triangles.forEach((el) => style(el, { opacity: "0", transform: "translateY(-7px) scale(0.7)" }));
-  reveal([document.querySelector(".ledger")], 18, () => {
-    each(ledgerRows, { stagger: 0.05, duration: 0.45, ease: EASE.power3Out, apply: (el, v) => { el.style.opacity = String(v); el.style.transform = `translateX(${-12 * (1 - v)}px)`; } });
-    each(triangles, { at: 0.15, stagger: 0.08, duration: 0.4, ease: EASE.power3Out, apply: (el, v) => { el.style.opacity = String(v); el.style.transform = `translateY(${-7 * (1 - v)}px) scale(${0.7 + 0.3 * v})`; } });
-  });
-  // entrances: both door leaves swing open 25 degrees in plan view
-  const leaves = document.querySelectorAll(".door-plan .leaf");
-  // the leaf is drawn closed in the markup and opened by a CSS rotation about its hinge (12, 40), so print and
-  // reduced motion show it open without script
-  const swingTo = (leaf, degrees) => style(leaf, { transform: `rotate(${-degrees}deg)` });
-  leaves.forEach((leaf) => swingTo(leaf, 0));
-  reveal([document.getElementById("doors")], 45, () => {
-    each(leaves, { stagger: 0.15, duration: 0.9, ease: EASE.power2InOut, apply: (leaf, v) => swingTo(leaf, 25 * v) });
-  });
-
-  /* ----- sheet 1: founders walk between rooms (only while the plan is in view; never on reduced motion) ----- */
-  const stopFounders = setUpWalks(START + 3.0);
-
-  // Printing: every reveal still waiting plays, and every running tween except the founders' jumps to its end, so
-  // the printed page is the finished drawing (site.css also forces the final states under @media print).
-  window.addEventListener("beforeprint", () => {
-    pendingReveals.forEach((group) => group.play(Array.from(group.elements)));
-    let guard = 0;
-    while (guard++ < 5) {
-      const open = Array.from(tweens).filter((t) => !t.walking);
-      if (!open.length) break;
-      open.forEach((t) => {
-        tweens.delete(t);
-        if (t.apply) t.apply(t.ease(1));
-        if (t.done) t.done();
+    people.forEach((person) => {
+      person.addEventListener("pointerenter", () => placeTip(person));
+      person.addEventListener("focus", () => placeTip(person));
+      person.addEventListener("pointerdown", () => { person.dataset.wasOn = person.classList.contains("on") ? "1" : ""; });
+      person.addEventListener("click", () => {
+        const wasOn = person.dataset.wasOn === "1";
+        people.forEach((other) => other.classList.remove("on"));
+        if (!wasOn) { placeTip(person); person.classList.add("on"); }
       });
-    }
-    render(1e9);
-  });
-  window.addEventListener("afterprint", draw);
-
-  // Reduced motion switched on while the page is open: stop everything and show the finished drawing.
-  if (reduceQuery) {
-    reduceQuery.addEventListener("change", () => {
-      if (!reduceQuery.matches) return;
-      stopFounders();
-      tweens.clear();
-      html.classList.remove("motion");
-      touched.forEach((el) => {
-        ["opacity", "transform", "strokeDasharray", "strokeDashoffset", "visibility"].forEach((p) => { el.style[p] = ""; });
-      });
-      labels.forEach((t) => { t.textContent = t.dataset.text; });
-      markers.forEach((m) => m.setAttribute("transform", m.dataset.home));
-      refreshPen();
     });
-  }
+    document.addEventListener("click", (event) => { if (!plan.contains(event.target)) people.forEach((p) => p.classList.remove("on")); });
+    document.addEventListener("keydown", (event) => { if (event.key === "Escape") people.forEach((p) => p.classList.remove("on")); });
 
-  // The six founders: paths along the real corridors and through the door openings, walked with
-  // SVGPathElement.getPointAtLength at about 40 px a second on screen (sine in-out per trip), at most two walking at
-  // once, each resting 6 to 10 s. Every walk and timer pauses while the plan is off screen.
-  function setUpWalks(startAt) {
-    const planSvg = document.querySelector(".plan");
-    const layer = planSvg.querySelector(".founders").parentNode;
-    const HUB = [240, 142.5];
-    // every place a founder can rest, with the walk from the hub (corridors, door openings) to it
-    const PLACES = {
-      asks: { spots: [[60, 66]], via: (s) => [HUB, [240, 102], [60, 102], s] },
-      intros: { spots: [[140, 68], [180, 68]], via: (s) => [HUB, [240, 102], [160, 102], [160, 84], s] },
-      network: { spots: [[270, 66]], via: (s) => [HUB, [259, 142.5], [268, 120], s] },
-      members: { spots: [62, 88, 114, 140, 166, 192, 218].map((x) => [x, 178]), via: (s) => [HUB, [240, 189], [s[0], 189], s] },
-      messages: { spots: [[330, 118]], via: (s) => [HUB, [259, 142.5], [268, 120], s] },
-      feed: { spots: [[45, 226]], via: (s) => [HUB, [240, 189], [45, 189], s] },
-      jobs: { spots: [[125, 226]], via: (s) => [HUB, [240, 189], [125, 189], s] },
-      perks: { spots: [[205, 226]], via: (s) => [HUB, [240, 189], [205, 189], s] },
-      chat: { spots: [[267, 226]], via: (s) => [HUB, [259, 142.5], [259, 184], [267, 192], s] },
-      admin: { spots: [[322, 226]], via: (s) => [HUB, [259, 142.5], [259, 184], [322, 184], s] },
-    };
-    const HOME = [["asks", 0], ["intros", 1], ["members", 2], ["feed", 0], ["messages", 0], ["network", 0]];
-    const people = Array.from(markers).map((el, i) => {
-      el.dataset.home = el.getAttribute("transform");
-      const route = document.createElementNS(NS, "path");
-      route.setAttribute("class", "route");
-      layer.insertBefore(route, layer.querySelector(".founders"));
-      return { el, route, place: HOME[i][0], spot: HOME[i][1], moving: false, restUntil: 0 };
+    /* the spots, and each person's resting place */
+    const spots = [];
+    Object.entries(ROOMS).forEach(([key, room]) => {
+      room.key = key;
+      room.spots = room.spots.map((pos, i) => { const spot = { room, pos, index: i, who: null }; spots.push(spot); return spot; });
     });
-    const taken = (place, spot) => people.some((p) => p.place === place && p.spot === spot);
-    function put(person, point) {
-      person.el.setAttribute("transform", `translate(${point.x.toFixed(2)} ${point.y.toFixed(2)})`);
-      if (tipOwner === person.el) placeTip();
+    const cast = people.map((el) => {
+      const id = Array.from(el.classList).find((c) => c.startsWith("pos-")).slice(4);
+      const [roomKey, index] = START[id];
+      const spot = ROOMS[roomKey].spots[index];
+      const person = { el, id, spot, x: spot.pos[0], y: spot.pos[1], route: null, leg: 0, legT: 0, busy: false, restUntil: 0, deal: null };
+      spot.who = person;
+      return person;
+    });
+    function put(person) {
+      person.el.dataset.x = String(person.x);
+      person.el.dataset.y = String(person.y);
+      person.el.style.left = (person.x / PLAN_W) * 100 + "%";
+      person.el.style.top = (person.y / PLAN_H) * 100 + "%";
     }
-    // drop points that sit on a straight line (or repeat) so a walk has no needless corners
-    function simplify(points) {
-      let again = true;
-      while (again) {
-        again = false;
-        for (let i = 1; i < points.length - 1; i++) {
-          const [a, b, c] = [points[i - 1], points[i], points[i + 1]];
-          if ((a[0] === b[0] && b[0] === c[0]) || (a[1] === b[1] && b[1] === c[1]) || (a[0] === c[0] && a[1] === c[1]) || (a[0] === b[0] && a[1] === b[1])) {
-            points.splice(i, 1);
-            again = true;
-            break;
-          }
-        }
-      }
-      return points;
-    }
-    const live = new Set();
-    let alive = false;
-    let started = false;
-    let moving = 0;
-    // every walk and timer goes through track(), so the pause rule reaches all of them
-    function track(options) {
-      const done = options.done;
-      const t = tween({ ...options, done: () => { live.delete(t); if (done) done(); } });
-      t.walking = true; // the founders' walks and timers are left alone when printing
-      live.add(t);
-      if (!alive) t.pause();
-      return t;
-    }
-    const later = (seconds, fn) => track({ duration: seconds, done: fn });
-    const pxPerUnit = () => planSvg.getBoundingClientRect().width / 384;
 
-    function walk(person, place, spot) {
-      const from = PLACES[person.place].via(PLACES[person.place].spots[person.spot]).slice().reverse();
-      const to = PLACES[place].via(PLACES[place].spots[spot]);
-      const points = simplify(from.concat(to.slice(1)));
-      person.route.setAttribute("d", "M" + points.map((p) => `${p[0]} ${p[1]}`).join("L"));
-      const total = person.route.getTotalLength();
-      person.place = place;
+    /* doors: a leaf per door, swung by script (drawn open when nothing moves) */
+    const doors = Array.from(plan.querySelectorAll(".door")).map((g) => {
+      const leaf = g.querySelector(".leaf");
+      const hx = Number(leaf.dataset.hx);
+      const hy = Number(leaf.dataset.hy);
+      const x2 = Number(leaf.getAttribute("x2"));
+      const y2 = Number(leaf.getAttribute("y2"));
+      const sweep = Number(g.dataset.sweep);
+      // the middle of the gap: the hinge plus half the way to the closed end
+      const closed = [hx + Math.cos(Math.atan2(y2 - hy, x2 - hx) + (sweep * Math.PI) / 180) * Math.hypot(x2 - hx, y2 - hy), hy + Math.sin(Math.atan2(y2 - hy, x2 - hx) + (sweep * Math.PI) / 180) * Math.hypot(x2 - hx, y2 - hy)];
+      return { leaf, hx, hy, sweep, mid: [(hx + closed[0]) / 2, (hy + closed[1]) / 2], shut: 1, rest: 0.82 };
+    });
+    function setDoor(door, shut) {
+      door.shut = shut;
+      door.leaf.setAttribute("transform", `rotate(${(door.sweep * shut).toFixed(1)} ${door.hx} ${door.hy})`);
+    }
+    function stillHouse() {
+      doors.forEach((d) => d.leaf.removeAttribute("transform"));
+    }
+
+    /* the loop */
+    const state = { alive: false, raf: 0, last: 0, now: 0, nextDealAt: 0, deal: null, visible: true, hovered: null };
+    const timers = [];
+    function later(ms, fn) { const t = { at: state.now + ms / 1000, fn }; timers.push(t); }
+
+    function scale() { return plan.getBoundingClientRect().width / PLAN_W || 1; }
+    function freeSpot(roomKey, near) {
+      const room = ROOMS[roomKey];
+      const list = room.spots.filter((s) => !s.who);
+      if (!list.length) return null;
+      return near ? list.reduce((a, b) => (Math.hypot(a.pos[0] - near.x, a.pos[1] - near.y) < Math.hypot(b.pos[0] - near.x, b.pos[1] - near.y) ? a : b)) : list[Math.floor(Math.random() * list.length)];
+    }
+    function startWalk(person, spot, onArrive) {
+      const route = routeBetween(person.spot, spot);
+      // leave the old spot free, take the new one now so nobody else walks to it
+      if (person.spot) person.spot.who = null;
+      spot.who = person;
       person.spot = spot;
-      person.moving = true;
-      moving++;
-      const speed = 40 / pxPerUnit(); // about 40 px a second on screen
-      track({
-        duration: Math.max(1.2, total / speed),
-        ease: EASE.sineInOut,
-        apply: (v) => put(person, person.route.getPointAtLength(total * v)),
-        done: () => {
-          person.moving = false;
-          moving--;
-          person.restUntil = performance.now() + 6000 + Math.random() * 4000;
-          arrive(person);
-        },
-      });
+      person.route = route;
+      person.leg = 0;
+      person.legT = 0;
+      person.busy = true;
+      person.onArrive = onArrive || null;
+      person.el.classList.add("walking");
     }
-    // what each visit means, shown once and small: a "?" in Asks, a line between two founders meeting in Intros
-    function arrive(person) {
-      if (person.place === "asks") {
-        const mark = planSvg.querySelector(".fm-q");
-        track({ duration: 0.3, ease: EASE.power2Out, apply: (v) => { mark.style.opacity = String(v); } });
-        track({ delay: 0.9, duration: 0.45, ease: EASE.power2In, apply: (v) => { mark.style.opacity = String(1 - v); } });
-      } else if (person.place === "intros" && taken("intros", 1 - person.spot)) {
-        const line = planSvg.querySelector(".meet");
-        const length = line.getTotalLength();
-        line.style.strokeDasharray = String(length);
-        line.style.strokeDashoffset = String(length);
-        line.style.opacity = "1";
-        track({ duration: 0.5, ease: EASE.power2Out, apply: (v) => { line.style.strokeDashoffset = String(length * (1 - v)); } });
-        track({ delay: 2.1, duration: 0.5, ease: EASE.power2In, apply: (v) => { line.style.opacity = String(1 - v); } });
+    function stepWalk(person, dt) {
+      if (!person.route || state.hovered === person) return;
+      let travel = (WALK_PX_PER_SECOND / scale()) * dt;
+      while (travel > 0 && person.route && person.leg < person.route.length - 1) {
+        const a = person.route[person.leg];
+        const b = person.route[person.leg + 1];
+        const length = Math.hypot(b[0] - a[0], b[1] - a[1]);
+        const left = length * (1 - person.legT);
+        if (travel >= left) { travel -= left; person.leg += 1; person.legT = 0; person.x = b[0]; person.y = b[1]; }
+        else { person.legT += travel / length; person.x = a[0] + (b[0] - a[0]) * person.legT; person.y = a[1] + (b[1] - a[1]) * person.legT; travel = 0; }
+      }
+      if (person.leg >= person.route.length - 1) {
+        person.route = null;
+        person.busy = false;
+        person.el.classList.remove("walking");
+        person.restUntil = state.now + 4 + Math.random() * 4;
+        const done = person.onArrive;
+        person.onArrive = null;
+        if (done) done(person);
+      }
+      put(person);
+    }
+
+    function pickIdleWalker() {
+      const walkers = cast.filter((p) => p.busy && !p.deal).length;
+      if (walkers >= 2) return;
+      const ready = cast.filter((p) => !p.busy && !p.deal && state.now >= p.restUntil && state.hovered !== p);
+      if (!ready.length) return;
+      const person = ready[Math.floor(Math.random() * ready.length)];
+      const keys = Object.keys(ROOMS).filter((k) => k !== person.spot.room.key);
+      const options = keys.map((k) => freeSpot(k)).filter(Boolean);
+      if (!options.length) return;
+      startWalk(person, options[Math.floor(Math.random() * options.length)]);
+    }
+
+    /* a deal: two people meet in a room, a card pops over their faces, then fades */
+    const dealCard = (() => {
+      const el = document.createElement("div");
+      el.className = "deal live";
+      el.setAttribute("aria-hidden", "true");
+      el.innerHTML = '<p class="k"><span class="chk"><svg viewBox="0 0 8 8"><path d="M1.2 4.2l1.8 1.8 3.8-4.2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span>Example moment</span></p><h3></h3>';
+      return el;
+    })();
+    function showDeal(deal, a, b) {
+      const cx = (a.x + b.x) / 2;
+      const cy = (a.y + b.y) / 2;
+      const w = plan.getBoundingClientRect().width;
+      const px = cx * (w / PLAN_W);
+      if (dealCard.parentNode !== plan) plan.appendChild(dealCard);
+      const half = dealCard.offsetWidth ? dealCard.offsetWidth / 2 : 95;
+      const left = Math.min(Math.max(px, half + 4), w - half - 4);
+      const above = cy > 120;
+      dealCard.querySelector("h3").textContent = deal.title;
+      dealCard.className = "deal live " + (above ? "above" : "below");
+      dealCard.style.left = left + "px";
+      dealCard.style.setProperty("--ax", ((px - left) / (half * 2)) * 100 + 50 + "%");
+      const faceHalf = (a.el.offsetWidth || 36) / 2;
+      const py = (cy / PLAN_H) * plan.getBoundingClientRect().height;
+      dealCard.style.top = above ? "auto" : py + faceHalf + 12 + "px";
+      dealCard.style.bottom = above ? plan.getBoundingClientRect().height - py + faceHalf + 12 + "px" : "auto";
+      void dealCard.offsetWidth;
+      dealCard.classList.add("show");
+    }
+    function hideDeal() { dealCard.classList.remove("show"); }
+
+    function startDeal() {
+      const deal = DEALS[state.dealIndex++ % DEALS.length];
+      const free = cast.filter((p) => !p.deal && state.hovered !== p);
+      for (const roomKey of deal.rooms) {
+        const room = ROOMS[roomKey];
+        const [s0, s1] = room.spots;
+        // who may take the two meeting spots: the people already standing there, else anyone free
+        const there = [s0.who, s1.who].filter(Boolean);
+        if (there.some((p) => p.busy || p.deal)) continue;
+        const picked = [...there];
+        const need = 2 - picked.length;
+        const others = free.filter((p) => !picked.includes(p) && !p.busy);
+        if (others.length < need) continue;
+        // the closest idle people to the room
+        others.sort((p, q) => Math.hypot(p.x - s0.pos[0], p.y - s0.pos[1]) - Math.hypot(q.x - s0.pos[0], q.y - s0.pos[1]));
+        picked.push(...others.slice(0, need));
+        const targets = [s0, s1];
+        // people already on a meeting spot keep it
+        const placed = picked.map((p) => (p.spot === s0 || p.spot === s1 ? p.spot : null));
+        const open = targets.filter((t) => !placed.includes(t));
+        const plans = picked.map((p, i) => placed[i] || open.shift());
+        const state2 = { arrived: 0, deal };
+        picked.forEach((p, i) => {
+          p.deal = state2;
+          const target = plans[i];
+          if (p.spot === target && !p.busy) { state2.arrived += 1; return; }
+          startWalk(p, target, () => { state2.arrived += 1; });
+        });
+        state.deal = { info: state2, people: picked, phase: "walk", at: state.now };
+        return true;
+      }
+      return false;
+    }
+    function stepDeal() {
+      const d = state.deal;
+      if (!d) return;
+      if (d.phase === "walk" && d.people.every((p) => !p.busy)) {
+        d.phase = "show";
+        d.at = state.now;
+        showDeal(d.info.deal, d.people[0], d.people[1]);
+      } else if (d.phase === "show" && state.now - d.at > 3.8) {
+        d.phase = "fade";
+        d.at = state.now;
+        hideDeal();
+      } else if (d.phase === "fade" && state.now - d.at > 0.5) {
+        d.people.forEach((p) => { p.deal = null; p.restUntil = state.now + 3; });
+        state.deal = null;
+        state.nextDealAt = state.now + 5.5 + Math.random() * 3;
       }
     }
-    // pick a room first, then one free spot in it, so the long table's seven chairs don't take every visit
-    function pickDestination(person) {
-      const byPlace = {};
-      Object.keys(PLACES).filter((n) => n !== person.place).forEach((n) => {
-        PLACES[n].spots.forEach((s, i) => { if (!taken(n, i)) (byPlace[n] = byPlace[n] || []).push([n, i]); });
+
+    /* doors swing open when someone is near and settle most of the way shut after */
+    function stepDoors(dt) {
+      doors.forEach((door) => {
+        let near = false;
+        for (const p of cast) if (Math.hypot(p.x - door.mid[0], p.y - door.mid[1]) < 24) { near = true; break; }
+        const target = near ? 0.04 : door.rest;
+        const next = door.shut + (target - door.shut) * Math.min(1, dt * 7);
+        if (Math.abs(next - door.shut) > 0.002) setDoor(door, next);
       });
-      const names = Object.keys(byPlace);
-      if (!names.length) return null;
-      const list = byPlace[names[Math.floor(Math.random() * names.length)]];
-      return list[Math.floor(Math.random() * list.length)];
     }
-    function tick() {
-      if (moving < 2) {
-        const now = performance.now();
-        const idle = people.filter((p) => !p.moving && now >= p.restUntil);
-        if (idle.length) {
-          const person = idle[Math.floor(Math.random() * idle.length)];
-          const destination = pickDestination(person);
-          if (destination) walk(person, destination[0], destination[1]);
+
+    function frame(timestamp) {
+      if (!state.alive) return;
+      const dt = Math.min(0.1, (timestamp - (state.last || timestamp)) / 1000);
+      state.last = timestamp;
+      state.now += dt;
+      for (let i = timers.length - 1; i >= 0; i--) if (state.now >= timers[i].at) { const t = timers.splice(i, 1)[0]; t.fn(); }
+      cast.forEach((p) => stepWalk(p, dt));
+      stepDeal();
+      if (!state.deal && state.now >= state.nextDealAt) { if (!startDeal()) state.nextDealAt = state.now + 2; }
+      if (Math.random() < dt * 0.35) pickIdleWalker();
+      stepDoors(dt);
+      state.raf = requestAnimationFrame(frame);
+    }
+
+    function start() {
+      if (state.alive) return;
+      state.alive = true;
+      state.last = 0;
+      state.raf = requestAnimationFrame(frame);
+    }
+    function stop() {
+      state.alive = false;
+      cancelAnimationFrame(state.raf);
+    }
+    function settle() {
+      // reduced motion, or the script stopped: everyone back in their first room, doors open, the one still card
+      stop();
+      hideDeal();
+      if (dealCard.parentNode) dealCard.remove();
+      state.deal = null;
+      timers.length = 0;
+      cast.forEach((p) => {
+        if (p.spot) p.spot.who = null;
+        const [roomKey, index] = START[p.id];
+        p.spot = ROOMS[roomKey].spots[index];
+        p.spot.who = p;
+        p.x = p.spot.pos[0]; p.y = p.spot.pos[1];
+        p.route = null; p.busy = false; p.deal = null;
+        p.el.style.left = ""; p.el.style.top = "";
+        p.el.dataset.x = String(p.x); p.el.dataset.y = String(p.y);
+        p.el.classList.remove("walking");
+      });
+      stillHouse();
+      if (staticDeal) staticDeal.hidden = false;
+    }
+    function go() {
+      cast.forEach((p) => put(p));
+      doors.forEach((d) => setDoor(d, d.rest));
+      if (staticDeal) staticDeal.hidden = true;
+      state.dealIndex = 0;
+      state.nextDealAt = state.now + 1.6;
+      start();
+    }
+
+    cast.forEach((p) => {
+      p.el.addEventListener("pointerenter", () => { state.hovered = p; });
+      p.el.addEventListener("pointerleave", () => { if (state.hovered === p) state.hovered = null; });
+      p.el.addEventListener("focus", () => { state.hovered = p; });
+      p.el.addEventListener("blur", () => { if (state.hovered === p) state.hovered = null; });
+    });
+
+    function sync() { if (motionOn()) { if (!state.alive) go(); } else settle(); }
+    if (reduceQuery && reduceQuery.addEventListener) reduceQuery.addEventListener("change", sync);
+    // nothing walks off-screen or in a hidden tab
+    if ("IntersectionObserver" in window) {
+      new IntersectionObserver((entries) => {
+        state.visible = entries[0].isIntersecting;
+        if (!motionOn()) return;
+        if (state.visible && !document.hidden) start(); else stop();
+      }).observe(plan);
+    }
+    document.addEventListener("visibilitychange", () => { if (!motionOn()) return; if (document.hidden) stop(); else if (state.visible) start(); });
+    sync();
+  }
+
+  /* ---------- the hover field: faint blueprint marks that ink in near the pointer ---------- */
+  // A grid of small marks (plus crosses, door arcs, dimension ticks, tiny rooms) behind the first screen. A mark's
+  // "heat" jumps up when the pointer is within 66 px and halves every second; its colour and size follow its heat,
+  // from faint to strong and from 13 to 23 px. Marks near the buttons, the GitHub card and the plan are left out.
+  function setUpField() {
+    const canvas = document.getElementById("field");
+    const hero = document.getElementById("top");
+    if (!canvas || !hero || !canvas.getContext) return;
+    const ctx = canvas.getContext("2d");
+    const GAP = 56;
+    const RADIUS = 66;
+    const SIZE_MIN = 13;
+    const SIZE_MAX = 23;
+    const marks = [];
+    let width = 0;
+    let height = 0;
+    let dpr = 1;
+    let ink = "17, 17, 16";
+    let running = false;
+    let last = 0;
+    let pointer = null;
+
+    function readInk() { ink = getComputedStyle(html).getPropertyValue("--ink-rgb").trim() || ink; }
+    function skipRects() {
+      const box = hero.getBoundingClientRect();
+      return Array.from(hero.querySelectorAll("[data-skip]")).map((el) => {
+        const r = el.getBoundingClientRect();
+        const pad = 14;
+        return { x0: r.left - box.left - pad, y0: r.top - box.top - pad, x1: r.right - box.left + pad, y1: r.bottom - box.top + pad };
+      });
+    }
+    function build() {
+      const box = hero.getBoundingClientRect();
+      width = Math.max(1, Math.round(box.width));
+      height = Math.max(1, Math.round(box.height));
+      dpr = Math.min(2, window.devicePixelRatio || 1);
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
+      const skip = skipRects();
+      marks.length = 0;
+      let seed = 7;
+      const rand = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
+      for (let y = GAP / 2; y < height; y += GAP) {
+        for (let x = GAP / 2; x < width; x += GAP) {
+          const kind = Math.floor(rand() * 4);
+          const jx = (rand() - 0.5) * 10;
+          const jy = (rand() - 0.5) * 10;
+          const px = x + jx;
+          const py = y + jy;
+          if (skip.some((r) => px > r.x0 && px < r.x1 && py > r.y0 && py < r.y1)) continue;
+          marks.push({ x: px, y: py, kind, heat: 0 });
         }
       }
-      later(1.6 + Math.random() * 1.6, tick);
+      draw();
     }
-    function setAlive(on) {
-      if (on === alive) return;
-      alive = on;
-      live.forEach((t) => (on ? t.resume() : t.pause()));
-      if (on) people.forEach((p) => { if (!p.moving) p.restUntil = Math.max(p.restUntil, performance.now() + 1500); });
+    function glyph(kind, x, y, s) {
+      const h = s / 2;
+      ctx.beginPath();
+      if (kind === 0) { ctx.moveTo(x - h, y); ctx.lineTo(x + h, y); ctx.moveTo(x, y - h); ctx.lineTo(x, y + h); }
+      else if (kind === 1) { ctx.moveTo(x - h, y + h); ctx.lineTo(x - h, y - h); ctx.arc(x - h, y + h, s, -Math.PI / 2, 0); }
+      else if (kind === 2) { ctx.moveTo(x - h, y); ctx.lineTo(x + h, y); ctx.moveTo(x - h, y - h / 2); ctx.lineTo(x - h, y + h / 2); ctx.moveTo(x + h, y - h / 2); ctx.lineTo(x + h, y + h / 2); }
+      else { ctx.moveTo(x - h * 0.2, y - h); ctx.lineTo(x - h, y - h); ctx.lineTo(x - h, y + h); ctx.lineTo(x + h, y + h); ctx.lineTo(x + h, y - h); ctx.lineTo(x + h * 0.2, y - h); }
+      ctx.stroke();
     }
-    const io = new IntersectionObserver((entries) => {
-      const visible = entries[entries.length - 1].isIntersecting;
-      if (started) setAlive(visible);
-      else alive = visible;
-    });
-    io.observe(planSvg);
-    const starter = tween({
-      delay: startAt,
-      done: () => {
-        started = true;
-        const now = performance.now();
-        people.forEach((p, i) => { p.restUntil = now + 5000 + i * 1200; });
-        // the first two visits are fixed so the opening always shows them: Priya joins Marcus in Intros, then
-        // Tomás leaves Feed for a chair at the long table
-        walk(people[0], "intros", 0);
-        later(2.2, () => { if (!people[3].moving) walk(people[3], "members", 3); });
-        later(4.5, tick);
-      },
-    });
-    return () => {
-      starter.kill();
-      io.disconnect();
-      live.forEach((t) => t.kill());
-      live.clear();
-    };
+    function draw() {
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, width, height);
+      ctx.lineWidth = 1.2;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      const rest = html.getAttribute("data-theme") === "dark" ? 0.2 : 0.16;
+      for (const m of marks) {
+        const e = m.heat;
+        // faint at rest, mid at half heat, strong at full heat
+        const alpha = e < 0.5 ? rest + (0.42 - rest) * (e / 0.5) : 0.42 + (0.9 - 0.42) * ((e - 0.5) / 0.5);
+        ctx.strokeStyle = "rgba(" + ink + "," + alpha.toFixed(3) + ")";
+        glyph(m.kind, m.x, m.y, SIZE_MIN + (SIZE_MAX - SIZE_MIN) * e);
+      }
+    }
+    function frame(time) {
+      const dt = Math.min(0.1, (time - (last || time)) / 1000);
+      last = time;
+      const box = hero.getBoundingClientRect();
+      let warm = false;
+      const decay = Math.pow(0.5, dt);
+      for (const m of marks) {
+        if (pointer) {
+          const d = Math.hypot(m.x - (pointer.x - box.left), m.y - (pointer.y - box.top));
+          if (d < RADIUS) m.heat = Math.max(m.heat, 1 - d / RADIUS);
+        }
+        m.heat *= decay;
+        if (m.heat < 0.01) m.heat = 0; else warm = true;
+      }
+      draw();
+      if (warm || pointer) requestAnimationFrame(frame);
+      else { running = false; last = 0; }
+    }
+    function wake() { if (!running) { running = true; last = 0; requestAnimationFrame(frame); } }
+    function move(x, y) {
+      const box = hero.getBoundingClientRect();
+      if (y < box.top - RADIUS || y > box.bottom + RADIUS) { pointer = null; return; }
+      pointer = { x, y };
+      wake();
+    }
+    function enabled() { return motionOn(); }
+    function onMouse(event) { if (enabled()) move(event.clientX, event.clientY); }
+    function onTouch(event) { if (enabled() && event.touches[0]) move(event.touches[0].clientX, event.touches[0].clientY); }
+    function leave() { pointer = null; }
+    document.addEventListener("mousemove", onMouse, { passive: true });
+    document.addEventListener("touchmove", onTouch, { passive: true });
+    document.addEventListener("touchstart", onTouch, { passive: true });
+    document.addEventListener("touchend", leave, { passive: true });
+    html.addEventListener("mouseleave", leave);
+    window.addEventListener("scroll", () => { if (pointer) wake(); }, { passive: true });
+
+    function refresh() {
+      readInk();
+      if (!enabled()) { canvas.hidden = true; return; }
+      canvas.hidden = false;
+      build();
+    }
+    let resizeTimer;
+    function rebuild() { clearTimeout(resizeTimer); resizeTimer = setTimeout(refresh, 120); }
+    window.addEventListener("resize", rebuild);
+    if (window.ResizeObserver) new ResizeObserver(rebuild).observe(hero);
+    window.addEventListener("themechange", () => { readInk(); draw(); });
+    if (reduceQuery && reduceQuery.addEventListener) reduceQuery.addEventListener("change", refresh);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(refresh);
+    refresh();
   }
+
+  function init() {
+    setUpTheme();
+    setUpCopy();
+    setUpSetup();
+    setUpSignup();
+    setUpPlan();
+    setUpField();
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
+  else init();
 })();
