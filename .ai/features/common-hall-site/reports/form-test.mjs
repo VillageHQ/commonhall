@@ -29,7 +29,7 @@ page.on("request", (r) => { if (r.method() !== "GET" || !r.url().startsWith(`htt
 page.on("console", (m) => { if (m.type() === "error") errors.push(m.text()); });
 await page.goto(`http://127.0.0.1:${PORT}/`, { waitUntil: "load" });
 await page.waitForTimeout(3500);
-await page.click('.acts a.btn-p[href="#door-managed"]');
+await page.click('.acts a.btn.out[href="#door-managed"]');
 await page.waitForTimeout(1500);
 const result = {
   heading: await page.textContent("#door-managed h3"),
