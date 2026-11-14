@@ -106,6 +106,7 @@ h1 { font: 500 56px/1.05 var(--serif); letter-spacing: -.6px; max-width: 15em; t
 /* No script: the split button and its caret would be dead, so a plain link to the self-host guide takes their place. */
 .nojs-only { display: none; }
 html:not(.js) .nojs-only { display: inline-flex; }
+html:not(.js) .js-only { display: none; }
 html:not(.js) .split { display: none; }
 .split .main { border-radius: 6px 0 0 6px; padding: 0 20px 0 16px; }
 .split .caret { border-radius: 0 6px 6px 0; border-left: 1px solid color-mix(in srgb, var(--btn-fg) 30%, transparent); padding: 0; width: 46px; }
