@@ -699,7 +699,7 @@
   /* ---------- the hover field: faint blueprint marks that ink in near the pointer ---------- */
   // A grid of small marks (plus crosses, door arcs, dimension ticks, tiny rooms) behind the first screen. A mark's
   // "heat" jumps up when the pointer is within 66 px and halves every second; its colour and size follow its heat,
-  // from faint to strong and from 13 to 23 px. Marks near the buttons, the GitHub card and the plan are left out.
+  // from faint to strong and from 13 to 23 px. Marks near the buttons, the GitHub card, the plan and the first screen's text are left out.
   function setUpField() {
     const canvas = document.getElementById("field");
     const hero = document.getElementById("top");
@@ -721,11 +721,17 @@
     function readInk() { ink = getComputedStyle(html).getPropertyValue("--ink-rgb").trim() || ink; }
     function skipRects() {
       const box = hero.getBoundingClientRect();
-      return Array.from(hero.querySelectorAll("[data-skip]")).map((el) => {
-        const r = el.getBoundingClientRect();
-        const pad = 14;
-        return { x0: r.left - box.left - pad, y0: r.top - box.top - pad, x1: r.right - box.left + pad, y1: r.bottom - box.top + pad };
+      const rects = [];
+      const add = (r, pad) => { if (r.width > 0 && r.height > 0) rects.push({ x0: r.left - box.left - pad, y0: r.top - box.top - pad, x1: r.right - box.left + pad, y1: r.bottom - box.top + pad }); };
+      // The buttons, the GitHub card and the plan keep 14 px clear; the eyebrow, the H1 and the sub-line keep 12 px clear
+      // around the lines of text themselves, so no mark ever inks in under a letter.
+      hero.querySelectorAll("[data-skip]").forEach((el) => add(el.getBoundingClientRect(), 14));
+      hero.querySelectorAll("[data-skip-text]").forEach((el) => {
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        add(range.getBoundingClientRect(), 12);
       });
+      return rects;
     }
     function build() {
       const box = hero.getBoundingClientRect();
