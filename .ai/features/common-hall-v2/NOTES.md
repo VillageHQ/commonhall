@@ -10,15 +10,22 @@ overflow, anchors, text contrast 4.5:1) and the form test `.ai/features/common-h
 `[data-theme="dark"]`; with no script a `prefers-color-scheme` rule applies. The toggle saves the choice and fires a
 `themechange` event so the canvas re-reads `--ink-rgb`. Cards, tooltips and the dialog are ink on paper in both themes.
 
-## Hover field (the canvas behind the first screen, class `hero-field`)
-A grid (56 px, a little jitter) of marks: plus, door arc, dimension tick, tiny room. Each has `heat` 0 to 1. A pointer
-(mouse or touch) within 66 px sets heat to `1 - d/66` if higher; heat halves every second. Alpha goes faint, mid, strong
-and size 13 to 23 px with heat. Elements marked `data-skip` (the buttons, the GitHub card, the plan) plus 14 px are
-left empty, and so are the text boxes of the eyebrow, the H1 and the sub-line (`data-skip-text`, measured with a Range
-around the lines of text, plus 12 px), so no mark ever inks in under a letter: with the pointer over the H1 the worst
-background under the text is the same as at rest. The canvas class is `hero-field`; `.field` belongs only to the
-form's field wrappers (`.field.is-invalid`). The loop runs only while something is warm or the pointer is near. Resize rebuilds the grid; device pixel
-ratio is capped at 2; reduced motion hides the canvas.
+## Hover field (the canvas behind the first screen, class `hero-field`): plan-view doors
+Since 2026-11-15 (Absi's pick A of four prototypes) the field is a 72 px grid of doors drawn as on a floor plan: a wall
+run with a 28 px opening and jamb ticks, the leaf closed across the opening, in one of four orientations. Moving the
+pointer (mouse or touch) starts a circular wave at the pointer (560 px/s, a new wave every 110 ms and 36 px of travel,
+up to 8 at once, each ends at 560 px wide). A door whose centre the wavefront passes swings its leaf open 90 degrees in
+400 ms while its quarter-circle arc inks in, holds 900 ms, then swings shut in 400 ms; a later wave re-opens or extends
+it. At rest the ink is 6.5% (light) / 9% (dark); an open leaf peaks at about 55%, its wall 22%, its arc 32%. Doors whose
+footprint touches a button, the GitHub card or the plan (`data-skip`) or a line of the eyebrow, H1 or sub-line
+(`data-skip-text`, measured with a Range, plus about 8 px) stay shut and never trigger, so nothing above the at-rest ink
+ever lands under a letter (the proof counts open-door pixels inside those boxes: 0). The ink colour comes from
+`--ink-rgb` and is re-read on `themechange`; the grid rebuilds on resize (debounced), on a hero size change and when
+the motion preference changes; device pixel ratio is capped at 2; one cached hero rect (refreshed on scroll); the frame
+loop runs only while a wave is alive and stops when idle. Reduced motion: the doors are drawn once, closed, with no
+listeners (the site check moves the pointer and asserts the canvas does not change). No JavaScript: the canvas stays
+hidden. `.field` belongs only to the form's field wrappers. Proof: `.ai/features/door-field/reports/` (stills, two clips,
+`proof.mjs`).
 
 ## Faces, walks, deals, doors
 - The plan is 360 by 300 units. `ROOMS` lists each room's spots, `NODES` and `EDGES` the doors and the corridor lanes

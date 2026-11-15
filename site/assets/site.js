@@ -1,6 +1,7 @@
 // Common Hall by Village: every behaviour on the landing page, with no library. The theme toggle, the set-up dialog,
-// the copy buttons and the sign-up form always work. The hover field, the walking faces, the deal cards and the
-// swinging doors run only when the visitor has not asked for reduced motion; without them the page is still and whole.
+// the copy buttons and the sign-up form always work. The hover field (plan-view doors), the walking faces,
+// the deal cards and the swinging doors move only when the visitor has not asked for reduced motion; without it the
+// page is still and whole (the field is drawn once, doors closed).
 (function () {
   const html = document.documentElement;
   const reduceQuery = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)") : null;
@@ -696,138 +697,230 @@
     sync();
   }
 
-  /* ---------- the hover field: faint blueprint marks that ink in near the pointer ---------- */
-  // A grid of small marks (plus crosses, door arcs, dimension ticks, tiny rooms) behind the first screen. A mark's
-  // "heat" jumps up when the pointer is within 66 px and halves every second; its colour and size follow its heat,
-  // from faint to strong and from 13 to 23 px. Marks near the buttons, the GitHub card, the plan and the first screen's text are left out.
+  /* ---------- the hover field: plan-view doors that open in circular waves from the pointer ---------- */
+  // A grid of doors (72 px cells) behind the first screen, each drawn as on a floor plan: a wall with a gap and jamb
+  // ticks, the leaf closed across the gap, in one of four orientations. Moving the pointer (or a finger) starts a
+  // circular wave (560 px/s; a new one every 110 ms and 36 px of travel, up to 8 at once). A door whose centre the
+  // wavefront passes swings its leaf open 90 degrees in 400 ms while its quarter-circle arc inks in, holds 900 ms and
+  // swings shut in 400 ms. Doors whose drawing touches a button, the GitHub card, the plan or a line of the eyebrow,
+  // headline or sub-line (plus about 8 px) stay shut and never trigger. Reduced motion: drawn once, closed, no listeners.
   function setUpField() {
     const canvas = document.getElementById("field");
     const hero = document.getElementById("top");
     if (!canvas || !hero || !canvas.getContext) return;
     const ctx = canvas.getContext("2d");
-    const GAP = 56;
-    const RADIUS = 66;
-    const SIZE_MIN = 13;
-    const SIZE_MAX = 23;
-    const marks = [];
+    const CELL = 72;
+    const HALF_GAP = 14;      // half of the door opening; the leaf is 28 px long
+    const WALL_END = 31;      // the wall runs 31 px each side of the cell centre
+    const JAMB = 3.5;         // the tick across the wall at each side of the opening
+    const OPEN_MS = 400;
+    const HOLD_MS = 900;
+    const SHUT_MS = 400;
+    const SPEED = 560;        // wavefront, px per second
+    const REACH = 560;        // a wave ends when its circle is this wide
+    const MAX_WAVES = 8;
+    const PAD = 8;            // keep-out margin beyond the door's own footprint
+    const LEAF = 2 * HALF_GAP;
+    const doors = [];
+    const waves = [];
+    const box = { left: 0, top: 0 };   // the one cached hero rect, refreshed on build and on scroll
     let width = 0;
     let height = 0;
     let dpr = 1;
     let ink = "17, 17, 16";
+    let dark = false;
     let running = false;
     let last = 0;
-    let pointer = null;
+    let spawnAt = -1e9;
+    let spawnX = -1e9;
+    let spawnY = -1e9;
+    let listening = false;
+    let scrollPending = false;
 
-    function readInk() { ink = getComputedStyle(html).getPropertyValue("--ink-rgb").trim() || ink; }
-    function skipRects() {
-      const box = hero.getBoundingClientRect();
-      const rects = [];
-      const add = (r, pad) => { if (r.width > 0 && r.height > 0) rects.push({ x0: r.left - box.left - pad, y0: r.top - box.top - pad, x1: r.right - box.left + pad, y1: r.bottom - box.top + pad }); };
-      // The buttons, the GitHub card and the plan keep 14 px clear; the eyebrow, the H1 and the sub-line keep 12 px clear
-      // around the lines of text themselves, so no mark ever inks in under a letter.
-      hero.querySelectorAll("[data-skip]").forEach((el) => add(el.getBoundingClientRect(), 14));
+    function readTheme() {
+      ink = getComputedStyle(html).getPropertyValue("--ink-rgb").trim() || ink;
+      dark = html.getAttribute("data-theme") === "dark";
+    }
+    function readBox() { const r = hero.getBoundingClientRect(); box.left = r.left; box.top = r.top; }
+
+    // The foreground a door must stay clear of: the buttons, the GitHub card and the plan (data-skip) and the lines of text
+    // of the eyebrow, the H1 and the sub-line (data-skip-text), in hero coordinates.
+    function keepOut() {
+      const b = hero.getBoundingClientRect();
+      const zones = [];
+      const add = (r) => { if (r.width >= 1 && r.height >= 1) zones.push({ x0: r.left - b.left - 6, y0: r.top - b.top - 6, x1: r.right - b.left + 6, y1: r.bottom - b.top + 6 }); };
+      hero.querySelectorAll("[data-skip]").forEach((el) => add(el.getBoundingClientRect()));
       hero.querySelectorAll("[data-skip-text]").forEach((el) => {
         const range = document.createRange();
         range.selectNodeContents(el);
-        add(range.getBoundingClientRect(), 12);
+        Array.from(range.getClientRects()).forEach(add);
       });
-      return rects;
+      return zones;
+    }
+    // World bounding box of a door's wall run and swing quarter, for its orientation.
+    function footprint(d) {
+      const xs = [];
+      const ys = [];
+      [[-WALL_END, -JAMB, WALL_END, JAMB], [-HALF_GAP, -LEAF, HALF_GAP, 0]].forEach((q) => {
+        [[q[0], q[1]], [q[2], q[1]], [q[0], q[3]], [q[2], q[3]]].forEach((p) => {
+          xs.push(d.x + p[0] * d.c - p[1] * d.s);
+          ys.push(d.y + p[0] * d.s + p[1] * d.c);
+        });
+      });
+      return { x0: Math.min(...xs), x1: Math.max(...xs), y0: Math.min(...ys), y1: Math.max(...ys) };
     }
     function build() {
-      const box = hero.getBoundingClientRect();
-      width = Math.max(1, Math.round(box.width));
-      height = Math.max(1, Math.round(box.height));
+      readTheme();
+      readBox();
+      const r = hero.getBoundingClientRect();
+      width = Math.max(1, Math.round(r.width));
+      height = Math.max(1, Math.round(r.height));
       dpr = Math.min(2, window.devicePixelRatio || 1);
       canvas.width = Math.round(width * dpr);
       canvas.height = Math.round(height * dpr);
-      const skip = skipRects();
-      marks.length = 0;
-      let seed = 7;
+      const zones = keepOut();
+      const cols = Math.max(1, Math.floor(width / CELL));
+      const rows = Math.max(1, Math.floor(height / CELL));
+      const ox = (width - cols * CELL) / 2 + CELL / 2;
+      const oy = (height - rows * CELL) / 2 + CELL / 2;
+      let seed = 11;
       const rand = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
-      for (let y = GAP / 2; y < height; y += GAP) {
-        for (let x = GAP / 2; x < width; x += GAP) {
-          const kind = Math.floor(rand() * 4);
-          const jx = (rand() - 0.5) * 10;
-          const jy = (rand() - 0.5) * 10;
-          const px = x + jx;
-          const py = y + jy;
-          if (skip.some((r) => px > r.x0 && px < r.x1 && py > r.y0 && py < r.y1)) continue;
-          marks.push({ x: px, y: py, kind, heat: 0 });
+      doors.length = 0;
+      waves.length = 0;
+      for (let j = 0; j < rows; j++) {
+        for (let i = 0; i < cols; i++) {
+          // four orientations: the wall runs along x or y, and the hinge sits at either end of it
+          const angle = Math.floor(rand() * 4) * Math.PI / 2;
+          const d = { x: ox + i * CELL, y: oy + j * CELL, c: Math.round(Math.cos(angle)), s: Math.round(Math.sin(angle)), p: 0, phase: 0, hold: 0, locked: false };
+          const f = footprint(d);
+          d.locked = zones.some((q) => f.x1 > q.x0 - PAD && f.x0 < q.x1 + PAD && f.y1 > q.y0 - PAD && f.y0 < q.y1 + PAD);
+          doors.push(d);
         }
       }
       draw();
     }
-    function glyph(kind, x, y, s) {
-      const h = s / 2;
-      ctx.beginPath();
-      if (kind === 0) { ctx.moveTo(x - h, y); ctx.lineTo(x + h, y); ctx.moveTo(x, y - h); ctx.lineTo(x, y + h); }
-      else if (kind === 1) { ctx.moveTo(x - h, y + h); ctx.lineTo(x - h, y - h); ctx.arc(x - h, y + h, s, -Math.PI / 2, 0); }
-      else if (kind === 2) { ctx.moveTo(x - h, y); ctx.lineTo(x + h, y); ctx.moveTo(x - h, y - h / 2); ctx.lineTo(x - h, y + h / 2); ctx.moveTo(x + h, y - h / 2); ctx.lineTo(x + h, y + h / 2); }
-      else { ctx.moveTo(x - h * 0.2, y - h); ctx.lineTo(x - h, y - h); ctx.lineTo(x - h, y + h); ctx.lineTo(x + h, y + h); ctx.lineTo(x + h, y - h); ctx.lineTo(x + h * 0.2, y - h); }
-      ctx.stroke();
+
+    // Door space: the wall along x through the origin, the hinge at (-HALF_GAP, 0), the leaf swinging toward -y.
+    function toWorld(d) { ctx.setTransform(dpr * d.c, dpr * d.s, -dpr * d.s, dpr * d.c, dpr * d.x, dpr * d.y); }
+    function base() { ctx.setTransform(dpr, 0, 0, dpr, 0, 0); }
+    function wallPath(d) {
+      toWorld(d);
+      ctx.moveTo(-WALL_END, 0); ctx.lineTo(-HALF_GAP, 0);
+      ctx.moveTo(HALF_GAP, 0); ctx.lineTo(WALL_END, 0);
+      ctx.moveTo(-HALF_GAP, -JAMB); ctx.lineTo(-HALF_GAP, JAMB);
+      ctx.moveTo(HALF_GAP, -JAMB); ctx.lineTo(HALF_GAP, JAMB);
     }
+    const ease = (p) => p * p * (3 - 2 * p);
+    const rgba = (a) => "rgba(" + ink + "," + a.toFixed(3) + ")";
+
     function draw() {
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      base();
       ctx.clearRect(0, 0, width, height);
-      ctx.lineWidth = 1.2;
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
-      const rest = html.getAttribute("data-theme") === "dark" ? 0.2 : 0.16;
-      for (const m of marks) {
-        const e = m.heat;
-        // faint at rest, mid at half heat, strong at full heat
-        const alpha = e < 0.5 ? rest + (0.42 - rest) * (e / 0.5) : 0.42 + (0.9 - 0.42) * ((e - 0.5) / 0.5);
-        ctx.strokeStyle = "rgba(" + ink + "," + alpha.toFixed(3) + ")";
-        glyph(m.kind, m.x, m.y, SIZE_MIN + (SIZE_MAX - SIZE_MIN) * e);
+      const rest = dark ? 0.07 : 0.05;   // strokes overlap at the jambs, so the drawn peak at rest is about 1.6x this: ~8% light, ~11% dark
+      // all shut doors in two strokes: the walls, then the closed leaves
+      ctx.beginPath();
+      for (const d of doors) if (d.phase === 0) wallPath(d);
+      base(); ctx.lineWidth = 2; ctx.strokeStyle = rgba(rest); ctx.stroke();
+      ctx.beginPath();
+      for (const d of doors) if (d.phase === 0) { toWorld(d); ctx.moveTo(-HALF_GAP, 0); ctx.lineTo(HALF_GAP, 0); }
+      base(); ctx.lineWidth = 1.2; ctx.strokeStyle = rgba(rest); ctx.stroke();
+      // doors in motion, one by one
+      for (const d of doors) {
+        if (d.phase === 0) continue;
+        const e = ease(d.p);
+        const theta = e * Math.PI / 2;
+        ctx.beginPath(); wallPath(d); base();
+        ctx.lineWidth = 2; ctx.strokeStyle = rgba(rest + (0.22 - rest) * e); ctx.stroke();
+        // the arc inks in while the leaf opens, stays full while it holds, and fades with the leaf as it shuts
+        const sweep = d.phase === 1 ? theta : Math.PI / 2;
+        const arcAlpha = 0.32 * (d.phase === 3 ? e : 1);
+        if (sweep > 0.01 && arcAlpha > 0.004) {
+          ctx.beginPath(); toWorld(d);
+          ctx.arc(-HALF_GAP, 0, LEAF, 0, -sweep, true);
+          base(); ctx.lineWidth = 1; ctx.strokeStyle = rgba(arcAlpha); ctx.stroke();
+        }
+        ctx.beginPath(); toWorld(d);
+        ctx.moveTo(-HALF_GAP, 0); ctx.lineTo(-HALF_GAP + LEAF * Math.cos(theta), -LEAF * Math.sin(theta));
+        base(); ctx.lineWidth = 1.2 + 0.5 * e; ctx.strokeStyle = rgba(rest + (0.55 - rest) * e); ctx.stroke();
       }
     }
+
+    function trigger(d) {
+      if (d.phase === 0 || d.phase === 3) { d.phase = 1; d.p = d.p || 0; }   // idle or shutting: (re)open from where it is
+      else if (d.phase === 2) d.hold = HOLD_MS;                                // already open: keep it open longer
+    }
     function frame(time) {
-      const dt = Math.min(0.1, (time - (last || time)) / 1000);
+      const dt = Math.min(100, last ? time - last : 16);
       last = time;
-      const box = hero.getBoundingClientRect();
-      let warm = false;
-      const decay = Math.pow(0.5, dt);
-      for (const m of marks) {
-        if (pointer) {
-          const d = Math.hypot(m.x - (pointer.x - box.left), m.y - (pointer.y - box.top));
-          if (d < RADIUS) m.heat = Math.max(m.heat, 1 - d / RADIUS);
+      for (let w = waves.length - 1; w >= 0; w--) {
+        const wave = waves[w];
+        const before = wave.r * wave.r;
+        wave.r += SPEED * dt / 1000;
+        const after = wave.r * wave.r;
+        for (const d of doors) {
+          if (d.locked) continue;
+          const dx = d.x - wave.x;
+          const dy = d.y - wave.y;
+          const q = dx * dx + dy * dy;
+          if (q <= after && (q > before || wave.first)) trigger(d);
         }
-        m.heat *= decay;
-        if (m.heat < 0.01) m.heat = 0; else warm = true;
+        wave.first = false;
+        if (wave.r > REACH) waves.splice(w, 1);
+      }
+      let busy = waves.length > 0;
+      for (const d of doors) {
+        if (d.phase === 0) continue;
+        busy = true;
+        if (d.phase === 1) { d.p += dt / OPEN_MS; if (d.p >= 1) { d.p = 1; d.phase = 2; d.hold = HOLD_MS; } }
+        else if (d.phase === 2) { d.hold -= dt; if (d.hold <= 0) d.phase = 3; }
+        else { d.p -= dt / SHUT_MS; if (d.p <= 0) { d.p = 0; d.phase = 0; } }
       }
       draw();
-      if (warm || pointer) requestAnimationFrame(frame);
+      if (busy) requestAnimationFrame(frame);
       else { running = false; last = 0; }
     }
     function wake() { if (!running) { running = true; last = 0; requestAnimationFrame(frame); } }
-    function move(x, y) {
-      const box = hero.getBoundingClientRect();
-      if (y < box.top - RADIUS || y > box.bottom + RADIUS) { pointer = null; return; }
-      pointer = { x, y };
+
+    function spawn(clientX, clientY) {
+      const x = clientX - box.left;
+      const y = clientY - box.top;
+      if (y < -80 || y > height + 80 || x < -80 || x > width + 80) return;
+      const now = performance.now();
+      if (now - spawnAt < 110 || Math.hypot(x - spawnX, y - spawnY) < 36) return;
+      spawnAt = now; spawnX = x; spawnY = y;
+      if (waves.length >= MAX_WAVES) waves.shift();
+      waves.push({ x, y, r: 0, first: true });
       wake();
     }
-    function enabled() { return motionOn(); }
-    function onMouse(event) { if (enabled()) move(event.clientX, event.clientY); }
-    function onTouch(event) { if (enabled() && event.touches[0]) move(event.touches[0].clientX, event.touches[0].clientY); }
-    function leave() { pointer = null; }
-    document.addEventListener("mousemove", onMouse, { passive: true });
-    document.addEventListener("touchmove", onTouch, { passive: true });
-    document.addEventListener("touchstart", onTouch, { passive: true });
-    document.addEventListener("touchend", leave, { passive: true });
-    html.addEventListener("mouseleave", leave);
-    window.addEventListener("scroll", () => { if (pointer) wake(); }, { passive: true });
+    function onMouse(event) { spawn(event.clientX, event.clientY); }
+    function onTouch(event) { if (event.touches[0]) spawn(event.touches[0].clientX, event.touches[0].clientY); }
+    function onScroll() {
+      if (scrollPending) return;
+      scrollPending = true;
+      requestAnimationFrame(() => { scrollPending = false; readBox(); });
+    }
+    // Listeners exist only while motion is allowed.
+    function listen(on) {
+      if (on === listening) return;
+      listening = on;
+      const act = on ? "addEventListener" : "removeEventListener";
+      document[act]("mousemove", onMouse, { passive: true });
+      document[act]("touchmove", onTouch, { passive: true });
+      document[act]("touchstart", onTouch, { passive: true });
+      window[act]("scroll", onScroll, { passive: true });
+    }
 
     function refresh() {
-      readInk();
-      if (!enabled()) { canvas.hidden = true; return; }
-      canvas.hidden = false;
+      listen(motionOn());
       build();
     }
     let resizeTimer;
     function rebuild() { clearTimeout(resizeTimer); resizeTimer = setTimeout(refresh, 120); }
     window.addEventListener("resize", rebuild);
     if (window.ResizeObserver) new ResizeObserver(rebuild).observe(hero);
-    window.addEventListener("themechange", () => { readInk(); draw(); });
+    window.addEventListener("themechange", () => { readTheme(); draw(); });
     if (reduceQuery && reduceQuery.addEventListener) reduceQuery.addEventListener("change", refresh);
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(refresh);
     refresh();

@@ -4,7 +4,8 @@
 // Serves site/ on a local port and opens it at 320, 390 and 1280 px in the light and the dark theme (forced with
 // ?theme=). With motion on it moves the pointer over the first screen, scrolls the whole page and back, and fails on
 // outside requests, console errors, failed requests, horizontal overflow, a missing anchor or text under 4.5:1
-// contrast. It then shoots each width full page with reduced motion and prints the page.
+// contrast. It then shoots each width full page with reduced motion (the door field drawn once, closed, and still when
+// the pointer moves) and prints the page.
 import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
 import { createRequire } from "node:module";
@@ -97,8 +98,13 @@ for (const scheme of ["light", "dark"]) for (const width of [320, 390, 1280]) {
   await still.evaluate(() => scrollTo(0, 0));
   overflow = await overflowOf(still);
   if (overflow > 0) problems.push(`${tag}: page is ${overflow}px wider than the screen (reduced motion)`);
-  const canvasShown = await still.evaluate(() => getComputedStyle(document.getElementById("field")).display !== "none");
-  if (canvasShown) problems.push(`${tag}: the hover field shows under reduced motion`);
+  // the door field is drawn once with every door closed, and the pointer changes nothing (no listeners)
+  const snap = () => still.evaluate(() => { const c = document.getElementById("field"); return getComputedStyle(c).display === "none" ? null : c.toDataURL(); });
+  const before = await snap();
+  if (!before) problems.push(`${tag}: the door field is not drawn under reduced motion`);
+  for (let i = 0; i < 8; i++) { await still.mouse.move(80 + i * (width / 10), 160 + (i % 3) * 80); await still.waitForTimeout(50); }
+  await still.waitForTimeout(600);
+  if (before && (await snap()) !== before) problems.push(`${tag}: the door field moved under reduced motion`);
   await still.screenshot({ path: join(outDir, `site-${width}-${scheme}.png`), fullPage: true });
   await still.close();
 }
