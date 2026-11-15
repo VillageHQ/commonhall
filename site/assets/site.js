@@ -818,7 +818,7 @@
       ctx.clearRect(0, 0, width, height);
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
-      const rest = dark ? 0.09 : 0.065;
+      const rest = dark ? 0.07 : 0.05;   // strokes overlap at the jambs, so the drawn peak at rest is about 1.6x this: ~8% light, ~11% dark
       // all shut doors in two strokes: the walls, then the closed leaves
       ctx.beginPath();
       for (const d of doors) if (d.phase === 0) wallPath(d);
