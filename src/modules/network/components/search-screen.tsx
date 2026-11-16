@@ -4,9 +4,10 @@ import { useQueryClient } from "@tanstack/react-query";
 import { KeyRound } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useSyncExternalStore } from "react";
+import { useState } from "react";
 
 import { QueryBoundary } from "@/components/query-boundary";
+import { useIsInBrowser } from "@/components/use-is-in-browser";
 import { ExampleChips } from "@/components/ui/chip";
 import { FhIcon } from "@/components/ui/fh-icon";
 import { Note } from "@/components/ui/note";
@@ -67,7 +68,7 @@ export function SearchScreen(props: SearchScreenProps) {
   const query = (searchParams.get(SEARCH_PROMPT_PARAM) ?? "").trim().slice(0, SEARCH_PROMPT_MAX_LENGTH);
   const scope = readScope(searchParams.get(SEARCH_SCOPE_PARAM), defaultScope);
   // The search runs from the browser (it can take two minutes), never while the server renders the page.
-  const isInBrowser = useSyncExternalStore(subscribeToNothing, () => true, () => false);
+  const isInBrowser = useIsInBrowser();
 
   const search = (words: string, where: SearchWhere) => {
     const prompt = words.trim();
@@ -105,10 +106,6 @@ export function SearchScreen(props: SearchScreenProps) {
       </div>
     </>
   );
-}
-
-function subscribeToNothing() {
-  return () => {};
 }
 
 type SearchFormProps = { query: string; scope: SearchWhere; isVillageOn: boolean; onSearch: (words: string, where: SearchWhere) => void };

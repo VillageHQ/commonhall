@@ -7,8 +7,10 @@ import Link from "next/link";
 import { useState, type ReactNode } from "react";
 
 import { FormError } from "@/components/form-error";
+import { LoadingState } from "@/components/loading-state";
 import { BackLink } from "@/components/page-header";
 import { QueryBoundary } from "@/components/query-boundary";
+import { useIsInBrowser } from "@/components/use-is-in-browser";
 import { Button } from "@/components/ui/button";
 import { Note } from "@/components/ui/note";
 import { Pill } from "@/components/ui/pill";
@@ -23,6 +25,7 @@ import { LinkedinForm } from "./linkedin-step";
 import { NetworkFailure } from "./network-failure";
 
 const CONSENT_FIELD = "pooling";
+const NETWORK_LOADING_MESSAGE = "Checking your network…";
 
 export type MyNetworkScreenProps = {
   communityName: string;
@@ -252,13 +255,15 @@ function CurrentNetwork(props: MyNetworkScreenProps) {
 
 // Founderhall's My network (/me/network): before connecting, the three answers and the connect button; while syncing,
 // the sync meter; after, "Your network is connected".
+// The status is read from the browser only: the server sends the loading state.
 export function MyNetworkScreen(props: MyNetworkScreenProps) {
+  const isInBrowser = useIsInBrowser();
   return (
     <>
       <BackLink href={props.myProfileHref}>My profile</BackLink>
       <div className="fh-narrow">
-        <QueryBoundary loadingMessage="Checking your network…" failure={NetworkFailure}>
-          <CurrentNetwork {...props} />
+        <QueryBoundary loadingMessage={NETWORK_LOADING_MESSAGE} failure={NetworkFailure}>
+          {isInBrowser ? <CurrentNetwork {...props} /> : <LoadingState title={NETWORK_LOADING_MESSAGE} />}
         </QueryBoundary>
       </div>
     </>

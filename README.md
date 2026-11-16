@@ -64,7 +64,7 @@ There's no button, but the container image runs on Fly as it is. We tried it onc
 2. **Follow the checklist.** You land on it after you sign in. Your progress saves as you go.
    - **Brand your community:** your name, logo and color.
    - **Add your Village keys:** create your account on [Village's platform](https://village.ai/platform) with **New developer account**, and follow [Village's checklist](https://village.ai/platform/onboarding), which asks for a payment method before your app goes live. Copy both keys from [API Keys](https://village.ai/platform/settings/api-keys) and paste them in. We check them with Village before saving. In [App Settings](https://village.ai/platform/settings/app-settings), set **Title** to your community's name, because members see it when they sync.
-   - **Create the group:** first open **Network**, add your LinkedIn and sync in Village's window. Then create the group. **Your own Village network becomes shared with every current and future member.**
+   - **Create the group:** first open **Network**, add your LinkedIn and sync in Village's window. The **Sync network** button shows only after you save your LinkedIn link. Then create the group. **Your own Village network becomes shared with every current and future member.**
    - **Invite your first members:** see below.
 3. **Say hello.** Post a welcome in the feed, so the first founder doesn't walk into an empty room.
 
