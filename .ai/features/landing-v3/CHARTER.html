@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Common Hall landing page: round 3</title>
+<style>
+  body{margin:0 auto;padding:16px;font:16px/1.5 -apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:#111;background:#fff;max-width:720px}
+  h1{font-size:22px;line-height:1.25;margin:0 0 12px}
+  h2{font-size:18px;margin:22px 0 8px}
+  .box{border:1px solid #ddd;border-radius:8px;padding:12px;margin:0 0 14px;background:#fafafa}
+  .small{font-size:14px;color:#444}
+  .steps{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 6px}
+  .steps span{border:1px solid #bbb;border-radius:999px;padding:2px 10px;font-size:13px;background:#fff}
+  .steps .done{background:#e6f4ea;border-color:#8fc39a}
+  .steps .now{background:#111;color:#fff;border-color:#111}
+  .pair{display:flex;gap:10px;margin:8px 0}
+  .pair figure{flex:1;margin:0;min-width:0}
+  .pair img{width:100%;height:auto;border:1px solid #ccc;border-radius:6px;display:block}
+  figcaption{font-size:13px;color:#444;margin-top:4px}
+  .mock{border:1px solid #111;border-radius:8px;padding:10px;background:#FAFAF7;color:#111110;margin:8px 0}
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+  .tabs span{font-size:12px;border:1px solid #111;border-radius:999px;padding:1px 8px}
+  .tabs .on{background:#111;color:#fff}
+  .shot{height:90px;border:1px dashed #777;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;color:#555}
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0}
+  .cards div{border:1px solid #111;border-radius:6px;padding:8px;background:#FAFAF7;color:#111110}
+  .cards b{display:block;font-size:14px}.cards i{font-style:normal;font-size:12px;color:#555}
+  .pick{border:2px solid #2e7d32;background:#e8f5e9;border-radius:8px;padding:12px;margin:14px 0}
+  fieldset{border:1px solid #bbb;border-radius:8px;padding:12px;margin:14px 0}
+  legend{font-weight:600;padding:0 6px}
+  label{display:block;padding:8px 6px;margin:4px 0;border-radius:6px;background:#fff;border:1px solid #e3e3e3}
+  label input{margin-right:8px}
+  .gain{color:#2e7d32}.cost{color:#9c4e22}
+  details{margin:10px 0}summary{cursor:pointer;font-weight:600}
+  ul{padding-left:20px;margin:6px 0}
+</style>
+</head>
+<body>
+<h1>Common Hall landing page, round 3: less text, the rooms list back, a scrolling demo</h1>
+
+<div class="box small">
+  <b>Where the project is.</b> Goal: a landing page for Common Hall, the open-source founder community portal, that a founder trusts in one scroll.
+  <div class="steps"><span class="done">Name picked</span><span class="done">Page built</span><span class="now">Now: round 3 of the page</span><span>Next: the app's look</span></div>
+  Absi loves the first section and wants the rest simpler. Three picks below, Qareen's marked.
+</div>
+
+<h2>1. The second section: the list of the ten rooms comes back</h2>
+<p class="small">A room is one part of the app (Asks, Intros, Job board…), drawn as a room of a house.</p>
+<div class="pair">
+  <figure><img src="old-rooms.png" alt="The earlier page's second section: ten rooms, each with a small floor plan, its name, a Built or Partly tag and one line"><figcaption><b>Before</b> (the page before this one)</figcaption></figure>
+  <figure><img src="now-screens.png" alt="The current second section: six app screenshots in boxes"><figcaption><b>Now</b>: six screenshot boxes</figcaption></figure>
+</div>
+<p class="small">The list returns in the new paper-and-black look, same ten rooms, same honest tags (Built, Partly, Coming). The screenshots move into the demo below.</p>
+
+<p class="small">Qareen recommends the rooms list because Absi said the earlier second section was nicer than the boxes.</p>
+<fieldset>
+  <legend>Which second section goes under the hero?</legend>
+  <label><input type="radio" name="second" value="rooms" checked required> <b>The rooms list, in the new look (recommended)</b><br><span class="gain">+ one drawing</span> · <span class="cost">− screenshots move down</span></label>
+  <label><input type="radio" name="second" value="rooms-and-row"> <b>The rooms list, then three small screenshots</b><br><span class="gain">+ early glimpse</span> · <span class="cost">− twice the same thing</span></label>
+  <label><input type="radio" name="second" value="other"> <b>Something else, in a comment</b></label>
+</fieldset>
+
+<h2>2. A third section: the demo that moves as the reader scrolls</h2>
+<div class="mock">
+  <div class="tabs"><span class="on">1 Directory</span><span>2 Find a path</span><span>3 Ask for an intro</span><span>4 Asks board</span><span>5 Admin home</span></div>
+  <div class="shot">the screen for the active tab, pinned while the page scrolls</div>
+</div>
+<p class="small">Five real screens of the app. The picture stays in place and the tabs advance as the reader scrolls, like the demo on Village's own site. A tap on a tab works too.</p>
+<details><summary>More on the demo</summary><p class="small">One line under each screen. On a phone the tabs sit above the picture. With motion turned off in the phone's settings, it is plain tabs. The scroll motion is written in the page's own script, no outside library.</p></details>
+
+<h2>3. The comparison: titles, not sentences</h2>
+<div class="cards">
+  <div><b>Job board</b><i>Synced from 12 hiring tools</i></div>
+  <div><b>Warm intros</b><i>Both sides say yes</i></div>
+  <div><b>Network search</b><i>Paths through people</i></div>
+  <div><b>Open source</b><i>Your server, your name</i></div>
+</div>
+<p class="small">Eight cards like these, a title and a short line each, then a tick row for the four rival products (Getro, Cabal, Metal, Discord). The sentences and footnotes fold away.</p>
+
+<h2>4. Every later section: fewer words</h2>
+<p class="small">Pricing, your data and the two ways in keep their facts and lose their sentences. Nothing claims more than the app does today.</p>
+
+<details><summary>Small calls Qareen takes, and the check</summary>
+<ul>
+  <li>The job board reads 12 hiring tools today, so its line says 12, not 50.</li>
+  <li>The five demo tabs: Directory, Find a path, Ask for an intro, Asks board, Admin home, using the screenshots already on the page.</li>
+  <li>The rooms list keeps its ten rooms and the honest tags: Perks and Chat as Partly (half built), WhatsApp, Telegram and Signal as Coming (not built).</li>
+  <li>Pricing: two cards, the price and three short lines. Your data: six two-word facts. Two ways in: the form and the install line stay, the explaining sentences go.</li>
+  <li>Check: the page at phone, tablet and desktop width, light and dark, with and without motion, and the form still sends. A separate checker who did not build it reads every screen. About 2 hours to build, under 1 hour to check.</li>
+  <li>Undo: revert the pull request.</li>
+</ul>
+</details>
+
+<p class="small">Qareen recommends one pull request because the four changes touch the same page and the same look.</p>
+<fieldset>
+  <legend>Does this round go ahead as written?</legend>
+  <label><input type="radio" name="round" value="go" checked required> <b>Qareen builds all four changes in one pull request (recommended)</b><br><span class="gain">+ one review, one preview link</span> · <span class="cost">− a bigger diff to look at</span></label>
+  <label><input type="radio" name="round" value="change"> <b>Qareen changes the plan first: Absi says what in a comment</b></label>
+</fieldset>
+
+<h2>5. The app itself still wears the older look</h2>
+<div class="pair">
+  <figure><img src="landing.png" alt="The landing page on a phone: paper-white page, black text, a house floor plan"><figcaption><b>Landing page</b>: paper white, black ink</figcaption></figure>
+  <figure><img src="app.png" alt="The app's Today screen on a phone: cream page, dark-green text, rust accent"><figcaption><b>The app</b>: cream, green, rust</figcaption></figure>
+</div>
+<p class="small">Only the landing page has the new look. The app keeps the look it was built with under its earlier name (Founderhall): cream and green, another serif, the old "V" icon. Moving it over is a swap of colours, headline font, icon and name, in a separate pull request.</p>
+
+<p class="small">Qareen recommends moving the app over because one product with two looks reads as two products.</p>
+<fieldset>
+  <legend>Should the app get the landing page's look too?</legend>
+  <label><input type="radio" name="app_kit" value="plan" checked required> <b>Qareen plans it after this round and shows the plan first (recommended)</b><br><span class="gain">+ one look everywhere</span> · <span class="cost">− one more review</span></label>
+  <label><input type="radio" name="app_kit" value="keep"> <b>Qareen leaves the app on its older look</b><br><span class="gain">+ nothing moves</span> · <span class="cost">− the page shows an app in other colours</span></label>
+</fieldset>
+</body>
+</html>
