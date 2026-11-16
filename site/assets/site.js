@@ -709,6 +709,7 @@
     const hero = document.getElementById("top");
     if (!canvas || !hero || !canvas.getContext) return;
     const ctx = canvas.getContext("2d");
+    if (!ctx) return; // no drawing surface (a test browser): the page stays still, as without JavaScript
     const CELL = 72;
     const HALF_GAP = 14;      // half of the door opening; the leaf is 28 px long
     const WALL_END = 31;      // the wall runs 31 px each side of the cell centre
@@ -753,7 +754,9 @@
       hero.querySelectorAll("[data-skip-text]").forEach((el) => {
         const range = document.createRange();
         range.selectNodeContents(el);
-        Array.from(range.getClientRects()).forEach(add);
+        // a test browser without text measurement (jsdom) gets the element's box instead
+        if (typeof range.getClientRects === "function") Array.from(range.getClientRects()).forEach(add);
+        else add(el.getBoundingClientRect());
       });
       return zones;
     }
