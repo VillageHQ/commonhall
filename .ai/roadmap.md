@@ -51,6 +51,8 @@ Each open item gets these yes/no checks; code adds the points (change a number t
 - [ ] Asks board tabs (Open, Mine, Answered, Closed), search over every ask and answer, admin pin, reopen, and an Admin › Asks page — asks-tools — open pull request, [PR #39](https://github.com/VillageHQ/community/pull/39) — [charter](features/asks-tools/CHARTER.md) · [spec](features/asks-board-tools/SPEC.md)
 
 - [ ] Landing page v2: paper and ink, light and dark, blueprint hero with real faces, comparison and pricing — common-hall-v2 — open pull request — [spec](features/common-hall-v2/SPEC.md)
+- [ ] Landing page round 3: the ten rooms back as section 2, five screens on tabs that advance as the page scrolls, the comparison as title cards, fewer words — landing-v3 — open pull request — [notes](features/landing-v3/NOTES.md)
+- [ ] The app on the landing page's look: paper white and black, Newsreader headlines, the door-gap icon, the name Common Hall (Absi's pick, 16 November 2026: a plan page first)
 - [x] (superseded by v2) The landing page becomes Common Hall by Village: the blueprint drawing set (design v15), founders walking between rooms, Schedule call and GitHub, the sign-up form kept — common-hall-site — open pull request — [spec](features/common-hall-site/SPEC.md)
 
 ## Next (queued)

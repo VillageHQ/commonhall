@@ -1,7 +1,7 @@
 // Starts the production server in demo mode, opens /me/network as the demo accounts, prints browser and server errors, stops the server.
 import { spawn, execSync } from "node:child_process";
 import { createRequire } from "node:module";
-const require = createRequire("C:/Users/absi/AppData/Roaming/npm/node_modules/");
+const require = createRequire(process.env.NPM_GLOBAL_MODULES || `${process.env.APPDATA}/npm/node_modules/`);
 const { chromium } = require("playwright-core");
 const PORT = 3901, BASE = `http://localhost:${PORT}`;
 const label = process.argv[2] ?? "run";

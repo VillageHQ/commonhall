@@ -33,7 +33,8 @@
     <span class="w">Common Hall</span><span class="b">by Village</span>
   </a>
   <nav class="nav" aria-label="Page sections">
-    <a href="#screens">Screens</a>
+    <a href="#rooms">Rooms</a>
+    <a href="#demo">Screens</a>
     <a href="#compare">Compare</a>
     <a href="#pricing">Pricing</a>
     <a href="#doors">Two ways in</a>
@@ -99,66 +100,125 @@
   </div>
 </section>
 
-<!-- ============ REAL SCREENS ============ -->
-<section class="sec" id="screens" aria-labelledby="h-screens">
+<!-- ============ THE TEN ROOMS ============ -->
+<section class="sec" id="rooms" aria-labelledby="h-rooms">
   <div class="wrap">
-    <p class="eyebrow">The real app</p>
-    <h2 id="h-screens">Six screens of the portal, as members and admins see them.</h2>
-    <p class="lead">Screenshots of the app's demo, which runs on made-up people and companies.</p>
-    <div class="shots">
-      <figure><div class="frame"><picture><source media="(max-width: 600px)" srcset="assets/screens/members-directory-390.webp" width="780" height="1100"><img src="assets/screens/members-directory-1280.webp" alt="The member directory: twenty members of a community with filters for stage, sector, city and cohort." width="1016" height="640" loading="lazy"></picture></div><figcaption><b>Member directory.</b> Every member on a card, filtered by stage, sector, city and cohort.</figcaption></figure>
-      <figure><div class="frame"><picture><source media="(max-width: 600px)" srcset="assets/screens/network-search-390.webp" width="780" height="1100"><img src="assets/screens/network-search-1280.webp" alt="Network search for someone at a company, showing three people in reach with the path through a member who can introduce you." width="1016" height="640" loading="lazy"></picture></div><figcaption><b>Network search.</b> Who in reach works at a company, and the member who can introduce you.</figcaption></figure>
-      <figure><div class="frame"><picture><source media="(max-width: 600px)" srcset="assets/screens/intro-thread-390.webp" width="780" height="1100"><img src="assets/screens/intro-thread-1280.webp" alt="An introduction thread showing who is introduced to whom, through which member, and its status." width="1016" height="640" loading="lazy"></picture></div><figcaption><b>Intro thread.</b> Who asked, through whom, and where it stands. Both sides say yes first.</figcaption></figure>
-      <figure><div class="frame"><picture><source media="(max-width: 600px)" srcset="assets/screens/asks-board-390.webp" width="780" height="1100"><img src="assets/screens/asks-board-1280.webp" alt="The asks and updates board with open asks, updates and answered asks, each with its author and answer count." width="1016" height="640" loading="lazy"></picture></div><figcaption><b>Asks and updates.</b> Members ask the community for help; answers stay with the ask.</figcaption></figure>
-      <figure><div class="frame"><picture><source media="(max-width: 600px)" srcset="assets/screens/admin-home-390.webp" width="780" height="1100"><img src="assets/screens/admin-home-1280.webp" alt="The admin home counting every intro: how many were asked, accepted, introduced, declined or are still open." width="1016" height="640" loading="lazy"></picture></div><figcaption><b>Admin home.</b> Every intro counted: asked, accepted, introduced, declined. Hires and deals are not counted yet.</figcaption></figure>
-      <figure><div class="frame"><picture><source media="(max-width: 600px)" srcset="assets/screens/member-home-390.webp" width="780" height="1100"><img src="assets/screens/member-home-1280.webp" alt="A member's Today page: what they could help with this week, an intro waiting for their answer and a profile reminder." width="1016" height="640" loading="lazy"></picture></div><figcaption><b>Today, for a member.</b> What to help with this week, and an intro waiting for a yes.</figcaption></figure>
-    </div>
-  </div>
-</section>
-
-<!-- ============ COMPARISON ============ -->
-<section class="sec alt" id="compare" aria-labelledby="h-compare">
-  <div class="wrap">
-    <p class="eyebrow">Compared</p>
-    <h2 id="h-compare">Compared with Getro, Cabal, Metal and Discord.</h2>
-    <p class="lead">Read from each product's own site, docs and pricing page on 14 November 2026.</p>
-    <div class="table-wrap" role="region" aria-labelledby="h-compare" tabindex="0">
-      <table class="cmp">
-        <caption class="sr">Features of Common Hall compared with four other products</caption>
-        <thead><tr>
-          <th scope="col">What you get</th>
-          <th scope="col" class="us">Common Hall</th>
-          <th scope="col"><a href="https://www.getro.com/" rel="noopener">Getro</a></th>
-          <th scope="col"><a href="https://getcabal.com/" rel="noopener">Cabal</a></th>
-          <th scope="col"><a href="https://www.metal.so/" rel="noopener">Metal</a></th>
-          <th scope="col"><a href="https://discord.com/" rel="noopener">Discord</a></th>
-        </tr></thead>
-        <tbody>
-          <tr><th scope="row">Warm intros, both sides say yes</th><td class="us y">Yes</td><td>Yes, consent flow not described</td><td>Earlier product only</td><td>For one founder's raise</td><td class="n">—</td></tr>
-          <tr><th scope="row">Search the network's connections</th><td class="us y">Yes</td><td>Yes</td><td>Earlier product only</td><td>Own contacts only</td><td class="n">—</td></tr>
-          <tr><th scope="row">Member directory that fills itself</th><td class="us y">Yes</td><td>Admin CRM, not member-facing</td><td class="n">—</td><td class="n">—</td><td>Member list only</td></tr>
-          <tr><th scope="row">Startup perks</th><td class="us">Partly</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n">—</td></tr>
-          <tr><th scope="row">Admin dashboard: intros counted</th><td class="us y">Yes <span class="sm">(hires and deals: coming)</span></td><td>Yes, intro tracking by hand</td><td>Email opens only</td><td>Per founder</td><td>Engagement only</td></tr>
-          <tr><th scope="row">Mentor network</th><td class="us">Not yet</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n">—</td></tr>
-          <tr><th scope="row">Job board from your hiring tools</th><td class="us y">Yes</td><td>Yes, daily, 850+ teams</td><td class="n">—</td><td class="n">—</td><td class="n">—</td></tr>
-          <tr><th scope="row">Asks and answers board</th><td class="us y">Yes <span class="sm">(posts to Slack and Discord)</span></td><td>Intro target lists</td><td>Earlier product only</td><td class="n">—</td><td>Forum channels, by hand</td></tr>
-          <tr><th scope="row">Under your own name and domain</th><td class="us y">Yes, the whole portal</td><td>Job board only</td><td class="n">—</td><td class="n">—</td><td>No</td></tr>
-          <tr><th scope="row">Open source, self-host</th><td class="us y">Yes, AGPL</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n">—</td></tr>
-          <tr><th scope="row">Public price</th><td class="us y">Free / $10,000 a year</td><td>$2,520 to $9,100 a year</td><td>$19 a month per user <span class="sm">(email product)</span></td><td>Not public</td><td>Free</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <ul class="notes">
-      <li>A dash means not found on the product's own site, docs or pricing page on 14 November 2026.</li>
-      <li>Cabal today sells investor-update email; its intro and search features are from its earlier product and are labelled so.</li>
-      <li>Metal is a fundraising tool for one founder that accelerators hand out, not a community portal.</li>
-      <li>Getro is the stronger choice for job-board reach (850+ teams) and for contact data. It was bought by Findem in December 2025.</li>
+    <p class="eyebrow">Ten rooms, ten modules</p>
+    <h2 id="h-rooms">Every room, marked as it stands.</h2>
+    <svg width="0" height="0" aria-hidden="true" focusable="false" class="defs"><symbol id="kp-walls" viewBox="0 0 360 300"><path d="M10 10H350V290H10Z M10 95H350 M110 10V95 M210 10V95 M250 95V195 M10 195H350 M85 195V290 M170 195V290 M240 195V290 M295 195V290"/></symbol></svg>
+    <ul class="rooms" aria-label="The ten rooms and their status">
+      <li class="room"><svg class="kp" viewBox="0 0 360 300" aria-hidden="true"><rect class="lit" x="10" y="10" width="100" height="85"/><use href="#kp-walls"/></svg><div class="rm"><p class="rm-top"><b>Asks</b><span class="stp built">Built</span></p><p>Five kinds of ask. Answers kept.</p></div></li>
+      <li class="room"><svg class="kp" viewBox="0 0 360 300" aria-hidden="true"><rect class="lit" x="110" y="10" width="100" height="85"/><use href="#kp-walls"/></svg><div class="rm"><p class="rm-top"><b>Intros</b><span class="stp built">Built</span></p><p>Nobody is introduced without saying yes.</p></div></li>
+      <li class="room"><svg class="kp" viewBox="0 0 360 300" aria-hidden="true"><rect class="lit" x="210" y="10" width="140" height="85"/><use href="#kp-walls"/></svg><div class="rm"><p class="rm-top"><b>Network</b><span class="stp built">Built</span></p><p>Paths through people, never contact lists.</p></div></li>
+      <li class="room"><svg class="kp" viewBox="0 0 360 300" aria-hidden="true"><rect class="lit" x="10" y="95" width="240" height="100"/><use href="#kp-walls"/></svg><div class="rm"><p class="rm-top"><b>Members</b><span class="stp built">Built</span></p><p>Who is here, and how they help.</p></div></li>
+      <li class="room"><svg class="kp" viewBox="0 0 360 300" aria-hidden="true"><rect class="lit" x="250" y="95" width="100" height="100"/><use href="#kp-walls"/></svg><div class="rm"><p class="rm-top"><b>Messages</b><span class="stp built">Built</span></p><p>One-to-one, between members.</p></div></li>
+      <li class="room"><svg class="kp" viewBox="0 0 360 300" aria-hidden="true"><rect class="lit" x="10" y="195" width="75" height="95"/><use href="#kp-walls"/></svg><div class="rm"><p class="rm-top"><b>Feed</b><span class="stp built">Built</span></p><p>Ask, Win and Offer posts.</p></div></li>
+      <li class="room"><svg class="kp" viewBox="0 0 360 300" aria-hidden="true"><rect class="lit" x="85" y="195" width="85" height="95"/><use href="#kp-walls"/></svg><div class="rm"><p class="rm-top"><b>Job board</b><span class="stp built">Built</span></p><p>12 hiring tools, read every hour.</p></div></li>
+      <li class="room"><svg class="kp" viewBox="0 0 360 300" aria-hidden="true"><rect class="lit" x="170" y="195" width="70" height="95"/><use href="#kp-walls"/></svg><div class="rm"><p class="rm-top"><b>Perks</b><span class="stp partly">Partly</span></p><p>Your perks marketplace, inside the portal.</p></div></li>
+      <li class="room"><svg class="kp" viewBox="0 0 360 300" aria-hidden="true"><rect class="lit" x="240" y="195" width="55" height="95"/><use href="#kp-walls"/></svg><div class="rm"><p class="rm-top"><b>Chat</b><span class="stp partly">Partly</span></p><p>Asks go out to Slack and Discord.</p><p class="soon"><span class="stp coming">Coming</span>WhatsApp, Telegram, Signal</p></div></li>
+      <li class="room"><svg class="kp" viewBox="0 0 360 300" aria-hidden="true"><rect class="lit" x="295" y="195" width="55" height="95"/><use href="#kp-walls"/></svg><div class="rm"><p class="rm-top"><b>Admin</b><span class="stp built">Built</span></p><p>Every intro, ask and outcome, counted.</p></div></li>
     </ul>
   </div>
 </section>
 
+<!-- ============ THE DEMO: five screens, pinned while the page scrolls ============ -->
+<section class="sec alt" id="demo" aria-labelledby="h-demo">
+  <div class="wrap">
+    <p class="eyebrow">The real app</p>
+    <h2 id="h-demo">Five screens, as members and admins see them.</h2>
+    <div class="demo" id="demo-root">
+      <div class="demo-stage">
+        <div class="demo-tabs" role="tablist" aria-label="Screens of the app">
+          <button class="demo-tab is-on" type="button" role="tab" id="dt-1" aria-controls="dp-1" aria-selected="true" data-step="0"><span class="n" aria-hidden="true">1</span>Directory</button>
+          <button class="demo-tab" type="button" role="tab" id="dt-2" aria-controls="dp-2" aria-selected="false" data-step="1" tabindex="-1"><span class="n" aria-hidden="true">2</span>Find a path</button>
+          <button class="demo-tab" type="button" role="tab" id="dt-3" aria-controls="dp-3" aria-selected="false" data-step="2" tabindex="-1"><span class="n" aria-hidden="true">3</span>Ask for an intro</button>
+          <button class="demo-tab" type="button" role="tab" id="dt-4" aria-controls="dp-4" aria-selected="false" data-step="3" tabindex="-1"><span class="n" aria-hidden="true">4</span>Asks board</button>
+          <button class="demo-tab" type="button" role="tab" id="dt-5" aria-controls="dp-5" aria-selected="false" data-step="4" tabindex="-1"><span class="n" aria-hidden="true">5</span>Admin home</button>
+        </div>
+        <div class="demo-panels">
+          <figure class="demo-panel is-on" id="dp-1" role="tabpanel" aria-labelledby="dt-1"><div class="frame"><picture><source media="(max-width: 600px)" srcset="assets/screens/members-directory-390.webp" width="780" height="1100"><img src="assets/screens/members-directory-1280.webp" alt="The member directory: twenty members of a community with filters for stage, sector, city and cohort." width="1016" height="640" loading="lazy"></picture></div><figcaption>Every member on a card. Filter by stage, sector, city and cohort.</figcaption></figure>
+          <figure class="demo-panel" id="dp-2" role="tabpanel" aria-labelledby="dt-2"><div class="frame"><picture><source media="(max-width: 600px)" srcset="assets/screens/network-search-390.webp" width="780" height="1100"><img src="assets/screens/network-search-1280.webp" alt="Network search for someone at a company, showing three people in reach with the path through a member who can introduce you." width="1016" height="640" loading="lazy"></picture></div><figcaption>Who in reach works at a company, and the member who can introduce you.</figcaption></figure>
+          <figure class="demo-panel" id="dp-3" role="tabpanel" aria-labelledby="dt-3"><div class="frame"><picture><source media="(max-width: 600px)" srcset="assets/screens/intro-thread-390.webp" width="780" height="1100"><img src="assets/screens/intro-thread-1280.webp" alt="An introduction thread showing who is introduced to whom, through which member, and its status." width="1016" height="640" loading="lazy"></picture></div><figcaption>Who asked, through whom, and where it stands. Both sides say yes first.</figcaption></figure>
+          <figure class="demo-panel" id="dp-4" role="tabpanel" aria-labelledby="dt-4"><div class="frame"><picture><source media="(max-width: 600px)" srcset="assets/screens/asks-board-390.webp" width="780" height="1100"><img src="assets/screens/asks-board-1280.webp" alt="The asks and updates board with open asks, updates and answered asks, each with its author and answer count." width="1016" height="640" loading="lazy"></picture></div><figcaption>Members ask the community for help. Answers stay with the ask.</figcaption></figure>
+          <figure class="demo-panel" id="dp-5" role="tabpanel" aria-labelledby="dt-5"><div class="frame"><picture><source media="(max-width: 600px)" srcset="assets/screens/admin-home-390.webp" width="780" height="1100"><img src="assets/screens/admin-home-1280.webp" alt="The admin home counting every intro: how many were asked, accepted, introduced, declined or are still open." width="1016" height="640" loading="lazy"></picture></div><figcaption>Every intro counted: asked, accepted, introduced, declined.</figcaption></figure>
+        </div>
+      </div>
+    </div>
+    <p class="fine demo-note">Screenshots of the app's demo, which runs on made-up people and companies.</p>
+  </div>
+</section>
+
+<!-- ============ WHAT YOU GET, COMPARED ============ -->
+<section class="sec" id="compare" aria-labelledby="h-compare">
+  <div class="wrap">
+    <p class="eyebrow">What you get</p>
+    <h2 id="h-compare">The portal, in eight pieces.</h2>
+    <ul class="pieces" aria-label="The eight pieces of the portal">
+      <li><b>Warm intros</b><span>Both sides say yes</span></li>
+      <li><b>Network search</b><span>Paths through people</span></li>
+      <li><b>Member directory</b><span>Fills itself</span></li>
+      <li><b>Asks board</b><span>Answers stay with the ask</span></li>
+      <li><b>Job board</b><span>Synced from 12 hiring tools</span></li>
+      <li><b>Admin dashboard</b><span>Every intro counted</span></li>
+      <li><b>Your own domain</b><span>Your name on the door</span></li>
+      <li><b>Open source</b><span>AGPL. Self-host, or we host</span></li>
+    </ul>
+    <div class="ticks-wrap" role="region" aria-label="The eight pieces, compared with Getro, Cabal, Metal and Discord" tabindex="0">
+      <table class="ticks">
+        <caption class="sr">Which of the eight pieces each product has: a tick for yes, Partly for part of it, a dash for not found.</caption>
+        <thead><tr><th scope="col"><span class="sr">Piece</span></th><th scope="col" class="us">Common Hall</th><th scope="col"><a href="https://www.getro.com/" rel="noopener">Getro</a></th><th scope="col"><a href="https://getcabal.com/" rel="noopener">Cabal</a></th><th scope="col"><a href="https://www.metal.so/" rel="noopener">Metal</a></th><th scope="col"><a href="https://discord.com/" rel="noopener">Discord</a></th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Warm intros</th><td class="us y">✓</td><td class="y">✓</td><td class="n">—</td><td class="pt">Partly</td><td class="n">—</td></tr>
+          <tr><th scope="row">Network search</th><td class="us y">✓</td><td class="y">✓</td><td class="n">—</td><td class="pt">Partly</td><td class="n">—</td></tr>
+          <tr><th scope="row">Member directory</th><td class="us y">✓</td><td class="pt">Partly</td><td class="n">—</td><td class="n">—</td><td class="pt">Partly</td></tr>
+          <tr><th scope="row">Asks board</th><td class="us y">✓</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="pt">Partly</td></tr>
+          <tr><th scope="row">Job board</th><td class="us y">✓</td><td class="y">✓</td><td class="n">—</td><td class="n">—</td><td class="n">—</td></tr>
+          <tr><th scope="row">Admin dashboard</th><td class="us y">✓</td><td class="pt">Partly</td><td class="n">—</td><td class="pt">Partly</td><td class="n">—</td></tr>
+          <tr><th scope="row">Your own domain</th><td class="us y">✓</td><td class="pt">Partly</td><td class="n">—</td><td class="n">—</td><td class="n">—</td></tr>
+          <tr><th scope="row">Open source</th><td class="us y">✓</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n">—</td></tr>
+          <tr class="price"><th scope="row">Price</th><td class="us">Free / $10,000 a year</td><td>$2,520 to $9,100 a year</td><td>$19 a month per user</td><td>Not public</td><td>Free</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <details class="more">
+      <summary>Read the details</summary>
+      <p class="fine">Read from each product's own site, docs and pricing page on 14 November 2026. A dash means not found there.</p>
+      <div class="table-wrap" role="region" aria-label="Features of Common Hall compared with four other products, in detail" tabindex="0">
+        <table class="cmp">
+          <thead><tr>
+            <th scope="col">What you get</th>
+            <th scope="col" class="us">Common Hall</th>
+            <th scope="col">Getro</th>
+            <th scope="col">Cabal</th>
+            <th scope="col">Metal</th>
+            <th scope="col">Discord</th>
+          </tr></thead>
+          <tbody>
+            <tr><th scope="row">Warm intros, both sides say yes</th><td class="us y">Yes</td><td>Yes, consent flow not described</td><td>Earlier product only</td><td>For one founder's raise</td><td class="n">—</td></tr>
+            <tr><th scope="row">Search the network's connections</th><td class="us y">Yes</td><td>Yes</td><td>Earlier product only</td><td>Own contacts only</td><td class="n">—</td></tr>
+            <tr><th scope="row">Member directory that fills itself</th><td class="us y">Yes</td><td>Admin CRM, not member-facing</td><td class="n">—</td><td class="n">—</td><td>Member list only</td></tr>
+            <tr><th scope="row">Startup perks</th><td class="us">Partly</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n">—</td></tr>
+            <tr><th scope="row">Admin dashboard: intros counted</th><td class="us y">Yes <span class="sm">(hires and deals: coming)</span></td><td>Yes, intro tracking by hand</td><td>Email opens only</td><td>Per founder</td><td>Engagement only</td></tr>
+            <tr><th scope="row">Mentor network</th><td class="us">Not yet</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n">—</td></tr>
+            <tr><th scope="row">Job board from your hiring tools</th><td class="us y">Yes, 12 tools</td><td>Yes, daily, 850+ teams</td><td class="n">—</td><td class="n">—</td><td class="n">—</td></tr>
+            <tr><th scope="row">Asks and answers board</th><td class="us y">Yes <span class="sm">(posts to Slack and Discord)</span></td><td>Intro target lists</td><td>Earlier product only</td><td class="n">—</td><td>Forum channels, by hand</td></tr>
+            <tr><th scope="row">Under your own name and domain</th><td class="us y">Yes, the whole portal</td><td>Job board only</td><td class="n">—</td><td class="n">—</td><td>No</td></tr>
+            <tr><th scope="row">Open source, self-host</th><td class="us y">Yes, AGPL</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n">—</td></tr>
+            <tr><th scope="row">Public price</th><td class="us y">Free / $10,000 a year</td><td>$2,520 to $9,100 a year</td><td>$19 a month per user <span class="sm">(email product)</span></td><td>Not public</td><td>Free</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <ul class="notes">
+        <li>Cabal today sells investor-update email; its intro and search features are from its earlier product and are labelled so.</li>
+        <li>Metal is a fundraising tool for one founder that accelerators hand out, not a community portal.</li>
+        <li>Getro is the stronger choice for job-board reach (850+ teams) and for contact data. It was bought by Findem in December 2025.</li>
+      </ul>
+    </details>
+  </div>
+</section>
+
 <!-- ============ PRICING ============ -->
-<section class="sec" id="pricing" aria-labelledby="h-pricing">
+<section class="sec alt" id="pricing" aria-labelledby="h-pricing">
   <div class="wrap">
     <p class="eyebrow">Pricing</p>
     <h2 id="h-pricing">Free to run yourself. Or Village runs it.</h2>
@@ -167,11 +227,9 @@
         <p class="pc-k">Community</p>
         <h3 id="p-community"><span class="price">Free</span></h3>
         <ul>
-          <li>The whole app, under the AGPL open-source licence.</li>
-          <li>Your own server, with one install line.</li>
-          <li>Your own Village account key for network search and profile filling, pay as you go.</li>
-          <li>Updates from the repo.</li>
-          <li>Community support on GitHub.</li>
+          <li>The whole app, open source under the AGPL.</li>
+          <li>Your own server, one install line.</li>
+          <li>Your own Village key, pay as you go.</li>
         </ul>
         <a class="btn out" href="#door-self">Run it yourself</a>
       </article>
@@ -180,34 +238,34 @@
         <h3 id="p-enterprise"><span class="price">$10,000</span> <span class="per">a year</span></h3>
         <ul>
           <li>Village hosts and runs it under your domain.</li>
-          <li>Set-up in week one, backups, updates and support.</li>
-          <li>7,500 credits a month. One credit is one network search or one profile filled from Village's data.</li>
-          <li>Up to 500 members; a quote above that.</li>
+          <li>7,500 credits a month. Up to 500 members.</li>
+          <li>Set-up in week one. Backups, updates, support.</li>
         </ul>
         <a class="btn solid" href="#door-managed">Schedule a call</a>
       </article>
     </div>
+    <p class="fine">One credit is one network search or one profile filled from Village's data. Above 500 members, a quote.</p>
   </div>
 </section>
 
 <!-- ============ YOUR DATA ============ -->
-<section class="sec alt" id="data" aria-labelledby="h-data">
+<section class="sec" id="data" aria-labelledby="h-data">
   <div class="wrap">
     <p class="eyebrow">Your data</p>
     <h2 id="h-data">Your name, your domain, your members' consent.</h2>
     <ul class="facts">
-      <li><b>Under your name and domain.</b> Members see your community, not ours.</li>
-      <li><b>Self-host anywhere,</b> the EU included. For the managed plan, ask us about EU hosting.</li>
-      <li><b>Intros need both sides' yes.</b> Nobody is introduced who did not agree.</li>
-      <li><b>An admin audit log</b> records what admins do.</li>
-      <li><b>Sign-in by email link</b> for members.</li>
-      <li><b>Village</b> is the company behind the optional network search and profile filling.</li>
+      <li><b>Your name on the door.</b> Members see your community, not ours.</li>
+      <li><b>Self-host anywhere.</b> EU included. Managed plan: ask us about EU hosting.</li>
+      <li><b>Both sides say yes.</b> Nobody is introduced who did not agree.</li>
+      <li><b>Admin audit log.</b> What admins do is recorded.</li>
+      <li><b>Sign-in by email link.</b> No password for members.</li>
+      <li><b>Village is optional.</b> It powers network search and profile filling.</li>
     </ul>
   </div>
 </section>
 
 <!-- ============ TWO WAYS IN ============ -->
-<section class="sec" id="doors" aria-labelledby="h-doors">
+<section class="sec alt" id="doors" aria-labelledby="h-doors">
   <div class="wrap">
     <p class="eyebrow">Two ways in</p>
     <h2 id="h-doors">Schedule a call, or install it today.</h2>
@@ -229,7 +287,7 @@
           <div class="honeypot" aria-hidden="true"><label for="f-website">Leave this empty</label><input id="f-website" name="website" tabindex="-1" autocomplete="off"></div>
           <button class="btn solid" type="submit">Schedule a call</button>
           <p class="form-error" id="form-error" role="alert" hidden></p>
-          <p class="fine">Village replies within 1 business day with a time for the call. Your details are used only for this request.</p>
+          <p class="fine">Village replies within 1 business day. Your details are used only for this request.</p>
         </form>
         <div class="confirm" id="signup-confirm" role="status" aria-live="polite" tabindex="-1" hidden>
           <p class="confirm-title"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg><span data-confirm-title>Request received.</span></p>
@@ -248,7 +306,6 @@
           <button class="btn solid js-only" type="button" data-open-setup>Set up with an assistant</button>
           <a class="btn out" href="https://github.com/VillageHQ/community/blob/main/docs/self-host-vps.md" target="_blank" rel="noopener">Read the self-host guide</a>
         </div>
-        <p class="fine">Point a domain at your server and paste one command: it runs on HTTPS, restarts by itself and backs up every day. The guide says what to rent.</p>
       </div>
     </div>
   </div>

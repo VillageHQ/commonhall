@@ -1,8 +1,8 @@
 # Common Hall by Village: landing page
 
 The public page for the app in this repo, under the name Common Hall by Village. One page in a light and a dark theme
-(paper and ink): a first screen with a blueprint house and eight made-up members, six real screens of the demo, a
-comparison, pricing, a data section and two ways in (a "Schedule a call" form and the self-host install). Plain HTML,
+(paper and ink): a first screen with a blueprint house and eight made-up members, the ten rooms with their status, five real
+screens of the demo on tabs that advance as the page scrolls, a comparison, pricing, a data section and two ways in (a "Schedule a call" form and the self-host install). Plain HTML,
 CSS and JavaScript, no framework, no script library, no build step. It loads nothing from third parties: the fonts are
 files in this folder.
 
@@ -43,7 +43,7 @@ directory is `site` itself.
 
 - Every product claim must be true of the app on `main`. Today: Perks is Partly, the admin home counts intros only
   (hires and deals are "coming"), Chat posts to Slack and Discord, there is no mentor network.
-- The comparison rows come from the research file read on 14 November 2026; re-read the four products before changing a cell.
+- The comparison (the tick table and the long table under "Read the details") comes from the research file read on 14 November 2026; re-read the four products before changing a cell. The tick table says ✓ only where the long table says Yes, Partly where it names a part, a dash where nothing was found.
 - The screenshots are of the demo (made-up people and companies); the demo banner is cropped off.
 - The install line matches the root `README.md` exactly; the guide link goes to `docs/self-host-vps.md`.
 
@@ -77,6 +77,6 @@ overflow, a missing anchor or text under 4.5:1 contrast. It saves full-page shot
   files in `assets/fonts/`.
 - The eight portraits in `assets/faces/` are the app's made-up demo people (generated, no real person), credited in
   `public/demo/CREDITS.md`.
-- The six screenshots in `assets/screens/` are of the app's demo.
+- The screenshots in `assets/screens/` are of the app's demo (five are on the page; the member-home crop stays for later).
 - The GitHub mark in the GitHub card is GitHub's logo, used to link to the repository.
 - `assets/og.png` (1200 × 630) is rendered from the page's own first screen; `assets/favicon.svg` is the logo mark.

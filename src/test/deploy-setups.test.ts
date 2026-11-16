@@ -28,12 +28,13 @@ describe("every deploy setup runs the timed jobs", () => {
     for (const link of links) expect(link.searchParams.get("env")?.split(",")).toEqual(["SETUP_TOKEN", "CRON_SECRET"]);
   });
 
-  // The website offers no Vercel button until a live test shows the weekly email sends there.
-  it("the website has no Vercel button, and keeps DigitalOcean and the self-host guide", () => {
+  // The website offers no deploy buttons (no Vercel until a live test shows the weekly email sends there; the
+  // DigitalOcean button left with the Common Hall page): it keeps the install line and the self-host guide.
+  it("the website has no Vercel button, and keeps the install line and the self-host guide", () => {
     const site = readRepositoryFile("site/index.html");
     expect(readVercelButtonLinks("site/index.html")).toEqual([]);
     expect(site).not.toMatch(/Deploy on Vercel/);
-    expect(site).toMatch(/cloud\.digitalocean\.com\/apps\/new/);
+    expect(site).toMatch(/install\.sh \| sudo bash/);
     expect(site).toMatch(/docs\/self-host-vps\.md/);
   });
 
