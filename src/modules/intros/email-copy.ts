@@ -41,7 +41,7 @@ const LINK_PATTERN = /(https?:\/\/[^\s]+)/g;
 // The text as html: one block that keeps its lines, each link clickable.
 export function renderPlainHtml(text: string) {
   const parts = text.split(LINK_PATTERN).map((part, index) => (index % 2 === 1 ? `<a href="${escapeHtml(part)}">${escapeHtml(part)}</a>` : escapeHtml(part)));
-  return `<div style="font-family:Arial,sans-serif;font-size:15px;line-height:22px;color:#1b2420;max-width:600px;white-space:pre-wrap">${parts.join("")}</div>`;
+  return `<div style="font-family:Arial,sans-serif;font-size:15px;line-height:22px;color:#111110;max-width:600px;white-space:pre-wrap">${parts.join("")}</div>`;
 }
 
 function email(subject: string, lines: readonly string[]) {

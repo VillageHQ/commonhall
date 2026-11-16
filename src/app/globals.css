@@ -82,56 +82,56 @@
 :root {
   color-scheme: light;
 
-  --background: #f6f2e9;
-  --foreground: #1b2420;
-  --foreground-soft: #59625d;
-  --card: #fffdf8;
-  --popover: #fffdf8;
-  --muted: #ece6d8;
-  --muted-foreground: #59625d;
-  --border: #dad2c1;
-  --rule: #dad2c1;
-  --input: #59625d;
-  --logo-backdrop-dark: #1b2420;
+  --background: #fafaf7;
+  --foreground: #111110;
+  --foreground-soft: #4a4a46;
+  --card: #ffffff;
+  --popover: #ffffff;
+  --muted: #f2f1ec;
+  --muted-foreground: #4a4a46;
+  --border: #d6d5cf;
+  --rule: #d6d5cf;
+  --input: #6b6b66;
+  --logo-backdrop-dark: #111110;
   --destructive: #9c4e22;
-  --destructive-foreground: #fffdf8;
-  --destructive-soft: #f2e2d6;
+  --destructive-foreground: #ffffff;
+  --destructive-soft: #f3e4da;
   --destructive-text: #9c4e22;
-  --gold-soft: #f2e2d6;
+  --gold-soft: #f3e4da;
   --gold-text: #9c4e22;
-  --sage-soft: #dce7e0;
-  --sage-text: #2c4a3e;
+  --sage-soft: #e8e8e3;
+  --sage-text: #2e2e2b;
 
   --tint-a-bg: #d3e3e2;
-  --tint-a-fg: #1b2420;
+  --tint-a-fg: #111110;
   --tint-b-bg: #d3e2d8;
-  --tint-b-fg: #1b2420;
+  --tint-b-fg: #111110;
   --tint-c-bg: #e6d8c2;
-  --tint-c-fg: #1b2420;
+  --tint-c-fg: #111110;
   --tint-d-bg: #dcdccf;
-  --tint-d-fg: #1b2420;
+  --tint-d-fg: #111110;
   --tint-e-bg: #d3e2d8;
-  --tint-e-fg: #1b2420;
+  --tint-e-fg: #111110;
   --tint-f-bg: #e6d8c2;
-  --tint-f-fg: #1b2420;
+  --tint-f-fg: #111110;
 
   /* Founderhall's own tokens (portal/public/app.css :root). --fund and its two neighbours come from the branding. */
-  --ink: #1b2420;
-  --spine: #2c4a3e;
-  --graphite: #59625d;
+  --ink: #111110;
+  --spine: #111110;
+  --graphite: #4a4a46;
   --ribbon: #9c4e22;
-  --paper: #f6f2e9;
-  --leaf: #fffdf8;
-  --vellum: #ece6d8;
-  --side: #efe9dd;
-  --ribbon-tint: #f2e2d6;
-  --spine-tint: #dce7e0;
+  --paper: #fafaf7;
+  --leaf: #ffffff;
+  --vellum: #f2f1ec;
+  --side: #f2f1ec;
+  --ribbon-tint: #f3e4da;
+  --spine-tint: #ecece8;
   --sans: var(--font-plex-sans), "IBM Plex Sans", "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
-  --serif: var(--font-source-serif), "Source Serif 4", "Source Serif Pro", Charter, "Iowan Old Style", Georgia, "Times New Roman", serif;
+  --serif: var(--font-newsreader), "Newsreader", "Iowan Old Style", Georgia, "Times New Roman", serif;
   --mono: var(--font-plex-mono), "IBM Plex Mono", "Cascadia Mono", Consolas, "SF Mono", ui-monospace, monospace;
   --r: 8px;
   --r-sm: 6px;
-  --shadow: 0 1px 2px rgba(27, 36, 32, 0.06), 0 6px 18px -8px rgba(27, 36, 32, 0.18);
+  --shadow: 0 1px 2px rgba(17, 17, 16, 0.06), 0 6px 18px -8px rgba(17, 17, 16, 0.18);
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
   --tab-h: 64px;
 
@@ -152,25 +152,25 @@
 .dark {
   color-scheme: dark;
 
-  --background: #1a1915;
-  --foreground: #e6dfd0;
-  --foreground-soft: #aaa395;
-  --card: #23211c;
-  --popover: #23211c;
-  --muted: #2f2c25;
-  --muted-foreground: #aaa395;
-  --border: #3a362f;
-  --rule: #3a362f;
-  --input: #8a8477;
-  --logo-backdrop-dark: #e6dfd0;
+  --background: #0e0e0d;
+  --foreground: #f4f2ec;
+  --foreground-soft: #b8b6ae;
+  --card: #161615;
+  --popover: #161615;
+  --muted: #1e1e1c;
+  --muted-foreground: #b8b6ae;
+  --border: #33332f;
+  --rule: #33332f;
+  --input: #8f8d85;
+  --logo-backdrop-dark: #f4f2ec;
   --destructive: #e7a57e;
-  --destructive-foreground: #1a1915;
-  --destructive-soft: #3d2a1f;
+  --destructive-foreground: #0e0e0d;
+  --destructive-soft: #3a2a1f;
   --destructive-text: #e7a57e;
-  --gold-soft: #3d2a1f;
+  --gold-soft: #3a2a1f;
   --gold-text: #e7a57e;
-  --sage-soft: #243329;
-  --sage-text: #9fc5ae;
+  --sage-soft: #2a2a27;
+  --sage-text: #e4e2db;
 
   --tint-a-bg: #2c3c3b;
   --tint-a-fg: #e6dfd0;
@@ -185,27 +185,27 @@
   --tint-f-bg: #40372a;
   --tint-f-fg: #e6dfd0;
 
-  --ink: #e6dfd0;
-  --spine: #9fc5ae;
-  --graphite: #aaa395;
+  --ink: #f4f2ec;
+  --spine: #f4f2ec;
+  --graphite: #b8b6ae;
   --ribbon: #e7a57e;
-  --paper: #1a1915;
-  --leaf: #23211c;
-  --vellum: #2f2c25;
-  --side: #151410;
-  --ribbon-tint: #3d2a1f;
-  --spine-tint: #243329;
+  --paper: #0e0e0d;
+  --leaf: #161615;
+  --vellum: #1e1e1c;
+  --side: #0a0a09;
+  --ribbon-tint: #3a2a1f;
+  --spine-tint: #2a2a27;
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 6px 18px -8px rgba(0, 0, 0, 0.6);
 
   /* Founderhall's literal colours, dark (design-system.md §1.1 "other literal colours"). */
-  --fh-placeholder: #8f897c;
-  --fh-chip-hover: #3a362e;
-  --fh-switch-off: #8a8477;
-  --fh-dash: #7a7466;
-  --fh-declined: #7d827e;
-  --fh-scrollbar: #4a463d;
-  --fh-mail-head: #2a2822;
-  --fh-logo-tile: #f4f0e6;
+  --fh-placeholder: #8f8d85;
+  --fh-chip-hover: #2a2a27;
+  --fh-switch-off: #8f8d85;
+  --fh-dash: #7a7872;
+  --fh-declined: #7d7d78;
+  --fh-scrollbar: #4a4a45;
+  --fh-mail-head: #1a1a18;
+  --fh-logo-tile: #f4f2ec;
 
   --elevation-panel: 0 0 0 1px var(--rule);
   --elevation-sheet: 0 -1px 0 var(--rule);
@@ -586,7 +586,7 @@
 }
 
 .dark .fh-btn-ink:hover {
-  background: #fffdf8;
+  background: #f4f2ec;
   color: var(--paper);
 }
 
@@ -615,48 +615,48 @@
 @media print {
   .dark {
     color-scheme: light;
-    --background: #f6f2e9;
-    --foreground: #1b2420;
-    --foreground-soft: #59625d;
-    --card: #fffdf8;
-    --popover: #fffdf8;
-    --muted: #ece6d8;
-    --muted-foreground: #59625d;
-    --border: #dad2c1;
-    --rule: #dad2c1;
-    --input: #59625d;
-    --logo-backdrop-dark: #1b2420;
+    --background: #fafaf7;
+    --foreground: #111110;
+    --foreground-soft: #4a4a46;
+    --card: #ffffff;
+    --popover: #ffffff;
+    --muted: #f2f1ec;
+    --muted-foreground: #4a4a46;
+    --border: #d6d5cf;
+    --rule: #d6d5cf;
+    --input: #6b6b66;
+    --logo-backdrop-dark: #111110;
     --destructive: #9c4e22;
-    --destructive-foreground: #fffdf8;
-    --destructive-soft: #f2e2d6;
+    --destructive-foreground: #ffffff;
+    --destructive-soft: #f3e4da;
     --destructive-text: #9c4e22;
-    --gold-soft: #f2e2d6;
+    --gold-soft: #f3e4da;
     --gold-text: #9c4e22;
-    --sage-soft: #dce7e0;
-    --sage-text: #2c4a3e;
+    --sage-soft: #e8e8e3;
+    --sage-text: #2e2e2b;
     --tint-a-bg: #d3e3e2;
-    --tint-a-fg: #1b2420;
+    --tint-a-fg: #111110;
     --tint-b-bg: #d3e2d8;
-    --tint-b-fg: #1b2420;
+    --tint-b-fg: #111110;
     --tint-c-bg: #e6d8c2;
-    --tint-c-fg: #1b2420;
+    --tint-c-fg: #111110;
     --tint-d-bg: #dcdccf;
-    --tint-d-fg: #1b2420;
+    --tint-d-fg: #111110;
     --tint-e-bg: #d3e2d8;
-    --tint-e-fg: #1b2420;
+    --tint-e-fg: #111110;
     --tint-f-bg: #e6d8c2;
-    --tint-f-fg: #1b2420;
-    --ink: #1b2420;
-    --spine: #2c4a3e;
-    --graphite: #59625d;
+    --tint-f-fg: #111110;
+    --ink: #111110;
+    --spine: #111110;
+    --graphite: #4a4a46;
     --ribbon: #9c4e22;
-    --paper: #f6f2e9;
-    --leaf: #fffdf8;
-    --vellum: #ece6d8;
-    --side: #efe9dd;
-    --ribbon-tint: #f2e2d6;
-    --spine-tint: #dce7e0;
-    --shadow: 0 1px 2px rgba(27, 36, 32, 0.06), 0 6px 18px -8px rgba(27, 36, 32, 0.18);
+    --paper: #fafaf7;
+    --leaf: #ffffff;
+    --vellum: #f2f1ec;
+    --side: #f2f1ec;
+    --ribbon-tint: #f3e4da;
+    --spine-tint: #ecece8;
+    --shadow: 0 1px 2px rgba(17, 17, 16, 0.06), 0 6px 18px -8px rgba(17, 17, 16, 0.18);
     --elevation-panel: 0 0 0 1px var(--rule);
     --elevation-sheet: 0 -1px 0 var(--rule);
   }

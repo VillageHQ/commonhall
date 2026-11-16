@@ -50,9 +50,9 @@ describe("accent derivation", () => {
     ["#0f7f86", "light", { accent: "#0f7f86", onAccent: "#ffffff", accentText: "#087980", accentSoft: "#daf5f6" }],
     ["#0f7f86", "dark", { accent: "#0f7f86", onAccent: "#ffffff", accentText: "#49a8af", accentSoft: "#0f383b" }],
     ["#ffc93c", "light", { accent: "#ffc93c", onAccent: "#000000", accentText: "#876705", accentSoft: "#f7eeda" }],
-    ["#14213d", "dark", { accent: "#59698b", onAccent: "#ffffff", accentText: "#8799bd", accentSoft: "#263149" }],
+    ["#14213d", "dark", { accent: "#536485", onAccent: "#ffffff", accentText: "#8799bd", accentSoft: "#263149" }],
     ["#e8604c", "light", { accent: "#e8604c", onAccent: "#000000", accentText: "#c13c2a", accentSoft: "#fee9e5" }],
-    ["#2556e8", "dark", { accent: "#295bed", onAccent: "#ffffff", accentText: "#6996ff", accentSoft: "#263149" }],
+    ["#2556e8", "dark", { accent: "#2556e8", onAccent: "#ffffff", accentText: "#6996ff", accentSoft: "#263149" }],
   ] as const)("matches the design table for %s in %s", (color, mode, expected) => {
     expect(deriveAccentTokens(color, mode)).toMatchObject(expected);
   });
@@ -117,7 +117,7 @@ describe("the fund colour (Founderhall's rule)", () => {
     ["#24525A", { fund: "#24525a", deep: "#1b3e44", tint: "#dce3e5", isAdjusted: false }],
     ["#ffc93c", { fund: "#8e7021", deep: "#6b5419", tint: "#ede8db", isAdjusted: true }],
     ["#0f7f86", { fund: "#0f7f86", deep: "#0b5f65", tint: "#d9ebec", isAdjusted: false }],
-    ["#e8604c", { fund: "#b54b3b", deep: "#88382c", tint: "#f3e2e0", isAdjusted: true }],
+    ["#e8604c", { fund: "#c45140", deep: "#933d30", tint: "#f6e3e0", isAdjusted: true }],
   ] as const)("gives Founderhall's values for %s", (color, expected) => {
     expect(deriveFundColors(color)).toEqual(expected);
   });

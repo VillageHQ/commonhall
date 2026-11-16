@@ -20,7 +20,7 @@ export function renderEmailTest(communityName: string, fromAddress: string) {
   const sender = splitFromAddress(toSingleLine(fromAddress)).address;
   const subject = `Test from ${community}`;
   const lines = [`This is a test from ${community}' portal. If it reached your inbox (not spam), sending from ${sender} works.`, `Sent by ${community} via its member portal.`];
-  const html = `<div style="font-family:Arial,sans-serif;font-size:16px;line-height:24px;color:#1b2420;max-width:520px;margin:0 auto;padding:24px">${lines.map((line) => `<p style="margin:0 0 16px">${escapeHtml(line)}</p>`).join("")}</div>`;
+  const html = `<div style="font-family:Arial,sans-serif;font-size:16px;line-height:24px;color:#111110;max-width:520px;margin:0 auto;padding:24px">${lines.map((line) => `<p style="margin:0 0 16px">${escapeHtml(line)}</p>`).join("")}</div>`;
   return { subject, html, text: lines.join("\n\n") };
 }
 

@@ -1,4 +1,4 @@
-# Community
+# Common Hall
 
 A private home for a VC fund's founders, ready to deploy without writing code. They join by invite, post in a shared feed, find each other in a directory, message one to one and ask each other for warm intros. Through [Village](https://village.ai), they can also search everyone's networks together.
 

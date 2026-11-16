@@ -23,7 +23,7 @@ type StepRowProps = {
 export function StepRow({ state, isDone = state === STEP_STATES.done, number, title, description, action, children }: StepRowProps) {
   return (
     <li data-slot="step-row" data-state={state} className="grid grid-cols-[26px_minmax(0,1fr)] gap-3 border-b border-rule py-4 last:border-b-0">
-      <span aria-hidden="true" className={cn("fh-lk grid size-[26px] place-items-center rounded-full border-[1.5px] border-[#9aa39e] bg-spine-tint text-[13px] font-semibold", isDone && "border-fund bg-fund text-leaf")}>
+      <span aria-hidden="true" className={cn("fh-lk grid size-[26px] place-items-center rounded-full border-[1.5px] border-[#a8a7a0] bg-spine-tint text-[13px] font-semibold", isDone && "border-fund bg-fund text-leaf")}>
         {isDone ? <Check className="size-[15px]" strokeWidth={2.6} /> : number}
       </span>
       <div className="min-w-0">

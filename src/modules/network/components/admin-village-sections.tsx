@@ -41,7 +41,7 @@ export function SelfHostBox() {
       </p>
       <p className="fh-small mt-2.5">
         <CircleCheck aria-hidden="true" className="fh-i fh-xs inline" strokeWidth={1.5} /> <b>Managed plan:</b> Village sets up the mail domain and lookups for you in week 1.{" "}
-        <a href={PRICING_URL}>Full pricing on the Founderhall site</a>
+        <a href={PRICING_URL}>Full pricing on the Common Hall site</a>
       </p>
     </section>
   );
@@ -402,7 +402,7 @@ export function CostBox() {
       </dl>
       <p className="fh-small fh-muted mt-2.5">A lookup is a profile fill-in, a search or a path check. The meter shows how many this month.</p>
       <p className="fh-small mt-2">
-        <a href={PRICING_URL}>Full pricing on the Founderhall site</a>
+        <a href={PRICING_URL}>Full pricing on the Common Hall site</a>
       </p>
     </section>
   );
