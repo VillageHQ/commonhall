@@ -226,6 +226,7 @@ h2 { font: 500 40px/1.12 var(--serif); letter-spacing: -.4px; max-width: 20em; t
 html.js .demo.is-scroll { height: calc(100vh * 3.2); }
 html.js .demo.is-scroll .demo-stage { position: sticky; top: 24px; }
 html:not(.js) .demo-tabs { display: none; }
+html:not(.js) .demo-stage { grid-template-columns: minmax(0, 1fr); }
 html:not(.js) .demo-panels { gap: 36px; }
 html:not(.js) .demo-panel { grid-area: auto; opacity: 1; visibility: visible; }
 

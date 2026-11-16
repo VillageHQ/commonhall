@@ -954,14 +954,17 @@
           panel.setAttribute("aria-hidden", i === index ? "false" : "true");
         });
         current = index;
-        // on a phone the tabs are a row that scrolls: keep the active one in view
-        const row = tabs[index].parentElement;
-        if (row.scrollWidth > row.clientWidth + 2) {
-          const left = tabs[index].offsetLeft - (row.clientWidth - tabs[index].offsetWidth) / 2;
-          if (row.scrollTo) row.scrollTo({ left, behavior: motionOn() ? "smooth" : "instant" }); else row.scrollLeft = left;
-        }
       }
-      if (focusTab) tabs[index].focus();
+      // focus first (with no scroll of its own), then centre the row: a focus after a smooth row scroll cancels it
+      if (focusTab) { try { tabs[index].focus({ preventScroll: true }); } catch (e) { tabs[index].focus(); } }
+      centreTab(index);
+    }
+    // on a phone the tabs are a row that scrolls: keep the active one in view
+    function centreTab(index) {
+      const row = tabs[index].parentElement;
+      if (row.scrollWidth <= row.clientWidth + 2) return;
+      const left = tabs[index].offsetLeft - (row.clientWidth - tabs[index].offsetWidth) / 2;
+      if (row.scrollTo) row.scrollTo({ left, behavior: motionOn() ? "smooth" : "instant" }); else row.scrollLeft = left;
     }
 
     // where step i sits in the track: the stage pins at `top`, and the track above it is split into equal steps
@@ -1001,13 +1004,20 @@
           : event.key === "Home" ? 0 : event.key === "End" ? count - 1 : null;
         if (next === null) return;
         event.preventDefault();
-        tabs[(next + count) % count].click();
-        tabs[(next + count) % count].focus();
+        const target = (next + count) % count;
+        show(target, true);
+        if (scrollMode) {
+          holdUntil = performance.now() + 900;
+          window.scrollTo({ top: stepTop(target) - (parseFloat(getComputedStyle(stage).top) || 0), behavior: "smooth" });
+        }
       });
     });
 
     function sync() {
-      const want = motionOn() && window.innerHeight >= 480;
+      // pin only when the whole stage (tabs, picture, caption) fits under the pin line, with a little room
+      const stuckTop = parseFloat(getComputedStyle(stage).top) || 0;
+      const want = motionOn() && window.innerHeight >= stage.offsetHeight + stuckTop + 32;
+      centreTab(current);
       if (want === scrollMode) return;
       scrollMode = want;
       demo.classList.toggle("is-scroll", want);

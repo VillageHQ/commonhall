@@ -13,14 +13,18 @@ The rooms, lines and tags are the v1 page's, with the job-board line at the real
 Five `button.demo-tab` (role tab) and five `figure.demo-panel` (role tabpanel) stacked in one grid cell; the active pair
 has `is-on` (panels crossfade on opacity; inactive ones are `visibility: hidden` and `aria-hidden`).
 `setUpDemo()` in `site.js`:
-- **Scroll mode** (JavaScript, motion allowed, window at least 480 px tall): `demo-root` gets `is-scroll`, which makes it
+- **Scroll mode** (JavaScript, motion allowed, and the whole stage fits under the pin line with 32 px to spare):
+  `demo-root` gets `is-scroll`, which makes it
   3.2 window-heights tall (3 on phones) and pins `.demo-stage` (`position: sticky; top: 24px`, 12 px on phones). On
   scroll, progress = how far the stage has travelled inside the track (0 when it first pins, 1 when it lets go), and the
   tab is `floor(progress × 5)`. A tap scrolls the window to the middle of that step (smooth) and holds the scroll-sync for
   0.9 s so the smooth scroll lands first. Arrow, Home and End keys move between tabs.
 - **Reduced motion** (or a very short window): no `is-scroll`, nothing pins, tabs switch on a tap only.
 - **No JavaScript:** `html:not(.js)` shows all five panels one under the other and hides the tabs.
-- On phones the tab row scrolls sideways (`overflow-x: auto`, scrollbar hidden) and the active tab is scrolled into view.
+- On phones the tab row scrolls sideways (`overflow-x: auto`, scrollbar hidden) and the active tab is centred in the row
+  (`centreTab`, also after a resize). A keyboard move focuses the tab first with `preventScroll`, then centres the row: a
+  focus after a smooth row scroll cancels that scroll (the verifier's finding).
+- Without JavaScript the stage is one column, so the stacked screens take the full width.
 The pictures are the same crops as before (`assets/screens/`); the member-home crop is no longer on the page.
 
 ## What you get (`#compare`)
