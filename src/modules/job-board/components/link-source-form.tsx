@@ -53,6 +53,12 @@ export function LinkSourceForm({ defaultCompany, isCompanyFixed }: { defaultComp
       {error ? (
         <Note kind="needs" role="alert" className="mb-3">
           {error}
+          {/* No board in the link: the words offer jobs by hand, so the way there is right here. */}
+          {linkTool.error && company.trim() !== "" ? (
+            <Button type="button" variant="secondary" size="sm" className="mt-2" disabled={isBusy} onClick={() => byHand.mutate({ company })}>
+              Add the jobs by hand instead
+            </Button>
+          ) : null}
         </Note>
       ) : null}
       <div className="fh-pair">
