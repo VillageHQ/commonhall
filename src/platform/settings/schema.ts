@@ -64,4 +64,7 @@ export const INSTANCE_SETTING_KEYS = {
   demoResetAt: "demo_reset_at",
   // When the console's launch checklist was first all done; from then on the console opens on Home's dashboard.
   consoleLaunchedAt: "console_launched_at",
+  // The guided start (/admin/start): "pending" from the first admin's creation on /setup until it is finished or
+  // skipped ("done"). Installs made before it have no value, so their admins never land there.
+  guidedStart: "guided_start",
 } as const;

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useActionState } from "react";
+import { useActionState, type ReactNode } from "react";
 import { z } from "zod";
 
 import { Field } from "@/components/form-field";
@@ -25,15 +25,16 @@ function readValues(formData: FormData): AboutValues {
   return { name: read("name"), workingOn: read("workingOn"), canHelpWith: read("canHelpWith"), role: read("role"), company: read("company"), city: read("city") };
 }
 
-// Commonhall's step 1 form: the name, the two questions, then "A few details (optional)" in pairs, and Next.
-export function AboutForm({ initialValues }: { initialValues: AboutValues }) {
+// Commonhall's step 1 form: the name, the two questions, then "A few details (optional)" in pairs, and Next. The guided
+// start's "Your card" step reuses it with its own next page and a "Skip for now" beside Next.
+export function AboutForm({ initialValues, nextHref = ROUTES.welcomePrivacy, secondary }: { initialValues: AboutValues; nextHref?: string; secondary?: ReactNode }) {
   const router = useRouter();
   const [state, formAction, isPending] = useActionState(
     async (_previous: AboutState, formData: FormData): Promise<AboutState> => {
       const values = readValues(formData);
       try {
         await postRequest(API_ROUTES.onboardingWelcome, values, z.object({ message: z.string() }), FALLBACK_ERROR_MESSAGE);
-        router.push(ROUTES.welcomePrivacy);
+        router.push(nextHref);
         // The new name shows in the menu at once.
         router.refresh();
         return { errorMessage: null, values };
@@ -98,6 +99,7 @@ export function AboutForm({ initialValues }: { initialValues: AboutValues }) {
         <Button type="submit" disabled={isPending}>
           Next
         </Button>
+        {secondary}
       </ButtonRow>
     </form>
   );

@@ -7,6 +7,9 @@ import { account, user } from "../database/auth-schema.ts";
 import type { Database } from "../database/client.ts";
 import { INSTANCE_SETTING_KEYS, instanceSettings } from "../settings/schema.ts";
 
+export const GUIDED_START_PENDING = "pending";
+export const GUIDED_START_DONE = "done";
+
 const ADMIN_ROLE = "admin";
 const CREDENTIAL_PROVIDER_ID = "credential";
 
@@ -46,6 +49,8 @@ export async function claimFirstAdmin(database: Database, firstAdmin: FirstAdmin
       providerId: CREDENTIAL_PROVIDER_ID,
       password: passwordHash,
     });
+    // The new admin lands on the guided start until it is finished or skipped (src/shell/guided-start.ts).
+    await transaction.insert(instanceSettings).values({ key: INSTANCE_SETTING_KEYS.guidedStart, value: GUIDED_START_PENDING });
     return { claimed: true };
   });
 }

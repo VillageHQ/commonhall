@@ -28,7 +28,7 @@ export function Field({ htmlFor, label, hint, error, children, className }: Fiel
   );
 }
 
-type FormFieldProps = ComponentProps<typeof Input> & { name: string; label: string; hint?: string };
+type FormFieldProps = ComponentProps<typeof Input> & { name: string; label: string; hint?: ReactNode };
 
 export function FormField({ name, label, hint, ...inputProps }: FormFieldProps) {
   return (

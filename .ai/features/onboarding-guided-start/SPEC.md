@@ -1,3 +1,7 @@
+---
+id: onboarding-guided-start
+status: building
+---
 # The guided start for a new organizer
 
 Approved by Absi on 17 Nov 2026 (decision page question 1: "4 guided steps").

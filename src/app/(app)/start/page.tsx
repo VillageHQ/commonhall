@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 
 import { getDatabase } from "@/platform/database/client";
 import { readSetupProgress } from "@/shell/admin-setup";
+import { isGuidedStartPending } from "@/shell/guided-start";
 import { readLandingPath } from "@/shell/landing";
 import { resolveOnboardingStep } from "@/shell/onboarding";
 import { ONBOARDING_STEPS } from "@/modules/members/contract-profile";
@@ -15,6 +16,9 @@ export default modulePage(membersManifest, async function LandingPage() {
   const database = getDatabase();
   const isOnboardingDone = (await resolveOnboardingStep(database, member)) === ONBOARDING_STEPS.done;
   const isAdmin = isAdminMember(member);
-  const isSetupComplete = isOnboardingDone && isAdmin ? (await readSetupProgress(database)).isComplete : false;
-  redirect(readLandingPath({ isOnboardingDone, isAdmin, isSetupComplete }));
+  const isAdminLanding = isOnboardingDone && isAdmin;
+  const [isPending, isSetupComplete] = isAdminLanding
+    ? await Promise.all([isGuidedStartPending(database), readSetupProgress(database).then(({ isComplete }) => isComplete)])
+    : [false, false];
+  redirect(readLandingPath({ isOnboardingDone, isAdmin, isGuidedStartPending: isPending, isSetupComplete }));
 });

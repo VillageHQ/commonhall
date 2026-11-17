@@ -30,6 +30,8 @@ type SettingsFormProps = {
   // Under Advanced, beside the folded fields: the mail checklist, Village, the audit log and the version (rendered on
   // the server).
   aside: ReactNode;
+  // Step 1 of the guided start: the essentials only (no Advanced), the save button says "Next", and a good save moves on.
+  guided?: { submitLabel: string; onSaved: () => void; secondary: ReactNode };
 };
 
 // "Buttons, links and the path line. Passes 8.5 : 1 on white.", or the darker shade the fund colour was moved to so
@@ -52,7 +54,7 @@ function isPreviewableLogo(url: string) {
 
 // Set up › Settings (Commonhall's settingsPage): one form, one save. In view: the name, the logo file, the colour and
 // the preview; the rest folds under Advanced with its defaults chosen. Changes are written to the audit log.
-export function SettingsForm({ saved, uploadedLogo, isMailOn, serverPlan, managedBy, aside }: SettingsFormProps) {
+export function SettingsForm({ saved, uploadedLogo, isMailOn, serverPlan, managedBy, aside, guided }: SettingsFormProps) {
   const router = useRouter();
   const flash = useFlash();
   const [values, setValues] = useState(saved);
@@ -61,6 +63,10 @@ export function SettingsForm({ saved, uploadedLogo, isMailOn, serverPlan, manage
   const isManaged = (values.plan || serverPlan) === PLANS.managed;
   const advancedErrors = ADVANCED_FIELDS.some((field) => errors[field]) ? errors : null;
   const formRef = useRef<HTMLFormElement>(null);
+  // The guided start keeps one address for every step, where a flash would outlive the fix: its failures show beside
+  // "Next" instead, and go with the next try.
+  const [guidedFailure, setGuidedFailure] = useState<string | null>(null);
+  const showFailure = (text: string) => (guided ? setGuidedFailure(text) : flash(text, { kind: FLASH_KINDS.needs }));
 
   // A failed save lands on the first field that needs a fix (Advanced has opened by then if it is in there).
   useEffect(() => {
@@ -71,16 +77,22 @@ export function SettingsForm({ saved, uploadedLogo, isMailOn, serverPlan, manage
   }, [errors]);
 
   const save = useMutation({
-    mutationFn: (body: SettingsValues) => postRequest(SETTINGS_API_ROUTE, body, settingsResponseSchema),
+    mutationFn: (body: SettingsValues) => {
+      setGuidedFailure(null);
+      return postRequest(SETTINGS_API_ROUTE, body, settingsResponseSchema);
+    },
     onSuccess: ({ saved: isSaved, errors: fieldErrors }) => {
       setErrors(fieldErrors);
-      if (isSaved) {
+      if (isSaved && guided) {
+        router.refresh();
+        guided.onSaved();
+      } else if (isSaved) {
         flash("Settings saved.");
         router.refresh();
         window.scrollTo({ top: 0 });
-      } else flash("Some settings need a fix.", { kind: FLASH_KINDS.needs });
+      } else showFailure("Some settings need a fix.");
     },
-    onError: (error) => flash(error.message, { kind: FLASH_KINDS.needs }),
+    onError: (error) => showFailure(error.message),
   });
 
   const change = (field: SettingsField) => (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setValues((current) => ({ ...current, [field]: event.target.value }));
@@ -109,14 +121,14 @@ export function SettingsForm({ saved, uploadedLogo, isMailOn, serverPlan, manage
   return (
     <form
       ref={formRef}
-      className="fh-grid"
+      className={guided ? undefined : "fh-grid"}
       noValidate
       onSubmit={(event) => {
         event.preventDefault();
         save.mutate(values);
       }}
     >
-      <div className="fh-c7 fh-stack">
+      <div className={guided ? "fh-stack" : "fh-c7 fh-stack"}>
         <section className="fh-sheet">
           <h2 className="fh-h3">Branding</h2>
           {input("name", "Community name", "Shown at the top of every page and in every email.", { maxLength: 80, required: true })}
@@ -209,11 +221,17 @@ export function SettingsForm({ saved, uploadedLogo, isMailOn, serverPlan, manage
 
         <ButtonRow>
           <Button type="submit" disabled={save.isPending}>
-            Save settings
+            {guided ? (save.isPending ? "Saving…" : guided.submitLabel) : "Save settings"}
           </Button>
+          {guided?.secondary}
         </ButtonRow>
+        {guidedFailure ? (
+          <p role="alert" className="fh-hint fh-err">
+            {guidedFailure}
+          </p>
+        ) : null}
       </div>
-
+      {guided ? null : (
       <AdvancedSection summary="Logo address, sign-in line, mail sender, hosting and data, plan, the mail checklist and the version." openWhen={advancedErrors}>
         <div className="fh-grid">
           <div className="fh-c7 fh-stack">
@@ -281,6 +299,7 @@ export function SettingsForm({ saved, uploadedLogo, isMailOn, serverPlan, manage
           <div className="fh-c5 fh-stack">{aside}</div>
         </div>
       </AdvancedSection>
+      )}
     </form>
   );
 }
