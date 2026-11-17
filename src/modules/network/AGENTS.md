@@ -1,20 +1,20 @@
 # Network
 
-Village search, sync, the community group and intro paths. Toggleable. The only module using Village.
+Village search, sync, the community group and intro paths. Toggleable; the only Village module.
 
-- `service.ts`: joining, search (one bulk paths call, kept 10 minutes), paths, keys, the group, leaving, link approval.
+- `service.ts`: joining, search (one bulk paths call, kept 10 minutes), paths, keys, group, leaving, link approval.
 - `service-search-pool.ts`: members who haven't joined search as the app's identity (in the group, unsynced).
-- `service-departure.ts`: takes a removed member out of the group. Never throws.
-- `service-settings.ts`, `contract-village-settings.ts`: group, daily limit, and the Village settings: search scope, who can introduce, the service email.
+- `service-departure.ts`: removes a departed member from the group. Never throws.
+- `service-settings.ts`, `contract-village-settings.ts`: group, daily limit, search scope, who can introduce, service email.
 - `reads-*.ts`: progress, reachable members, credit usage, search's member rows.
-- `contract*.ts`: schemas, constants. `queries.ts`: client requests. `components/`: the UI (`search-*`: /search; `my-network-screen`: /me/network).
+- `contract*.ts`: schemas, constants. `queries.ts`: client requests. `components/`: the UI (`search-*`: /search; `my-network-screen`: /me/network; `village-connect`: Connect Village).
 - `service-fill-in.ts`, `rules-fill-in.ts`, `integration.ts`: the profile fill-in: email first, then LinkedIn every 30 days; nightly (02:00–05:59 UTC) or on request. Lookups run as the app's public identity, never as a member.
 - `service-nudge.ts`: the connect meter and the admin's reminder to unconnected members, once per 30 days.
 - `components/village-disclosure.tsx`: "What Village receives", on the member's card page. Update it when a call sends Village something new.
-- `*-village-check.ts`: the admin's Village check and the member's line on My network. Free calls only, once a minute.
+- `*-village-check.ts`: the admin's Village check and the member's My network line. Free calls only, once a minute.
 - `slots.tsx`: `ConnectorAskSlot` and `ConnectorPromiseSlot`. Intros fills them, so network never imports intros.
 
-The Village client, credentials, credit ledger, error mapping and trouble emails live in `src/platform/village`. `health.ts` there records Village's last answer and trouble; admins see it, members see "Search is unavailable right now".
+The Village client, credentials, credit ledger, error mapping and trouble emails live in `src/platform/village`. `health.ts` there records Village's last answer and trouble (never for tried keys, `isTrial`); admins see it, members see "Search is unavailable right now".
 
 Rules:
 

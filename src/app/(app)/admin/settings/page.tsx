@@ -106,7 +106,7 @@ export default modulePage(adminManifest, async function AdminSettingsPage() {
   );
 
   return (
-    <AdminSection title="Settings" description="Your community’s name, look and mail. Changes are written to the audit log.">
+    <AdminSection title="Settings" description="Your community’s name, logo and colour, as founders see them on every page and email.">
       <SettingsForm
         saved={saved}
         uploadedLogo={saved.logoUrl ? null : branding.logo}
