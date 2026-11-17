@@ -63,6 +63,10 @@ export function SettingsForm({ saved, uploadedLogo, isMailOn, serverPlan, manage
   const isManaged = (values.plan || serverPlan) === PLANS.managed;
   const advancedErrors = ADVANCED_FIELDS.some((field) => errors[field]) ? errors : null;
   const formRef = useRef<HTMLFormElement>(null);
+  // The guided start keeps one address for every step, where a flash would outlive the fix: its failures show beside
+  // "Next" instead, and go with the next try.
+  const [guidedFailure, setGuidedFailure] = useState<string | null>(null);
+  const showFailure = (text: string) => (guided ? setGuidedFailure(text) : flash(text, { kind: FLASH_KINDS.needs }));
 
   // A failed save lands on the first field that needs a fix (Advanced has opened by then if it is in there).
   useEffect(() => {
@@ -73,7 +77,10 @@ export function SettingsForm({ saved, uploadedLogo, isMailOn, serverPlan, manage
   }, [errors]);
 
   const save = useMutation({
-    mutationFn: (body: SettingsValues) => postRequest(SETTINGS_API_ROUTE, body, settingsResponseSchema),
+    mutationFn: (body: SettingsValues) => {
+      setGuidedFailure(null);
+      return postRequest(SETTINGS_API_ROUTE, body, settingsResponseSchema);
+    },
     onSuccess: ({ saved: isSaved, errors: fieldErrors }) => {
       setErrors(fieldErrors);
       if (isSaved && guided) {
@@ -83,9 +90,9 @@ export function SettingsForm({ saved, uploadedLogo, isMailOn, serverPlan, manage
         flash("Settings saved.");
         router.refresh();
         window.scrollTo({ top: 0 });
-      } else flash("Some settings need a fix.", { kind: FLASH_KINDS.needs });
+      } else showFailure("Some settings need a fix.");
     },
-    onError: (error) => flash(error.message, { kind: FLASH_KINDS.needs }),
+    onError: (error) => showFailure(error.message),
   });
 
   const change = (field: SettingsField) => (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setValues((current) => ({ ...current, [field]: event.target.value }));
@@ -218,6 +225,11 @@ export function SettingsForm({ saved, uploadedLogo, isMailOn, serverPlan, manage
           </Button>
           {guided?.secondary}
         </ButtonRow>
+        {guidedFailure ? (
+          <p role="alert" className="fh-hint fh-err">
+            {guidedFailure}
+          </p>
+        ) : null}
       </div>
       {guided ? null : (
       <AdvancedSection summary="Logo address, sign-in line, mail sender, hosting and data, plan, the mail checklist and the version." openWhen={advancedErrors}>

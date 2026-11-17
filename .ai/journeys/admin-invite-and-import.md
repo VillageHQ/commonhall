@@ -6,6 +6,9 @@
 
 Who: the fund's platform lead (admin) and portfolio founders.
 
+A new admin first meets this as step 4 of the guided start (`/admin/start`, after /setup): the same paste and CSV
+forms, with the email switch.
+
 1. The admin opens Admin › Members (`/admin/members`) → "Invite someone" (one email), or "Invite many people":
    paste a list (up to 500) or upload a CSV with name, email, optional company and cohort (up to 20,000 rows).
 2. Each person gets a single-use invite for 14 days; members and pending invites are skipped and every skipped or
