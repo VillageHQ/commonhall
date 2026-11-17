@@ -12,6 +12,9 @@ const LARGE_FROM_PX = 40;
 const SMALL_RADIUS_PX = 7;
 const LARGE_RADIUS_PX = 10;
 const INITIALS_SIZE_RATIO = 0.4;
+// The dark tile's inset: a tenth of the tile, in pixels. A percentage padding resolves against the parent's width (the
+// sidebar), not the tile, and squeezed the logo to 0 x 0.
+const DARK_INSET_RATIO = 0.1;
 
 const TILE_TONES = {
   accent: "bg-fund text-leaf",
@@ -20,7 +23,7 @@ const TILE_TONES = {
 
 const LOGO_BACKDROP_CLASSES: Record<LogoBackdrop, string> = {
   [LOGO_BACKDROPS.light]: "",
-  [LOGO_BACKDROPS.dark]: "bg-[var(--logo-backdrop-dark)] p-[10%]",
+  [LOGO_BACKDROPS.dark]: "bg-[var(--logo-backdrop-dark)]",
 };
 
 type LogoTileProps = {
@@ -34,8 +37,9 @@ type LogoTileProps = {
 export function LogoTile({ name, logo, sizePx = DEFAULT_LOGO_SIZE_PX, tone = "accent", className }: LogoTileProps) {
   const dimensions = { width: sizePx, height: sizePx, borderRadius: sizePx >= LARGE_FROM_PX ? LARGE_RADIUS_PX : SMALL_RADIUS_PX };
   if (logo) {
+    const inset = logo.backdrop === LOGO_BACKDROPS.dark ? { padding: Math.round(sizePx * DARK_INSET_RATIO) } : null;
     return (
-      <span data-slot="logo-tile" style={dimensions} className={cn("inline-flex shrink-0 items-center justify-center overflow-hidden", LOGO_BACKDROP_CLASSES[logo.backdrop], className)}>
+      <span data-slot="logo-tile" style={{ ...dimensions, ...inset }} className={cn("inline-flex shrink-0 items-center justify-center overflow-hidden", LOGO_BACKDROP_CLASSES[logo.backdrop], className)}>
         <Image src={logo.url} alt="" width={sizePx} height={sizePx} unoptimized className="size-full object-contain" />
       </span>
     );
