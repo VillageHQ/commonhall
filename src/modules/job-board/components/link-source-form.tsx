@@ -8,9 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Note } from "@/components/ui/note";
 import { Select } from "@/components/ui/select";
+import { RequestFailure } from "@/platform/http/post-request";
 import { ROUTES } from "@/platform/http/routes";
 
-import { FEED_TOOLS, isFeedTool, JOB_BOARD_API_ROUTES, JOB_BOARD_LIMITS } from "../contract";
+import { FEED_TOOLS, isFeedTool, JOB_BOARD_API_ROUTES, JOB_BOARD_ERROR_CODES, JOB_BOARD_LIMITS } from "../contract";
 import { useJobAction } from "./use-job-action";
 
 // Commonhall's tool list: every tool with a public feed, then the ones without (their jobs are added by hand).
@@ -30,6 +31,8 @@ export function LinkSourceForm({ defaultCompany, isCompanyFixed }: { defaultComp
   const isBusy = linkTool.isPending || byHand.isPending;
   const done = linkTool.data ?? byHand.data ?? null;
   const error = linkTool.error?.message ?? byHand.error?.message ?? null;
+  // Only "no job board in that link" offers jobs by hand; another error (a link already on the board) does not.
+  const isNoBoard = linkTool.error instanceof RequestFailure && linkTool.error.code === JOB_BOARD_ERROR_CODES.notALink;
   if (isCompanyFixed && defaultCompany.trim() === "") {
     return (
       <p className="fh-small mt-3">
@@ -53,6 +56,23 @@ export function LinkSourceForm({ defaultCompany, isCompanyFixed }: { defaultComp
       {error ? (
         <Note kind="needs" role="alert" className="mb-3">
           {error}
+          {/* No board in the link: the words offer jobs by hand, so the way there is right here. */}
+          {isNoBoard && company.trim() !== "" ? (
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              className="mt-2"
+              disabled={isBusy}
+              onClick={() => {
+                // The message and this button go away once clicked, so nothing invites a second company.
+                linkTool.reset();
+                byHand.mutate({ company });
+              }}
+            >
+              Add the jobs by hand instead
+            </Button>
+          ) : null}
         </Note>
       ) : null}
       <div className="fh-pair">
