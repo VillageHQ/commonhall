@@ -28,6 +28,12 @@ export function readResendConfig(environment: Environment): ResendConfig | null 
   return { apiKey, fromAddress, apiUrl: environment.RESEND_API_URL?.trim() || RESEND_API_URL };
 }
 
+// Resend refused this email itself (a bad address, a bad field): another try gets the same answer. A wrong key, an
+// unverified domain (401, 403) or a rate limit (429) is not here: the admin can fix those, so those tries go on.
+const REJECTED_EMAIL_STATUSES = new Set([400, 422]);
+
+export class ResendRejectedEmailError extends Error {}
+
 export async function sendResendEmail({ apiKey, fromAddress, apiUrl }: ResendConfig, email: OutgoingEmail) {
   const response = await fetch(`${apiUrl}${EMAILS_PATH}`, {
     method: "POST",
@@ -47,5 +53,6 @@ export async function sendResendEmail({ apiKey, fromAddress, apiUrl }: ResendCon
     }),
     signal: AbortSignal.timeout(SEND_TIMEOUT_MS),
   });
+  if (REJECTED_EMAIL_STATUSES.has(response.status)) throw new ResendRejectedEmailError(`Resend refused this email (${response.status}).`);
   if (!response.ok) throw new Error(`Resend answered ${response.status}.`);
 }
