@@ -38,7 +38,27 @@ export function CheckDnsButton() {
 
 type MailDnsSettingsProps = { saved: MailSettingsBody; defaultReplyDomain: string };
 
-// Set up › Mail › DNS settings: the DKIM selector and the reply subdomain the check looks up, and a test to the admin.
+// Set up › Mail's "Send a test to me": only ever to the admin's own address. In view, beside the status line.
+export function SendTestButton() {
+  const router = useRouter();
+  const flash = useFlash();
+  const test = useMutation({
+    mutationFn: () => postRequest(API_ROUTES.adminEmailTest, {}, emailTestResultSchema),
+    onSuccess: ({ outcome, message }) => {
+      flash(message, { kind: outcome === EMAIL_TEST_OUTCOMES.sent ? FLASH_KINDS.ok : FLASH_KINDS.needs });
+      router.refresh();
+    },
+    onError: (error) => flash(error.message, { kind: FLASH_KINDS.needs }),
+  });
+  return (
+    <Button type="button" variant="secondary" size="sm" disabled={test.isPending} onClick={() => test.mutate()}>
+      <Send aria-hidden="true" strokeWidth={1.5} />
+      {test.isPending ? "Sending…" : "Send a test to me"}
+    </Button>
+  );
+}
+
+// Set up › Mail › Advanced › DNS settings: the DKIM selector and the reply subdomain the check looks up.
 export function MailDnsSettings({ saved, defaultReplyDomain }: MailDnsSettingsProps) {
   const router = useRouter();
   const flash = useFlash();
@@ -51,16 +71,6 @@ export function MailDnsSettings({ saved, defaultReplyDomain }: MailDnsSettingsPr
     },
     onError: (error) => flash(error.message, { kind: FLASH_KINDS.needs }),
   });
-  // Only ever to the admin's own address.
-  const test = useMutation({
-    mutationFn: () => postRequest(API_ROUTES.adminEmailTest, {}, emailTestResultSchema),
-    onSuccess: ({ outcome, message }) => {
-      flash(message, { kind: outcome === EMAIL_TEST_OUTCOMES.sent ? FLASH_KINDS.ok : FLASH_KINDS.needs });
-      router.refresh();
-    },
-    onError: (error) => flash(error.message, { kind: FLASH_KINDS.needs }),
-  });
-
   return (
     <section className="fh-sheet">
       <h2 className="fh-h3">DNS settings</h2>
@@ -88,7 +98,7 @@ export function MailDnsSettings({ saved, defaultReplyDomain }: MailDnsSettingsPr
           label="Reply subdomain"
           hint={
             <>
-              Empty: {defaultReplyDomain}. The sending domain itself is in <Link href={`${ROUTES.adminSettings}#mail`}>Settings</Link>.
+              Empty: {defaultReplyDomain}. The sending domain itself is in <Link href={`${ROUTES.adminSettings}#mail`}>Settings › Advanced</Link>.
             </>
           }
           className="fh-field"
@@ -108,10 +118,6 @@ export function MailDnsSettings({ saved, defaultReplyDomain }: MailDnsSettingsPr
           Save
         </Button>
       </form>
-      <Button type="button" variant="secondary" size="sm" className="mt-3" disabled={test.isPending} onClick={() => test.mutate()}>
-        <Send aria-hidden="true" strokeWidth={1.5} />
-        {test.isPending ? "Sending…" : "Send a test to me"}
-      </Button>
     </section>
   );
 }
