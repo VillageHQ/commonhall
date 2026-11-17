@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { AdvancedSection } from "@/components/advanced-section";
 import { Note } from "@/components/ui/note";
 import { readFillInSettings } from "@/modules/members/service-fill-in";
 import { DAILY_LOOKUP_LIMITS, MONTHLY_CREDIT_CAPS, VILLAGE_KEY_STATUSES } from "@/platform/village/contract";
@@ -114,7 +115,7 @@ export default modulePage(networkManifest, async function AdminVillagePage() {
   return (
     <AdminSection
       title="Village"
-      description="Village fills in profiles, finds people, and finds who can introduce whom. Without a key, the directory, profiles and invites work on their own."
+      description="Village shows which members know whom, so your founders find a warm intro to the people they need."
     >
       <div className="fh-grid">
         <div className="fh-c7 fh-stack">
@@ -145,37 +146,6 @@ export default modulePage(networkManifest, async function AdminVillagePage() {
             ) : null}
             {isConfigured && !group ? <GroupStep database={database} admin={admin} defaultName={branding.isSaved ? branding.name : ""} /> : null}
           </section>
-
-          <VillageLimitsForm
-            values={{
-              cap: month.cap,
-              dailyLimit,
-              searchScope: searchSettings.searchScope,
-              serviceEmail: searchSettings.serviceEmail ?? "",
-              introducers: searchSettings.introducers,
-              chosenIntroducerIds: searchSettings.chosenIntroducerIds,
-              dataRegion: adminSettings.dataRegion,
-              dpaUrl: adminSettings.dpaUrl,
-              isNightlyFillInOn: adminSettings.isNightlyFillInOn,
-            }}
-            sharingMembers={sharingMembers}
-            defaultServiceEmail={firstAdminEmail}
-            communityName={communityName}
-            defaults={{ cap: MONTHLY_CREDIT_CAPS.default.toLocaleString("en-US"), dailyLimit: DAILY_LOOKUP_LIMITS.default }}
-          />
-
-          <section className="fh-sheet">
-            <h2 className="type-h3">Profile fill-in</h2>
-            <p className="fh-small mt-1.5">
-              Role, company, city and past roles from public profiles, by each member’s email (1 lookup per person found). Members’ own words always win; they can hide any line, or
-              switch lookups off for themselves on Your data.
-            </p>
-            <FillInLastRunLine lastRun={lastRun} />
-            <FillInNowButton isDisabled={!isConfigured || fillIn.basis === null} />
-            <FillInBasisForm basis={fillIn.basis} termsDate={fillIn.termsDate} />
-          </section>
-
-          <WhatVillageSees />
         </div>
 
         <div className="fh-c5 fh-stack">
@@ -211,9 +181,47 @@ export default modulePage(networkManifest, async function AdminVillagePage() {
               <NudgeSentNote sentAt={noAsks.lastSentAt} nextAt={noAsks.nextAllowedAt} isNoAsks />
             ) : null}
           </section>
-
-          <CostBox />
         </div>
+
+        <AdvancedSection summary="Limits and switches, profile fill-in, what Village sees, and what it costs.">
+          <div className="fh-grid">
+            <div className="fh-c7 fh-stack">
+              <VillageLimitsForm
+                values={{
+                  cap: month.cap,
+                  dailyLimit,
+                  searchScope: searchSettings.searchScope,
+                  serviceEmail: searchSettings.serviceEmail ?? "",
+                  introducers: searchSettings.introducers,
+                  chosenIntroducerIds: searchSettings.chosenIntroducerIds,
+                  dataRegion: adminSettings.dataRegion,
+                  dpaUrl: adminSettings.dpaUrl,
+                  isNightlyFillInOn: adminSettings.isNightlyFillInOn,
+                }}
+                sharingMembers={sharingMembers}
+                defaultServiceEmail={firstAdminEmail}
+                communityName={communityName}
+                defaults={{ cap: MONTHLY_CREDIT_CAPS.default.toLocaleString("en-US"), dailyLimit: DAILY_LOOKUP_LIMITS.default }}
+              />
+
+              <section className="fh-sheet">
+                <h2 className="type-h3">Profile fill-in</h2>
+                <p className="fh-small mt-1.5">
+                  Role, company, city and past roles from public profiles, by each member’s email (1 lookup per person found). Members’ own words always win; they can hide any line, or
+                  switch lookups off for themselves on Your data.
+                </p>
+                <FillInLastRunLine lastRun={lastRun} />
+                <FillInNowButton isDisabled={!isConfigured || fillIn.basis === null} />
+                <FillInBasisForm basis={fillIn.basis} termsDate={fillIn.termsDate} />
+              </section>
+
+              <WhatVillageSees />
+            </div>
+            <div className="fh-c5 fh-stack">
+              <CostBox />
+            </div>
+          </div>
+        </AdvancedSection>
       </div>
     </AdminSection>
   );

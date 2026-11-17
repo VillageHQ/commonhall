@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { AdvancedSection } from "@/components/advanced-section";
 import { SelfHostBox } from "@/components/plumbing-notes";
 import { StatusChecklist } from "@/components/ui/figures";
 import { Pill, type PillTone } from "@/components/ui/pill";
@@ -7,9 +8,10 @@ import { requireAdmin } from "@/platform/auth/session";
 import { PAGE_TITLES } from "@/platform/branding/page-metadata";
 import { getDatabase } from "@/platform/database/client";
 import { modulePage } from "@/platform/modules/module-page";
+import { PLANS, readPlanSettings } from "@/platform/settings/plan";
 import { formatDayMonth, formatDayMonthTimeUtc } from "@/platform/text/format-date";
 import { DoNotSendRemove } from "@/modules/admin/components/do-not-send-remove";
-import { CheckDnsButton, MailDnsSettings } from "@/modules/admin/components/mail-forms";
+import { CheckDnsButton, MailDnsSettings, SendTestButton } from "@/modules/admin/components/mail-forms";
 import { readDnsCheckLine, readMailPageChecks, type MailPageCheck } from "@/modules/admin/mail-checks";
 import { adminManifest } from "@/modules/admin/manifest";
 import { MAIL_LOG_STATES, readMailOverview, type MailLogState, type MailOverview } from "@/modules/admin/reads-mail";
@@ -40,6 +42,29 @@ function DnsLineValue({ value, toAdd }: Pick<MailPageCheck, "value" | "toAdd">) 
         </span>
       ) : null}
     </>
+  );
+}
+
+// The one status line in view: on the managed plan Village handles mail; otherwise whether the mail service is set.
+function MailStatus({ mail, isManaged }: { mail: MailOverview; isManaged: boolean }) {
+  return (
+    <section className="fh-sheet" aria-label="Mail status">
+      <p className="fh-small" style={{ marginTop: 0 }}>
+        {isManaged ? (
+          <>
+            <b>✓ Handled by Village</b> — invites send from <b className="wrap-anywhere">{mail.senderEmail}</b>
+          </>
+        ) : (
+          <>
+            Mail service: <b>{mail.isMailOn ? "connected" : "not set"}</b>, sending from <b className="wrap-anywhere">{mail.senderEmail}</b>
+            {mail.isMailOn ? null : ". Until it is set, invite and sign-in links wait on Sign-in links."}
+          </>
+        )}
+      </p>
+      <div style={{ marginTop: 12 }}>
+        <SendTestButton />
+      </div>
+    </section>
   );
 }
 
@@ -133,28 +158,36 @@ function SendingLog({ mail }: { mail: MailOverview }) {
   );
 }
 
-// Set up › Mail (Commonhall's mailPage): who mail comes from, the DNS checklist, the DNS settings, a test, the last 30
-// days, the do-not-send list and the sending log. Community sends every kind of email from one address.
+// Set up › Mail (Commonhall's mailPage). In view: one status line with a test, and the mail checks (the DNS checklist
+// with Check DNS now, kept in view by the owner's pick). Under Advanced: the DNS settings, the last 30 days, the
+// do-not-send list, the sending log and "Running it yourself". Community sends every kind of email from one address.
 export default modulePage(adminManifest, async function AdminMailPage() {
   await requireAdmin();
-  const mail = await readMailOverview(getDatabase(), process.env);
-  const sender = mail.senderEmail;
+  const database = getDatabase();
+  const [mail, plan] = await Promise.all([readMailOverview(database, process.env), readPlanSettings(database)]);
   return (
-    <AdminSection
-      title="Mail"
-      description={`${mail.communityName} sends from its own domain: invites and sign-in links from ${sender}, intros from ${sender}, message emails from ${sender}. Replies come back through ${mail.replyDomain}.`}
-    >
+    <AdminSection title="Mail" description="Invites, sign-in links and intros reach your founders from your community’s own address.">
       <div className="fh-grid">
         <div className="fh-c7 fh-stack">
+          <MailStatus mail={mail} isManaged={plan.plan === PLANS.managed} />
           <DnsChecklist mail={mail} />
         </div>
-        <div className="fh-c5 fh-stack">
-          <SelfHostBox pricingUrl={PRICING_URL} />
-          <MailDnsSettings saved={{ dkimSelector: mail.settings.dkimSelector, replyDomain: mail.settings.replyDomain }} defaultReplyDomain={mail.defaultReplyDomain} />
-          <LastThirtyDays counts={mail.lastThirtyDays} />
-          <DoNotSendList entries={mail.suppressions} />
-        </div>
-        <SendingLog mail={mail} />
+        <AdvancedSection summary="DNS settings, the last 30 days, the do-not-send list, the sending log and running it yourself.">
+          <div className="fh-grid">
+            <div className="fh-c7 fh-stack">
+              <MailDnsSettings saved={{ dkimSelector: mail.settings.dkimSelector, replyDomain: mail.settings.replyDomain }} defaultReplyDomain={mail.defaultReplyDomain} />
+              <LastThirtyDays counts={mail.lastThirtyDays} />
+              <DoNotSendList entries={mail.suppressions} />
+            </div>
+            <div className="fh-c5 fh-stack">
+              <SelfHostBox pricingUrl={PRICING_URL} />
+              <p className="fh-small fh-muted">
+                Replies come back through <span className="fh-mono wrap-anywhere">{mail.replyDomain}</span>. Every kind of email goes out from {mail.senderEmail}.
+              </p>
+            </div>
+            <SendingLog mail={mail} />
+          </div>
+        </AdvancedSection>
       </div>
     </AdminSection>
   );

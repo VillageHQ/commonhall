@@ -119,6 +119,18 @@ svg.fh-i.fh-xs{width:16px;height:16px}
 .fh-sheet.fh-flush{padding:0}
 .fh-sheet .fh-sheet-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:12px}
 .fh-sheet .fh-sheet-head a{font-size:14px;font-weight:600;white-space:nowrap}
+/* Set up pages: one closed "Advanced" fold under the essentials (components/advanced-section.tsx). */
+details.fh-advanced{margin-top:20px}
+details.fh-advanced > summary{display:flex;align-items:flex-start;gap:10px;cursor:pointer;list-style:none;padding:14px 16px;border:1px dashed var(--rule);border-radius:var(--r);color:var(--ink)}
+details.fh-advanced > summary::-webkit-details-marker{display:none}
+details.fh-advanced > summary:hover{background:var(--leaf)}
+details.fh-advanced > summary:focus-visible{outline:3px solid var(--ring);outline-offset:2px}
+details.fh-advanced > summary b{display:block;font:600 16px/22px var(--sans)}
+details.fh-advanced > summary small{display:block;margin-top:2px;font-size:13px;line-height:18px;color:var(--graphite)}
+details.fh-advanced .fh-advanced-chev{flex:none;width:18px;height:18px;margin-top:2px;transition:transform .15s}
+details.fh-advanced[open] .fh-advanced-chev{transform:rotate(90deg)}
+details.fh-advanced[open] > summary{border-style:solid;margin-bottom:16px}
+details.fh-advanced .fh-advanced-body > .fh-sheet + .fh-sheet{margin-top:16px}
 .fh-rule{height:1px;background:var(--rule);margin:16px 0;border:0}
 .fh-note{display:flex;gap:10px;padding:12px 14px;border-radius:var(--r-sm);background:var(--vellum);font-size:14px;line-height:20px}
 .fh-note.fh-needs{display:flex;background:var(--ribbon-tint)}
@@ -447,6 +459,7 @@ a.fh-mcard:hover .fh-who b{text-decoration:underline;text-decoration-thickness:1
 }
 @media (prefers-reduced-motion:reduce){
 *::before,*::after{transition-duration:0s!important;animation-duration:0s!important}
+details.fh-advanced .fh-advanced-chev{transition:none}
 }
 .fh-print-only{display:none}
 .fh-spend-bar{display:block;height:3px;margin-top:4px;border-radius:2px;background:var(--fund);opacity:.6}
