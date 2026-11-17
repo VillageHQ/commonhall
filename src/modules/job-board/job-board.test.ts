@@ -395,9 +395,20 @@ describe("the job board", () => {
   });
 
   it(`stops at ${JOB_BOARD_LIMITS.sourcesPerMember} sources a member`, async () => {
-    for (let index = 0; index < JOB_BOARD_LIMITS.sourcesPerMember; index += 1) await call(postManual, founder, { company: "Stripe Example" });
+    for (let index = 0; index < JOB_BOARD_LIMITS.sourcesPerMember; index += 1) await call(postManual, admin, { company: `Example ${index}` });
 
-    expect((await call(postManual, founder, { company: "Stripe Example" })).status).toBe(409);
+    expect((await call(postManual, admin, { company: "Example extra" })).status).toBe(409);
+  });
+
+  // "Add the jobs by hand instead", clicked twice: the second click finds the company already there, so no copy uses
+  // up the member's limit.
+  it("adds a company by hand once, however often it is asked", async () => {
+    const first = (await (await call(postManual, founder, { company: "Stripe Example" })).json()) as { id: string; message: string };
+    const second = (await (await call(postManual, founder, { company: "stripe example " })).json()) as { id: string; message: string };
+
+    expect(second.id).toBe(first.id);
+    expect(second.message).toBe("Stripe Example is already here. Add its jobs below.");
+    expect(await database.select().from(jobSource)).toHaveLength(1);
   });
 
   it("takes each careers link once, so no job shows twice, even after two quick clicks", async () => {

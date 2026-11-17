@@ -128,15 +128,21 @@ export async function createManualSource(context: RequestContext, body: z.infer<
   const company = await readAllowedCompany(context, body.company);
   const source = await context.database.transaction(async (transaction) => {
     await lockMember(transaction, context.member.id);
+    // The same company by hand twice (a second click) is the one already there, never a copy that uses up the limit.
+    const [existing] = await transaction
+      .select({ id: jobSource.id })
+      .from(jobSource)
+      .where(and(eq(jobSource.memberId, context.member.id), eq(jobSource.companySlug, toCompanySlug(company)), eq(jobSource.tool, MANUAL_TOOL)));
+    if (existing) return { ...existing, isNew: false };
     await assertSourceAllowance(transaction, context.member.id);
     const [created] = await transaction
       .insert(jobSource)
       .values({ memberId: context.member.id, company, companySlug: toCompanySlug(company), tool: MANUAL_TOOL, slug: null })
       .returning({ id: jobSource.id });
-    return created;
+    return created ? { ...created, isNew: true } : null;
   });
   if (!source) throw sourceNotFound();
-  return { id: source.id, message: `Added ${company}. Now add its jobs.` };
+  return { id: source.id, message: source.isNew ? `Added ${company}. Now add its jobs.` : `${company} is already here. Add its jobs below.` };
 }
 
 function assertPullAllowed(source: SourceRow) {
