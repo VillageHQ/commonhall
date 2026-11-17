@@ -91,6 +91,17 @@ describe("the admin's email setup", () => {
     expect(await database.select({ kind: emailOutbox.kind, status: emailOutbox.status }).from(emailOutbox)).toEqual([{ kind: "email_test", status: "sent" }]);
   });
 
+  it("says plainly when Resend refuses the test, and never that it will be tried again", async () => {
+    turnEmailOn();
+    resend.state.failureStatus = 422;
+
+    const body = (await (await call(postTest, admin)).json()) as { outcome: string; message: string };
+
+    expect(body.outcome).toBe("refused");
+    expect(body.message).not.toContain("tried again in a minute");
+    expect(await database.select({ status: emailOutbox.status }).from(emailOutbox)).toEqual([{ status: "failed" }]);
+  });
+
   it("is for admins only", async () => {
     turnEmailOn();
 

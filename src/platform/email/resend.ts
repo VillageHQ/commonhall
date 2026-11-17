@@ -28,6 +28,20 @@ export function readResendConfig(environment: Environment): ResendConfig | null 
   return { apiKey, fromAddress, apiUrl: environment.RESEND_API_URL?.trim() || RESEND_API_URL };
 }
 
+// Resend refused this email itself (a bad address, a bad field): another try gets the same answer. 400 is not here:
+// Resend also answers 400 for a malformed API key, which the admin can fix, as with 401, 403 (key, domain) and 429.
+const REJECTED_EMAIL_STATUS = 422;
+const MAXIMUM_REASON_LENGTH = 200;
+
+export class ResendRejectedEmailError extends Error {}
+
+// Resend's own words ("Invalid `to` field…"), so the admin sees why.
+async function readReason(response: Response) {
+  const body: unknown = await response.json().catch(() => null);
+  const message = body && typeof body === "object" && "message" in body && typeof body.message === "string" ? body.message : "";
+  return message ? `: ${message.slice(0, MAXIMUM_REASON_LENGTH).replace(/\.$/, "")}` : "";
+}
+
 export async function sendResendEmail({ apiKey, fromAddress, apiUrl }: ResendConfig, email: OutgoingEmail) {
   const response = await fetch(`${apiUrl}${EMAILS_PATH}`, {
     method: "POST",
@@ -47,5 +61,6 @@ export async function sendResendEmail({ apiKey, fromAddress, apiUrl }: ResendCon
     }),
     signal: AbortSignal.timeout(SEND_TIMEOUT_MS),
   });
+  if (response.status === REJECTED_EMAIL_STATUS) throw new ResendRejectedEmailError(`Resend refused this email (${response.status})${await readReason(response)}.`);
   if (!response.ok) throw new Error(`Resend answered ${response.status}.`);
 }

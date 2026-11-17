@@ -160,6 +160,30 @@ describe("reliable email", () => {
       expect(notice.recent[0]?.lastError).toContain("503");
     });
 
+    it.each([422])("gives up at once on an email Resend refuses (%i), and tells the admin", async (status) => {
+      resend.state.failureStatus = status;
+      await queueTo(null, EMAIL_KINDS.invite);
+
+      await makeDue();
+      await sendDueEmails(database, readEnvironment());
+
+      const [row] = await readRows();
+      expect(row?.status).toBe(OUTBOX_STATUSES.failed);
+      expect(resend.state.emails).toHaveLength(1);
+      expect((await readGivenUpEmails(database)).recent[0]?.lastError).toContain(String(status));
+    });
+
+    it.each([400, 401, 403, 429])("keeps trying after %i, which the admin or time can fix", async (status) => {
+      resend.state.failureStatus = status;
+      await queueTo(null, EMAIL_KINDS.invite);
+
+      await makeDue();
+      await sendDueEmails(database, readEnvironment());
+
+      const [row] = await readRows();
+      expect(row?.status).toBe(OUTBOX_STATUSES.pending);
+    });
+
     // A rounded default put about half of new rows up to half a millisecond in the future, so a send in that instant
     // skipped them (the one-click header test failed that way in CI).
     it("makes a new email due at once, never a moment later", async () => {
