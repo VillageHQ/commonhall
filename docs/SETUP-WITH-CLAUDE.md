@@ -104,11 +104,15 @@ are skipped, and the look and keys are saved again as they are.
 ## If it stops
 
 A line marked ✗ says why. The admin, sign-in, logo, look and member steps stop the run there; a refused Village key
-is marked ✗ and the run goes on. Either way it ends with "Not finished" and exit code 1. Fix each ✗ and run it again.
+is marked ✗ and the run goes on. Either way it ends with "Not finished" and exit code 1. A problem found before any
+step runs (invalid JSON, a missing file) prints "Setup failed: …" instead, also with exit code 1. Fix it and run it
+again.
 
 - "The setup token is wrong": `SETUP_TOKEN` must match the server's. After 10 wrong tries in a minute it pauses.
 - "Could not sign in … Invalid email or password": the admin exists with another password (use **Forgot your
   password?** on the sign-in page, then **I lost my admin password**), or no admin exists yet and `SETUP_TOKEN` was
   not set.
+- "Too many tries for this account": five wrong passwords in a minute pause sign-in for that admin. Wait a minute.
+- "Already has a pending invite" on a rerun: that person was invited before; nothing changed for them.
 - "Invalid origin" or "This request came from another site": `--url` is not the address in `APP_URL`.
 - Behind a Cloudflare tunnel, set `CLIENT_IP_HEADER=cf-connecting-ip` on the server (README, rate limits).

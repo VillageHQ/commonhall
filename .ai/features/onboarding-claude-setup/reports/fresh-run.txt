@@ -1,5 +1,5 @@
-# Fresh-copy run after the repair round, 2026-11-17T22:20:09Z
-App on 127.0.0.1:9514, a newly emptied database ob_claude_fresh, fake Village server, no RESEND_* variables. Runner: the steps in docs/SETUP-WITH-CLAUDE.md, timed with time.
+# Fresh-copy run, final, 2026-11-17T22:25:53Z
+App on 127.0.0.1:9514, a newly emptied database ob_claude_fresh, fake Village server, no RESEND_* variables. Timed with time.
 
 === first run
 $ node scripts/setup-instance.ts --url http://127.0.0.1:9514 --file .ai/tmp/proof/setup.json --demo
@@ -15,9 +15,9 @@ $ node scripts/setup-instance.ts --url http://127.0.0.1:9514 --file .ai/tmp/proo
 → For a person: Invites were made without email: copy each link from Set up › Sign-in links, or send them once mail is set up.
 Done. Open http://127.0.0.1:9514/admin to see it.
 
-real	0m1.829s
-user	0m0.075s
-sys	0m0.045s
+real	0m2.110s
+user	0m0.076s
+sys	0m0.233s
 exit 0
 === second run (safe to repeat)
 $ node scripts/setup-instance.ts --url http://127.0.0.1:9514 --file .ai/tmp/proof/setup.json --demo
@@ -27,23 +27,17 @@ $ node scripts/setup-instance.ts --url http://127.0.0.1:9514 --file .ai/tmp/proo
 ✓ Look: Name "Northwind Founders", colour #7A3E9D, descriptor "The Northwind Ventures portfolio".
 ✓ Village: Connected: Village accepted both keys and they are saved.
 ✓ Members: members.csv: 0 invited without email, 3 not imported.
-– Members: members.csv line 2: Already has a pending invite. Use Resend in the list if they lost it.
-– Members: members.csv line 3: Already has a pending invite. Use Resend in the list if they lost it.
-– Members: members.csv line 4: Already has a pending invite. Use Resend in the list if they lost it.
+– Members: members.csv lines 2, 3, 4: Already has a pending invite. Use Resend in the list if they lost it.
 ✓ Members: made-up founders (--demo): 0 invited without email, 5 not imported.
-– Members: made-up founders (--demo) line 2: Already has a pending invite. Use Resend in the list if they lost it.
-– Members: made-up founders (--demo) line 3: Already has a pending invite. Use Resend in the list if they lost it.
-– Members: made-up founders (--demo) line 4: Already has a pending invite. Use Resend in the list if they lost it.
-– Members: made-up founders (--demo) line 5: Already has a pending invite. Use Resend in the list if they lost it.
-– Members: made-up founders (--demo) line 6: Already has a pending invite. Use Resend in the list if they lost it.
+– Members: made-up founders (--demo) lines 2, 3, 4, 5, 6: Already has a pending invite. Use Resend in the list if they lost it.
 ✓ Confirm: 0 confirmed, 0 were waiting.
 → For a person: Each member connects their own network on Village's screen, from their profile.
 → For a person: Invites were made without email: copy each link from Set up › Sign-in links, or send them once mail is set up.
 Done. Open http://127.0.0.1:9514/admin to see it.
 
-real	0m1.158s
-user	0m0.077s
-sys	0m0.247s
+real	0m1.791s
+user	0m0.061s
+sys	0m0.420s
 exit 0
 === a wrong Village secret key (reported, the rest goes on)
 $ node scripts/setup-instance.ts --url http://127.0.0.1:9514 --file .ai/tmp/proof/setup.json
@@ -53,9 +47,7 @@ $ node scripts/setup-instance.ts --url http://127.0.0.1:9514 --file .ai/tmp/proo
 ✓ Look: Name "Northwind Founders", colour #7A3E9D, descriptor "The Northwind Ventures portfolio".
 ✗ Village: Not connected: Village rejected this secret key. Copy it again from API Keys in Village, and check that your Village app is active. Set up › Village now says the keys were refused; a run with the right keys clears it.
 ✓ Members: members.csv: 0 invited without email, 3 not imported.
-– Members: members.csv line 2: Already has a pending invite. Use Resend in the list if they lost it.
-– Members: members.csv line 3: Already has a pending invite. Use Resend in the list if they lost it.
-– Members: members.csv line 4: Already has a pending invite. Use Resend in the list if they lost it.
+– Members: members.csv lines 2, 3, 4: Already has a pending invite. Use Resend in the list if they lost it.
 ✓ Confirm: 0 confirmed, 0 were waiting.
 → For a person: Each member connects their own network on Village's screen, from their profile.
 → For a person: Invites were made without email: copy each link from Set up › Sign-in links, or send them once mail is set up.

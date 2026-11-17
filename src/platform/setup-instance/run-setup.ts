@@ -158,7 +158,12 @@ export async function runSetup({ url, loaded, secrets, demo, fetchImpl = fetch, 
       const skipped = Number(body.notImportedCount ?? 0);
       record({ step: "Members", outcome: "done", detail: `${label}: ${Number(body.importedCount ?? 0)} invited without email, ${skipped} not imported.` });
       const lines = (Array.isArray(body.notImported) ? body.notImported : []) as { line: number; why: string }[];
-      for (const { line, why } of lines) record({ step: "Members", outcome: "skipped", detail: `${label} line ${line}: ${why}` });
+      // One line per reason, so a rerun of a long list stays short.
+      const linesByReason = Map.groupBy(lines, ({ why }) => why);
+      for (const [why, group] of linesByReason) {
+        const numbers = group.map(({ line }) => line).join(", ");
+        record({ step: "Members", outcome: "skipped", detail: `${label} ${group.length === 1 ? "line" : "lines"} ${numbers}: ${why}` });
+      }
       if (skipped > lines.length) record({ step: "Members", outcome: "skipped", detail: `…and ${skipped - lines.length} more lines; the import page in Set up › Members lists them all.` });
     }
 
