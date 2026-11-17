@@ -50,6 +50,8 @@ Better Auth, Vitest, pnpm. Village is optional (network search, intro paths and 
   `.ai/features/fix-accounts-privacy/NOTES.md`, `.ai/features/fix-feed-digest-site/NOTES.md`,
   `.ai/features/fix-intros-reports/NOTES.md`, `.ai/features/fix-host-findings/NOTES.md`,
   `.ai/features/fix-cleanup/NOTES.md`, `.ai/features/common-hall-site/NOTES.md` (superseded), `.ai/features/common-hall-v2/NOTES.md` (the landing page: themes, hover field, faces, dialog), `.ai/features/landing-v3/NOTES.md` (the landing page round 3: the rooms list, the scroll demo, the comparison cards), `.ai/features/app-kit/NOTES.md` (the app on the Commonhall look: where the colours, fonts and icon live),
+  `.ai/features/onboarding-settings-fold/NOTES.md` (Set up pages: essentials in view, the rest under Advanced),
+  `.ai/features/onboarding-village-connect/NOTES.md`,
   `.ai/features/fix-installer/NOTES.md` (install.sh: build failures, swap, first install, DNS), `.ai/features/fix-network-page/NOTES.md`, `.ai/features/self-call-http/NOTES.md` (rewrites behind an https tunnel).
 - No notes: `.do/`, `.github/`, `deploy/`, `docs/` (guides), `drizzle/` (generated), `site/` (own README), `public/` (demo pictures),
   `vercel.json` (the daily Vercel Cron Job). Every deploy setup runs the job runner;

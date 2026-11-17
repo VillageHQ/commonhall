@@ -18,7 +18,7 @@ import { acknowledgedResponseSchema } from "@/platform/http/contract";
 import { postRequest } from "@/platform/http/post-request";
 import { API_ROUTES } from "@/platform/http/routes";
 
-import { PUBLIC_KEY_HINT, SECRET_KEY_HINT, VILLAGE_LIMITS_API, type VillageLimitsBody } from "../contract-village-admin";
+import { VILLAGE_LIMITS_API, type VillageLimitsBody } from "../contract-village-admin";
 import { INTRODUCER_RULES, SEARCH_SCOPES, type IntroducerRule, type SearchScope } from "../contract-village-settings";
 
 // Admin › Village's forms (Commonhall's Village page). Each action says what happened in the flash at the top.
@@ -33,44 +33,6 @@ function ErrorLine({ message }: { message: string | null }) {
       {message}
     </p>
   ) : null;
-}
-
-// Connection: the two keys, checked with Village before they're saved.
-export function VillageKeysForm({ hasSavedKeys }: { hasSavedKeys: boolean }) {
-  const [error, setError] = useState<string | null>(null);
-  const save = useMutation({
-    mutationFn: (body: { publicKey: string; secretKey: string }) => postRequest(API_ROUTES.villageKeys, body, acknowledgedResponseSchema),
-    onSuccess: () => window.location.assign(window.location.pathname),
-    onError: (failure) => setError(errorText(failure)),
-  });
-  function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setError(null);
-    const form = new FormData(event.currentTarget);
-    save.mutate({ publicKey: String(form.get("public_key") ?? ""), secretKey: String(form.get("api_key") ?? "") });
-  }
-  const placeholder = (fresh: string) => (hasSavedKeys ? "Saved (paste to replace)" : fresh);
-  return (
-    <form onSubmit={submit} className="mt-3">
-      <Field
-        htmlFor="v-api_key"
-        label="Secret key"
-        hint={SECRET_KEY_HINT}
-        className="fh-field"
-      >
-        <Input id="v-api_key" name="api_key" type="password" autoComplete="off" placeholder={placeholder("Paste the secret key")} className="fh-mono" required />
-      </Field>
-      <Field htmlFor="v-public_key" label="Public key" hint={PUBLIC_KEY_HINT} className="fh-field">
-        <Input id="v-public_key" name="public_key" autoComplete="off" placeholder={placeholder("Paste the public key")} className="fh-mono" required />
-      </Field>
-      <ErrorLine message={error} />
-      <ButtonRow className="mt-3">
-        <Button type="submit" size="sm" disabled={save.isPending}>
-          {save.isPending ? "Checking keys…" : "Save keys"}
-        </Button>
-      </ButtonRow>
-    </form>
-  );
 }
 
 // "Test the connection": Community's Village check (free calls only): the keys, the group and every member.

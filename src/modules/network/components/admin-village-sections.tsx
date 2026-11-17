@@ -1,4 +1,4 @@
-import { CircleCheck, EyeOff, KeyRound } from "lucide-react";
+import { EyeOff } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { Breakdown, Meter } from "@/components/ui/figures";
@@ -9,7 +9,6 @@ import { VILLAGE_PLATFORM_LINKS } from "@/platform/village/links";
 
 import { isConnectedStatus, MEMBER_CHECK_OUTCOMES, VILLAGE_CHECK_GROUP, VILLAGE_CHECK_KEYS } from "../contract-village-check";
 import type { VillageCheckRead } from "../reads-village-check";
-import { PUBLIC_KEY_HINT, SECRET_KEY_HINT } from "../contract-village-admin";
 import type { readLookupsThisMonth, readNetworkReach } from "../reads-village-admin";
 import type { FillInLastRun } from "../service-village-admin";
 
@@ -25,27 +24,6 @@ export const PRICING_URL = "https://github.com/VillageHQ/commonhall#readme";
 // The member-facing promise, word for word as members read it.
 export const NETWORK_LINE =
   "Members who search can see that you know a person and ask you for an intro. They can’t download your contacts, see how you know them beyond a warmth word, or reach anyone without your yes.";
-
-// Self-host honesty: what runs with no key, what needs a Village plan (Commonhall's `selfHostBox`).
-export function SelfHostBox() {
-  return (
-    <section className="fh-sheet fh-selfhost" id="self-host">
-      <h2 className="type-h3 flex items-center gap-1.5">
-        <KeyRound aria-hidden="true" className="fh-i fh-s" strokeWidth={1.5} /> Running it yourself
-      </h2>
-      <p className="fh-small mt-2">
-        <b>Works without any key:</b> directory, profiles members fill in, asks, intros between members, messages.
-      </p>
-      <p className="fh-small mt-1.5">
-        <b>Needs a Village plan:</b> profile fill-in, warm paths, search beyond members.
-      </p>
-      <p className="fh-small mt-2.5">
-        <CircleCheck aria-hidden="true" className="fh-i fh-xs inline" strokeWidth={1.5} /> <b>Managed plan:</b> Village sets up the mail domain and lookups for you in week 1.{" "}
-        <a href={PRICING_URL}>Full pricing on the Commonhall site</a>
-      </p>
-    </section>
-  );
-}
 
 const KEY_LINES: Record<string, string> = {
   [VILLAGE_CHECK_KEYS.rejected]: "Keys rejected: Village refused the secret key.",
@@ -405,26 +383,6 @@ export function CostBox() {
         <a href={PRICING_URL}>Full pricing on the Commonhall site</a>
       </p>
     </section>
-  );
-}
-
-// Saved keys, as Commonhall shows keys it already has: a line each, no field (replacing them is under the address).
-export function SavedKeyLines() {
-  return (
-    <>
-      <div className="mt-3">
-        <h3 className="fh-label">Secret key</h3>
-        <p className="fh-hint">
-          set on the server · <span className="text-ink">{SECRET_KEY_HINT}</span>
-        </p>
-      </div>
-      <div className="mt-3">
-        <h3 className="fh-label">Public key</h3>
-        <p className="fh-hint">
-          set on the server · <span className="text-ink">{PUBLIC_KEY_HINT}</span>
-        </p>
-      </div>
-    </>
   );
 }
 

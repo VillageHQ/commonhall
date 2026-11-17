@@ -11,6 +11,8 @@ export const INSTANCE_SETTING_KEYS = {
   firstAdminUserId: "first_admin_user_id",
   villagePublicKey: "village_public_key",
   villageSecretKey: "village_secret_key",
+  // The Village app's title, read when the keys were checked: "Connected to <name>" on Set up › Village.
+  villageAppName: "village_app_name",
   villageGroupId: "village_group_id",
   villageGroupInviteLink: "village_group_invite_link",
   dailyLookupLimit: "daily_lookup_limit",
