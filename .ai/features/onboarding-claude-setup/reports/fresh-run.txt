@@ -1,0 +1,68 @@
+# Fresh-copy run, 2026-11-17T22:06:23Z
+App on 127.0.0.1:9514, empty database ob_claude_fresh, fake Village server, no RESEND_* variables.
+
+=== first run
+$ node scripts/setup-instance.ts --url http://127.0.0.1:9514 --file .ai/tmp/proof/setup.json --demo
+✓ Admin: Created robin@example.com.
+✓ Sign in: Signed in as robin@example.com.
+✓ Look: Name "Northwind Founders", colour #7A3E9D.
+✓ Logo: Uploaded logo.png (313 bytes).
+✓ Village: Connected: Village accepted both keys and they are saved.
+✓ Members: members.csv: 3 invited without email, 0 not imported (already invited, already a member or unreadable).
+✓ Members: made-up founders (--demo): 5 invited without email, 0 not imported (already invited, already a member or unreadable).
+✓ Confirm: 0 confirmed, 0 were waiting.
+→ For a person: Each member connects their own network on Village's screen, from their profile.
+→ For a person: Invites were made without email: copy each link from Set up › Sign-in links, or send them once mail is set up.
+Done. Open http://127.0.0.1:9514/admin to see it.
+
+real	0m2.979s
+user	0m0.106s
+sys	0m0.419s
+exit 0
+=== second run (safe to repeat)
+$ node scripts/setup-instance.ts --url http://127.0.0.1:9514 --file .ai/tmp/proof/setup.json --demo
+– Admin: An admin already exists; signing in with the password.
+✓ Sign in: Signed in as robin@example.com.
+✓ Look: Name "Northwind Founders", colour #7A3E9D.
+✓ Logo: Uploaded logo.png (313 bytes).
+✓ Village: Connected: Village accepted both keys and they are saved.
+✓ Members: members.csv: 0 invited without email, 3 not imported (already invited, already a member or unreadable).
+✓ Members: made-up founders (--demo): 0 invited without email, 5 not imported (already invited, already a member or unreadable).
+✓ Confirm: 0 confirmed, 0 were waiting.
+→ For a person: Each member connects their own network on Village's screen, from their profile.
+→ For a person: Invites were made without email: copy each link from Set up › Sign-in links, or send them once mail is set up.
+Done. Open http://127.0.0.1:9514/admin to see it.
+
+real	0m1.790s
+user	0m0.107s
+sys	0m0.155s
+exit 0
+
+## Database afterwards
+ outbox_emails 
+---------------
+             0
+(1 row)
+
+       email       
+-------------------
+ ada@example.com
+ bruno@example.com
+ chen@example.com
+ dara@example.com
+ esme@example.com
+ priya@example.com
+ sam@example.com
+ tomas@example.com
+(8 rows)
+
+         key         
+---------------------
+ fill_in_basis
+ fill_in_terms_date
+ first_admin_user_id
+ village_last_ok_at
+ village_public_key
+ village_secret_key
+(6 rows)
+
