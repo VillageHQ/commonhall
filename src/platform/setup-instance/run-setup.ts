@@ -106,7 +106,7 @@ export async function runSetup({ url, loaded, secrets, demo, fetchImpl = fetch, 
       else if (response.status === CONFLICT_STATUS) record({ step: "Admin", outcome: "skipped", detail: "An admin already exists; signing in with the password." });
       else stop("Admin", reasonOf(response, body));
     } else {
-      record({ step: "Admin", outcome: "skipped", detail: `${SETUP_SECRET_VARIABLES.setupToken} is not set; signing in as an existing admin.` });
+      record({ step: "Admin", outcome: "skipped", detail: `${SETUP_SECRET_VARIABLES.setupToken} is not set, so no admin is created; signing in as an existing one. On a new instance, set it.` });
     }
 
     // 2. Sign in like a person and keep the session cookie.
@@ -116,19 +116,19 @@ export async function runSetup({ url, loaded, secrets, demo, fetchImpl = fetch, 
     }
     record({ step: "Sign in", outcome: "done", detail: `Signed in as ${setup.admin.email}.` });
 
-    // 3. The look: name, descriptor and colour (the brand card's save, which leaves mail and hosting settings alone),
-    // then the logo.
+    // 3. The look: the logo first, so a refused logo changes nothing; then the name, descriptor and colour (the brand
+    // card's save, which leaves mail and hosting settings alone).
     if (setup.brand) {
-      const { response, body } = await session.call(ROUTES.brand, {
-        json: { name: setup.brand.name, descriptor: setup.brand.descriptor, accentColor: setup.brand.accent ?? "#24525A" },
-      });
-      if (!response.ok) stop("Look", reasonOf(response, body));
-      record({ step: "Look", outcome: "done", detail: `Name "${setup.brand.name}", colour ${setup.brand.accent ?? "#24525A (the default)"}.` });
       if (logo) {
         const saved = await session.call(`${ROUTES.logo}?backdrop=${setup.brand.logoBackdrop}`, { bytes: logo });
         if (!saved.response.ok) stop("Logo", reasonOf(saved.response, saved.body));
         record({ step: "Logo", outcome: "done", detail: `Uploaded ${setup.brand.logo} (${logo.byteLength} bytes).` });
       }
+      const { response, body } = await session.call(ROUTES.brand, {
+        json: { name: setup.brand.name, descriptor: setup.brand.descriptor, accentColor: setup.brand.accent },
+      });
+      if (!response.ok) stop("Look", reasonOf(response, body));
+      record({ step: "Look", outcome: "done", detail: `Name "${setup.brand.name}", colour ${setup.brand.accent}${setup.brand.descriptor ? `, descriptor "${setup.brand.descriptor}"` : ", no descriptor"}.` });
     } else {
       record({ step: "Look", outcome: "skipped", detail: "No brand in the setup file." });
     }
@@ -142,7 +142,7 @@ export async function runSetup({ url, loaded, secrets, demo, fetchImpl = fetch, 
       const { response, body } = await session.call(ROUTES.villageKeys, { json: { publicKey: setup.village.publicKey, secretKey: secrets.villageSecretKey } });
       if (response.ok) record({ step: "Village", outcome: "done", detail: "Connected: Village accepted both keys and they are saved." });
       else if (response.status === NOT_FOUND_STATUS) record({ step: "Village", outcome: "skipped", detail: "The Network module is off, so there is nothing to connect." });
-      else record({ step: "Village", outcome: "failed", detail: `Not connected: ${reasonOf(response, body)}` });
+      else record({ step: "Village", outcome: "failed", detail: `Not connected: ${reasonOf(response, body)} Set up › Village now says the keys were refused; a run with the right keys clears it.` });
     }
 
     // 5. Members from the CSV, and 7. the made-up founders: email always off, so nobody is emailed.
@@ -156,7 +156,10 @@ export async function runSetup({ url, loaded, secrets, demo, fetchImpl = fetch, 
       const { response, body } = await session.call(`${ROUTES.importMembers}?${params}`, { bytes: new TextEncoder().encode(csv), contentType: "text/csv" });
       if (!response.ok) stop("Members", `${label}: ${reasonOf(response, body)}`);
       const skipped = Number(body.notImportedCount ?? 0);
-      record({ step: "Members", outcome: "done", detail: `${label}: ${Number(body.importedCount ?? 0)} invited without email, ${skipped} not imported (already invited, already a member or unreadable).` });
+      record({ step: "Members", outcome: "done", detail: `${label}: ${Number(body.importedCount ?? 0)} invited without email, ${skipped} not imported.` });
+      const lines = (Array.isArray(body.notImported) ? body.notImported : []) as { line: number; why: string }[];
+      for (const { line, why } of lines) record({ step: "Members", outcome: "skipped", detail: `${label} line ${line}: ${why}` });
+      if (skipped > lines.length) record({ step: "Members", outcome: "skipped", detail: `…and ${skipped - lines.length} more lines; the import page in Set up › Members lists them all.` });
     }
 
     // 6. Confirm members waiting for confirmation, when the file says so. Anyone reported "not me" is left to a person.

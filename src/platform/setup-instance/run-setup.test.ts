@@ -51,6 +51,9 @@ describe("the setup file", () => {
 
   it("names the field that needs a fix", () => {
     expect(parseSetupFile(JSON.stringify({ admin: { name: "R", email: "not-an-email" } }))).toEqual({ error: expect.stringContaining("admin.email") });
+    expect(parseSetupFile(JSON.stringify({}))).toEqual({ error: "admin: add the admin's name and email." });
+    // The brand sets the whole look, so the colour must be there: a rerun never resets it to a default.
+    expect(parseSetupFile(JSON.stringify({ admin: { name: "R", email: "r@example.com" }, brand: { name: "N" } }))).toEqual({ error: expect.stringContaining("brand.accent") });
     expect(parseSetupFile(JSON.stringify({ admin: { name: "R", email: "r@example.com" }, members: { csv: "m.csv", basis: "terms" } }))).toEqual({ error: expect.stringContaining("termsDate") });
   });
 });
@@ -65,8 +68,8 @@ describe("runSetup", () => {
     expect(app.calls.map(({ path }) => path.split("?")[0])).toEqual([
       "/api/setup",
       "/api/auth/sign-in/email",
-      "/api/admin/branding",
       "/api/branding/logo",
+      "/api/admin/branding",
       "/api/admin/village/keys",
       "/api/admin/invites/import",
       "/api/admin/invites/import",
@@ -87,6 +90,21 @@ describe("runSetup", () => {
     expect(emails.every((email) => email?.endsWith("@example.com"))).toBe(true);
   });
 
+  it("a refused logo stops before the look is saved, so nothing changes", async () => {
+    const app = fakeApp({ "/api/branding/logo": () => Response.json({ message: "Use a PNG, JPEG or WebP image. SVG files aren't accepted." }, { status: 422 }) });
+    const { ok } = await runSetup({ url: APP_URL, loaded: loadedSetup(FULL, { logo: new Uint8Array([60]) }), secrets: SECRETS, demo: false, fetchImpl: app.fetchImpl });
+
+    expect(ok).toBe(false);
+    expect(app.calls.some(({ path }) => path === "/api/admin/branding")).toBe(false);
+  });
+
+  it("prints each line the import left out, with the reason", async () => {
+    const app = fakeApp({ "/api/admin/invites/import": () => Response.json({ importedCount: 0, notImportedCount: 1, notImported: [{ line: 1, why: "There's no email address in this row." }] }) });
+    const { steps } = await runSetup({ url: APP_URL, loaded: loadedSetup(FULL, { membersCsv: "sam@example.com" }), secrets: SECRETS, demo: false, fetchImpl: app.fetchImpl });
+
+    expect(steps).toContainEqual({ step: "Members", outcome: "skipped", detail: "members.csv line 1: There's no email address in this row." });
+  });
+
   it("stops at a wrong setup token and calls nothing after it", async () => {
     const app = fakeApp({ "/api/setup": () => Response.json({ message: "The setup token is wrong." }, { status: 401 }) });
     const { ok, steps } = await runSetup({ url: APP_URL, loaded: loadedSetup(FULL), secrets: SECRETS, demo: false, fetchImpl: app.fetchImpl });
@@ -105,7 +123,7 @@ describe("runSetup", () => {
 
     expect(ok).toBe(false);
     expect(steps.find(({ step }) => step === "Admin")?.outcome).toBe("skipped");
-    expect(steps.find(({ step }) => step === "Village")).toEqual({ step: "Village", outcome: "failed", detail: "Not connected: Village didn't accept this secret key." });
+    expect(steps.find(({ step }) => step === "Village")).toEqual({ step: "Village", outcome: "failed", detail: expect.stringContaining("Not connected: Village didn't accept this secret key.") });
     expect(steps.some(({ step }) => step === "Confirm")).toBe(true);
   });
 

@@ -25,7 +25,8 @@ Ask one thing at a time; every answer goes in the setup file except the three se
 
 1. **Who is the admin?** Their name and email. Then ask them to choose a password (12+ characters). It goes in
    `COMMONHALL_ADMIN_PASSWORD`, never in the file.
-2. **The look.** The community's name, a one-line descriptor (optional), a brand colour like `#24525A`, and a logo
+2. **The look.** The community's name, a brand colour like `#24525A` (both needed), a one-line descriptor (optional;
+   left out, it is cleared), and a logo
    file (PNG, JPEG or WebP, up to 512 KB; SVG is refused). Is the logo light on a dark background?
    Then `"logoBackdrop": "dark"`.
 3. **Village** (optional; it shows who knows whom). Only the organizer can do these, on Village's screens:
@@ -33,7 +34,9 @@ Ask one thing at a time; every answer goes in the setup file except the three se
    [Village's checklist](https://village.ai/platform/onboarding), then copy both keys from
    [API keys](https://village.ai/platform/settings/api-keys). The public key goes in the file; the secret key in
    `VILLAGE_SECRET_KEY`. No keys yet? Leave `village` out; they can paste them later in Set up › Village.
-4. **Members.** A CSV of the founders (columns `name, email, company, cohort` under a header row, or just emails).
+4. **Members.** A CSV of the founders: a header row naming the columns (at least `email`; also `name`, `company`,
+   `cohort`), or no header and the columns in the order name, email, company, cohort. A bare list of emails with no
+   header imports nobody: add the `email` header line.
    How did they agree to profile fill-in: Commonhall asks each one (`"basis": "ask"`), or their membership terms
    already say so (`"basis": "terms"` with `"termsDate"`, the day the terms started saying it).
 5. **Anyone waiting?** On an instance already in use, members who joined but wait for an admin to confirm their
@@ -63,7 +66,9 @@ SETUP_TOKEN=... COMMONHALL_ADMIN_PASSWORD=... VILLAGE_SECRET_KEY=... \
   pnpm setup:instance --url https://community.example.com --file setup.json
 ```
 
-`--url` must be the app's own address (`APP_URL`): the routes refuse requests from any other origin. Add `--demo` to
+`--url` must be the app's own address (`APP_URL`): sign-in and the admin routes refuse any other origin. (Creating
+ the admin doesn't check it, so a wrong address creates the admin and then stops at sign-in; run again with the right
+ address.) Add `--demo` to
 also invite five made-up founders (example.com addresses) to try things with.
 
 What it does, in order, and what it prints for each (✓ done, – skipped, ✗ failed, → for a person):
@@ -71,19 +76,22 @@ What it does, in order, and what it prints for each (✓ done, – skipped, ✗ 
 1. Creates the first admin with the setup token. If an admin exists, it signs in instead (leave `SETUP_TOKEN` unset
    to skip this step).
 2. Signs in as the admin, like a person.
-3. Saves the name, descriptor and colour (the brand card's save; mail and hosting settings stay as they are), then
-   uploads the logo.
+3. Uploads the logo, then saves the name, descriptor and colour exactly as the file says (the brand card's save; mail
+   and hosting settings stay as they are). A refused logo stops here and changes nothing.
 4. Checks the Village keys with Village and saves them: "Connected", or the reason Village gave. A refused key does
-   not stop the rest.
+   not stop the rest, but it is not harmless: Set up › Village then says the keys were refused and pauses network
+   search, even if good keys were saved before. A run with the right keys clears it.
 5. Imports the CSV with **email off**: everyone gets an invite, nobody is emailed. People already invited or already
-   members are skipped.
+   members are skipped, and each line not imported is printed with its reason.
 6. Confirms waiting members when the file says so. Anyone reported "not me" is left for a person.
 
-It ends with what only a person can do. Running it again changes nothing that is already set.
+It ends with what only a person can do. Running it again with the same file changes nothing: people already invited
+are skipped, and the look and keys are saved again as they are.
 
 ## 5. Check, then hand over
 
-- Open `<url>/admin`: the console checklist shows what is done.
+- Open `<url>/admin`: the console checklist shows what is done. With mail off, its mail-and-network row stays open
+  even when Village is connected; that is the mail part.
 - Set up › Village shows "Connected" when step 4 passed.
 - Set up › Sign-in links holds each member's invite link to copy, because nobody was emailed. Once mail works
   (Set up › Mail), invites can go out by email from there.
@@ -95,9 +103,12 @@ It ends with what only a person can do. Running it again changes nothing that is
 
 ## If it stops
 
-It stops at the first line marked ✗ and says why. Fix that and run it again.
+A line marked ✗ says why. The admin, sign-in, logo, look and member steps stop the run there; a refused Village key
+is marked ✗ and the run goes on. Either way it ends with "Not finished" and exit code 1. Fix each ✗ and run it again.
 
 - "The setup token is wrong": `SETUP_TOKEN` must match the server's. After 10 wrong tries in a minute it pauses.
-- "Could not sign in": the admin exists with another password. Use **I lost my admin password** on the sign-in page.
+- "Could not sign in … Invalid email or password": the admin exists with another password (use **Forgot your
+  password?** on the sign-in page, then **I lost my admin password**), or no admin exists yet and `SETUP_TOKEN` was
+  not set.
 - "Invalid origin" or "This request came from another site": `--url` is not the address in `APP_URL`.
 - Behind a Cloudflare tunnel, set `CLIENT_IP_HEADER=cf-connecting-ip` on the server (README, rate limits).

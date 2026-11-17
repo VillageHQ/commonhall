@@ -18,12 +18,18 @@ const SECRET_FIELD = /^(password|secret|secretkey|token|setuptoken|apikey)$/i;
 
 const setupFileSchema = z
   .object({
-    admin: z.object({ name: z.string().trim().min(1, "admin.name: enter a name."), email: z.email("admin.email: enter a valid email address.") }).strict(),
+    admin: z
+      .object(
+        { name: z.string({ error: "admin.name: enter a name." }).trim().min(1, "admin.name: enter a name."), email: z.email("admin.email: enter a valid email address.") },
+        { error: "admin: add the admin's name and email." },
+      )
+      .strict(),
     brand: z
       .object({
         name: z.string().trim().min(1, "brand.name: enter the community's name."),
+        // The brand sets the whole look, as the brand card does: a descriptor left out is cleared.
         descriptor: z.string().trim().default(""),
-        accent: z.string().regex(HEX_COLOUR, "brand.accent: use a colour like #24525A.").optional(),
+        accent: z.string({ error: "brand.accent: add the brand colour, like #24525A." }).regex(HEX_COLOUR, "brand.accent: use a colour like #24525A."),
         logo: z.string().min(1).optional(),
         logoBackdrop: z.enum(["light", "dark"]).default("light"),
       })
@@ -93,12 +99,21 @@ export function readSetupSecrets(environment: Record<string, string | undefined>
 export type LoadedSetup = { setup: SetupFile; logo: Uint8Array | null; membersCsv: string | null };
 
 // Reads the file and the files it names (relative to it). -> the setup with the logo and CSV loaded.
+async function readNamedFile(path: string, what: string) {
+  try {
+    return await readFile(path);
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") throw new Error(`Can't find ${what}: ${path}`);
+    throw error;
+  }
+}
+
 export async function loadSetupFile(path: string): Promise<LoadedSetup> {
-  const parsed = parseSetupFile(await readFile(path, "utf8"));
+  const parsed = parseSetupFile((await readNamedFile(resolve(path), "the setup file")).toString("utf8"));
   if ("error" in parsed) throw new Error(parsed.error);
   const { setup } = parsed;
   const base = dirname(resolve(path));
-  const logo = setup.brand?.logo ? new Uint8Array(await readFile(resolve(base, setup.brand.logo))) : null;
-  const membersCsv = setup.members ? await readFile(resolve(base, setup.members.csv), "utf8") : null;
+  const logo = setup.brand?.logo ? new Uint8Array(await readNamedFile(resolve(base, setup.brand.logo), "the logo (brand.logo)")) : null;
+  const membersCsv = setup.members ? (await readNamedFile(resolve(base, setup.members.csv), "the members CSV (members.csv)")).toString("utf8") : null;
   return { setup, logo, membersCsv };
 }

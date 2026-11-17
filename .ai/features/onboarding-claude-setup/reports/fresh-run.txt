@@ -1,41 +1,69 @@
-# Fresh-copy run, 2026-11-17T22:06:23Z
-App on 127.0.0.1:9514, empty database ob_claude_fresh, fake Village server, no RESEND_* variables.
+# Fresh-copy run after the repair round, 2026-11-17T22:20:09Z
+App on 127.0.0.1:9514, a newly emptied database ob_claude_fresh, fake Village server, no RESEND_* variables. Runner: the steps in docs/SETUP-WITH-CLAUDE.md, timed with time.
 
 === first run
 $ node scripts/setup-instance.ts --url http://127.0.0.1:9514 --file .ai/tmp/proof/setup.json --demo
 ✓ Admin: Created robin@example.com.
 ✓ Sign in: Signed in as robin@example.com.
-✓ Look: Name "Northwind Founders", colour #7A3E9D.
 ✓ Logo: Uploaded logo.png (313 bytes).
+✓ Look: Name "Northwind Founders", colour #7A3E9D, descriptor "The Northwind Ventures portfolio".
 ✓ Village: Connected: Village accepted both keys and they are saved.
-✓ Members: members.csv: 3 invited without email, 0 not imported (already invited, already a member or unreadable).
-✓ Members: made-up founders (--demo): 5 invited without email, 0 not imported (already invited, already a member or unreadable).
+✓ Members: members.csv: 3 invited without email, 0 not imported.
+✓ Members: made-up founders (--demo): 5 invited without email, 0 not imported.
 ✓ Confirm: 0 confirmed, 0 were waiting.
 → For a person: Each member connects their own network on Village's screen, from their profile.
 → For a person: Invites were made without email: copy each link from Set up › Sign-in links, or send them once mail is set up.
 Done. Open http://127.0.0.1:9514/admin to see it.
 
-real	0m2.979s
-user	0m0.106s
-sys	0m0.419s
+real	0m1.829s
+user	0m0.075s
+sys	0m0.045s
 exit 0
 === second run (safe to repeat)
 $ node scripts/setup-instance.ts --url http://127.0.0.1:9514 --file .ai/tmp/proof/setup.json --demo
 – Admin: An admin already exists; signing in with the password.
 ✓ Sign in: Signed in as robin@example.com.
-✓ Look: Name "Northwind Founders", colour #7A3E9D.
 ✓ Logo: Uploaded logo.png (313 bytes).
+✓ Look: Name "Northwind Founders", colour #7A3E9D, descriptor "The Northwind Ventures portfolio".
 ✓ Village: Connected: Village accepted both keys and they are saved.
-✓ Members: members.csv: 0 invited without email, 3 not imported (already invited, already a member or unreadable).
-✓ Members: made-up founders (--demo): 0 invited without email, 5 not imported (already invited, already a member or unreadable).
+✓ Members: members.csv: 0 invited without email, 3 not imported.
+– Members: members.csv line 2: Already has a pending invite. Use Resend in the list if they lost it.
+– Members: members.csv line 3: Already has a pending invite. Use Resend in the list if they lost it.
+– Members: members.csv line 4: Already has a pending invite. Use Resend in the list if they lost it.
+✓ Members: made-up founders (--demo): 0 invited without email, 5 not imported.
+– Members: made-up founders (--demo) line 2: Already has a pending invite. Use Resend in the list if they lost it.
+– Members: made-up founders (--demo) line 3: Already has a pending invite. Use Resend in the list if they lost it.
+– Members: made-up founders (--demo) line 4: Already has a pending invite. Use Resend in the list if they lost it.
+– Members: made-up founders (--demo) line 5: Already has a pending invite. Use Resend in the list if they lost it.
+– Members: made-up founders (--demo) line 6: Already has a pending invite. Use Resend in the list if they lost it.
 ✓ Confirm: 0 confirmed, 0 were waiting.
 → For a person: Each member connects their own network on Village's screen, from their profile.
 → For a person: Invites were made without email: copy each link from Set up › Sign-in links, or send them once mail is set up.
 Done. Open http://127.0.0.1:9514/admin to see it.
 
-real	0m1.790s
-user	0m0.107s
-sys	0m0.155s
+real	0m1.158s
+user	0m0.077s
+sys	0m0.247s
+exit 0
+=== a wrong Village secret key (reported, the rest goes on)
+$ node scripts/setup-instance.ts --url http://127.0.0.1:9514 --file .ai/tmp/proof/setup.json
+– Admin: An admin already exists; signing in with the password.
+✓ Sign in: Signed in as robin@example.com.
+✓ Logo: Uploaded logo.png (313 bytes).
+✓ Look: Name "Northwind Founders", colour #7A3E9D, descriptor "The Northwind Ventures portfolio".
+✗ Village: Not connected: Village rejected this secret key. Copy it again from API Keys in Village, and check that your Village app is active. Set up › Village now says the keys were refused; a run with the right keys clears it.
+✓ Members: members.csv: 0 invited without email, 3 not imported.
+– Members: members.csv line 2: Already has a pending invite. Use Resend in the list if they lost it.
+– Members: members.csv line 3: Already has a pending invite. Use Resend in the list if they lost it.
+– Members: members.csv line 4: Already has a pending invite. Use Resend in the list if they lost it.
+✓ Confirm: 0 confirmed, 0 were waiting.
+→ For a person: Each member connects their own network on Village's screen, from their profile.
+→ For a person: Invites were made without email: copy each link from Set up › Sign-in links, or send them once mail is set up.
+Not finished. Fix each line marked ✗ and run it again; it is safe to repeat.
+[ELIFECYCLE] Command failed with exit code 1.
+exit 1
+=== the right key again clears it
+$ node scripts/setup-instance.ts --url http://127.0.0.1:9514 --file .ai/tmp/proof/setup.json
 exit 0
 
 ## Database afterwards
@@ -56,13 +84,8 @@ exit 0
  tomas@example.com
 (8 rows)
 
-         key         
----------------------
- fill_in_basis
- fill_in_terms_date
- first_admin_user_id
- village_last_ok_at
- village_public_key
- village_secret_key
-(6 rows)
+        name        | accent_color |            descriptor            
+--------------------+--------------+----------------------------------
+ Northwind Founders | #7a3e9d      | The Northwind Ventures portfolio
+(1 row)
 
