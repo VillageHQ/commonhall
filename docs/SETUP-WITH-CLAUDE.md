@@ -78,9 +78,8 @@ What it does, in order, and what it prints for each (✓ done, – skipped, ✗ 
 2. Signs in as the admin, like a person.
 3. Uploads the logo, then saves the name, descriptor and colour exactly as the file says (the brand card's save; mail
    and hosting settings stay as they are). A refused logo stops here and changes nothing.
-4. Checks the Village keys with Village and saves them: "Connected", or the reason Village gave. A refused key does
-   not stop the rest, but it is not harmless: Set up › Village then says the keys were refused and pauses network
-   search, even if good keys were saved before. A run with the right keys clears it.
+4. Tries the Village keys with Village and saves them: "Connected to <your Village app's name>", or the reason
+   Village gave. A refused key saves nothing (keys saved before stay as they were) and does not stop the rest.
 5. Imports the CSV with **email off**: everyone gets an invite, nobody is emailed. People already invited or already
    members are skipped, and each line not imported is printed with its reason.
 6. Confirms waiting members when the file says so. Anyone reported "not me" is left for a person.

@@ -133,16 +133,17 @@ export async function runSetup({ url, loaded, secrets, demo, fetchImpl = fetch, 
       record({ step: "Look", outcome: "skipped", detail: "No brand in the setup file." });
     }
 
-    // 4. Village keys: checked with Village, then saved. A failure is reported and the rest goes on.
+    // 4. Village keys: tried with Village, then saved; a refused key changes nothing. It is reported and the rest goes on.
     if (!setup.village) {
       record({ step: "Village", outcome: "skipped", detail: "No village.publicKey in the setup file; connect it later in Set up › Village." });
     } else if (!secrets.villageSecretKey) {
       record({ step: "Village", outcome: "skipped", detail: `${SETUP_SECRET_VARIABLES.villageSecretKey} is not set; connect it later in Set up › Village.` });
     } else {
       const { response, body } = await session.call(ROUTES.villageKeys, { json: { publicKey: setup.village.publicKey, secretKey: secrets.villageSecretKey } });
-      if (response.ok) record({ step: "Village", outcome: "done", detail: "Connected: Village accepted both keys and they are saved." });
+      const appName = typeof body.appName === "string" && body.appName ? body.appName : "your Village app";
+      if (response.ok) record({ step: "Village", outcome: "done", detail: `Connected to ${appName}: Village accepted both keys and they are saved.` });
       else if (response.status === NOT_FOUND_STATUS) record({ step: "Village", outcome: "skipped", detail: "The Network module is off, so there is nothing to connect." });
-      else record({ step: "Village", outcome: "failed", detail: `Not connected: ${reasonOf(response, body)} Set up › Village now says the keys were refused; a run with the right keys clears it.` });
+      else record({ step: "Village", outcome: "failed", detail: `Not connected: ${reasonOf(response, body)} Keys saved before stay as they were.` });
     }
 
     // 5. Members from the CSV, and 7. the made-up founders: email always off, so nobody is emailed.

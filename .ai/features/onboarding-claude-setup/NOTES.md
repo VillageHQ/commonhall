@@ -18,8 +18,9 @@ Guide: `docs/SETUP-WITH-CLAUDE.md`. Command: `pnpm setup:instance --url <app> --
   and colour. It needs all three, so `brand.accent` is required in the file and a missing descriptor is cleared.
 - **Logo before look:** a refused logo (SVG, over 512 KB) stops the run before the look is saved.
 - **What stops and what goes on:** admin, sign-in, logo, look, import and confirm failures stop the run. A refused
-  Village key is marked ✗ and the run goes on; the keys route then records the keys as refused, so Set up › Village
-  pauses network search until good keys are saved (existing behaviour of that route). Exit code 1 when anything is ✗.
+  Village key is marked ✗ and the run goes on; since Village connect, the keys route tries keys before saving, so a
+  refused key leaves saved keys and the community's Village status alone. The route returns `appName`, printed as
+  "Connected to <name>". Exit code 1 when anything is ✗.
 - **Email is always off:** `invite=0` is fixed, nobody is emailed whatever the server's mail settings.
 - **Secrets** come only from `SETUP_TOKEN`, `COMMONHALL_ADMIN_PASSWORD` and `VILLAGE_SECRET_KEY`. A file with a field
   named like a secret (password, secret, secretKey, token, apiKey) is refused, and the schema is strict, so an unknown
