@@ -1,6 +1,6 @@
 ---
 id: search-first
-status: building
+status: dropped
 ---
 # Search before connecting your own network
 

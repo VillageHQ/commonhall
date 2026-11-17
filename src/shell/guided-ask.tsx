@@ -264,7 +264,7 @@ export async function PathStep({ context, need, who, company, viewer, communityN
           <h1 className="fh-h1">Connect your network to find the best way in</h1>
           <p className="fh-lede">
             Warm paths come from your own network and the members who share theirs. Connecting takes a few minutes, on{" "}
-            <Link href={ROUTES.myNetwork}>My network</Link>. Until then, two ways on, and neither uses an intro ask:
+            <Link href={ROUTES.myNetwork}>My network</Link>. Until then, you can post it as an ask, which uses no intro ask:
           </p>
           <NoPath need={need} who={who} company={company} />
         </>
