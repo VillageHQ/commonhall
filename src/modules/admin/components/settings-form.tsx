@@ -30,6 +30,8 @@ type SettingsFormProps = {
   // Under Advanced, beside the folded fields: the mail checklist, Village, the audit log and the version (rendered on
   // the server).
   aside: ReactNode;
+  // Step 1 of the guided start: the essentials only (no Advanced), the save button says "Next", and a good save moves on.
+  guided?: { submitLabel: string; onSaved: () => void; secondary: ReactNode };
 };
 
 // "Buttons, links and the path line. Passes 8.5 : 1 on white.", or the darker shade the fund colour was moved to so
@@ -52,7 +54,7 @@ function isPreviewableLogo(url: string) {
 
 // Set up › Settings (Commonhall's settingsPage): one form, one save. In view: the name, the logo file, the colour and
 // the preview; the rest folds under Advanced with its defaults chosen. Changes are written to the audit log.
-export function SettingsForm({ saved, uploadedLogo, isMailOn, serverPlan, managedBy, aside }: SettingsFormProps) {
+export function SettingsForm({ saved, uploadedLogo, isMailOn, serverPlan, managedBy, aside, guided }: SettingsFormProps) {
   const router = useRouter();
   const flash = useFlash();
   const [values, setValues] = useState(saved);
@@ -74,7 +76,10 @@ export function SettingsForm({ saved, uploadedLogo, isMailOn, serverPlan, manage
     mutationFn: (body: SettingsValues) => postRequest(SETTINGS_API_ROUTE, body, settingsResponseSchema),
     onSuccess: ({ saved: isSaved, errors: fieldErrors }) => {
       setErrors(fieldErrors);
-      if (isSaved) {
+      if (isSaved && guided) {
+        router.refresh();
+        guided.onSaved();
+      } else if (isSaved) {
         flash("Settings saved.");
         router.refresh();
         window.scrollTo({ top: 0 });
@@ -209,11 +214,12 @@ export function SettingsForm({ saved, uploadedLogo, isMailOn, serverPlan, manage
 
         <ButtonRow>
           <Button type="submit" disabled={save.isPending}>
-            Save settings
+            {guided ? (save.isPending ? "Saving…" : guided.submitLabel) : "Save settings"}
           </Button>
+          {guided?.secondary}
         </ButtonRow>
       </div>
-
+      {guided ? null : (
       <AdvancedSection summary="Logo address, sign-in line, mail sender, hosting and data, plan, the mail checklist and the version." openWhen={advancedErrors}>
         <div className="fh-grid">
           <div className="fh-c7 fh-stack">
@@ -281,6 +287,7 @@ export function SettingsForm({ saved, uploadedLogo, isMailOn, serverPlan, manage
           <div className="fh-c5 fh-stack">{aside}</div>
         </div>
       </AdvancedSection>
+      )}
     </form>
   );
 }

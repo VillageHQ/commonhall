@@ -49,6 +49,8 @@ export const ROUTES = {
   myNetwork: "/me/network",
   admin: "/admin",
   adminSetup: "/admin/setup",
+  // The guided start: a new admin's four steps (look, Village, their card, invites), one screen each.
+  adminStart: "/admin/start",
   adminMembers: "/admin/members",
   adminReports: "/admin/reports",
   adminAuditLog: "/admin/audit",
@@ -86,6 +88,7 @@ export const AUTH_BASE_PATH = "/api/auth";
 
 export const API_ROUTES = {
   setup: "/api/setup",
+  adminGuidedStart: "/api/admin/guided-start",
   jobsTick: "/api/jobs/tick",
   emailUnsubscribe: "/api/email/unsubscribe",
   emailPreferences: "/api/email/preferences",

@@ -3,6 +3,7 @@ import { randomBytes } from "node:crypto";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { rateLimit, user } from "@/platform/database/auth-schema";
+import { finishGuidedStart, isGuidedStartPending } from "@/shell/guided-start";
 import { clearDatabase, createTestDatabase } from "@/test/database";
 
 import { POST } from "./route";
@@ -163,6 +164,14 @@ describe("POST /api/setup", () => {
       expect(first.status).toBe(201);
       expect(second.status).toBe(409);
       expect(await database.select().from(user)).toHaveLength(1);
+    });
+
+    it("sends the new admin to the guided start until it is finished", async () => {
+      expect(await isGuidedStartPending(database)).toBe(false);
+      await submitSetup(VALID_SUBMISSION);
+      expect(await isGuidedStartPending(database)).toBe(true);
+      await finishGuidedStart(database);
+      expect(await isGuidedStartPending(database)).toBe(false);
     });
 
     it("lets one of two simultaneous requests succeed", async () => {

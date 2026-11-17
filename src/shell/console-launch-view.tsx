@@ -55,7 +55,7 @@ export function ConsoleLaunchView({ firstName, steps }: { firstName: string; ste
         <TextLink href={ROUTES.adminSetup}>
           <b>Set up</b>
         </TextLink>{" "}
-        in the menu, with plain words.
+        in the menu, with plain words. One screen at a time instead? Open the <TextLink href={ROUTES.adminStart}>guided start</TextLink>.
       </p>
     </>
   );
