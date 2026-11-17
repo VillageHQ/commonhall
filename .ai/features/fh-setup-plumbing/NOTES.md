@@ -22,3 +22,5 @@
   `src/platform/audit/actions.ts`.
 - **Features, Reports** — `feature-screen.tsx`, `report-queue.tsx`, restyled with Commonhall's sheets and rows.
 - **Shared part added** — `src/components/plumbing-notes.tsx` (the "Running it yourself" box).
+- **Advanced fold** — Settings, Mail and Village keep the essentials in view and fold the rest under one closed
+  "Advanced" (`src/components/advanced-section.tsx`); see `.ai/features/onboarding-settings-fold/NOTES.md`.

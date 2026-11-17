@@ -1,3 +1,7 @@
+---
+id: onboarding-settings-fold
+status: building
+---
 # Fewer controls in view: Settings, Mail, Village
 
 Approved by Absi on 17 Nov 2026 (decision page question 2: "Essentials plus mail checks").
