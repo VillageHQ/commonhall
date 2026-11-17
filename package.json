@@ -16,6 +16,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "db:migrate": "node --env-file-if-exists=.env scripts/migrate.ts",
+    "setup:instance": "node scripts/setup-instance.ts",
     "db:generate": "drizzle-kit generate",
     "db:auth-schema": "auth generate --config scripts/auth-schema-config.ts --output src/platform/database/auth-schema.ts --yes"
   },

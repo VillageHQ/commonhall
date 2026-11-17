@@ -1,3 +1,7 @@
+---
+id: onboarding-claude-setup
+status: building
+---
 # Claude sets up an instance: the guide and one command
 
 From Absi's brief (17 Nov 2026): Claude sets up an instance faster than a person clicking through, and onboards the
@@ -11,7 +15,9 @@ organizer with the least friction. The design page listed it as a small call; Ab
   1. create the first admin with the setup token (`POST /api/setup`; skipped when an admin exists and the password
      signs in);
   2. sign in like a person (Better Auth email sign-in) and keep the session cookie;
-  3. set the name, colour and logo (`/api/admin/branding/settings`, `/api/branding/logo`);
+  3. set the logo, then the name, descriptor and colour (`/api/branding/logo`, then the brand card's
+     `/api/admin/branding`: the Settings save `/api/admin/branding/settings` would clear the mail and hosting fields it
+     isn't given, and nothing reads them back);
   4. paste the Village keys (`/api/admin/village/keys`) and print "Connected" or the reason;
   5. import members from a CSV with email **off** (`/api/admin/invites/import`): nobody is emailed;
   6. confirm waiting members when the file says so (`/api/admin/members/confirm`);
