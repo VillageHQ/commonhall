@@ -55,7 +55,7 @@ describe("the consent screen", () => {
   });
 
   it("says the member gains access to the other networks", () => {
-    expect(renderConsent()).toContain("Your searches cover the people you know too");
+    expect(renderConsent()).toContain("Search the people members know, your own contacts included.");
   });
 
   it("lets a member skip sharing and come back later", () => {
@@ -63,7 +63,7 @@ describe("the consent screen", () => {
 
     expect(markup).toContain("Not now");
     expect(markup).toContain(`href="${ROUTES.feed}"`);
-    expect(renderConsent()).toContain("You can still search what other members share, and come back here from Network");
+    expect(renderConsent()).toContain("You can still find members by their profiles, and come back here from Network");
   });
 
   it("promises a yes or no on every intro", () => {

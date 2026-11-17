@@ -5,7 +5,7 @@ export type SearchViewer = { id: string; name: string; imageUrl: string | null }
 export type SearchScreenProps = {
   viewer: SearchViewer;
   communityName: string;
-  // Members other than the viewer who share their network.
+  // Members who share their network, the viewer included when they do.
   sharingMemberCount: number;
   // The viewer's own network is in (they joined and synced).
   isConnected: boolean;

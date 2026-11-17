@@ -90,8 +90,6 @@ type FakeVillageState = {
   mintedGrants: Map<string, string>;
   // Paths that only one caller sees (their own contacts), checked before pathsByUrl.
   pathsByCaller: Map<string, Map<string, FakePaths>>;
-  // Modelled, not confirmed with live Village: a user who never synced but joined a group may search it.
-  isUnsyncedGroupSearchRefused: boolean;
   // When true, a group's creator is blocked from leaving only while someone else is still in the group.
   isCreatorBlockedOnlyWithOthers: boolean;
 };
@@ -124,7 +122,6 @@ export function createFakeVillageState(): FakeVillageState {
     profilesByUrl: new Map(),
     mintedGrants: new Map(),
     pathsByCaller: new Map(),
-    isUnsyncedGroupSearchRefused: false,
     isCreatorBlockedOnlyWithOthers: false,
   };
 }
@@ -178,6 +175,8 @@ function respondWithError(response: ServerResponse, status: number, type: string
     metadata: { request_id: FAKE_REQUEST_ID, timestamp: FAKE_TIMESTAMP },
   });
 }
+
+const BULK_LINKEDIN_ID_PATTERN = /^[a-z0-9-]{3,100}$/;
 
 function respondWithInvalidField(response: ServerResponse, field: string) {
   respondWithError(response, 422, "validation_error", [{ field, message: "fake", code: "REQUIRED_FIELD" }]);
@@ -307,21 +306,12 @@ function respondToAuthenticated(
   }
   const linked = state.linkedMembers.get(externalId);
   if (path === "/v2/user/status") return respondWithData(response, 200, toVillageUserStatus(state, externalId, linked));
-  // A user who never synced may join a group (a full grant makes the user), and then search what the group shares.
-  const isUnsyncedInGroup = !linked && state.joinedMembers.has(externalId);
-  if (path === "/v2/groups/join" && !linked && state.mintedGrants.get(externalId) !== "public") {
-    if (state.joinedMembers.has(externalId)) return respondWithError(response, 409, "conflict");
-    state.joinedMembers.add(externalId);
-    return respondWithData(response, 200, { success: true, message: "Joined" });
-  }
-  const isUnsyncedSearch = isUnsyncedInGroup && (path === "/v2/people/search" || path === "/v2/people/paths" || path === "/v2/people/paths/bulk" || path === "/v2/groups/leave");
-  if (isUnsyncedSearch && state.isUnsyncedGroupSearchRefused && path !== "/v2/groups/leave") {
+  // Like live Village (real test, 2026-11-16): a user who never synced can't join a group or search; Village answers
+  // as for an unknown user.
+  if (path === "/v2/people/search" && !linked) {
     return respondWithError(response, 403, "authorization_error");
   }
-  if (path === "/v2/people/search" && !linked && !isUnsyncedSearch) {
-    return respondWithError(response, 403, "authorization_error");
-  }
-  if (!linked && !isUnsyncedSearch) return respondWithError(response, 404, "not_found");
+  if (!linked) return respondWithError(response, 404, "not_found");
 
   // Only the groups the caller is in, like Village: one who created it, or joined and hasn't left.
   if (path === "/v2/groups" && method === "GET") {
@@ -374,6 +364,8 @@ function respondToAuthenticated(
   if (path === "/v2/people/paths/bulk") {
     if (state.isPathsNotSynced) return respondWithError(response, 409, "network_not_synced");
     const ids = typeof body === "object" && body !== null && Array.isArray((body as { linkedin_ids?: unknown }).linkedin_ids) ? (body as { linkedin_ids: unknown[] }).linkedin_ids : [];
+    // Village's schema: every id is a bare slug, ^[a-z0-9-]{3,100}$. One that isn't fails the whole call.
+    if (ids.some((id) => typeof id !== "string" || !BULK_LINKEDIN_ID_PATTERN.test(id))) return respondWithInvalidField(response, "linkedin_ids");
     const answered = ids.flatMap((id) => {
       if (typeof id !== "string") return [];
       const linkedinUrl = [...state.pathsByUrl.keys(), ...(state.pathsByCaller.get(externalId)?.keys() ?? [])].find((url) => url.replace(/\/+$/, "").endsWith(`/in/${id}`));

@@ -38,7 +38,7 @@ export const NETWORK_ERROR_CODES = {
   fillInTooSoon: "fill_in_too_soon",
   fillInRunning: "fill_in_running",
   nudgeTooSoon: "nudge_too_soon",
-  pooledSearchUnavailable: "pooled_search_unavailable",
+  connectNeeded: "network_connect_needed",
 } as const;
 
 const networkStageSchema = z.enum([
@@ -58,8 +58,7 @@ export const networkStatusSchema = z.object({
   stage: networkStageSchema,
   isAdmin: z.boolean(),
   sync: z.object({ appUrl: z.string() }).nullable(),
-  // True when the member can search now: their own network is in, or, before they connect, the community's shared
-  // networks are there to search.
+  // True when the member can search the networks now: their own network is in.
   canSearch: z.boolean(),
 });
 
@@ -125,12 +124,14 @@ export const networkSearchResultSchema = z.object({
   members: z.array(searchMemberSchema),
   discardedOffNetworkResults: z.boolean(),
   dailyLookupsLeft: z.number().int(),
-  // False before the member connects: the search covered only the networks other members shared.
+  // True when Village searched the member's own network too (they connected).
   includesOwnNetwork: z.boolean(),
   // The same search in the last 10 minutes: no new lookup was spent.
   isCached: z.boolean(),
-  // The community hasn't connected Village: only member profiles were searched.
+  // Only member profiles were searched: the community hasn't connected Village, or the member hasn't connected yet.
   isProfilesOnly: z.boolean(),
+  // Village failed the page's paths: "couldn't load intro paths", never "nobody knows them".
+  pathsUnavailable: z.boolean(),
 });
 
 export type NetworkSearchResult = z.infer<typeof networkSearchResultSchema>;
