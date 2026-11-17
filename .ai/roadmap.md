@@ -91,6 +91,7 @@ Each open item gets these yes/no checks; code adds the points (change a number t
 - Gaps neither product had (merge plan): Google/Microsoft sign-in and SSO, groups inside one community, CRM export, events, other languages.
 
 ## Done
+- [x] 2026-11-17 — The console checklist says only what is true: the look needs a logo, invites say how many were emailed — [spec](features/checklist-honest/SPEC.md)
 - [x] 2026-11-17 — A careers link with no job board offers "Add the jobs by hand instead" — [spec](features/jobs-by-hand-fallback/SPEC.md)
 - [x] 2026-11-17 — An email Resend refuses is given up at once, not retried for 4 hours — [spec](features/outbox-permanent-fail/SPEC.md)
 - [x] 2026-11-17 — Sign-in links list one import A–Z, so the admin can copy them down the list — [spec](features/signin-links-order/SPEC.md)
