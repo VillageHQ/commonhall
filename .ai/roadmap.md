@@ -22,6 +22,7 @@ Each open item gets these yes/no checks; code adds the points (change a number t
 - order: waiting on an unfinished item = hidden · each open item waiting on it = +1, at most +2 · touching the files of an open pull request = ranked after it
 
 ## Now (in flight)
+- Onboarding (approved 17 Nov 2026): [Village connect](features/onboarding-village-connect/SPEC.md) · [fewer controls in view](features/onboarding-settings-fold/SPEC.md) · [guided start](features/onboarding-guided-start/SPEC.md) · [Claude setup](features/onboarding-claude-setup/SPEC.md)
 - [ ] Commonhall transplant, area 3, intros: Commonhall's Your intros, tracker, one-step connector answer, public answer links for the connector, the person and the outcome, the opt-out page and every intro email word for word — fh-intros — open pull request — [spec](features/fh-intros/SPEC.md)
 - [ ] Commonhall transplant, foundation: Commonhall's look, shared parts and shell (menus, console, phone bars, footers, flash) on every Community screen, and a parts review page — fh-foundation — open pull request — [spec](features/fh-foundation/SPEC.md)
 - [ ] Commonhall transplant, Search and asking for an intro: Commonhall's Search (/search), the intro ask as a page (from a search result and from a profile), the guided ask (/ask), My network (/me/network) and the connector's email, on Community's engine — fh-search-ask — open pull request, [PR #52](https://github.com/VillageHQ/commonhall/pull/52) — [spec](features/fh-search-ask/SPEC.md)
