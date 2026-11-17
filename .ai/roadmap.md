@@ -91,6 +91,7 @@ Each open item gets these yes/no checks; code adds the points (change a number t
 - Gaps neither product had (merge plan): Google/Microsoft sign-in and SSO, groups inside one community, CRM export, events, other languages.
 
 ## Done
+- [x] 2026-11-17 — An uploaded logo on the dark tile shows again (was an empty black square) — [charter](features/logo-dark-tile/CHARTER.md)
 - [x] 2026-11-17 — Pages no longer crash (500) on a server bound to 127.0.0.1 behind an https tunnel (self-call-http) — [notes](features/self-call-http/NOTES.md)
 - [x] 2026-11-11 — Jobs on member cards, profiles, the directory (Hiring chip and filter) and Today — [spec](features/jobs-on-cards/SPEC.md)
 - [x] 2026-11-10 — The demo shows the job board and perks, with made-up jobs and deals — [spec](features/demo-jobs-perks/SPEC.md)
