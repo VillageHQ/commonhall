@@ -95,9 +95,9 @@ function PathRow({ viewer, person, path, more }: { viewer: SearchViewer; person:
   );
 }
 
-type PersonRowProps = { person: SearchPerson; viewer: SearchViewer; communityName: string; canAskIntro: boolean; query: string; scope: SearchWhere };
+type PersonRowProps = { person: SearchPerson; viewer: SearchViewer; communityName: string; canAskIntro: boolean; query: string; scope: SearchWhere; pathsUnavailable: boolean };
 
-function PersonRow({ person, viewer, communityName, canAskIntro, query, scope }: PersonRowProps) {
+function PersonRow({ person, viewer, communityName, canAskIntro, query, scope, pathsUnavailable }: PersonRowProps) {
   const first = readFirstWord(person.fullName);
   const top = (
     <div className="fh-top">
@@ -129,7 +129,9 @@ function PersonRow({ person, viewer, communityName, canAskIntro, query, scope }:
       <article className="fh-result">
         {top}
         <p className="fh-pathtext fh-muted" style={{ marginTop: 10 }}>
-          Nobody in {communityName} who shares their network knows {first} yet.
+          {pathsUnavailable
+            ? `Couldn’t load intro paths to ${first} right now. Search again in a minute.`
+            : `Nobody in ${communityName} who shares their network knows ${first} yet.`}
         </p>
       </article>
     );
@@ -207,7 +209,7 @@ export function SearchResults({ query, scope, viewer, communityName, canAskIntro
         ))}
         {outside.map((person, position) => (
           <Fragment key={person.linkedinSlug ?? `${person.fullName}-${position}`}>
-            <PersonRow person={person} viewer={viewer} communityName={communityName} canAskIntro={canAskIntro} query={query} scope={scope} />
+            <PersonRow person={person} viewer={viewer} communityName={communityName} canAskIntro={canAskIntro} query={query} scope={scope} pathsUnavailable={result.pathsUnavailable} />
           </Fragment>
         ))}
       </div>

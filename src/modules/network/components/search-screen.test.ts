@@ -42,6 +42,7 @@ const RESULT = {
   includesOwnNetwork: true,
   isCached: false,
   isProfilesOnly: false,
+  pathsUnavailable: false,
 };
 const NO_RESULT = { ...RESULT, query: "zebra keeper in antarctica", people: [], members: [] };
 
@@ -73,14 +74,36 @@ describe("search", () => {
   });
 
   it("asks who you are trying to reach, and spends nothing before a search", () => {
-    renderSearch({ isConnected: false });
+    renderSearch();
 
     expect(screen.getByLabelText("Who are you trying to reach?")).toBeTruthy();
     expect(screen.getByRole("button", { name: "In our network" }).getAttribute("aria-pressed")).toBe("true");
     expect(screen.getByRole("button", { name: "seed investors in climate" })).toBeTruthy();
     expect(screen.getByText(/Paths come from 3 members who share their network so far/)).toBeTruthy();
-    expect(screen.getByRole("link", { name: "Connect yours" }).getAttribute("href")).toBe(ROUTES.myNetwork);
+    expect(screen.queryByRole("link", { name: "Connect your network" })).toBeNull();
     expect(searchBodies).toEqual([]);
+  });
+
+  it("asks a member who hasn't connected to connect their network, and searches member profiles meanwhile", async () => {
+    answer = { ...NO_RESULT, query: "cto", isProfilesOnly: true, members: RESULT.members };
+    address.params = new URLSearchParams({ q: "cto", scope: "global" });
+    renderSearch({ isConnected: false });
+
+    expect(screen.getByText("Connect your network to search who members know.")).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Connect your network" }).getAttribute("href")).toBe(ROUTES.myNetwork);
+    expect(screen.queryByRole("button", { name: "Everywhere" })).toBeNull();
+    expect(screen.queryByText(/Paths come from/)).toBeNull();
+    await waitFor(() => expect(screen.getByText("1 person in member profiles")).toBeTruthy());
+    expect(searchBodies).toEqual([{ prompt: "cto", scope: "network" }]);
+  });
+
+  it("says the intro paths couldn't load, not that nobody knows them, when Village failed them", async () => {
+    answer = { ...RESULT, scope: "global", members: [], pathsUnavailable: true, people: [{ ...RESULT.people[0], paths: [] }] };
+    address.params = new URLSearchParams({ q: "cto", scope: "global" });
+    renderSearch();
+
+    await waitFor(() => expect(screen.getByText("Couldn’t load intro paths to Rosa right now. Search again in a minute.")).toBeTruthy());
+    expect(screen.queryByText(/who shares their network knows Rosa yet/)).toBeNull();
   });
 
   it("searches the words in the address once, members first, then the paths", async () => {

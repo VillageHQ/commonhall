@@ -3,9 +3,9 @@
 Village search, sync, the community group and intro paths. Toggleable. The only module using Village.
 
 - `service.ts`: joining, search (one bulk paths call, kept 10 minutes), paths, keys, the group, leaving, link approval.
-- `service-search-pool.ts`: members who haven't joined search as the app's identity (in the group, unsynced).
+- `service-path-sharing.ts`: drops any path naming a member who isn't sharing. Search and paths need the member's own joined network; before that, search finds member profiles only.
 - `service-departure.ts`: takes a removed member out of the group. Never throws.
-- `service-settings.ts`, `contract-village-settings.ts`: group, daily limit, and the Village settings: search scope, who can introduce, the service email.
+- `service-settings.ts`, `contract-village-settings.ts`: group, daily limit, and the Village settings: search scope, who can introduce, the service email (the address of the app's lookup identity, for fill-in and the Village check).
 - `reads-*.ts`: progress, reachable members, credit usage, search's member rows.
 - `contract*.ts`: schemas, constants. `queries.ts`: client requests. `components/`: the UI (`search-*`: /search; `my-network-screen`: /me/network).
 - `service-fill-in.ts`, `rules-fill-in.ts`, `integration.ts`: the profile fill-in: email first, then LinkedIn every 30 days; nightly (02:00–05:59 UTC) or on request. Lookups run as the app's public identity, never as a member.

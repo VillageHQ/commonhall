@@ -9,7 +9,6 @@ import { GROUP_DEPARTURE_OUTCOMES, type GroupDepartureOutcome } from "./contract
 import { recordAdminAction } from "../../platform/audit/record.ts";
 import { logError } from "../../platform/observability/route-logging.ts";
 import { createVillageSession, leaveVillageGroup, readVillageUser } from "../../platform/village/client.ts";
-import { leaveSearchIdentityForLastMember } from "./service-search-pool.ts";
 import { clearMemberFromGroup } from "./service.ts";
 import { type RequestContext } from "../../platform/http/request-context.ts";
 import { readVillageGroup, type VillageGroup } from "./service-settings.ts";
@@ -48,12 +47,7 @@ async function leaveAs(attempt: DepartureAttempt): Promise<GroupDepartureOutcome
   );
   const { email: villageEmail } = await readVillageUser(session);
   if (villageEmail === null || !isOwnVillageAccount(villageEmail, attempt)) return GROUP_DEPARTURE_OUTCOMES.failed;
-  const outcome = await leaveVillageGroup(session, group.id);
-  // The search identity alone in the group still blocks its creator from leaving: it leaves first.
-  if (outcome === "admin_blocked" && (await leaveSearchIdentityForLastMember(context, keys, group, attempt.memberId))) {
-    return DEPARTURE_FROM_VILLAGE_OUTCOME[await leaveVillageGroup(session, group.id)];
-  }
-  return DEPARTURE_FROM_VILLAGE_OUTCOME[outcome];
+  return DEPARTURE_FROM_VILLAGE_OUTCOME[await leaveVillageGroup(session, group.id)];
 }
 
 async function leaveOrFail(attempt: DepartureAttempt) {
