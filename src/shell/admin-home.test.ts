@@ -198,7 +198,7 @@ describe("the admin home", () => {
   });
 
   it("words each launch step like Commonhall, with its link", () => {
-    const facts = { communityName: "Harbor Ventures", isLookSet: false, hasLogo: false, invitesAdded: 2, invitesEmailed: 2, isMailSet: false, isNetworkSet: false, mailDomain: null, hasMadeIntro: false };
+    const facts = { communityName: "Harbor Ventures", isLookSet: false, hasLogo: false, invitesAdded: 2, invitesEmailed: 2, invitesJoined: 0, isMailSet: false, isNetworkSet: false, mailDomain: null, hasMadeIntro: false };
     const text = describeLaunchSteps(facts).map(({ text: parts }) => parts.map(({ text: words }) => words).join(""));
 
     expect(text).toEqual([
@@ -214,11 +214,13 @@ describe("the admin home", () => {
   // Found on a demo: the name alone marked the look done (the sidebar still showed initials), and an import with email
   // off said "6 invites sent" when nobody was emailed.
   it("counts the look done only with a logo, and never says invites were sent when no email went out", () => {
-    const facts = { communityName: "Harbor Ventures", isLookSet: true, hasLogo: false, invitesAdded: 6, invitesEmailed: 0, isMailSet: false, isNetworkSet: false, mailDomain: null, hasMadeIntro: false };
+    const facts = { communityName: "Harbor Ventures", isLookSet: true, hasLogo: false, invitesAdded: 6, invitesEmailed: 0, invitesJoined: 0, isMailSet: false, isNetworkSet: false, mailDomain: null, hasMadeIntro: false };
     const steps = describeLaunchSteps(facts);
     const text = steps.map(({ text: parts }) => parts.map(({ text: words }) => words).join(""));
 
     expect(steps[0]?.isDone).toBe(false);
+    expect(steps[1]?.isDone).toBe(false);
+    expect(describeLaunchSteps({ ...facts, invitesJoined: 1 })[1]?.isDone).toBe(true);
     expect(text[0]).toBe("Harbor Ventures is saved; members still see your initials. Add your logo →");
     expect(text[1]).toBe("6 added, no email sent yet. Send their links from Sign-in links →");
     expect(steps[1]?.text.at(-1)).toMatchObject({ href: "/admin/links" });

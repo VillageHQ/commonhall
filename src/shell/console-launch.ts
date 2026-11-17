@@ -33,6 +33,7 @@ export type LaunchFacts = {
   // Every invite made, and how many of them were emailed (an import with email off adds people and emails nobody).
   invitesAdded: number;
   invitesEmailed: number;
+  invitesJoined: number;
   isMailSet: boolean;
   isNetworkSet: boolean;
   mailDomain: string | null;
@@ -91,7 +92,8 @@ export function describeLaunchSteps(facts: LaunchFacts): LaunchStep[] {
     : [{ text: "Appears here the day the first intro is counted. You can send it to partners as a PDF." }];
   return [
     { key: LAUNCH_STEPS.look, title: "Your fund’s look", isDone: isLookDone, text: look },
-    { key: LAUNCH_STEPS.invite, title: "Invite your first founders", isDone: facts.invitesAdded > 0, text: invite },
+    // Done once an invite reached someone: emailed, or used to join (a link sent by hand).
+    { key: LAUNCH_STEPS.invite, title: "Invite your first founders", isDone: facts.invitesEmailed > 0 || facts.invitesJoined > 0, text: invite },
     { key: LAUNCH_STEPS.plumbing, title: "Mail and the network", isDone: facts.isMailSet && facts.isNetworkSet, text: plumbing },
     { key: LAUNCH_STEPS.report, title: "Your first partner report", isDone: facts.hasMadeIntro, text: report },
   ];
@@ -124,6 +126,7 @@ export async function readLaunchFacts(database: Database, environment: Environme
     hasLogo: branding.logo !== null,
     invitesAdded: invites.all,
     invitesEmailed: emailed?.value ?? 0,
+    invitesJoined: invites.accepted,
     // In demo mode mail is kept in the sending log, which counts as set up.
     isMailSet: mail !== null,
     // With the network switched off there is no Village to connect.
