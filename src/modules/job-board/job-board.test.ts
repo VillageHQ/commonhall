@@ -407,7 +407,7 @@ describe("the job board", () => {
     const second = (await (await call(postManual, founder, { company: "stripe example " })).json()) as { id: string; message: string };
 
     expect(second.id).toBe(first.id);
-    expect(second.message).toBe("Stripe Example is already here. Add its jobs below.");
+    expect(second.message).toBe("Stripe Example is already here. Add its jobs on its card.");
     expect(await database.select().from(jobSource)).toHaveLength(1);
   });
 

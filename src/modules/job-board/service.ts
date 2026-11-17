@@ -142,7 +142,7 @@ export async function createManualSource(context: RequestContext, body: z.infer<
     return created ? { ...created, isNew: true } : null;
   });
   if (!source) throw sourceNotFound();
-  return { id: source.id, message: source.isNew ? `Added ${company}. Now add its jobs.` : `${company} is already here. Add its jobs below.` };
+  return { id: source.id, message: source.isNew ? `Added ${company}. Now add its jobs.` : `${company} is already here. Add its jobs on its card.` };
 }
 
 function assertPullAllowed(source: SourceRow) {
