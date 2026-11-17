@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { verifyAndSaveVillageKeys } from "@/modules/network/service";
+import type { VillageKeysResponse } from "@/modules/network/contract-village-admin";
 import { networkRoutes } from "@/modules/network/routes";
 
 const keysBodySchema = z.object({
@@ -12,8 +13,8 @@ export const POST = networkRoutes.member(
   "village-keys",
   keysBodySchema,
   async (context, body) => {
-    await verifyAndSaveVillageKeys(context, body);
-    return Response.json({ message: "Village keys saved." });
+    const { appName } = await verifyAndSaveVillageKeys(context, body);
+    return Response.json({ message: "Village keys saved.", appName } satisfies VillageKeysResponse);
   },
   { adminOnly: true },
 );

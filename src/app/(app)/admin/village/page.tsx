@@ -16,12 +16,11 @@ import {
   NetworkMeter,
   NudgeNeedsEmail,
   NudgeSentNote,
-  SavedKeyLines,
-  SelfHostBox,
   WhatVillageSees,
 } from "@/modules/network/components/admin-village-sections";
-import { FillInBasisForm, FillInNowButton, NudgeButton, TestConnectionButton, VillageKeysForm, VillageLimitsForm } from "@/modules/network/components/admin-village-forms";
+import { FillInBasisForm, FillInNowButton, NudgeButton, TestConnectionButton, VillageLimitsForm } from "@/modules/network/components/admin-village-forms";
 import { GroupForm } from "@/modules/network/components/group-form";
+import { VillageConnect } from "@/modules/network/components/village-connect";
 import { networkManifest } from "@/modules/network/manifest";
 import { readCreditUsage } from "@/modules/network/reads-credits";
 import { readCreditSpend, readLookupsThisMonth, readNetworkReach, readNudgeStates } from "@/modules/network/reads-village-admin";
@@ -38,7 +37,7 @@ import { readResendConfig } from "@/platform/email/resend";
 import { createRequestContext, type SessionMember } from "@/platform/http/request-context";
 import { modulePage } from "@/platform/modules/module-page";
 import { readMonthlyCreditUsage } from "@/platform/village/credit-ledger";
-import { readDailyLookupLimit, readVillageKeyState, readVillageOutOfCreditsAt } from "@/platform/village/settings";
+import { readDailyLookupLimit, readVillageAppName, readVillageKeyState, readVillageOutOfCreditsAt } from "@/platform/village/settings";
 import { resolveVillageApiUrl, resolveVillageAppUrl } from "@/platform/village/urls";
 import { AdminSection } from "@/shell/admin-section";
 
@@ -92,7 +91,7 @@ export default modulePage(networkManifest, async function AdminVillagePage() {
     readFillInSettings(database),
     readFillInLastRun(database),
   ]);
-  const [month, lookups, outOfCreditsAt, reach, nudges, usage, spend] = await Promise.all([
+  const [month, lookups, outOfCreditsAt, reach, nudges, usage, spend, villageAppName] = await Promise.all([
     readMonthlyCreditUsage(database),
     readLookupsThisMonth(database),
     readVillageOutOfCreditsAt(database),
@@ -100,11 +99,11 @@ export default modulePage(networkManifest, async function AdminVillagePage() {
     readNudgeStates(database, admin.id),
     readCreditUsage(database),
     readCreditSpend(database),
+    readVillageAppName(database),
   ]);
   const isConfigured = keyState.keys !== null;
-  const hasSavedKeys = keyState.status !== VILLAGE_KEY_STATUSES.missing;
   const keyProblem = KEY_PROBLEMS[keyState.status];
-  // Keys this site can read show as Commonhall's "set on the server" lines; anything else keeps the fields open.
+  // Keys this site can read fold into "Connected to <name>"; anything else keeps the paste boxes open.
   const areKeysReadable = isConfigured && !keyProblem;
   const apiUrl = `${(resolveVillageApiUrl(process.env) ?? DEFAULT_VILLAGE_API_URL).replace(/\/+$/, "")}/v2`;
   const appUrl = resolveVillageAppUrl(process.env);
@@ -119,31 +118,20 @@ export default modulePage(networkManifest, async function AdminVillagePage() {
     >
       <div className="fh-grid">
         <div className="fh-c7 fh-stack">
-          {isConfigured ? null : <SelfHostBox />}
           <section className="fh-sheet">
             <ConnectionHead isConfigured={isConfigured} />
-            <p className="fh-small mt-2">
-              {isConfigured
-                ? `Village calls go to ${apiUrl}.`
-                : "No Village key. The directory, profiles and invites work on their own; network search, intro paths and profile fill-in need a key."}
-            </p>
+            {isConfigured ? <p className="fh-small mt-2">Village calls go to {apiUrl}.</p> : null}
             {keyProblem ? (
               <Note kind="needs" className="mt-3">
                 {keyProblem}
               </Note>
             ) : null}
             <ConnectionTestResult check={check} members={members} />
-            {areKeysReadable ? <SavedKeyLines /> : <VillageKeysForm hasSavedKeys={hasSavedKeys} />}
+            <VillageConnect appUrl={appUrl} connectedAppName={areKeysReadable ? (villageAppName ?? "") : null} />
             {isConfigured ? <TestConnectionButton /> : null}
             <p className="fh-small fh-muted mt-2.5">
               Village’s address: <span className="fh-mono">{apiUrl}</span> · for the sync screen: <span className="fh-mono">{appUrl}</span>. Both are set on the server.
             </p>
-            {areKeysReadable ? (
-              <details className="mt-2.5">
-                <summary className="fh-small">Replace the keys</summary>
-                <VillageKeysForm hasSavedKeys />
-              </details>
-            ) : null}
             {isConfigured && !group ? <GroupStep database={database} admin={admin} defaultName={branding.isSaved ? branding.name : ""} /> : null}
           </section>
         </div>

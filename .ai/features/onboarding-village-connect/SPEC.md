@@ -1,3 +1,7 @@
+---
+id: onboarding-village-connect
+status: building
+---
 # Connect Village: 3 links and 2 paste boxes
 
 Approved by Absi on 17 Nov 2026 (decision page "Commonhall: the organizer's first-run setup", question 3: test the
