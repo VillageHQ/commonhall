@@ -4,27 +4,25 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { memberNetwork } from "@/modules/members/schema";
 import { NETWORK_ERROR_CODES, NETWORK_STAGES, networkPathsSchema, networkSearchResultSchema, networkStatusSchema } from "@/modules/network/contract";
 import { saveVillageGroup } from "@/modules/network/service-settings";
-import { INSTANCE_SETTING_KEYS } from "@/platform/settings/schema";
-import { saveSettings } from "@/platform/settings/store";
 import { saveVillageKeys } from "@/platform/village/settings";
 import { clearDatabase, createTestDatabase } from "@/test/database";
 import { FAKE_VILLAGE_KEYS, startFakeVillageServer } from "@/test/fake-village-server";
 import { createSignedInMember } from "@/test/signed-in-member";
 
 import { POST as postConsent } from "@/app/api/network/consent/route";
-import { POST as postLeave } from "@/app/api/network/leave/route";
 import { POST as postLinkedin } from "@/app/api/network/linkedin/route";
 import { POST as postPaths } from "@/app/api/network/paths/route";
 import { POST as postSearch } from "@/app/api/network/search/route";
 import { POST as postStatus } from "@/app/api/network/status/route";
 
 const APP_URL = "http://localhost:3000";
-const SEARCH_IDENTITY = "community-pooled-search";
 const GROUP = { id: "group-1", inviteLink: "https://village.test/join/stored-invite" };
 const TARGET_SLUG = "target-person";
 const TARGET_URL = `https://www.linkedin.com/in/${TARGET_SLUG}`;
+// A slug Village's bulk paths call refuses (its ids must match ^[a-z0-9-]{3,100}$), as "Everywhere" results can carry.
+const ACCENTED_URL = "https://www.linkedin.com/in/jos%C3%A9-garc%C3%ADa";
 const SEARCH_PATH = "/v2/people/search";
-const PATHS_PATH = "/v2/people/paths";
+const PATHS_BULK_PATH = "/v2/people/paths/bulk";
 const JOIN_PATH = "/v2/groups/join";
 
 type Member = Awaited<ReturnType<typeof createSignedInMember>>;
@@ -45,7 +43,7 @@ function readCaller(headers: Record<string, string | string[] | undefined>) {
   return String(headers.authorization ?? "").replace("Bearer fake-token.", "");
 }
 
-describe("searching before connecting your own network", () => {
+describe("network search needs the member's own connected network", () => {
   const database = createTestDatabase();
   let village: Awaited<ReturnType<typeof startFakeVillageServer>>;
 
@@ -71,15 +69,20 @@ describe("searching before connecting your own network", () => {
     expect((await readStatus(member)).stage).toBe(NETWORK_STAGES.ready);
   }
 
-  async function search(member: Member) {
-    const response = await postSearch(jsonRequest(member, { prompt: "fintech founders" }));
+  async function search(member: Member, scope?: "network" | "global") {
+    const response = await postSearch(jsonRequest(member, { prompt: "fintech founders", ...(scope ? { scope } : {}) }));
+    return { status: response.status, body: await response.json() };
+  }
+
+  async function postPathsFor(member: Member) {
+    const response = await postPaths(jsonRequest(member, { linkedinSlug: TARGET_SLUG }));
     return { status: response.status, body: await response.json() };
   }
 
   async function readPaths(member: Member) {
-    const response = await postPaths(jsonRequest(member, { linkedinSlug: TARGET_SLUG }));
-    expect(response.status).toBe(200);
-    return networkPathsSchema.parse(await response.json());
+    const { status, body } = await postPathsFor(member);
+    expect(status).toBe(200);
+    return networkPathsSchema.parse(body);
   }
 
   beforeAll(async () => {
@@ -99,59 +102,35 @@ describe("searching before connecting your own network", () => {
     village.reset();
     await saveVillageKeys(database, FAKE_VILLAGE_KEYS);
     await saveVillageGroup(database, GROUP);
-    await saveSettings(database, { [INSTANCE_SETTING_KEYS.villageServiceEmail]: "village@example.com" });
     village.state.searchPeople = [{ full_name: "Target Person", linkedin_url: TARGET_URL, headline: "Founder" }];
   });
 
-  it("lets a brand-new member search the shared networks at once, as the app's search identity", async () => {
-    const newcomer = await createSignedInMember(database);
-
-    const status = await readStatus(newcomer);
-    expect(status).toMatchObject({ stage: NETWORK_STAGES.needsLinkedin, canSearch: true });
-
-    const { status: code, body } = await search(newcomer);
-    expect(code).toBe(200);
-    const result = networkSearchResultSchema.parse(body);
-    expect(result.people.map(({ fullName }) => fullName)).toEqual(["Target Person"]);
-    expect(result.includesOwnNetwork).toBe(false);
-
-    expect(village.readRequests(SEARCH_PATH).map(({ headers }) => readCaller(headers))).toEqual([SEARCH_IDENTITY]);
-    expect(village.state.mintedGrants.get(SEARCH_IDENTITY)).toBe("full");
-    expect(village.state.mintedEmails.get(SEARCH_IDENTITY)).toBe("village@example.com");
-    expect(village.state.joinedMembers.has(await readExternalId(newcomer))).toBe(false);
-
-    await search(newcomer);
-    expect(village.readRequests(JOIN_PATH).filter(({ headers }) => readCaller(headers) === SEARCH_IDENTITY)).toHaveLength(1);
-  });
-
-  it("shows paths only through members who shared, never through one who refused", async () => {
+  it("gives a member who hasn't connected the member profiles, and calls Village for nothing", async () => {
     const sharer = await createSignedInMember(database);
     await connect(sharer, "sharing-member");
-    const refuser = await createSignedInMember(database);
-    await addLinkedin(refuser, "refusing-member");
-    expect((await readStatus(refuser)).stage).toBe(NETWORK_STAGES.needsConsent);
     const newcomer = await createSignedInMember(database);
-    village.state.pathsByUrl.set(TARGET_URL, {
-      summary: "s",
-      paths: [
-        { degree: 2, description: "via sharer", introducer: profile("Test", "sharing-member") },
-        { degree: 2, description: "via refuser", introducer: profile("Test", "refusing-member") },
-        { degree: 1, description: "direct", introducer: profile("Target", TARGET_SLUG) },
-        { degree: 3, description: "outsider via refuser", introducer: profile("Out", "outsider"), starter: profile("Test", "refusing-member") },
-        { degree: 3, description: "outsider via sharer", introducer: profile("Out", "outsider"), starter: profile("Test", "sharing-member") },
-        { degree: 3, description: "refuser via sharer", introducer: profile("Test", "refusing-member"), starter: profile("Test", "sharing-member") },
-      ],
-    });
+    const before = village.state.requests.length;
 
-    const paths = await readPaths(newcomer);
+    expect(await readStatus(newcomer)).toMatchObject({ stage: NETWORK_STAGES.needsLinkedin, canSearch: false });
+    const { status, body } = await search(newcomer);
 
-    expect(paths.paths.map(({ description }) => description).toSorted()).toEqual(["outsider via sharer", "via sharer"]);
-    expect(paths.connectors.map(({ member }) => member?.id)).toEqual([sharer.userId]);
-    expect(JSON.stringify(paths)).not.toContain("refusing-member");
-    expect(village.readRequests(PATHS_PATH).map(({ headers }) => readCaller(headers))).toEqual([SEARCH_IDENTITY]);
+    expect(status).toBe(200);
+    expect(networkSearchResultSchema.parse(body)).toMatchObject({ isProfilesOnly: true, people: [], includesOwnNetwork: false });
+    const calls = village.state.requests.slice(before).map(({ path }) => path);
+    expect(calls).not.toContain(SEARCH_PATH);
+    expect(calls).not.toContain(JOIN_PATH);
   });
 
-  it("never names a member who refused, even to a member who connected, even as the contact a sharer goes through", async () => {
+  it("asks a member who hasn't connected to connect before looking up paths", async () => {
+    const newcomer = await createSignedInMember(database);
+
+    const { status, body } = await postPathsFor(newcomer);
+
+    expect(status).toBe(409);
+    expect(body).toMatchObject({ code: NETWORK_ERROR_CODES.connectNeeded });
+  });
+
+  it("never names a member who refused, even as the contact a sharer goes through", async () => {
     const sharer = await createSignedInMember(database);
     await connect(sharer, "sharing-member");
     const refuser = await createSignedInMember(database);
@@ -172,66 +151,54 @@ describe("searching before connecting your own network", () => {
     expect(JSON.stringify(paths)).not.toContain("refusing-member");
   });
 
-  it("counts the member's own contacts once they connect, and forgets the paths found before", async () => {
-    const sharer = await createSignedInMember(database);
-    await connect(sharer, "sharing-member");
+  it("searches as the member once they connect, their own contacts included", async () => {
     const newcomer = await createSignedInMember(database);
-    village.state.pathsByUrl.set(TARGET_URL, {
-      summary: "s",
-      paths: [{ degree: 2, description: "via sharer", introducer: profile("Test", "sharing-member") }],
-    });
-    expect((await readPaths(newcomer)).paths).toHaveLength(1);
-
     await connect(newcomer, "new-member");
-    const ownId = await readExternalId(newcomer);
-    village.state.pathsByCaller.set(ownId, new Map([[TARGET_URL, {
-      summary: "s",
-      paths: [
-        { degree: 2, description: "via sharer", introducer: profile("Test", "sharing-member") },
-        { degree: 2, description: "via my own contact", introducer: profile("Own", "own-contact") },
-      ],
-    }]]));
 
     const result = networkSearchResultSchema.parse((await search(newcomer)).body);
-    expect(result.includesOwnNetwork).toBe(true);
-    expect(readCaller(village.readRequests(SEARCH_PATH).at(-1)?.headers ?? {})).toBe(ownId);
-    expect((await readPaths(newcomer)).paths.map(({ description }) => description).toSorted()).toEqual(["via my own contact", "via sharer"]);
+
+    expect(result).toMatchObject({ isProfilesOnly: false, includesOwnNetwork: true });
+    expect(result.people.map(({ fullName }) => fullName)).toEqual(["Target Person"]);
+    expect(readCaller(village.readRequests(SEARCH_PATH).at(-1)?.headers ?? {})).toBe(await readExternalId(newcomer));
   });
 
-  it("says plainly when Village won't search the shared networks for someone who never synced", async () => {
-    const newcomer = await createSignedInMember(database);
-    village.state.isUnsyncedGroupSearchRefused = true;
+  it("keeps the paths on an Everywhere page when one result's LinkedIn name isn't a plain slug", async () => {
+    const sharer = await createSignedInMember(database);
+    await connect(sharer, "sharing-member");
+    const viewer = await createSignedInMember(database);
+    await connect(viewer, "viewer-member");
+    village.state.searchPeople = [
+      { full_name: "Target Person", linkedin_url: TARGET_URL, headline: "Founder" },
+      { full_name: "José García", linkedin_url: ACCENTED_URL, headline: "Head of procurement" },
+    ];
+    village.state.pathsByUrl.set(TARGET_URL, { summary: "s", paths: [{ degree: 2, description: "via sharer", introducer: profile("Test", "sharing-member") }] });
 
-    const { status, body } = await search(newcomer);
+    const result = networkSearchResultSchema.parse((await search(viewer, "global")).body);
 
-    expect(status).toBe(409);
-    expect(body).toMatchObject({ code: NETWORK_ERROR_CODES.pooledSearchUnavailable });
+    expect(result.people.map(({ fullName }) => fullName).toSorted()).toEqual(["José García", "Target Person"]);
+    expect(result.people.find(({ fullName }) => fullName === "Target Person")?.paths.map(({ memberId }) => memberId)).toEqual([sharer.userId]);
+    expect(result.pathsUnavailable).toBe(false);
+    expect(village.readRequests(PATHS_BULK_PATH).map(({ body }) => body)).toEqual([{ linkedin_ids: [TARGET_SLUG] }]);
   });
 
-  it("keeps the gate where there is nothing to search yet: no group, or no Village", async () => {
+  it("says the paths couldn't load, rather than that nobody knows them, when Village fails the page's paths", async () => {
+    const viewer = await createSignedInMember(database);
+    await connect(viewer, "viewer-member");
+    village.state.failures.set(PATHS_BULK_PATH, { status: 500, type: "internal_error" });
+
+    const { status, body } = await search(viewer, "global");
+
+    expect(status).toBe(200);
+    const result = networkSearchResultSchema.parse(body);
+    expect(result.people.map(({ fullName }) => fullName)).toEqual(["Target Person"]);
+    expect(result.pathsUnavailable).toBe(true);
+  });
+
+  it("finds member profiles only while Village isn't set up", async () => {
     const newcomer = await createSignedInMember(database);
     await database.delete((await import("@/platform/settings/schema")).instanceSettings);
 
     expect(await readStatus(newcomer)).toMatchObject({ stage: NETWORK_STAGES.notConfigured, canSearch: false });
-    // Without Village, search finds member profiles only (Commonhall's search with no key).
     expect(await search(newcomer)).toMatchObject({ status: 200, body: { isProfilesOnly: true, people: [] } });
-
-    await saveVillageKeys(database, FAKE_VILLAGE_KEYS);
-    expect(await readStatus(newcomer)).toMatchObject({ canSearch: false });
-    expect((await search(newcomer)).status).toBe(409);
-  });
-
-  it("lets the group's creator leave when only the search identity is left in it", async () => {
-    const creator = await createSignedInMember(database, "admin");
-    await connect(creator, "creator-member");
-    const newcomer = await createSignedInMember(database);
-    await search(newcomer);
-    village.state.groupCreatorIds.add(await readExternalId(creator));
-    village.state.isCreatorBlockedOnlyWithOthers = true;
-
-    const response = await postLeave(jsonRequest(creator, { confirmed: true }));
-
-    expect(response.status).toBe(200);
-    expect(village.state.leftMembers.has(SEARCH_IDENTITY)).toBe(true);
   });
 });

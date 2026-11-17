@@ -125,7 +125,7 @@ export function VillageLimitsForm({ values, sharingMembers, defaultServiceEmail,
       <Field
         htmlFor="v-email"
         label="Service email"
-        hint="The community’s own Village account (it owns the members’ group and runs searches for members who haven’t connected). Default: the first admin’s address, so change it only if Village asked for another."
+        hint="The address Village sees for this community’s own lookups, like filling in cards and the Village check. Default: the first admin’s address, so change it only if Village asked for another."
         className="fh-field"
       >
         {/* Filled in with the address in use, as Commonhall shows its default: the saved one, else the first admin's. */}
@@ -163,7 +163,7 @@ export function VillageLimitsForm({ values, sharingMembers, defaultServiceEmail,
       <SetRow
         htmlFor="v-restrict"
         label="Only paths through members who agreed to share"
-        hint="Searches by members who haven’t connected go only through consenting members."
+        hint="A path never names a member who hasn’t agreed to share."
         control={<Switch id="v-restrict" checked disabled aria-label="Only paths through members who agreed to share: always on" />}
       />
       <Field htmlFor="v-introducers" label="Who can introduce" hint="Paths through other members are left out, and only the chosen can offer intros." className="fh-field">

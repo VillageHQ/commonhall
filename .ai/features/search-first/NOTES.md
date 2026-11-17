@@ -1,4 +1,4 @@
-# How search before connecting works
+# How search before connecting worked (superseded by `.ai/features/search-connect-only/NOTES.md`: the pooled search identity is gone)
 
 - `src/modules/network/service.ts` `readSearcher`: a member who joined the group searches as themselves; anyone
   else is a "pooled" searcher. Search, paths and the intro ask's connector check all go through it.

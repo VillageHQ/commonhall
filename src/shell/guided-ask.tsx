@@ -18,6 +18,7 @@ import { readOpenAsks } from "@/modules/intros/reads-open-asks";
 import { networkManifest } from "@/modules/network/manifest";
 import { SEARCH_WHERE, type NetworkSearchResult } from "@/modules/network/contract";
 import { searchMemberNetwork } from "@/modules/network/service";
+import { readVillageKeys } from "@/platform/village/settings";
 
 // The guided ask (Commonhall's /ask): what you need, who, the best way in, then the note. Each step is an address, so
 // the back button and "Change" work without a script.
@@ -253,6 +254,19 @@ export async function PathStep({ context, need, who, company, viewer, communityN
           <p className="fh-small" style={{ marginTop: 16 }}>
             <Link href={ROUTES.members}>Browse the directory</Link> · <Link href={toGuidedHref({ need, edit: "1" })}>Ask for someone else</Link>
           </p>
+        </>
+      );
+    }
+    // Village is on but this member hasn't connected: only member profiles were searched, so ask them to connect.
+    if (result?.isProfilesOnly && (await readVillageKeys(context.database))) {
+      return (
+        <>
+          <h1 className="fh-h1">Connect your network to find the best way in</h1>
+          <p className="fh-lede">
+            Warm paths come from your own network and the members who share theirs. Connecting takes a few minutes, on{" "}
+            <Link href={ROUTES.myNetwork}>My network</Link>. Until then, you can post it as an ask, which uses no intro ask:
+          </p>
+          <NoPath need={need} who={who} company={company} />
         </>
       );
     }

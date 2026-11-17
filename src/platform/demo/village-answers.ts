@@ -208,6 +208,8 @@ function findDemoPerson(body: unknown) {
   return DEMO_PEOPLE.find((person) => (email && toDemoEmail(person) === email) || (slug && toDemoSlug(person) === slug)) ?? null;
 }
 
+const BULK_LINKEDIN_ID_PATTERN = /^[a-z0-9-]{3,100}$/;
+
 function readIds(body: unknown) {
   if (typeof body !== "object" || body === null) return [];
   const ids = (body as Record<string, unknown>).linkedin_ids;
@@ -272,6 +274,10 @@ export async function answerDemoVillage(request: Request): Promise<Response> {
     }
     case "/v2/people/paths/bulk": {
       const ids = readIds(body);
+      // Like live Village: every id must be a bare slug, and one that isn't fails the whole call.
+      if (ids.some((id) => !BULK_LINKEDIN_ID_PATTERN.test(id))) {
+        return json(422, { error: { type: "validation_error", title: "Demo", status: 422, detail: "linkedin_ids", trace_id: "trace_demo" }, metadata: { request_id: REQUEST_ID } });
+      }
       const answered = ids.flatMap((id) => {
         const paths = toPaths(`${LINKEDIN_PREFIX}${id}`, callerEmail);
         return paths ? [{ target: { linkedin_identifier: id, linkedin_url: `${LINKEDIN_PREFIX}${id}` }, paths: paths.paths, summary: paths.summary, count: paths.count }] : [];

@@ -40,7 +40,7 @@ export default modulePage(networkManifest, async function SearchPage() {
     <SearchScreen
       viewer={{ id: member.id, name: member.name, imageUrl: avatarUrl }}
       communityName={branding.name}
-      sharingMemberCount={Math.max(sharingCount - (isConnected ? 1 : 0), 0)}
+      sharingMemberCount={sharingCount}
       isConnected={isConnected}
       isVillageOn={keys !== null}
       defaultScope={settings.searchScope === SEARCH_SCOPES.everyone ? SEARCH_WHERE.global : SEARCH_WHERE.network}

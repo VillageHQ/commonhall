@@ -612,19 +612,14 @@ describe("the member network API", () => {
         expect(result.people[0]?.isMember).toBe(false);
       });
 
-      it("searches only the shared networks, never as the member, for a member who hasn't joined", async () => {
+      it("searches member profiles only, and never Village, for a member who hasn't joined", async () => {
         const unjoinedMember = await createMemberWithLinkedin("not-joined");
-        const ownId = await readExternalId(unjoinedMember);
-        // With no service email set, the search identity uses the first admin's address.
-        await createSignedInMember(database, "admin");
 
         const response = await postSearch(jsonRequest(unjoinedMember, { prompt: "founders" }));
 
         expect(response.status).toBe(200);
-        expect(await response.json()).toMatchObject({ includesOwnNetwork: false });
-        const callers = village.readRequests(SEARCH_PATH).map(({ headers }) => headers.authorization);
-        expect(callers).toEqual(["Bearer fake-token.community-pooled-search"]);
-        expect(callers).not.toContain(`Bearer fake-token.${ownId}`);
+        expect(await response.json()).toMatchObject({ includesOwnNetwork: false, isProfilesOnly: true, people: [] });
+        expect(village.readRequests(SEARCH_PATH)).toEqual([]);
       });
     });
 
