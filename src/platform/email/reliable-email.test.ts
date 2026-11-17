@@ -160,7 +160,7 @@ describe("reliable email", () => {
       expect(notice.recent[0]?.lastError).toContain("503");
     });
 
-    it.each([400, 422])("gives up at once on an email Resend refuses (%i), and tells the admin", async (status) => {
+    it.each([422])("gives up at once on an email Resend refuses (%i), and tells the admin", async (status) => {
       resend.state.failureStatus = status;
       await queueTo(null, EMAIL_KINDS.invite);
 
@@ -173,7 +173,7 @@ describe("reliable email", () => {
       expect((await readGivenUpEmails(database)).recent[0]?.lastError).toContain(String(status));
     });
 
-    it.each([401, 403, 429])("keeps trying after %i, which the admin or time can fix", async (status) => {
+    it.each([400, 401, 403, 429])("keeps trying after %i, which the admin or time can fix", async (status) => {
       resend.state.failureStatus = status;
       await queueTo(null, EMAIL_KINDS.invite);
 

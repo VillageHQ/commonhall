@@ -190,6 +190,13 @@ export async function sendQueuedEmailNow(database: Database, environment: Enviro
   }
 }
 
+// True when the email was given up (Resend refused it), so a caller doesn't say it will be tried again.
+export async function isEmailGivenUp(database: Database, id: string | null) {
+  if (!id) return false;
+  const [row] = await database.select({ status: emailOutbox.status }).from(emailOutbox).where(eq(emailOutbox.id, id));
+  return row?.status === OUTBOX_STATUSES.failed;
+}
+
 // Sends what was just queued once the response has gone, so email is as quick as before. If
 // the process dies first, the timed sender picks the rows up.
 export function sendQueuedEmailsSoon(database: Database, environment: Environment) {
