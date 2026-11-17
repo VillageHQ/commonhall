@@ -1,4 +1,4 @@
-# The app on the Common Hall look: how it works today
+# The app on the Commonhall look: how it works today
 
 Approved page: [CHARTER.md](CHARTER.md). What the app looks like now: [SPEC.md](SPEC.md). The landing page's own kit:
 `.ai/features/common-hall-v2/NOTES.md` and `site/assets/site.css`.
@@ -6,7 +6,7 @@ Approved page: [CHARTER.md](CHARTER.md). What the app looks like now: [SPEC.md](
 ## Where the colours live
 - `src/app/globals.css`: the `:root` block (light), the `.dark` block, and the `@media print { .dark {…} }` block that
   prints a dark page in the light colours. The named values are the shadcn ones (`--background`, `--card`, …) and
-  Founderhall's own (`--ink`, `--paper`, `--leaf`, `--vellum`, `--side`, `--spine`, `--graphite`, `--ribbon`, the tints).
+  Commonhall's own (`--ink`, `--paper`, `--leaf`, `--vellum`, `--side`, `--spine`, `--graphite`, `--ribbon`, the tints).
   `--spine` is now ink: it was the green used for section labels and the "Introduced" state. The dark block also holds
   the `--fh-*` literal colours (placeholder, chip hover, switch off, dashed edges, declined, scrollbar, mail head).
 - `src/app/parts.css` and three components (`ui/input.tsx`, `ui/switch.tsx`, `step-row.tsx`) carry a few light-mode

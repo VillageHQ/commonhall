@@ -65,7 +65,7 @@ Checked: 2026-11-12, branch `absi-agent/fix-host-findings` at `9d1c4cb`. I used 
   - Screenshots: `04-double-revoke-stale-tab-1034.png` and `05-double-revoke-message-1034.png`. The second tab opened at 1034 px wide.
 - **An expired invite, revoked, then resent.** It showed Revoked (the revoked pill wins over expired), then reopened with `expires_at` 14 days ahead.
 - **A long email on a 390 px phone.** There is no sideways scroll (scrollWidth equals clientWidth, 380). The pill and the name stay on one line, and the name is cut short with an ellipsis. The address and the "Sent …, revoked …" line stay readable. Screenshot: `03-invites-long-email-revoked-390.png`.
-- **Compared with Founderhall** (`fh-reference/shots/admin-invites-390.png`, `copy/admin-invites.md`). The rows look the same: envelope icon, serif name, email, and Resend on the right. Founderhall has no Revoke, Expired or Revoked. Those are Community-only, as the page comment says. Nothing is broken or overlapping.
+- **Compared with Commonhall** (`fh-reference/shots/admin-invites-390.png`, `copy/admin-invites.md`). The rows look the same: envelope icon, serif name, email, and Resend on the right. Commonhall has no Revoke, Expired or Revoked. Those are Community-only, as the page comment says. Nothing is broken or overlapping.
 
 ### Problems and notes
 1. **Minor edge: a revoked invite for someone who is already a member stays listed, and its Resend always refuses.**

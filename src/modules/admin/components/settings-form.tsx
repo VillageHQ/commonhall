@@ -23,7 +23,7 @@ type SettingsFormProps = {
   saved: SettingsValues;
   uploadedLogo: CommunityLogo | null;
   isMailOn: boolean;
-  // The plan this server runs as when none is picked (Founderhall: "As this server is set up (self-host)").
+  // The plan this server runs as when none is picked (Commonhall: "As this server is set up (self-host)").
   serverPlan: string;
   managedBy: string | null;
   // The right column: the mail checklist, Village and the audit log (rendered on the server).
@@ -45,7 +45,7 @@ function isPreviewableLogo(url: string) {
   return url.startsWith("https://") || (url.startsWith("/") && !url.startsWith("//"));
 }
 
-// Set up › Settings (Founderhall's settingsPage): one form, one save. Changes are written to the audit log.
+// Set up › Settings (Commonhall's settingsPage): one form, one save. Changes are written to the audit log.
 export function SettingsForm({ saved, uploadedLogo, isMailOn, serverPlan, managedBy, aside }: SettingsFormProps) {
   const router = useRouter();
   const flash = useFlash();
@@ -116,7 +116,7 @@ export function SettingsForm({ saved, uploadedLogo, isMailOn, serverPlan, manage
               <Input
                 id="s-accent"
                 name="accent"
-                // Founderhall keeps the field's own border on a refused colour; the error line says what is wrong.
+                // Commonhall keeps the field's own border on a refused colour; the error line says what is wrong.
                 className="fh-mono aria-invalid:border-input"
                 value={values.accent}
                 maxLength={20}

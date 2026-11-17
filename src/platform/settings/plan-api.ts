@@ -1,6 +1,6 @@
 import { formatDayMonth } from "../text/format-date.ts";
 
-// Set up › Settings › Plan: the plan sets the console's wording (Founderhall's planOf). A server is self-hosted
+// Set up › Settings › Plan: the plan sets the console's wording (Commonhall's planOf). A server is self-hosted
 // unless the admin picks the managed plan; "Village sets up mail and the network by" is the date Village gave.
 export const PLANS = { managed: "managed", selfHost: "self-host" } as const;
 export type Plan = (typeof PLANS)[keyof typeof PLANS];

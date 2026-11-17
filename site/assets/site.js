@@ -1,4 +1,4 @@
-// Common Hall by Village: every behaviour on the landing page, with no library. The theme toggle, the set-up dialog,
+// Commonhall by Village: every behaviour on the landing page, with no library. The theme toggle, the set-up dialog,
 // the copy buttons and the sign-up form always work. The hover field (plan-view doors), the walking faces,
 // the deal cards and the swinging doors move only when the visitor has not asked for reduced motion; without it the
 // page is still and whole (the field is drawn once, doors closed).
@@ -70,15 +70,15 @@
   }
 
   /* ---------- set-up with Claude or OpenAI: split button, menu and dialog ---------- */
-  const INSTALL_LINE = "curl -fsSL https://raw.githubusercontent.com/VillageHQ/community/main/install.sh | sudo bash";
+  const INSTALL_LINE = "curl -fsSL https://raw.githubusercontent.com/VillageHQ/commonhall/main/install.sh | sudo bash";
   const AI = {
     claude: { name: "Claude", app: "Claude or Claude Code" },
     openai: { name: "OpenAI", app: "ChatGPT or Codex" },
   };
   const PROMPT = [
-    "Set up Common Hall, the open-source founder community portal, on a server I own.",
+    "Set up Commonhall, the open-source founder community portal, on a server I own.",
     "",
-    "1. Clone https://github.com/VillageHQ/community and read docs/self-host-vps.md in it.",
+    "1. Clone https://github.com/VillageHQ/commonhall and read docs/self-host-vps.md in it.",
     "2. Ask me for my server's address and the domain I want to use. Tell me before you run anything that costs money or changes my domain's DNS.",
     "3. On the server, run the install line:",
     "   " + INSTALL_LINE,

@@ -159,7 +159,7 @@ Getting the app
   ok    builds from source with a memory warning when the download fails: says "building it on this server"
   ok    builds from source with a memory warning when the download fails: says "2.5 GB"
   ok    builds from source with a memory warning when the download fails: says "bigger server"
-  ok    builds from source with a memory warning when the download fails: calls "docker build --network host -f /source/deploy/vps/Dockerfile -t ghcr.io/villagehq/community:latest /source"
+  ok    builds from source with a memory warning when the download fails: calls "docker build --network host -f /source/deploy/vps/Dockerfile -t ghcr.io/villagehq/commonhall:latest /source"
   ok    builds from source with a memory warning when the download fails: keeps the build output in its log
   ok    doesn't build when the download works: doesn't call "docker build"
   ok    stops and explains when the build fails on a first install: exits 1
@@ -261,7 +261,7 @@ Using the helper
   ok    upgrades through the installer and reports success: exits 0
   ok    upgrades through the installer and reports success: says "up to date at https://community.example.test"
   ok    upgrades through the installer and reports success: says "Downloading Community's files (main)"
-  ok    upgrades through the installer and reports success: calls "codeload.github.com/VillageHQ/community/tar.gz/main"
+  ok    upgrades through the installer and reports success: calls "codeload.github.com/VillageHQ/commonhall/tar.gz/main"
   ok    upgrades through the installer and reports success: never says "unbound variable"
   ok    shows help with no command and rejects an unknown one: says "sudo community restore <file>"
   ok    shows help with no command and rejects an unknown one: exits 1
@@ -428,7 +428,7 @@ Getting the app
   ok    builds from source with a memory warning when the download fails: says "building it on this server"
   ok    builds from source with a memory warning when the download fails: says "2.5 GB"
   ok    builds from source with a memory warning when the download fails: says "bigger server"
-  ok    builds from source with a memory warning when the download fails: calls "docker build --network host -f /source/deploy/vps/Dockerfile -t ghcr.io/villagehq/community:latest /source"
+  ok    builds from source with a memory warning when the download fails: calls "docker build --network host -f /source/deploy/vps/Dockerfile -t ghcr.io/villagehq/commonhall:latest /source"
   ok    builds from source with a memory warning when the download fails: keeps the build output in its log
   ok    doesn't build when the download works: doesn't call "docker build"
   ok    stops and explains when the build fails on a first install: exits 1
@@ -530,7 +530,7 @@ Using the helper
   ok    upgrades through the installer and reports success: exits 0
   ok    upgrades through the installer and reports success: says "up to date at https://community.example.test"
   ok    upgrades through the installer and reports success: says "Downloading Community's files (main)"
-  ok    upgrades through the installer and reports success: calls "codeload.github.com/VillageHQ/community/tar.gz/main"
+  ok    upgrades through the installer and reports success: calls "codeload.github.com/VillageHQ/commonhall/tar.gz/main"
   ok    upgrades through the installer and reports success: never says "unbound variable"
   ok    shows help with no command and rejects an unknown one: says "sudo community restore <file>"
   ok    shows help with no command and rejects an unknown one: exits 1
@@ -697,7 +697,7 @@ Getting the app
   ok    builds from source with a memory warning when the download fails: says "building it on this server"
   ok    builds from source with a memory warning when the download fails: says "2.5 GB"
   ok    builds from source with a memory warning when the download fails: says "bigger server"
-  ok    builds from source with a memory warning when the download fails: calls "docker build --network host -f /source/deploy/vps/Dockerfile -t ghcr.io/villagehq/community:latest /source"
+  ok    builds from source with a memory warning when the download fails: calls "docker build --network host -f /source/deploy/vps/Dockerfile -t ghcr.io/villagehq/commonhall:latest /source"
   ok    builds from source with a memory warning when the download fails: keeps the build output in its log
   ok    doesn't build when the download works: doesn't call "docker build"
   ok    stops and explains when the build fails on a first install: exits 1
@@ -799,7 +799,7 @@ Using the helper
   ok    upgrades through the installer and reports success: exits 0
   ok    upgrades through the installer and reports success: says "up to date at https://community.example.test"
   ok    upgrades through the installer and reports success: says "Downloading Community's files (main)"
-  ok    upgrades through the installer and reports success: calls "codeload.github.com/VillageHQ/community/tar.gz/main"
+  ok    upgrades through the installer and reports success: calls "codeload.github.com/VillageHQ/commonhall/tar.gz/main"
   ok    upgrades through the installer and reports success: never says "unbound variable"
   ok    shows help with no command and rejects an unknown one: says "sudo community restore <file>"
   ok    shows help with no command and rejects an unknown one: exits 1
@@ -966,7 +966,7 @@ Getting the app
   ok    builds from source with a memory warning when the download fails: says "building it on this server"
   ok    builds from source with a memory warning when the download fails: says "2.5 GB"
   ok    builds from source with a memory warning when the download fails: says "bigger server"
-  ok    builds from source with a memory warning when the download fails: calls "docker build --network host -f /source/deploy/vps/Dockerfile -t ghcr.io/villagehq/community:latest /source"
+  ok    builds from source with a memory warning when the download fails: calls "docker build --network host -f /source/deploy/vps/Dockerfile -t ghcr.io/villagehq/commonhall:latest /source"
   ok    builds from source with a memory warning when the download fails: keeps the build output in its log
   ok    doesn't build when the download works: doesn't call "docker build"
   ok    stops and explains when the build fails on a first install: exits 1
@@ -1068,7 +1068,7 @@ Using the helper
   ok    upgrades through the installer and reports success: exits 0
   ok    upgrades through the installer and reports success: says "up to date at https://community.example.test"
   ok    upgrades through the installer and reports success: says "Downloading Community's files (main)"
-  ok    upgrades through the installer and reports success: calls "codeload.github.com/VillageHQ/community/tar.gz/main"
+  ok    upgrades through the installer and reports success: calls "codeload.github.com/VillageHQ/commonhall/tar.gz/main"
   ok    upgrades through the installer and reports success: never says "unbound variable"
   ok    shows help with no command and rejects an unknown one: says "sudo community restore <file>"
   ok    shows help with no command and rejects an unknown one: exits 1

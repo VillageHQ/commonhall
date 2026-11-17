@@ -54,11 +54,11 @@ function readClosedText(view: Extract<IntroLinkView, { view: "closed" }>) {
   return "This ask was already answered. Thank you.";
 }
 
-// Founderhall's `/i/<token>`: the connector's, the person's or the asker's outcome question, from the email's links.
+// Commonhall's `/i/<token>`: the connector's, the person's or the asker's outcome question, from the email's links.
 // A GET only reads; `?a=yes` picks the answer, and the button sends it.
 export default modulePage(introsManifest, async function IntroLinkPage(props: Props) {
   const [{ token, view }, community, { a }] = await Promise.all([readView(props), readBrandingForPage(), props.searchParams]);
-  // Founderhall answers an unknown link with a 404 (not-found.tsx beside this page has its words).
+  // Commonhall answers an unknown link with a 404 (not-found.tsx beside this page has its words).
   if (view.view === LINK_VIEWS.closed && view.reason === CLOSED_REASONS.unknown) notFound();
   const initialChoice = typeof a === "string" ? a : null;
   const card = (() => {

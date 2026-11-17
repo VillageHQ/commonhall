@@ -26,8 +26,8 @@ function keepFocusInField(event: { preventDefault: () => void }) {
 
 type MessageComposerProps = { peerName: string; inputRef?: Ref<HTMLTextAreaElement>; isBusy?: boolean; onSend: (body: string) => void };
 
-// Founderhall's reply box (`.reply`): one Leaf bar under the messages, a textarea "Write a message" and Send.
-// Send stays ready, as Founderhall's; a blank or too-long message sends nothing.
+// Commonhall's reply box (`.reply`): one Leaf bar under the messages, a textarea "Write a message" and Send.
+// Send stays ready, as Commonhall's; a blank or too-long message sends nothing.
 export function MessageComposer({ peerName, inputRef, isBusy = false, onSend }: MessageComposerProps) {
   const [draft, setDraft] = useState("");
   const body = messageBodySchema.safeParse(draft);

@@ -2,7 +2,7 @@
 
 This guide puts your community on a server you rent, with one command. You don't need to be an engineer. If you can copy and paste, you can do this. It takes about 20 minutes, and most of that is waiting.
 
-> **Status:** We've run this on one rented Ubuntu 26.04 server with a real security certificate, and on fresh Ubuntu and Debian test machines. If a step doesn't match what you see, [tell us](https://github.com/VillageHQ/community/issues).
+> **Status:** We've run this on one rented Ubuntu 26.04 server with a real security certificate, and on fresh Ubuntu and Debian test machines. If a step doesn't match what you see, [tell us](https://github.com/VillageHQ/commonhall/issues).
 
 You'll need:
 
@@ -55,7 +55,7 @@ This usually works within a few minutes, and sometimes takes up to an hour. The 
 Paste this on your server:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/VillageHQ/community/main/install.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/VillageHQ/commonhall/main/install.sh | sudo bash
 ```
 
 It asks for your domain. Then it works through these steps and tells you what it's doing:
@@ -87,7 +87,7 @@ Your community is ready.
 To try this before you have a domain, use a free name from [sslip.io](https://sslip.io), which points at your server's IP address by itself. Put your own IP address in this command:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/VillageHQ/community/main/install.sh | sudo COMMUNITY_DOMAIN=community.203.0.113.10.sslip.io bash
+curl -fsSL https://raw.githubusercontent.com/VillageHQ/commonhall/main/install.sh | sudo COMMUNITY_DOMAIN=community.203.0.113.10.sslip.io bash
 ```
 
 Use this for testing only. Many people share sslip.io, so a certificate can fail when too many of them ask at once. Your address also changes if your server's IP address does. Use a real domain for your real community.
@@ -199,7 +199,7 @@ Keep a copy of this file in your password manager. It holds your secrets.
 
 **"Your community didn't start in time":** Run `sudo community logs app` and look for lines with `"scope":"migrations"` or `"scope":"health"`. They give the real cause. Then run the same command again.
 
-**"a Community database, but its settings file is gone":** Someone deleted `/opt/community/.env`. Put it back from your own copy. Without it, your community can't open its database. If you don't have a copy, [ask us for help](https://github.com/VillageHQ/community/issues).
+**"a Community database, but its settings file is gone":** Someone deleted `/opt/community/.env`. Put it back from your own copy. Without it, your community can't open its database. If you don't have a copy, [ask us for help](https://github.com/VillageHQ/commonhall/issues).
 
 **A page says "Something went wrong":** Wait a minute and reload. Then run `sudo community status`, which should show `healthy`.
 
@@ -207,7 +207,7 @@ Keep a copy of this file in your password manager. It holds your secrets.
 
 **The disk is full:** Run `sudo community status` to see the free space. Old versions of the app get removed when you upgrade. You can delete old files in `/opt/community/backups`, once you've copied them somewhere safe.
 
-**Still stuck?** [Open an issue](https://github.com/VillageHQ/community/issues). Include what `sudo community status` shows, and the end of `/opt/community/install.log`. Run `sudo tail -n 50 /opt/community/install.log` to see it. Never paste your `.env` file or your setup token.
+**Still stuck?** [Open an issue](https://github.com/VillageHQ/commonhall/issues). Include what `sudo community status` shows, and the end of `/opt/community/install.log`. Run `sudo tail -n 50 /opt/community/install.log` to see it. Never paste your `.env` file or your setup token.
 
 ## What it installs
 

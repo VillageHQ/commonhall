@@ -15,7 +15,7 @@ import { modulePage } from "@/platform/modules/module-page";
 
 export const metadata: Metadata = { title: PAGE_TITLES.messages };
 
-// Founderhall's Inbox (inboxPage): the head, then one row per conversation, or the dashed empty state.
+// Commonhall's Inbox (inboxPage): the head, then one row per conversation, or the dashed empty state.
 export default modulePage(messagesManifest, async function InboxPage() {
   const member = await requireMember();
   const [firstPage, community] = await Promise.all([readInbox(getDatabase(), member.id, { search: "", cursor: null }), readBrandingForPage()]);

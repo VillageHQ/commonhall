@@ -10,7 +10,7 @@
   message policy applies to members who never chose (`readCommunityMessagePolicy` in members' `service-privacy.ts`).
 - **Mail** — page `src/app/(app)/admin/mail/page.tsx`; reads `src/modules/admin/reads-mail.ts` (counts for 30 days,
   the log with subjects), checklist `mail-checks.ts`, sender from `src/platform/email/mail-settings.ts`. The test
-  email is `src/platform/email/test-email.ts` (plain words, Founderhall's).
+  email is `src/platform/email/test-email.ts` (plain words, Commonhall's).
 - **Village** — page `src/app/(app)/admin/village/page.tsx`, parts in `src/modules/network/components/admin-village-*`,
   service `service-village-admin.ts`. Lookups are counted in `village_credit_calls` (migration 0033). The nudge email
   is `src/modules/network/service-nudge.ts`.
@@ -20,5 +20,5 @@
   "Show Perks to members" switch turns the Perks module on; the page stays open while Perks is off.
 - **Audit log** — rows and words in `src/modules/admin/components/audit-log.tsx`, action words in
   `src/platform/audit/actions.ts`.
-- **Features, Reports** — `feature-screen.tsx`, `report-queue.tsx`, restyled with Founderhall's sheets and rows.
+- **Features, Reports** — `feature-screen.tsx`, `report-queue.tsx`, restyled with Commonhall's sheets and rows.
 - **Shared part added** — `src/components/plumbing-notes.tsx` (the "Running it yourself" box).

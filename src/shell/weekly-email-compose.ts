@@ -7,7 +7,7 @@ import { REPLY_CODES } from "@/platform/weekly-email/reply-codes";
 
 import type { TodayItems } from "./today";
 
-// The weekly digest, in Founderhall's words (copy/admin-digest-preview-sam.md, emails/email-digest-test.md). The
+// The weekly digest, in Commonhall's words (copy/admin-digest-preview-sam.md, emails/email-digest-test.md). The
 // plain text is the email; the HTML part shows the same lines, each "Label: link" line as a button.
 
 export const ITEM_ACTIONS = {
@@ -65,7 +65,7 @@ function describeIntroAsk(intro: TodayItems["introsToAnswer"][number]) {
   return `${toSingleLine(intro.requester.name)} asks you to introduce them to ${toSingleLine(intro.target.name)}${about}.`;
 }
 
-// Founderhall's subject: what needs the member most, in their name.
+// Commonhall's subject: what needs the member most, in their name.
 function readSubject(first: string, help: number, intros: number, lines: number) {
   if (help) return `${first}, you could help with ${help === 1 ? "this one" : `these ${help}`}`;
   if (intros) return `${first}, ${intros === 1 ? "one intro is" : `${intros} intros are`} waiting for your yes`;
@@ -87,7 +87,7 @@ function readMineLines({ items, appUrl }: WeeklyEmailFacts) {
   ];
 }
 
-// Founderhall's Thursday digest (digestEmail), word for word, as plain text. Asks you could help with, intros waiting
+// Commonhall's Thursday digest (digestEmail), word for word, as plain text. Asks you could help with, intros waiting
 // for your yes and lines on your profile are numbered, each with its links and, when replies work, its reply codes.
 export function renderWeeklyEmail(facts: WeeklyEmailFacts) {
   const { items, numbered, canReply, appUrl } = facts;

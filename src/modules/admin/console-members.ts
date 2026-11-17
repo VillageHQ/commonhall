@@ -1,5 +1,5 @@
-// The console's Members table (Founderhall's /admin/members): one list of everyone, members and the people invited
-// who haven't signed in yet, with Founderhall's filters, statuses and search. Pure, so the page and tests share it.
+// The console's Members table (Commonhall's /admin/members): one list of everyone, members and the people invited
+// who haven't signed in yet, with Commonhall's filters, statuses and search. Pure, so the page and tests share it.
 
 export const CONSOLE_MEMBER_FILTERS = {
   all: "all",
@@ -26,7 +26,7 @@ export const CONSOLE_MEMBER_FILTER_LABELS: Record<ConsoleMemberFilter, string> =
   removed: "Removed",
 };
 
-// Founderhall's six chips, always shown; then Community's own, only while they hold someone.
+// Commonhall's six chips, always shown; then Community's own, only while they hold someone.
 export const ALWAYS_SHOWN_FILTERS: readonly ConsoleMemberFilter[] = ["all", "invited", "joined", "connected", "admins", "delete"];
 export const SHOWN_WHEN_FULL_FILTERS: readonly ConsoleMemberFilter[] = ["attention", "removed"];
 
@@ -87,7 +87,7 @@ export function countConsoleMembers(members: readonly ConsoleMember[]): Record<C
   return Object.fromEntries(filters.map((filter) => [filter, members.filter((member) => MATCHES[filter](member)).length])) as Record<ConsoleMemberFilter, number>;
 }
 
-// Founderhall's order: members by name first, then the people invited, newest invite first.
+// Commonhall's order: members by name first, then the people invited, newest invite first.
 export function sortConsoleMembers(members: readonly ConsoleMember[]) {
   const joined = members.filter(({ kind }) => kind === "member").sort((first, second) => (first.name ?? "").localeCompare(second.name ?? ""));
   const invited = members.filter(({ kind }) => kind === "invite").sort((first, second) => second.since.localeCompare(first.since));

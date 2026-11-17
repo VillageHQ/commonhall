@@ -7,11 +7,11 @@ import { DEMO_EMAIL_DOMAIN } from "./mode.ts";
 export const DEMO_COMMUNITY = {
   name: "Northwind Founders",
   descriptor: "The founder network of a made-up fund",
-  // Ink, the default: the demo shows the Common Hall look as a community that picked no colour sees it.
+  // Ink, the default: the demo shows the Commonhall look as a community that picked no colour sees it.
   accentColor: "#111110",
 } as const;
 
-// The community's logo: a made-up mark, the same as Founderhall's demo (public/demo/northwind-logo.svg).
+// The community's logo: a made-up mark, the same as Commonhall's demo (public/demo/northwind-logo.svg).
 export const DEMO_COMMUNITY_LOGO_URL = "/demo/northwind-logo.svg";
 
 // Made-up answers for Settings' "Where your data is kept", so a buyer sees what members see on Your data.
@@ -412,12 +412,12 @@ export const DEMO_OUTSIDERS: readonly DemoOutsider[] = [
   { slug: "alex-morgan-demo", name: "Alex Morgan", title: "VP Sales", company: "Countwise", location: "London" },
   { slug: "nina-patel-demo", name: "Nina Patel", title: "Chief Innovation Officer", company: "St. Ambrose Hospitals", location: "Boston" },
   { slug: "luca-bianchi-demo", name: "Luca Bianchi", title: "Head of Insurance Operations", company: "Assicura Nord", location: "Milan" },
-  // The intro targets of Founderhall's demo, so both apps show the same intros side by side.
+  // The intro targets of Commonhall's demo, so both apps show the same intros side by side.
   { slug: "alex-kim-demo", name: "Alex Kim", title: "Head of Procurement", company: "Halcyon Health", location: "Boston" },
   { slug: "rachel-kim-demo", name: "Rachel Kim", title: "CFO", company: "Brightside Clinics", location: "Amsterdam" },
 ];
 
-// The people the demo's search finds first, as Founderhall's demo tells it (made up): who knows them and how warmly.
+// The people the demo's search finds first, as Commonhall's demo tells it (made up): who knows them and how warmly.
 // `via` is the sharing member through whom the path runs; `knownBy` means Sam knows them first-hand ("reach out
 // yourself"), with how. `keywords` are the extra words a search for them may use.
 export type DemoSearchPerson = DemoOutsider & {

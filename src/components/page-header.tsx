@@ -13,14 +13,14 @@ type PageHeaderProps = {
   back?: { href: string; label: string };
 };
 
-// Founderhall's page head (crop pagehead-today.png): small line, serif H1 (28/34 → 34/42), the lede (Graphite,
+// Commonhall's page head (crop pagehead-today.png): small line, serif H1 (28/34 → 34/42), the lede (Graphite,
 // max 62ch), then the actions 14 px below.
 export function PageHeader({ title, description, action, eyebrow, back }: PageHeaderProps) {
   return (
     <header data-slot="page-header" className="fh-pagehead">
       {back ? <BackLink href={back.href}>{back.label}</BackLink> : null}
       {eyebrow ? <p className="fh-small fh-muted">{eyebrow}</p> : null}
-      {/* Founderhall puts the title 6 px under the small line (asks/views.mjs, the Today head). */}
+      {/* Commonhall puts the title 6 px under the small line (asks/views.mjs, the Today head). */}
       <h1 className="fh-h1" style={eyebrow ? { marginTop: 6 } : undefined}>
         {title}
       </h1>
@@ -30,7 +30,7 @@ export function PageHeader({ title, description, action, eyebrow, back }: PageHe
   );
 }
 
-// Founderhall's back link (crop button-quiet-back.png): 500 Graphite, Vellum on hover.
+// Commonhall's back link (crop button-quiet-back.png): 500 Graphite, Vellum on hover.
 export function BackLink({ href, children }: { href: string; children: ReactNode }) {
   return (
     <Link href={href} className="fh-back">

@@ -68,7 +68,7 @@ describe("the directory URL", () => {
     expect(parseDirectoryFilters({ updated: "5" }).updatedWithinDays).toBe(0);
   });
 
-  it("reads Founderhall's 'fresh' filter, and the older 'updated' name", () => {
+  it("reads Commonhall's 'fresh' filter, and the older 'updated' name", () => {
     expect(parseDirectoryFilters({ fresh: "365" }).updatedWithinDays).toBe(365);
     expect(parseDirectoryFilters({ updated: "90" }).updatedWithinDays).toBe(90);
   });

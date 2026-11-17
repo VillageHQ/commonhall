@@ -31,7 +31,7 @@ const QUESTIONS: Record<string, { title: string; button: string; done: string }>
   [REPLY_CODES.skip]: { title: "Not for you?", button: "Hide this ask", done: "Done. This ask won't come up for you again." },
   [REPLY_CODES.yes]: { title: "Say yes to this intro?", button: "Yes, I'll introduce", done: "Thanks. Open your intros to send the link to the person you're introducing." },
   [REPLY_CODES.no]: { title: "Say no to this intro?", button: "No thanks", done: "Done. They'll see that it isn't happening this time." },
-  // A line filled in from public profiles, in Founderhall's words (digestLinkPage).
+  // A line filled in from public profiles, in Commonhall's words (digestLinkPage).
   [REPLY_CODES.right]: { title: "Is this right?", button: "Yes, it's right", done: "Thank you. It's marked as right." },
   [REPLY_CODES.hide]: { title: "Hide this line?", button: "Hide it", done: "Hidden. It stays hidden when your profile refreshes." },
   [REPLY_CODES.fix]: { title: "Fix this line", button: "Save", done: "Saved in your own words. They always win." },

@@ -49,13 +49,13 @@ export function describeAllowanceUsed({ cap, backAt }: AskAllowance) {
   return `You've used this week's ${cap} asks. The next one comes back ${when}. An intro ask also comes back if it's declined, expires or you withdraw it.`;
 }
 
-// Founderhall's words when a post on Asks & updates would go past the week's asks: "The next one comes back 12 Nov."
+// Commonhall's words when a post on Asks & updates would go past the week's asks: "The next one comes back 12 Nov."
 export function describePostAllowanceUsed({ cap, backAt }: AskAllowance) {
   const when = backAt ? new Date(backAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" }) : "in a few days";
   return `You’ve used this week’s ${cap} asks. The next one comes back ${when}.`;
 }
 
-// The same check for a post from the Asks & updates composer, in Founderhall's words.
+// The same check for a post from the Asks & updates composer, in Commonhall's words.
 export const assertPostAllowance: AllowanceCheck = async (transaction, memberId) => {
   await transaction.select({ id: user.id }).from(user).where(eq(user.id, memberId)).for("no key update");
   const allowance = await readAskAllowance(transaction, memberId);
@@ -73,7 +73,7 @@ export async function isAskIntroOn(database: Database) {
   return isModuleEnabled(database, introsManifest);
 }
 
-// Founderhall's path check: who the ask names ("Head of procurement at a US hospital", and a company) is searched in
+// Commonhall's path check: who the ask names ("Head of procurement at a US hospital", and a company) is searched in
 // the author's network first, then the first person found who isn't a member, isn't someone the author already knows
 // first-hand, and has a way in through a member, is looked up for paths. A LinkedIn profile skips the search. Both go
 // through the credit ledger.
@@ -127,7 +127,7 @@ export async function knowSomeone(context: RequestContext, body: KnowSomeoneBody
 
 // The author asks a helper on their ask for the intro. It is an intro ask like any other, so it uses the allowance and
 // counts toward the connector's weekly cap. A path helper is asked along the path; a helper found by profile words is
-// asked as a named intro (Founderhall lets the author ask any listed helper), for the person the author names.
+// asked as a named intro (Commonhall lets the author ask any listed helper), for the person the author names.
 export async function askHelperForIntro(context: RequestContext, { askId, helperId, note, targetName }: AskHelperBody) {
   if (!(await isAskIntroOn(context.database))) throw introOffError();
   const helper = await readHelperForAuthor(context.database, context.member.id, askId, helperId);

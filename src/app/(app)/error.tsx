@@ -2,7 +2,7 @@
 
 import { Button, ButtonRow } from "@/components/ui/button";
 
-// A page inside the app that failed to load: Founderhall's dashed empty box, with a way to try again.
+// A page inside the app that failed to load: Commonhall's dashed empty box, with a way to try again.
 export default function AppError({ retry }: { retry: () => void }) {
   return (
     <div role="alert" className="fh-empty">

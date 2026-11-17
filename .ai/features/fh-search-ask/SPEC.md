@@ -4,9 +4,9 @@ status: in-progress
 waits-on: [fh-foundation]
 touches: ["src/app/(app)/search/", "src/app/(app)/ask/", "src/app/(app)/intros/new/", "src/app/(app)/me/network/", "src/modules/network/", "src/shell/intro-*", "src/shell/guided-ask.tsx", "src/modules/intros/email.ts"]
 ---
-# Spec: Founderhall's Search and asking for an intro (transplant area 2)
+# Spec: Commonhall's Search and asking for an intro (transplant area 2)
 
-**Added:** 2026-11-11 (the owner's decision: keep Community's engine, copy Founderhall's screens exactly).
+**Added:** 2026-11-11 (the owner's decision: keep Community's engine, copy Commonhall's screens exactly).
 
 ## What it does
 - **Search** (`/search`; `/network` redirects for good): "Who are you trying to reach?", In our network | Everywhere,
@@ -22,7 +22,7 @@ touches: ["src/app/(app)/search/", "src/app/(app)/ask/", "src/app/(app)/intros/n
 - **My network** (`/me/network`): the connect screen (what members see, where it is processed, who introduces whom,
   the sharing choice, Connect), the sync screen, "Your network is connected", and Community's own LinkedIn and leave
   settings.
-- **The email to the connector** is Founderhall's, word for word: "Marcus, would you introduce Sam Lee to Rosa
+- **The email to the connector** is Commonhall's, word for word: "Marcus, would you introduce Sam Lee to Rosa
   Lindqvist?", the note to forward, three answers, the reply line.
 
 ## Not in it

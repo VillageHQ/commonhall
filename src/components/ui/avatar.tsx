@@ -5,13 +5,13 @@ import { useState } from "react";
 
 import { pickAvatarTint, readInitials } from "@/platform/design/avatar-identity";
 
-// Founderhall's avatar (design-system.md §3.4): round; a photo when there is one, else two serif initials on one of
+// Commonhall's avatar (design-system.md §3.4): round; a photo when there is one, else two serif initials on one of
 // four muted tints picked by the member's id. Sizes: 28 (sm), 36 (default), 64 (lg), 80 (xl); any other size scales.
-// The photo is a plain <img> in the page, over the initials (as on Founderhall): it shows on first paint, in print and
+// The photo is a plain <img> in the page, over the initials (as on Commonhall): it shows on first paint, in print and
 // without scripts. A picture that fails to load is hidden, also one that failed before the page's scripts ran, so the
 // initials show instead of the browser's broken-image icon.
 const DEFAULT_AVATAR_SIZE_PX = 36;
-const FOUNDERHALL_FONT_SIZES: Record<number, number> = { 28: 12, 36: 14, 64: 24, 80: 30 };
+const COMMONHALL_FONT_SIZES: Record<number, number> = { 28: 12, 36: 14, 64: 24, 80: 30 };
 const INITIALS_SIZE_RATIO = 0.39;
 const MINIMUM_INITIALS_SIZE_PX = 11;
 
@@ -28,7 +28,7 @@ type AvatarProps = {
 };
 
 function readFontSize(sizePx: number) {
-  return FOUNDERHALL_FONT_SIZES[sizePx] ?? Math.max(MINIMUM_INITIALS_SIZE_PX, Math.round(sizePx * INITIALS_SIZE_RATIO));
+  return COMMONHALL_FONT_SIZES[sizePx] ?? Math.max(MINIMUM_INITIALS_SIZE_PX, Math.round(sizePx * INITIALS_SIZE_RATIO));
 }
 
 function FaceImage({ src }: { src: string }) {

@@ -25,7 +25,7 @@ function readValues(formData: FormData): AboutValues {
   return { name: read("name"), workingOn: read("workingOn"), canHelpWith: read("canHelpWith"), role: read("role"), company: read("company"), city: read("city") };
 }
 
-// Founderhall's step 1 form: the name, the two questions, then "A few details (optional)" in pairs, and Next.
+// Commonhall's step 1 form: the name, the two questions, then "A few details (optional)" in pairs, and Next.
 export function AboutForm({ initialValues }: { initialValues: AboutValues }) {
   const router = useRouter();
   const [state, formAction, isPending] = useActionState(
@@ -38,7 +38,7 @@ export function AboutForm({ initialValues }: { initialValues: AboutValues }) {
         router.refresh();
         return { errorMessage: null, values };
       } catch (error) {
-        // Founderhall answers with the page again, from the top, so the note above the fields is seen.
+        // Commonhall answers with the page again, from the top, so the note above the fields is seen.
         window.scrollTo({ top: 0 });
         return { errorMessage: error instanceof Error ? error.message : FALLBACK_ERROR_MESSAGE, values };
       }
@@ -57,7 +57,7 @@ export function AboutForm({ initialValues }: { initialValues: AboutValues }) {
       <Field htmlFor="w-name" label="Your name">
         <Input id="w-name" name="name" autoComplete="name" maxLength={MAXIMUM_NAME_LENGTH} defaultValue={values.name} key={`name-${values.name}`} />
       </Field>
-      {/* Founderhall's textareas sit inline, so each keeps a 6 px line gap under it (pb-1.5; a margin would collapse). */}
+      {/* Commonhall's textareas sit inline, so each keeps a 6 px line gap under it (pb-1.5; a margin would collapse). */}
       <Field htmlFor="w1" label="What are you working on?" className="fh-field pb-1.5">
         <Textarea
           id="w1"

@@ -4,7 +4,7 @@ import { nameSchema } from "../../platform/auth/member-name.ts";
 import { removeNullBytes } from "../../platform/text/safe-text.ts";
 import { parseExternalUrl } from "./rules-external-url.ts";
 
-// The directory's "Updated" filter (Founderhall's "fresh as of"): own words saved within this many days.
+// The directory's "Updated" filter (Commonhall's "fresh as of"): own words saved within this many days.
 export const UPDATED_WITHIN_DAYS = [30, 90, 365] as const;
 
 export const PROFILE_LIMITS = {

@@ -57,7 +57,7 @@ async function readReportedAsks(database: Database) {
 
 export type ReportedAsk = Awaited<ReturnType<typeof readReportedAsks>>[number];
 
-// Founderhall's "Asks & updates" figures (the console home and Asks & digest): every ask since launch, counts only.
+// Commonhall's "Asks & updates" figures (the console home and Asks & digest): every ask since launch, counts only.
 // Answered = closed as solved (here or elsewhere); helped = an ask with at least one offer of help.
 export type AsksFigures = {
   posted: number;
@@ -116,7 +116,7 @@ export async function readAsksFigures(database: Database, now = new Date()): Pro
   };
 }
 
-// Founderhall's words for a wait: "under an hour", "22 hours", "3.5 days"; "–" when nobody has helped yet.
+// Commonhall's words for a wait: "under an hour", "22 hours", "3.5 days"; "–" when nobody has helped yet.
 export function describeHours(hours: number | null) {
   if (hours === null) return "–";
   if (hours < 1) return "under an hour";
@@ -152,7 +152,7 @@ function readRowStatus(row: { kind: string; listedAt: Date; closedAt: Date | nul
   return row.outcome === ASK_OUTCOMES.noLongerNeeded ? ASK_ROW_STATUSES.closed : ASK_ROW_STATUSES.answered;
 }
 
-// Every ask and update, newest first: Founderhall's moderation rows. Names and dates only, never an answer's words.
+// Every ask and update, newest first: Commonhall's moderation rows. Names and dates only, never an answer's words.
 async function readAskRows(database: Database, now: Date): Promise<AdminAskRow[]> {
   const helperCount = database.select({ askId: askHelper.askId, n: count().as("helper_n") }).from(askHelper).groupBy(askHelper.askId).as("helper_counts");
   // Answers members can see: the author is still an active member, as on the board.

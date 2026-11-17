@@ -13,7 +13,7 @@ import { formatDayMonthTimeUtc } from "@/platform/text/format-date";
 
 import { auditPageQuery } from "@/modules/admin/queries-audit";
 
-// Founderhall's audit log (copy admin-audit): one ruled row per entry, the action in words with its target after a
+// Commonhall's audit log (copy admin-audit): one ruled row per entry, the action in words with its target after a
 // dot, who did it under it, and the UTC time on the right. Newest first.
 const AUDIT_TITLE_ID = "audit-log-title";
 const FORMER_ADMIN = "A former admin";
@@ -40,8 +40,8 @@ type ActionLine = { words: string; target?: string | null };
 const quoted = (text: string) => (text ? `“${text}”` : null);
 const reportedThing = (detail: string) => REPORT_TARGET_NAMES[detail] ?? "message";
 
-// In Founderhall's voice (its audit words where the action is the same). An action without words shows its id, as
-// Founderhall does.
+// In Commonhall's voice (its audit words where the action is the same). An action without words shows its id, as
+// Commonhall does.
 const ACTION_LINES: Partial<Record<AuditAction, (facts: ActionFacts) => ActionLine>> = {
   [AUDIT_ACTIONS.rolePromoted]: ({ target }) => ({ words: "Made an admin", target }),
   [AUDIT_ACTIONS.roleDemoted]: ({ target }) => ({ words: "No longer an admin", target }),

@@ -1,4 +1,4 @@
-# Side-by-side pairs (Founderhall left, Community right)
+# Side-by-side pairs (Commonhall left, Community right)
 
 Every acceptance shot of the console area at 1280 and 390 px. The `admin-first-*` pairs come from a fresh install.
 

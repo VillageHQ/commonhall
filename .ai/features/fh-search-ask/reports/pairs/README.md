@@ -1,6 +1,6 @@
 # Side-by-side pairs
 
-Founderhall left, Community right, half size.
+Commonhall left, Community right, half size.
 
 | Shot | Width | Pair |
 |---|---|---|

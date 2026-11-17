@@ -3,7 +3,7 @@
 import { ErrorState, RetryButton } from "@/components/error-state";
 import { MAIN_CONTENT_ID } from "@/components/skip-link";
 
-const TROUBLESHOOTING_URL = "https://github.com/VillageHQ/community#troubleshooting";
+const TROUBLESHOOTING_URL = "https://github.com/VillageHQ/commonhall#troubleshooting";
 
 export default function ErrorBoundary({ retry }: { retry: () => void }) {
   return (

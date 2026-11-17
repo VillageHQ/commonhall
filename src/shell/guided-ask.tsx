@@ -19,7 +19,7 @@ import { networkManifest } from "@/modules/network/manifest";
 import { SEARCH_WHERE, type NetworkSearchResult } from "@/modules/network/contract";
 import { searchMemberNetwork } from "@/modules/network/service";
 
-// The guided ask (Founderhall's /ask): what you need, who, the best way in, then the note. Each step is an address, so
+// The guided ask (Commonhall's /ask): what you need, who, the best way in, then the note. Each step is an address, so
 // the back button and "Change" work without a script.
 
 export const NEEDS = {

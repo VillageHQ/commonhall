@@ -1,6 +1,6 @@
 # Charter: asks board tabs, search, pin, reopen, and an admin asks page
 
-**Approved:** 2026-11-11, the owner's pick in the build plan (Founderhall merge, wave 1). Spec: `.ai/features/asks-board-tools/SPEC.md`
+**Approved:** 2026-11-11, the owner's pick in the build plan (Commonhall merge, wave 1). Spec: `.ai/features/asks-board-tools/SPEC.md`
 (board) and the asks part of `.ai/features/admin-console/SPEC.md`.
 
 ## Direction
@@ -9,7 +9,7 @@ Members find any ask, old or new, and admins keep the board useful.
   closed and expired ones included; admins pin a few asks to the top of Open; the author or an admin reopens a closed
   ask; a new Admin › Asks page with this quarter's counts, the oldest open asks nobody answered, reported asks, the
   pinned asks, remove and pin buttons, and the weekly allowance setting (moved off the member's Your asks view).
-- **Out:** Founderhall's separate "answered" status (here an ask closes with an outcome), editing asks, any count of
+- **Out:** Commonhall's separate "answered" status (here an ask closes with an outcome), editing asks, any count of
   who offered to help whom.
 
 ## Deciding facts (the builder's picks)

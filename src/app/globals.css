@@ -7,7 +7,7 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  /* Founderhall's one breakpoint: phones get the top bar and tabs below it, the sidebar from it up. */
+  /* Commonhall's one breakpoint: phones get the top bar and tabs below it, the sidebar from it up. */
   --breakpoint-lg: 1000px;
 
   --font-sans: var(--sans);
@@ -44,7 +44,7 @@
   --color-sage-soft: var(--sage-soft);
   --color-sage-text: var(--sage-text);
 
-  /* Founderhall's palette by name, for the parts: bg-leaf, text-graphite, border-rule… */
+  /* Commonhall's palette by name, for the parts: bg-leaf, text-graphite, border-rule… */
   --color-ink: var(--ink);
   --color-spine: var(--spine);
   --color-graphite: var(--graphite);
@@ -63,7 +63,7 @@
   --spacing-icon: 22px;
   --spacing-icon-small: 18px;
 
-  /* Founderhall's two radii: 8 px for cards, 6 px for buttons, fields, chips and notes. */
+  /* Commonhall's two radii: 8 px for cards, 6 px for buttons, fields, chips and notes. */
   --radius-card-phone: 8px;
   --radius-small: 5px;
   --radius-field: 6px;
@@ -78,7 +78,7 @@
   --shadow-lift: var(--shadow);
 }
 
-/* The semantic names Community's screens use, set to Founderhall's values (fh-reference design-system.md §1). */
+/* The semantic names Community's screens use, set to Commonhall's values (fh-reference design-system.md §1). */
 :root {
   color-scheme: light;
 
@@ -115,7 +115,7 @@
   --tint-f-bg: #e6d8c2;
   --tint-f-fg: #111110;
 
-  /* Founderhall's own tokens (portal/public/app.css :root). --fund and its two neighbours come from the branding. */
+  /* Commonhall's own tokens (portal/public/app.css :root). --fund and its two neighbours come from the branding. */
   --ink: #111110;
   --spine: #111110;
   --graphite: #4a4a46;
@@ -146,7 +146,7 @@
   --elevation-cta-hover: inset 0 0 0 999px var(--fund-deep);
 }
 
-/* Founderhall's look in the dark (the owner's pick; Founderhall has none). A warm charcoal page, sheets one step
+/* Commonhall's look in the dark (the owner's pick; Commonhall has none). A warm charcoal page, sheets one step
    lighter, fills one step lighter again, hairline rules, and warm paper-coloured text in the same tiers as light.
    Contrast table: .ai/features/fh-dark/NOTES.md. The fund colour's dark values come from deriveDarkFundColors(). */
 .dark {
@@ -197,7 +197,7 @@
   --spine-tint: #2a2a27;
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 6px 18px -8px rgba(0, 0, 0, 0.6);
 
-  /* Founderhall's literal colours, dark (design-system.md §1.1 "other literal colours"). */
+  /* Commonhall's literal colours, dark (design-system.md §1.1 "other literal colours"). */
   --fh-placeholder: #8f8d85;
   --fh-chip-hover: #2a2a27;
   --fh-switch-off: #8f8d85;
@@ -211,7 +211,7 @@
   --elevation-sheet: 0 -1px 0 var(--rule);
 }
 
-/* Founderhall's type (design-system.md §1.2): serif for titles and people, sans for what you read or click. */
+/* Commonhall's type (design-system.md §1.2): serif for titles and people, sans for what you read or click. */
 @utility type-display {
   font-family: var(--serif);
   font-size: 34px;
@@ -442,7 +442,7 @@
   margin: 0;
 }
 
-/* A signed-out page's first block may still ask for most of the screen; inside Founderhall's card it sits flush. */
+/* A signed-out page's first block may still ask for most of the screen; inside Commonhall's card it sits flush. */
 :is([data-slot="public-page"], [data-slot="split-layout"], [data-slot="centered-page"]) .fh-pub-card > :first-child {
   min-height: 0;
 }
@@ -511,8 +511,8 @@
   }
 }
 
-/* Founderhall's plain links: the fund colour, underlined (its pages rely on the browser's default, which Tailwind
-   resets). Only inside Founderhall's parts, so screens not yet transplanted keep their own links. */
+/* Commonhall's plain links: the fund colour, underlined (its pages rely on the browser's default, which Tailwind
+   resets). Only inside Commonhall's parts, so screens not yet transplanted keep their own links. */
 :where(.fh-credit, .fh-pub-foot, .fh-section-head, .fh-sheet-head, .fh-preview-strip, .fh-pub-card, .fh-note, .fh-hint, .fh-lede, .fh-small, .fh-strip, .fh-empty, .fh-sheet, .fh-mail, .fh-report, .fh-pathtext, .fh-gsteps, p.fh-btn-row) a:not([class]) {
   color: var(--fund);
   text-decoration: underline;
@@ -534,12 +534,12 @@
   color: #ffffff;
 }
 
-/* Founderhall leaves the browser's own margin on radios and checkboxes; Tailwind's reset removes it. */
+/* Commonhall leaves the browser's own margin on radios and checkboxes; Tailwind's reset removes it. */
 .fh-opt input {
   margin: 3px 3px 0 5px;
 }
 
-/* Founderhall's parts with a literal colour (parts.css is generated, so the dark values are set here). Each is the
+/* Commonhall's parts with a literal colour (parts.css is generated, so the dark values are set here). Each is the
    same part in dark, not a page override; NOTES.md lists them. */
 .dark {
   scrollbar-color: var(--fh-scrollbar) transparent;
@@ -604,7 +604,7 @@
   background: var(--fh-logo-tile);
 }
 
-/* Founderhall's sidebar fund mark is a 34 px tile (.side .fundmark img); the initials tile matches it. */
+/* Commonhall's sidebar fund mark is a 34 px tile (.side .fundmark img); the initials tile matches it. */
 .fh-side .fh-fundmark .fh-fundlogo {
   width: 34px;
   height: 34px;

@@ -1,6 +1,6 @@
 # Charter: switch the licence to AGPL-3.0
 
-Approved by the owner on 2026-11-09 as step 1 of the plan that merges Founderhall's features into Community. The
+Approved by the owner on 2026-11-09 as step 1 of the plan that merges Commonhall's features into Community. The
 maintainer agreed to the licence switch.
 
 ## Goal

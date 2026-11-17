@@ -17,7 +17,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = { title: PAGE_TITLES.recoverAdmin };
 
-// Community-only (an admin who lost their password), as a Founderhall public card.
+// Community-only (an admin who lost their password), as a Commonhall public card.
 export default modulePage(PLATFORM_MANIFEST, async function RecoverAdminPage() {
   const community = await readBrandingForPage();
   const isEmailConfigured = readResendConfig(process.env) !== null;

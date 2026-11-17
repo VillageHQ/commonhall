@@ -50,7 +50,7 @@ function clip(text: string) {
   return single.length > WHY_LENGTH ? `${single.slice(0, WHY_LENGTH - 1)}…` : single;
 }
 
-// Founderhall's profile reason: the helper's own "can help with" line, quoted (it is on their profile already).
+// Commonhall's profile reason: the helper's own "can help with" line, quoted (it is on their profile already).
 function describeWordsWhy(canHelpWith: string, sharedWords: readonly string[]) {
   const line = toSingleLine(canHelpWith);
   if (!line) return clip(`can help with ${sharedWords.join(", ")}`);
@@ -103,7 +103,7 @@ export const HELPER_REPLY_LINES = {
 
 const SUBJECT_ASK_LENGTH = 70;
 
-// Founderhall's askForHelp, word for word, as plain text.
+// Commonhall's askForHelp, word for word, as plain text.
 export function renderHelperEmail(environment: Environment, branding: EmailBranding, routed: AskForEmail, helper: { name: string } & HelperReasonLine, canReply: boolean) {
   const authorName = toSingleLine(removeBidiControls(routed.authorName));
   const author = readFirstName(authorName);
@@ -196,7 +196,7 @@ export async function routeAskToHelpers(context: RequestContext, askId: string, 
 
   const lookup = await findPathHelpers(context, routed, findPaths);
   if (lookup?.targetName && routed.targetSlug) await database.update(ask).set({ targetName: clip(lookup.targetName) }).where(eq(ask.id, askId));
-  // Founderhall matches profiles on who the ask is trying to reach, or on the ask itself when it names nobody.
+  // Commonhall matches profiles on who the ask is trying to reach, or on the ask itself when it names nobody.
   const matchText = routed.targetText || routed.targetCompany ? [routed.targetText ?? "", routed.targetCompany ?? ""].join(" ") : [routed.title, routed.detail ?? ""].join(" ");
   const wordHelpers = await readWordHelpers(database, member.id, matchText);
   const drafts = mergeHelpers(member.id, lookup, wordHelpers);

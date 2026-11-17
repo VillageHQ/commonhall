@@ -12,8 +12,8 @@ import { answerByLinkRequest, answerConsentRequest } from "../queries";
 import { DecisionForm } from "./intro-decision";
 import { OUTCOME_LABELS, poss } from "./intro-words";
 
-// Founderhall's public intro pages (decisionPage(), decisionDone(), optoutPage()): one card, the question, the note,
-// the decision form. Answering swaps the card for its "done" words, as Founderhall's next page does.
+// Commonhall's public intro pages (decisionPage(), decisionDone(), optoutPage()): one card, the question, the note,
+// the decision form. Answering swaps the card for its "done" words, as Commonhall's next page does.
 
 type Done = { title: string; text: string; hasConsentLine: boolean };
 

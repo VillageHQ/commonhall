@@ -1,4 +1,4 @@
-// The words search shows, as Founderhall writes them.
+// The words search shows, as Commonhall writes them.
 
 export function readFirstWord(name: string) {
   return name.trim().split(/\s+/)[0] ?? "";

@@ -63,7 +63,7 @@ const AUTOMATIC_SENDER = /^(mailer-daemon|postmaster|no-?reply|do-?not-?reply|bo
 const EMAIL_IN_TEXT = /[^\s<>"'(),;:]+@[^\s<>"'(),;:]+\.[a-z]{2,}/gi;
 const YES_LINES = new Set(["yes", "y", "yes please", "ok", "okay", "sure", "happy to", "yes, happy to"]);
 const NO_LINES = new Set(["no", "n", "no thanks", "no thank you", "not this time", "sorry, no"]);
-// Founderhall's words (copy/emails/email-reply-did-not-go-through.md); the first line says why.
+// Commonhall's words (copy/emails/email-reply-did-not-go-through.md); the first line says why.
 const BOUNCE_SUBJECT = "Your reply did not go through";
 const BOUNCE_LINK_LEAD = "Use this link instead: ";
 // Out-of-office and other mail robots: posting them would put "I'm away until Monday" under an ask.
@@ -164,7 +164,7 @@ function readOutsideAddress(text: string, exclude: readonly string[], replyDomai
     .find((address) => !exclude.includes(address) && !address.endsWith(`@${replyDomain}`));
 }
 
-// `linkLead`: words before the link on its line ("Use this link instead: "); `withSignOff`: Founderhall's last line.
+// `linkLead`: words before the link on its line ("Use this link instead: "); `withSignOff`: Commonhall's last line.
 type Notice = { to: string; subject: string; lines: readonly string[]; link: string; dedupeKey: string; linkLead?: string; withSignOff?: boolean };
 
 // One plain email: why a reply didn't land, or the next step after a YES. Transactional, no topic.

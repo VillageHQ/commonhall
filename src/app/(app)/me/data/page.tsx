@@ -118,7 +118,7 @@ function readShareState(network: NetworkDates | undefined): ShareState {
   return { kind: "not_connected" };
 }
 
-// Founderhall's Your data (member-me-data): what is stored and where, what the lookup service receives, the consent
+// Commonhall's Your data (member-me-data): what is stored and where, what the lookup service receives, the consent
 // record, the switches, the export and the real delete.
 export default modulePage(membersManifest, async function YourDataPage() {
   const member = await requireMember();
@@ -242,7 +242,7 @@ export default modulePage(membersManifest, async function YourDataPage() {
           <SwitchesSheet
             communityName={community}
             isHidden={privacy.isHidden}
-            // Founderhall selects "The community’s default" for a member who never chose.
+            // Commonhall selects "The community’s default" for a member who never chose.
             messagePolicy={privacy.followsCommunityDefault ? MESSAGE_POLICIES.communityDefault : privacy.messagePolicy}
             isMessagesOn={isMessagesOn}
             lookup={lookup.basis ? { isAllowed: lookup.isAllowed } : null}

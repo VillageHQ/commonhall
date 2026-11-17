@@ -18,7 +18,7 @@ export const metadata: Metadata = { title: PAGE_TITLES.myNetwork };
 
 const DAY_MONTH = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", timeZone: "UTC" });
 
-// Founderhall's My network: connect, sync and share the member's own network.
+// Commonhall's My network: connect, sync and share the member's own network.
 export default modulePage(networkManifest, async function MyNetworkPage() {
   const member = await requireMember();
   const database = getDatabase();

@@ -3,7 +3,7 @@ import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
 
-// Founderhall prefers ruled rows to boxed cards (design-system.md §3.6).
+// Commonhall prefers ruled rows to boxed cards (design-system.md §3.6).
 
 // `.rows` + `.r` (crops row-member-admin.png, rows-intros.png): a rule on top, then one grid row per item
 // (start | who | end), padding 12/0, a rule under each; a link row gets a soft Vellum band on hover.

@@ -12,7 +12,7 @@ basis: e95a9f.32e50b
 ---
 # Spec: "No thanks" link keeps its own answer
 
-**Added:** 2026-11-10 (from the Founderhall parity map in `.ai/roadmap.md`)
+**Added:** 2026-11-10 (from the Commonhall parity map in `.ai/roadmap.md`)
 
 ## What & why
 A person who said "no thanks" on one intro link and later stopped all intro asks sees "You've stopped intro requests" when they open the first link again.

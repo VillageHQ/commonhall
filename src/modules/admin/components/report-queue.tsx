@@ -34,7 +34,7 @@ import { ConfirmDialog } from "@/modules/admin/components/confirm-dialog";
 import { RemoveMemberDialog } from "@/modules/admin/components/remove-member-dialog";
 import { deleteReportedContentRequest, dismissReportRequest, REPORT_QUERY_KEYS, reportPageQuery } from "@/modules/admin/queries-reports";
 
-// Set up › Reports, in Founderhall's parts: one sheet, the Open | Handled segmented control in its head, and one
+// Set up › Reports, in Commonhall's parts: one sheet, the Open | Handled segmented control in its head, and one
 // moderation row per report (as Asks & digest's "Every ask and update"), its state as pills and its actions as small
 // quiet buttons at the row's end.
 const QUEUE_TITLE_ID = "report-queue-title";

@@ -46,7 +46,7 @@ function askGoneError() {
   return new RequestError(NOT_FOUND_STATUS, ASK_ERROR_CODES.notFound, "This ask is no longer open.");
 }
 
-// The words a helper leaves when they write nothing (Founderhall's help()).
+// The words a helper leaves when they write nothing (Commonhall's help()).
 function readDefaultHelpLine(kind: AskHelpKind, person: string | null) {
   if (kind === ASK_HELP_KINDS.knowSomeone) return `I know ${person ?? "someone"} and can introduce you.`;
   return "I’ve done this myself. Happy to talk it through.";
@@ -54,7 +54,7 @@ function readDefaultHelpLine(kind: AskHelpKind, person: string | null) {
 
 type HelpOfferedEmail = { communityName: string; authorName: string; helperName: string; kind: AskHelpKind; note: string; person: string | null; askTitle: string; link: string };
 
-// Founderhall's helpOffered, word for word.
+// Commonhall's helpOffered, word for word.
 export function renderHelpOfferedEmail({ communityName, authorName, helperName, kind, note, person, askTitle, link }: HelpOfferedEmail) {
   const helper = readFirstName(helperName);
   const isKnowSomeone = kind === ASK_HELP_KINDS.knowSomeone;
@@ -155,7 +155,7 @@ async function readAskAuthor(context: RequestContext, askId: string) {
   return row;
 }
 
-// Founderhall's status buttons on the ask's page. The author: Mark answered, Reopen. An admin: also Pin, Unpin,
+// Commonhall's status buttons on the ask's page. The author: Mark answered, Reopen. An admin: also Pin, Unpin,
 // Close and Remove. An update can't be answered or reopened.
 export async function setAskStatus(context: RequestContext, { askId, action }: AskStatusBody, isAdmin: boolean) {
   const { authorId, kind } = await readAskAuthor(context, askId);

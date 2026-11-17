@@ -58,7 +58,7 @@ describe("the conversation list", () => {
     vi.unstubAllGlobals();
   });
 
-  it("links each conversation to its thread in the Inbox, with Founderhall's date", () => {
+  it("links each conversation to its thread in the Inbox, with Commonhall's date", () => {
     renderList([makeSummary(NOOR_ID, "Noor Haddad"), makeSummary(JONAS_ID, "Jonas Lindqvist", { lastMessage: { preview: "Hi", isMine: false, isDeleted: false, createdAt: "2026-11-09T10:00:00.000Z" } })]);
 
     expect(screen.getByRole("link", { name: /Noor Haddad/ }).getAttribute("href")).toBe(`${ROUTES.messages}/${NOOR_ID}`);
@@ -88,7 +88,7 @@ describe("the conversation list", () => {
     expect(screen.getByText(/^Blocked\./)).toBeTruthy();
   });
 
-  it("has no search box on a short inbox, as Founderhall", () => {
+  it("has no search box on a short inbox, as Commonhall", () => {
     renderList([makeSummary(NOOR_ID, "Noor Haddad")]);
 
     expect(screen.queryByRole("searchbox")).toBeNull();
@@ -132,7 +132,7 @@ describe("the conversation list", () => {
     });
   });
 
-  it("shows Founderhall's empty inbox, linking the directory", () => {
+  it("shows Commonhall's empty inbox, linking the directory", () => {
     renderList([]);
 
     expect(screen.getByRole("heading", { name: "No messages yet" })).toBeTruthy();

@@ -8,7 +8,7 @@ export type StepperState = keyof typeof STEPPER_STATES;
 
 const STATE_WORDS: Record<StepperState, string> = { done: "done", now: "now", todo: "to come", no: "did not happen" };
 
-// Founderhall's tracker (crop stepper-intro-tracker.png): 24 px nodes joined by a 2 px line. Done = the fund colour
+// Commonhall's tracker (crop stepper-intro-tracker.png): 24 px nodes joined by a 2 px line. Done = the fund colour
 // with a white tick; now = a fund ring, a 4 px tint halo and a dot; todo = hollow; no = Vellum with a Graphite ring.
 export function Stepper({ steps, className }: { steps: readonly { key: string; state: StepperState; title: ReactNode; detail?: ReactNode }[]; className?: string }) {
   return (

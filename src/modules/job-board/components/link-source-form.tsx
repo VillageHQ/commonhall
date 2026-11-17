@@ -13,11 +13,11 @@ import { ROUTES } from "@/platform/http/routes";
 import { FEED_TOOLS, isFeedTool, JOB_BOARD_API_ROUTES, JOB_BOARD_LIMITS } from "../contract";
 import { useJobAction } from "./use-job-action";
 
-// Founderhall's tool list: every tool with a public feed, then the ones without (their jobs are added by hand).
+// Commonhall's tool list: every tool with a public feed, then the ones without (their jobs are added by hand).
 const NO_FEED_TOOLS = { workday: "Workday", icims: "iCIMS", other: "Another tool, or none" } as const;
 const DEFAULT_TOOL = "greenhouse";
 
-// Founderhall's "Our jobs" form (ourJobsSection's addForm): Company and Hiring tool side by side, the careers link, then
+// Commonhall's "Our jobs" form (ourJobsSection's addForm): Company and Hiring tool side by side, the careers link, then
 // "Pull our jobs". A tool with a feed links the board (the app finds the board in the link, whichever tool it is on);
 // a tool without one starts a company whose jobs are added by hand. A founder shares jobs only for the company on
 // their card, so for them the company can't be changed.
@@ -45,7 +45,7 @@ export function LinkSourceForm({ defaultCompany, isCompanyFixed }: { defaultComp
         event.preventDefault();
         linkTool.reset();
         byHand.reset();
-        // A tool without a feed and no link: jobs by hand. Any link is tried as a board, as Founderhall does.
+        // A tool without a feed and no link: jobs by hand. Any link is tried as a board, as Commonhall does.
         if (!isFeedTool(tool) && link.trim() === "") byHand.mutate({ company });
         else linkTool.mutate({ company, link });
       }}

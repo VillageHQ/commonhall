@@ -14,7 +14,7 @@ import { jobPosting, jobSource } from "./schema";
 const TIMEOUT_MS = 15_000;
 const DEFAULT_MAXIMUM_BYTES = 2 * 1024 * 1024;
 const BYTES_PER_MEGABYTE = 1024 * 1024;
-const USER_AGENT = "Community job board (+https://github.com/VillageHQ/community)";
+const USER_AGENT = "Community job board (+https://github.com/VillageHQ/commonhall)";
 // For tests and local proof only: every feed is read from this origin instead of the tool's own host.
 const FAKE_ORIGIN_VARIABLE = "JOB_FEEDS_FAKE_ORIGIN";
 const UNKNOWN_PROBLEM = "Something went wrong reading the job list. We try again next hour.";

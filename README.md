@@ -1,4 +1,6 @@
-# Common Hall
+# Commonhall
+
+Earlier names: Village Community, Founderhall, Common Hall. The repository moved from `VillageHQ/community` to `VillageHQ/commonhall` on 17 November 2026 (old links redirect).
 
 A private home for a VC fund's founders, ready to deploy without writing code. They join by invite, post in a shared feed, find each other in a directory, message one to one and ask each other for warm intros. Through [Village](https://village.ai), they can also search everyone's networks together.
 
@@ -13,11 +15,11 @@ No terminal, no code. It's open source under the AGPL-3.0 licence, and you run y
 
 ## Deploy
 
-> **Status:** No button below has been tried on a live platform yet. If a step doesn't match what you see, [tell us](https://github.com/VillageHQ/community/issues).
+> **Status:** No button below has been tried on a live platform yet. If a step doesn't match what you see, [tell us](https://github.com/VillageHQ/commonhall/issues).
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FVillageHQ%2Fcommunity&project-name=community&repository-name=community&env=SETUP_TOKEN%2CCRON_SECRET&envDescription=Choose%20two%20different%20long%20random%20passwords%20of%20at%20least%2032%20characters.%20SETUP_TOKEN%20you%20enter%20once%20at%20%2Fsetup%20to%20create%20your%20admin%20account.%20CRON_SECRET%20lets%20Vercel%20run%20the%20weekly%20email%20and%20other%20timed%20jobs.&envLink=https%3A%2F%2Fgithub.com%2FVillageHQ%2Fcommunity%23setup-token&stores=%5B%7B%22type%22%3A%22integration%22%2C%22integrationSlug%22%3A%22neon%22%2C%22productSlug%22%3A%22neon%22%2C%22protocol%22%3A%22storage%22%7D%5D)
 
-[![Deploy to DO](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/VillageHQ/community/tree/main)
+[![Deploy to DO](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/VillageHQ/commonhall/tree/main)
 
 **Railway: coming soon.** We haven't published the one-click template yet, so there's no button to click. Use Vercel or DigitalOcean for now.
 
@@ -34,13 +36,13 @@ No terminal, no code. It's open source under the AGPL-3.0 licence, and you run y
 Rent a server, point a domain at it and paste one command. It leaves your community running on HTTPS, restarts it by itself and backs it up every day. We've run it on one rented server with a real certificate, and on fresh Ubuntu and Debian test machines.
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/VillageHQ/community/main/install.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/VillageHQ/commonhall/main/install.sh | sudo bash
 ```
 
 [Read the guide](docs/self-host-vps.md) for what to rent and how to point your domain.
 
 - **Stopped halfway?** Run the same command again. It keeps your settings and picks up where it stopped. Until you create your admin account, it ends with your setup token and the `/setup` steps again.
-- **Behind NAT or a load balancer** (as on Fly.io), the server goes out from a different address than visitors reach. The installer notices and shows the command that passes the addresses your domain points at, like `curl -fsSL https://raw.githubusercontent.com/VillageHQ/community/main/install.sh | sudo COMMUNITY_DOMAIN=community.example.com COMMUNITY_SERVER_IP=203.0.113.10,2001:db8::10 bash`.
+- **Behind NAT or a load balancer** (as on Fly.io), the server goes out from a different address than visitors reach. The installer notices and shows the command that passes the addresses your domain points at, like `curl -fsSL https://raw.githubusercontent.com/VillageHQ/commonhall/main/install.sh | sudo COMMUNITY_DOMAIN=community.example.com COMMUNITY_SERVER_IP=203.0.113.10,2001:db8::10 bash`.
 - **No ready-made app to download?** The installer builds it on the server instead. That takes about 3 minutes with 4 GB of memory and 2 dedicated processors, and 30 minutes or more on a small 2 GB server, so use a bigger server for the first install if you can. If the build fails, the installer shows its last lines and the cause.
 
 ### Deploy on Fly.io
@@ -124,7 +126,7 @@ Everything lives in **Admin**.
 - **Something's wrong on your site:** Start with [Troubleshooting](#troubleshooting) below.
 - **Someone can't sign in:** See [If someone forgets their password](#if-someone-forgets-their-password).
 - **Village keys, credits or billing:** Use [Village's platform](https://village.ai/platform/usage).
-- **A bug in this app, or a question:** [Open an issue](https://github.com/VillageHQ/community/issues) on GitHub. Don't paste keys or members' details there.
+- **A bug in this app, or a question:** [Open an issue](https://github.com/VillageHQ/commonhall/issues) on GitHub. Don't paste keys or members' details there.
 - **A security problem:** See [SECURITY.md](SECURITY.md). Don't open a public issue.
 
 ## Setup token

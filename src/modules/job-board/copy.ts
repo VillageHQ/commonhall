@@ -1,6 +1,6 @@
 import type { BoardCompany } from "./contract.ts";
 
-// Founderhall's job board words (copy/member-jobs-board.md, public-jobs-board.md).
+// Commonhall's job board words (copy/member-jobs-board.md, public-jobs-board.md).
 
 function plural(count: number, one: string, many = `${one}s`) {
   return `${count.toLocaleString("en-US")} ${count === 1 ? one : many}`;

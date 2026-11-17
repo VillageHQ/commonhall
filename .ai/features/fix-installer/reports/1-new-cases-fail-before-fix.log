@@ -280,10 +280,10 @@ Getting the app
         | Backups: this server backs up your data every day and keeps the last 7.
         | Those copies sit on the same disk as your data, so they're not enough if the server is lost.
         | Copy one to your own computer regularly. The guide shows how:
-        |   https://github.com/VillageHQ/community/blob/main/docs/self-host-vps.md
+        |   https://github.com/VillageHQ/commonhall/blob/main/docs/self-host-vps.md
         | 
         | To see all the commands: community
-  FAIL  builds from source with a memory warning when the download fails: calls "docker build --network host -f /source/deploy/vps/Dockerfile -t ghcr.io/villagehq/community:latest /source"
+  FAIL  builds from source with a memory warning when the download fails: calls "docker build --network host -f /source/deploy/vps/Dockerfile -t ghcr.io/villagehq/commonhall:latest /source"
         | Downloaded the database and the web server.
         | 
         | Step 10 of 12: Starting your community
@@ -311,7 +311,7 @@ Getting the app
         | Backups: this server backs up your data every day and keeps the last 7.
         | Those copies sit on the same disk as your data, so they're not enough if the server is lost.
         | Copy one to your own computer regularly. The guide shows how:
-        |   https://github.com/VillageHQ/community/blob/main/docs/self-host-vps.md
+        |   https://github.com/VillageHQ/commonhall/blob/main/docs/self-host-vps.md
         | 
         | To see all the commands: community
   FAIL  builds from source with a memory warning when the download fails: keeps the build output in its log
@@ -342,7 +342,7 @@ Getting the app
         | Backups: this server backs up your data every day and keeps the last 7.
         | Those copies sit on the same disk as your data, so they're not enough if the server is lost.
         | Copy one to your own computer regularly. The guide shows how:
-        |   https://github.com/VillageHQ/community/blob/main/docs/self-host-vps.md
+        |   https://github.com/VillageHQ/commonhall/blob/main/docs/self-host-vps.md
         | 
         | To see all the commands: community
   ok    doesn't build when the download works: doesn't call "docker build"
@@ -672,7 +672,7 @@ Using the helper
   ok    upgrades through the installer and reports success: exits 0
   ok    upgrades through the installer and reports success: says "up to date at https://community.example.test"
   ok    upgrades through the installer and reports success: says "Downloading Community's files (main)"
-  ok    upgrades through the installer and reports success: calls "codeload.github.com/VillageHQ/community/tar.gz/main"
+  ok    upgrades through the installer and reports success: calls "codeload.github.com/VillageHQ/commonhall/tar.gz/main"
   ok    upgrades through the installer and reports success: never says "unbound variable"
   ok    shows help with no command and rejects an unknown one: says "sudo community restore <file>"
   ok    shows help with no command and rejects an unknown one: exits 1

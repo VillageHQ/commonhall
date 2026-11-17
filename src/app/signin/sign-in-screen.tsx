@@ -46,8 +46,8 @@ type SignInScreenProps = {
   demo?: ReactNode;
 };
 
-// Founderhall's sign-in (lib/views-public.mjs signinPage, checkEmailPage): one card, the emailed link first.
-// After a link is asked for, the same page says "Check your email", as Founderhall's POST /signin does.
+// Commonhall's sign-in (lib/views-public.mjs signinPage, checkEmailPage): one card, the emailed link first.
+// After a link is asked for, the same page says "Check your email", as Commonhall's POST /signin does.
 export function SignInScreen({ community, hosting, isLinkOn, returnPath, notice, demo }: SignInScreenProps) {
   const [state, formAction, isPending] = useActionState(requestLink, INITIAL_STATE);
   const [isPasswordShown, setIsPasswordShown] = useState(!isLinkOn);

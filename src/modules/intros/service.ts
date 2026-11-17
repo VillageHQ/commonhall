@@ -425,7 +425,7 @@ export async function recordIntroOutcome(context: RequestContext, { introId, out
       .set({ outcome, outcomeResults: results.length > 0 ? results : null, outcomeAnsweredAt: now })
       .where(and(eq(introRequest.id, introId), isOutcomeDueForRequester(member.id, now)))
       .returning({ id: introRequest.id });
-    // The connector gets one thank-you when the intro helped (Founderhall's), whatever was answered before.
+    // The connector gets one thank-you when the intro helped (Commonhall's), whatever was answered before.
     if (saved && branding) await queueIntroEmail(transaction, context.environment, branding, saved.id, INTRO_EMAIL_EVENTS.thanks);
     return saved;
   });

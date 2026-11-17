@@ -1,4 +1,4 @@
-// The fields of "In your own words" on My profile, by their Founderhall names (/me?edit=<key>#f-<key>).
+// The fields of "In your own words" on My profile, by their Commonhall names (/me?edit=<key>#f-<key>).
 export const OWN_FIELD_KEYS = {
   name: "name",
   role: "role",

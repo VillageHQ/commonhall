@@ -61,7 +61,7 @@ describe("a connector", () => {
       expect(screen.getByRole("heading", { name: "Jonas Lindqvist" })).toBeTruthy();
       expect(screen.getByText("Community member")).toBeTruthy();
       expect(screen.getByText(REASON)).toBeTruthy();
-      // The ask is its own page now (Founderhall's one-step ask), back to here after.
+      // The ask is its own page now (Commonhall's one-step ask), back to here after.
       const ask = new URL(screen.getByRole("link", { name: "Ask Jonas for an intro" }).getAttribute("href") ?? "", "https://example.com");
       expect(ask.pathname).toBe("/search/ask");
       expect(Object.fromEntries(ask.searchParams)).toEqual({ target: "clara-bergstrom", via: "jonas", back: "/intros/22222222-2222-4222-8222-222222222222" });

@@ -14,7 +14,7 @@ describe("the empty state", () => {
     expect(markup).toContain("Check back.");
   });
 
-  it("draws no picture, like Founderhall's dashed empty state", () => {
+  it("draws no picture, like Commonhall's dashed empty state", () => {
     const markup = renderToStaticMarkup(createElement(EmptyState, { title: "Nothing yet", description: "Check back." }));
 
     expect(markup).not.toContain("<svg");

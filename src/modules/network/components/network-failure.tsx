@@ -72,7 +72,7 @@ export function NetworkFailure({ error, resetErrorBoundary }: FallbackProps) {
     if (isStageChanging) void queryClient.invalidateQueries({ queryKey: [NETWORK_QUERY_KEYS.status] });
   }, [isStageChanging, queryClient]);
 
-  // Founderhall's search error: one note in member words, in the results' place.
+  // Commonhall's search error: one note in member words, in the results' place.
   const warmStep = code === null ? undefined : WARM_STEPS[code];
   if (warmStep) {
     return (

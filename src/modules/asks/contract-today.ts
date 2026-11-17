@@ -17,7 +17,7 @@ export const helpableAskSchema = z.object({
   createdAt: z.string(),
   matchedWords: z.array(z.string()),
   why: z.string().nullable(),
-  // Founderhall's lines: "Trying to reach: …" and "Why you: …".
+  // Commonhall's lines: "Trying to reach: …" and "Why you: …".
   who: z.string().nullable(),
   whyYou: z.string(),
 });

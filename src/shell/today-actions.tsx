@@ -55,7 +55,7 @@ export function NotThisWeekButton({ askId }: { askId: string }) {
   );
 }
 
-// "Is this right?": Right, Hide it, or Fix it in the member's own words (Founderhall's fact card buttons).
+// "Is this right?": Right, Hide it, or Fix it in the member's own words (Commonhall's fact card buttons).
 export function FactButtons({ field, label, value }: { field: CheckedField; label: string; value: string }) {
   const { error, isPending, run } = useTodayAction();
   const answer = (kind: keyof typeof FACT_ANSWERS, fixed = "") =>

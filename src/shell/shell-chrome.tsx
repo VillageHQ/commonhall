@@ -25,9 +25,9 @@ export function ShellFooterLine({ isAdmin, pathname }: { isAdmin: boolean; pathn
   return useShellMode(isAdmin, pathname) === SHELL_MODES.console ? <ProductCredit /> : <SourceLine />;
 }
 
-// The menu items with no phone tab and no link from a page. Founderhall reaches the rest from its pages: Jobs and
+// The menu items with no phone tab and no link from a page. Commonhall reaches the rest from its pages: Jobs and
 // Perks from Today's cards; in the console, Home and the Intro log link the Partner report, Home and Members link
-// Invites, and the Job board has no phone link in Founderhall either, so the console's foot lists none of them.
+// Invites, and the Job board has no phone link in Commonhall either, so the console's foot lists none of them.
 const LINKED_FROM_PAGES: ReadonlySet<string> = new Set([MEMBER_KEYS.jobs, MEMBER_KEYS.perks, CONSOLE_KEYS.report, CONSOLE_KEYS.invites, CONSOLE_KEYS.jobs]);
 
 function PhoneMoreLinks({ navigation, isAdmin, pathname }: { navigation: ShellNavigation; isAdmin: boolean; pathname?: string }) {

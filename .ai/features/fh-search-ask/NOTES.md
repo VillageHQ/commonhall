@@ -35,16 +35,16 @@ opens the Asks composer with the words.
 
 ## My network
 `src/app/(app)/me/network/page.tsx` + `my-network-screen.tsx`, from `networkStatusQuery`. Community joins = shares, so
-the sharing box must be ticked to connect (Founderhall lets a member connect without sharing; that needs engine work the
+the sharing box must be ticked to connect (Commonhall lets a member connect without sharing; that needs engine work the
 owner decides on). Connect records consent, then opens Village's sync window. The admin's last Village check of the
 member and the LinkedIn/leave settings are here now.
 
 ## The connector's email
-`renderAskedEmail` in `src/modules/intros/email.ts`: Founderhall's plain words, with the note. The answer links open the
+`renderAskedEmail` in `src/modules/intros/email.ts`: Commonhall's plain words, with the note. The answer links open the
 intro signed in with `?a=yes|not_now|dont_know` (area 3 can switch them to links that need no sign-in). A YES reply may
 put the person's address alone on the next line (`email-replies.ts`).
 
 ## Demo
-`src/platform/demo/village-answers.ts` answers searches by their words: Founderhall's story people
+`src/platform/demo/village-answers.ts` answers searches by their words: Commonhall's story people
 (`DEMO_SEARCH_PEOPLE`: Alex Kim and Dana Morris known first-hand by Sam, Rosa through Marcus, Tom Becker and Jonas Lind
 through Ada), else the other made-up people, else nobody; and the bulk paths call.

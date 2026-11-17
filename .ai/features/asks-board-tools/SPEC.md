@@ -12,10 +12,10 @@ basis: e95a9f.01bcc5
 ---
 # Spec: Asks board tabs, search, pin and reopen
 
-**Added:** 2026-11-10 (from the Founderhall parity map in `.ai/roadmap.md`)
+**Added:** 2026-11-10 (from the Commonhall parity map in `.ai/roadmap.md`)
 
 ## What & why
-Founderhall's board had Open / Updates / Yours / Answered / All tabs, a search over asks and answers, reopen, and admin pin and unpin.
+Commonhall's board had Open / Updates / Yours / Answered / All tabs, a search over asks and answers, reopen, and admin pin and unpin.
 
 ## Rough scope
 Answered and All tabs, text search, reopen, admin pin. (Merge plan: "Ask answers, tabs, answered/reopen, pin, stats: port into the Asks module".)
@@ -25,6 +25,6 @@ Answered and All tabs, text search, reopen, admin pin. (Merge plan: "Ask answers
 
 ## Update 2026-11-11: built (asks-tools)
 Tabs Open, Mine, Answered, Closed; one search over every ask and its answers, closed ones too; admins pin up to 3
-open asks; the author or an admin reopens a closed ask; both audited. Founderhall's separate "answered" status was
+open asks; the author or an admin reopens a closed ask; both audited. Commonhall's separate "answered" status was
 left out: an ask here closes with an outcome. How it works: `.ai/features/asks-tools/NOTES.md`; the approved scope:
 `.ai/features/asks-tools/CHARTER.md`.

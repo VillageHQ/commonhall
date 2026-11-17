@@ -1,10 +1,10 @@
-# How the console works today (Founderhall's screens on Community's engine)
+# How the console works today (Commonhall's screens on Community's engine)
 
-The admin console's screens copy Founderhall's: Home, Partner report, Intro log, Members, Invites, Asks & digest,
+The admin console's screens copy Commonhall's: Home, Partner report, Intro log, Members, Invites, Asks & digest,
 Job board. The look and shared parts come from the foundation (`.ai/features/fh-foundation/NOTES.md`).
 
 ## Who asked whom: admins see names
-The owner decided on 2026-11-11 that admins see who asked whom, like Founderhall. The Intro log, its CSV and Home's
+The owner decided on 2026-11-11 that admins see who asked whom, like Commonhall. The Intro log, its CSV and Home's
 "Latest in the intro log" name the asker, the person asked for and the connector; the digest preview of another
 member names them too. No console read selects an intro's note or reason (the preview blanks them). The partner
 report names every connector in Top connectors and never the asker or the person asked for. Members are told on
@@ -23,7 +23,7 @@ Your data ("admins see names, states and dates"). "Credit me in reports" is back
 | Digest preview + test | `/admin/digest` (old `/admin/weekly-email` redirects here, permanently) | `src/shell/digest-*.tsx`, `weekly-email-compose.ts` |
 | Job board | `/admin/jobs` | `src/shell/admin-jobs-parts.tsx` |
 
-The period switch (`components/period-switch.tsx`, `console-periods.ts`) uses Founderhall's words in the address;
+The period switch (`components/period-switch.tsx`, `console-periods.ts`) uses Commonhall's words in the address;
 anything else reads as this quarter.
 
 ## Settings added (no new tables)
@@ -31,9 +31,9 @@ anything else reads as this quarter.
 `src/modules/intros/contract-outcome-days.ts`; the outcome email, the report's "pending" and the log read it),
 `weekly_email_enabled` (the digest switch).
 
-## Where it still differs from Founderhall (on purpose or by engine)
+## Where it still differs from Commonhall (on purpose or by engine)
 - Mail lines on Home name Resend, not SMTP; DNS shows "not checked yet" (Community doesn't save its DNS check).
 - "Asked to delete" on Members reads 0: Community has no deletion request (members delete their own account).
 - The profile fill-in consent on Invites is community-wide in Community, not per invite.
 - Manage actions still confirm in a dialog (the confirm component is shared with other screens).
-- The phone foot keeps a "Job board" link (Founderhall's console has no phone path to it).
+- The phone foot keeps a "Job board" link (Commonhall's console has no phone path to it).

@@ -28,7 +28,7 @@ type PrivacyFormProps = {
   isLookupOn: boolean;
 };
 
-// Founderhall's step 2 form: who sees you (two option cards), two switch rows, the consent note, Done and Back.
+// Commonhall's step 2 form: who sees you (two option cards), two switch rows, the consent note, Done and Back.
 export function PrivacyForm({ communityName, initial, isIntrosOn, isLookupOn }: PrivacyFormProps) {
   const router = useRouter();
   const flash = useFlash();

@@ -22,7 +22,7 @@ type AppShellProps = {
   children: ReactNode;
 };
 
-// Founderhall's page shell (its lib/html.mjs page(), design-system.md §2): from 1000 px a 264 px sidebar (fund mark,
+// Commonhall's page shell (its lib/html.mjs page(), design-system.md §2): from 1000 px a 264 px sidebar (fund mark,
 // the admin's Console | View as a founder switch, the menu, the member and Sign out, the footer line); below it a
 // 56 px top bar and a 64 px tab bar. An admin on member pages sees the founder-view strip.
 export function AppShell({ community, member, navigation, badges, isNetworkOn, children }: AppShellProps) {

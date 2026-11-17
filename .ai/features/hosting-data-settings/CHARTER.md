@@ -1,6 +1,6 @@
 # Where the data is kept, and whom to ask: charter
 
-Approved scope: the owner's build plan for merging Founderhall's strengths into Community (after the fix waves). The
+Approved scope: the owner's build plan for merging Commonhall's strengths into Community (after the fix waves). The
 maintainer agreed and reviews after merge. This page restates that brief; it is the scope of this build. Build slug:
 `data-setting`; it lives in this item's existing feature folder so the item keeps one spec.
 

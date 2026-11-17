@@ -24,7 +24,7 @@ services:
     logging: *logging
 
   app:
-    image: ${COMMUNITY_IMAGE:-ghcr.io/villagehq/community:latest}
+    image: ${COMMUNITY_IMAGE:-ghcr.io/villagehq/commonhall:latest}
     restart: unless-stopped
     depends_on:
       postgres:

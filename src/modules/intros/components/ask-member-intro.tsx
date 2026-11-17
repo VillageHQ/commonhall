@@ -8,7 +8,7 @@ import { ROUTES } from "@/platform/http/routes";
 type AskMemberIntroProps = { connectorId: string; connectorName: string };
 
 // "Ask for an intro via <name>" on a member's profile: opens the ask page, where the asker names the person. It needs
-// no Village (Founderhall's profile actions).
+// no Village (Commonhall's profile actions).
 export function AskMemberIntro({ connectorId, connectorName }: AskMemberIntroProps) {
   return (
     <Button asChild size="sm">

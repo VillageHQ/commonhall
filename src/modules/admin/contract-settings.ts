@@ -6,7 +6,7 @@ import { API_ROUTES } from "../../platform/http/routes.ts";
 import { MAXIMUM_DATA_CONTACT_NAME_LENGTH, MAXIMUM_DATA_LOCATION_LENGTH } from "../../platform/settings/data-home-api.ts";
 import { HOSTED_BY, isDay, PLANS } from "../../platform/settings/plan-api.ts";
 
-// Set up › Settings: one form, one save (Founderhall's settingsPage). Every field is a string; an empty one means
+// Set up › Settings: one form, one save (Commonhall's settingsPage). Every field is a string; an empty one means
 // "not set". Errors come back per field, so the page shows each under its field and the flash says a fix is needed.
 export const SETTINGS_API_ROUTE = `${API_ROUTES.branding}/settings`;
 

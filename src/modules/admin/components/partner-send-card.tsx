@@ -27,7 +27,7 @@ type PartnerSendFormProps = {
   text: string;
 };
 
-// Founderhall's Send to partners: the form (addresses, a line on top) and the plain email beside it.
+// Commonhall's Send to partners: the form (addresses, a line on top) and the plain email beside it.
 export function PartnerSendForm({ period, savedRecipients, fromName, subject, text }: PartnerSendFormProps) {
   const [recipients, setRecipients] = useState(savedRecipients.join(", "));
   const [note, setNote] = useState("");

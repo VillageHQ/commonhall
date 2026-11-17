@@ -35,7 +35,7 @@ import { waitingMembersQuery } from "@/modules/members/queries-invites";
 import { LinkedinClaimCard } from "@/modules/members/components/shared/linkedin-claim-card";
 import { adminManifest } from "@/modules/admin/manifest";
 
-// Founderhall's Import members page (Set up). Built by the Set up pages; Members only links to it.
+// Commonhall's Import members page (Set up). Built by the Set up pages; Members only links to it.
 const IMPORT_PAGE = "/admin/import";
 
 export const metadata: Metadata = { title: "Members" };
@@ -47,7 +47,7 @@ function filterHref(filter: ConsoleMemberFilter, search: string) {
 
 type MembersSearch = { f?: string; q?: string };
 
-// Founderhall's Members: everyone in one table, members and the people invited, with filters and a search.
+// Commonhall's Members: everyone in one table, members and the people invited, with filters and a search.
 // Community-only tools stay: each member's Manage page (role, Village, LinkedIn, remove, delete), the people waiting
 // for an OK, and freeing up a LinkedIn profile.
 export default modulePage(adminManifest, async function AdminMembersPage({ searchParams }: { searchParams: Promise<MembersSearch> }) {

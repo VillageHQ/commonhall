@@ -22,7 +22,7 @@ import { WEEKDAYS, type WeeklySchedule } from "@/platform/weekly-email/schedule"
 const messageSchema = z.object({ message: z.string() });
 const HOURS = Array.from({ length: 24 }, (_, hour) => hour);
 
-// After an action the page reloads with Founderhall's flash (?m=pin, ?m=asksettings…).
+// After an action the page reloads with Commonhall's flash (?m=pin, ?m=asksettings…).
 function useLandWithFlash() {
   const router = useRouter();
   return (flash: string) => {
@@ -73,7 +73,7 @@ export function AskRowActions({ askId, title, isPinned, canPin, canClose }: AskR
 
 type DigestSettingsFormProps = { isEnabled: boolean; schedule: WeeklySchedule; weeklyAllowance: number };
 
-// The weekly digest's settings (Founderhall's): the switch, day, hour, time zone, and the one weekly allowance.
+// The weekly digest's settings (Commonhall's): the switch, day, hour, time zone, and the one weekly allowance.
 export function DigestSettingsForm({ isEnabled: savedEnabled, schedule, weeklyAllowance }: DigestSettingsFormProps) {
   const land = useLandWithFlash();
   const [isEnabled, setEnabled] = useState(savedEnabled);

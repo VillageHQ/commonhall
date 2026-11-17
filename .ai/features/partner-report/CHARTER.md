@@ -1,6 +1,6 @@
 # Partner report (charter)
 
-Approved scope: the owner's build plan (wave 2 of the Founderhall merge). The maintainer reviews after merge.
+Approved scope: the owner's build plan (wave 2 of the Commonhall merge). The maintainer reviews after merge.
 
 ## Direction
 Admins get one "Partner report" page instead of the Health page: the community's numbers and its intro numbers per

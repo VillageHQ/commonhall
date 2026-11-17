@@ -13,11 +13,11 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = { title: "Stop intro asks", robots: { index: false, follow: false } };
 
-// Founderhall's opt-out page, from "Don't send me intro asks" in the person's email or on their page.
+// Commonhall's opt-out page, from "Don't send me intro asks" in the person's email or on their page.
 export default modulePage(introsManifest, async function IntroOptOutPage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
   const [community, address] = await Promise.all([readBrandingForPage(), readOptOutAddress(getDatabase(), token)]);
-  // Founderhall answers an unknown link with a 404 (not-found.tsx beside this page has its words).
+  // Commonhall answers an unknown link with a 404 (not-found.tsx beside this page has its words).
   if (!address) notFound();
   return (
     <PublicPage community={community}>

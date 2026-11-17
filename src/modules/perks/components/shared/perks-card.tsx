@@ -2,7 +2,7 @@ import { ChevronRight, Gift } from "lucide-react";
 
 import { PERKS_PAGE } from "../../contract";
 
-// On Today while Perks is on and a marketplace is saved: Founderhall's `.perks-card`, one sheet that links to Perks.
+// On Today while Perks is on and a marketplace is saved: Commonhall's `.perks-card`, one sheet that links to Perks.
 // A full page load (a plain link), so /perks's own Content-Security-Policy header applies.
 export function PerksCard({ communityName }: { communityName: string }) {
   return (

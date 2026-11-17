@@ -26,7 +26,7 @@ function OpenAskRow({ openAsk, firstName }: { openAsk: NonNullable<Connector["op
   );
 }
 
-// The one-step ask page for this connector and person (Founderhall's "Ask Marcus for an intro"), back to here after.
+// The one-step ask page for this connector and person (Commonhall's "Ask Marcus for an intro"), back to here after.
 export function toConnectorAskHref({ targetSlug, connectorId, back }: { targetSlug: string; connectorId: string; back: string }) {
   return `${ROUTES.searchAsk}?${new URLSearchParams({ target: targetSlug, via: connectorId, back }).toString()}`;
 }

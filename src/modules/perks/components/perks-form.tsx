@@ -16,7 +16,7 @@ import { postRequest } from "@/platform/http/post-request";
 
 import { PERKS_API_ROUTES, PERKS_HELP_URL, PERKS_LIMITS, PERKS_NOT_SAVED_MESSAGE } from "../contract";
 
-// Founderhall's Admin › Perks form (lib/perks.mjs): the embed code, the saved address, "Show Perks to members", then
+// Commonhall's Admin › Perks form (lib/perks.mjs): the embed code, the saved address, "Show Perks to members", then
 // Save perks and, with a marketplace saved, Remove the marketplace. The page refreshes with a flash.
 const CODE_FIELD = "perksEmbedCode";
 const SHOWN_FIELD = "perksShown";
@@ -28,7 +28,7 @@ export function PerksForm({ savedUrl, isShown }: { savedUrl: string | null; isSh
   const [isOn, setIsOn] = useState(savedUrl === null || isShown);
   const formRef = useRef<HTMLFormElement>(null);
   const onSaved = () => {
-    // Founderhall empties the box after a save: the saved address shows below it instead.
+    // Commonhall empties the box after a save: the saved address shows below it instead.
     formRef.current?.reset();
     flash("Settings saved.");
     router.refresh();

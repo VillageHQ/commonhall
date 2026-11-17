@@ -2,7 +2,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "cn";
 import type { ComponentProps } from "react";
 
-// Founderhall's tag (design-system.md §3.3): 24 px, radius 5, Vellum, 13 px. Tones carry the pills' tints.
+// Commonhall's tag (design-system.md §3.3): 24 px, radius 5, Vellum, 13 px. Tones carry the pills' tints.
 const tagVariants = cva("fh-tag gap-1.5 [&_svg]:size-[14px] [&_svg]:shrink-0", {
   variants: {
     tone: {
@@ -25,7 +25,7 @@ export function Tags({ className, ...props }: ComponentProps<"div">) {
   return <div data-slot="tags" className={cn("fh-tags", className)} {...props} />;
 }
 
-// The source badge on a profile line, in Founderhall's words: "you" (fund tint) or "from public profiles" (Vellum).
+// The source badge on a profile line, in Commonhall's words: "you" (fund tint) or "from public profiles" (Vellum).
 export function SourceBadge({ source }: { source: "you" | "village" }) {
   return <span className={cn("fh-src", source === "you" ? "fh-you" : "fh-village")}>{source === "you" ? "you" : "from public profiles"}</span>;
 }

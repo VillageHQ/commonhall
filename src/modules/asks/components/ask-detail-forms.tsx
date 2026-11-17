@@ -45,7 +45,7 @@ function ErrorNote({ children }: { children: ReactNode }) {
   );
 }
 
-// "Your answer" + Send under the answers (Founderhall's reply box, static).
+// "Your answer" + Send under the answers (Commonhall's reply box, static).
 export function AnswerForm({ askId }: { askId: string }) {
   const { error, isPending, run } = useAction();
   function submit(event: FormEvent<HTMLFormElement>) {
@@ -120,7 +120,7 @@ export function HelpForm({ askId, authorFirstName, defaultPerson }: { askId: str
           </label>
           <Textarea id="h-note" name="note" rows={3} maxLength={ASK_LIMITS.answerLength} style={{ minHeight: 84 }} placeholder="How you know them, or what worked for you" />
         </div>
-        {/* 18 px, as on Founderhall: its textarea is inline-block and leaves a 6 px line gap under it; ours is block. */}
+        {/* 18 px, as on Commonhall: its textarea is inline-block and leaves a 6 px line gap under it; ours is block. */}
         <div className="fh-btn-row" style={{ marginTop: 18 }}>
           <Button type="submit" disabled={isPending}>
             Offer help
@@ -133,7 +133,7 @@ export function HelpForm({ askId, authorFirstName, defaultPerson }: { askId: str
 
 type StatusButtonsProps = { askId: string; isOwn: boolean; isAsk: boolean; isOpen: boolean; isAdmin: boolean; isPinned: boolean };
 
-// Founderhall's owner and admin buttons under the ask: Mark answered / Reopen; Pin, Close, Remove for an admin.
+// Commonhall's owner and admin buttons under the ask: Mark answered / Reopen; Pin, Close, Remove for an admin.
 export function StatusButtons({ askId, isOwn, isAsk, isOpen, isAdmin, isPinned }: StatusButtonsProps) {
   const { error, isPending, run } = useAction();
   function act(action: AskStatusAction) {
@@ -187,7 +187,7 @@ export function StatusButtons({ askId, isOwn, isAsk, isOpen, isAdmin, isPinned }
   );
 }
 
-// "Ask Marcus for an intro": the note opens in place (Founderhall has no dialogs), and the ask goes to Marcus as an
+// "Ask Marcus for an intro": the note opens in place (Commonhall has no dialogs), and the ask goes to Marcus as an
 // intro ask, using one of this week's asks.
 type AskViaProps = { askId: string; helper: { id: string; firstName: string }; canAsk: boolean; targetName?: string | null };
 
@@ -238,7 +238,7 @@ export function AskViaButton({ askId, helper, canAsk, targetName = null }: AskVi
   );
 }
 
-// Community's report, kept as Founderhall's quiet link with the question in place (no menu, no dialog).
+// Community's report, kept as Commonhall's quiet link with the question in place (no menu, no dialog).
 export function ReportLink({ target, id, noun }: { target: "ask" | "answer"; id: string; noun: string }) {
   const router = useRouter();
   const [stage, setStage] = useState<"link" | "confirm" | "done">("link");

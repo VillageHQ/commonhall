@@ -2,7 +2,7 @@
 
 A member asks another for an intro. The connector says yes or no; on a yes, the person answers on a public page.
 Only then does one email join them. Later the asker is asked if it helped. Toggleable. Works without Village.
-Screens, words and emails are Founderhall's: read `.ai/features/fh-intros/NOTES.md` and
+Screens, words and emails are Commonhall's: read `.ai/features/fh-intros/NOTES.md` and
 `.ai/features/intros-no-village/NOTES.md` first. Intros never imports network; the shell joins them (`src/shell/intro-*`).
 
 - `contract.ts`: states, moves (`INTRO_TRANSITIONS`), limits, what an asker sees (`REQUESTER_STATES`), the
@@ -10,7 +10,7 @@ Screens, words and emails are Founderhall's: read `.ai/features/fh-intros/NOTES.
 - `service.ts`: create, move, consent links, email the person, record an outcome. `service-answers.ts`: the connector's
   one-step answer and answers through email links. `service-consent.ts`: the person's answer and "stop intro asks".
 - `reads*.ts`: boards, counts, details; `reads-links.ts` and `reads-consent.ts`: what `/i/<token>` shows.
-- `email-copy.ts`: every email's words (checked against Founderhall in `email-copy.test.ts`). `email.ts`: member emails
+- `email-copy.ts`: every email's words (checked against Commonhall in `email-copy.test.ts`). `email.ts`: member emails
   through the outbox, in the move's transaction. `email-target.ts`: the person's emails and the introduction.
 - `answer-links.ts`: email links that answer without signing in (hash only). `target-reminder.ts`,
   `quiet-intro-emails.ts`, `outcome-email.ts`: timed emails.

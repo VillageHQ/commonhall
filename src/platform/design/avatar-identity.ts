@@ -1,4 +1,4 @@
-// Founderhall's four avatar tints (t1–t4), picked by a hash of the member's id (its lib/html.mjs tint()).
+// Commonhall's four avatar tints (t1–t4), picked by a hash of the member's id (its lib/html.mjs tint()).
 const AVATAR_TINTS = ["t1", "t2", "t3", "t4"] as const;
 const MAXIMUM_INITIALS = 2;
 const HASH_MULTIPLIER = 31;

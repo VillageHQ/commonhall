@@ -1,6 +1,6 @@
 import { toPossessive } from "../../platform/text/day-month.ts";
 
-// Founderhall's Inbox words (copy/member-inbox-*.md, member-message-*.md), with the community's name.
+// Commonhall's Inbox words (copy/member-inbox-*.md, member-message-*.md), with the community's name.
 
 export function describeAdminLine(communityName: string) {
   return `${toPossessive(communityName)} admins can’t read messages in the portal.`;

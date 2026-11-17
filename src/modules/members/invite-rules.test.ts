@@ -73,7 +73,7 @@ describe("the invite email", () => {
     expect(text).toContain(FACTS.link);
   });
 
-  it("reads Founderhall's invite word for word, signed by the inviter and their role", () => {
+  it("reads Commonhall's invite word for word, signed by the inviter and their role", () => {
     const { text } = renderInviteEmail({ ...FACTS, communityName: "Northwind Founders", inviterName: "Maya Ortiz", inviterRole: "Head of Platform", inviteeName: "Nadia Cole" });
 
     expect(text).toBe(

@@ -1,6 +1,6 @@
 
 
-const README_URL = "https://github.com/VillageHQ/community";
+const README_URL = "https://github.com/VillageHQ/commonhall";
 
 export const UPDATE_GUIDE_URL = `${README_URL}#getting-updates`;
 export const HOST_SETTINGS_GUIDE_URL = `${README_URL}#changing-a-setting-on-your-host`;

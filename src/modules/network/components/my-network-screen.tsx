@@ -169,7 +169,7 @@ function SyncSheet({ status, connectedAtLabel, myProfileHref }: { status: Networ
 }
 
 // Community's own setting for a connected member: the LinkedIn profile Village matches. Stop sharing and Disconnect
-// live on My profile's My network sheet, as Founderhall's.
+// live on My profile's My network sheet, as Commonhall's.
 function NetworkSettings() {
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
@@ -253,7 +253,7 @@ function CurrentNetwork(props: MyNetworkScreenProps) {
   );
 }
 
-// Founderhall's My network (/me/network): before connecting, the three answers and the connect button; while syncing,
+// Commonhall's My network (/me/network): before connecting, the three answers and the connect button; while syncing,
 // the sync meter; after, "Your network is connected".
 // The status is read from the browser only: the server sends the loading state.
 export function MyNetworkScreen(props: MyNetworkScreenProps) {

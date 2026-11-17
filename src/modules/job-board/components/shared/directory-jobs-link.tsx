@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import { JOB_BOARD_PAGES } from "../../contract";
 
-// Founderhall's link to the board under the Directory's head (directoryJobsLink): how a phone reaches Jobs, which has
+// Commonhall's link to the board under the Directory's head (directoryJobsLink): how a phone reaches Jobs, which has
 // no tab. `openJobs`: the open jobs on the board, shown in brackets when there are any.
 export function DirectoryJobsLink({ openJobs }: { openJobs: number }) {
   return (

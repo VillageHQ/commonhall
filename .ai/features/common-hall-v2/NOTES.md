@@ -1,4 +1,4 @@
-# Common Hall landing page v2: how it works
+# Commonhall landing page v2: how it works
 
 Everything is in `site/assets/site.js` (plain script, no library) and `site.css`. The check is
 `.ai/features/one-site/reports/check-site.mjs` (320/390/1280 px, both themes, outside requests, console errors,
@@ -46,7 +46,7 @@ clone the repo, read `docs/self-host-vps.md` and run the install line; nothing i
 ## Real screens
 Six crops of the app's demo shots (`site/assets/screens/*-1280.webp`, 1016 by 640, and `*-390.webp`, 780 by 1100).
 The crops start below the demo banner and the app's own "Founder view" strip, and leave out the app's sidebar (its
-"Founder view" label and "Founderhall by Village" footer); nothing inside the content is edited. One screen per row, up
+"Founder view" label and "Commonhall by Village" footer); nothing inside the content is edited. One screen per row, up
 to 880 px wide (two per row came out at 550 px with about 8 px text). Phones (600 px and less) load the 390 crops.
 
 ## No JavaScript

@@ -32,8 +32,8 @@ export async function generateMetadata({ searchParams }: NewMessagePageProps): P
   return { title: target?.member.name ?? PAGE_TITLES.messages };
 }
 
-// Founderhall's "Message" button opens this page: an existing conversation opens in the Inbox; otherwise an empty thread
-// whose first Send starts it. A member who takes messages only after an intro gets Founderhall's explanation.
+// Commonhall's "Message" button opens this page: an existing conversation opens in the Inbox; otherwise an empty thread
+// whose first Send starts it. A member who takes messages only after an intro gets Commonhall's explanation.
 export default modulePage(messagesManifest, async function NewMessagePage({ searchParams }: NewMessagePageProps) {
   const [target, community] = await Promise.all([readTarget(searchParams), readBrandingForPage()]);
   if (!target) notFound();

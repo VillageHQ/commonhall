@@ -5,7 +5,7 @@ Core. Always on. It sits on top of the features it manages, so it may import the
 - `service-roster.ts`: roles, removal, unban, reclaim and reinvite. Every write takes the roster lock first.
 - `service-reports.ts`, `service-report-resolution.ts`: saving reports and working the queue.
 - `reads-*.ts`: the member list, audit log and community health.
-- Partner report (Founderhall's document): `reads-report-stats.ts` reads it once per period; `report-stats.ts` makes the page's numbers, the CSV and the email text; `service-partner-report.ts` sends it and marks it shared.
+- Partner report (Commonhall's document): `reads-report-stats.ts` reads it once per period; `report-stats.ts` makes the page's numbers, the CSV and the email text; `service-partner-report.ts` sends it and marks it shared.
 - Intro log: `reads-intro-log.ts`. Admins see who asked whom (the owner's decision), never the note or reason.
 - `schema.ts`: `content_report` and `member_removal`.
 - Set up › Mail: `reads-mail.ts` reads it once (also Settings' mail checklist), `mail-checks.ts` makes the checklist rows, `service-mail.ts` runs Check DNS now and saves the DNS settings, `components/mail-forms.tsx` holds the buttons and the form. The DNS lookups (`src/platform/email/dns-check.ts`) take the resolver as an argument, so tests never touch real DNS.

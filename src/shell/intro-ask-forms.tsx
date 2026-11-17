@@ -28,7 +28,7 @@ function toAskedHref(introId: string) {
   return `${ROUTES.intros}/${introId}?${ASKED_FLASH_PARAM}=${ASKED_FLASH_VALUE}`;
 }
 
-// "3 of 5 asks left this week", as pips, and the one rule under it (Founderhall's allowanceLine).
+// "3 of 5 asks left this week", as pips, and the one rule under it (Commonhall's allowanceLine).
 export function AllowanceLine({ allowance }: { allowance: AskAllowanceView }) {
   const text = `${allowance.left} of ${allowance.cap} asks left this week`;
   return (
@@ -92,7 +92,7 @@ type OneStepAskProps = {
   blockedReason: string | null;
 };
 
-// The one-step ask from a search result: one note, the allowance in one line, one Send (Founderhall's oneStepAskPage).
+// The one-step ask from a search result: one note, the allowance in one line, one Send (Commonhall's oneStepAskPage).
 export function OneStepAskForm({ connectorName, connectorSlug, targetSlug, draftNote, cap, communityName, blockedReason }: OneStepAskProps) {
   const [note, setNote] = useState(draftNote);
   const ask = useAsk();
@@ -161,7 +161,7 @@ function TargetField({ id, label, placeholder, value, onChange, isRequired = fal
   );
 }
 
-// The forwardable note in three parts, shown as the email the member gets (Founderhall's askPage and the guided ask's
+// The forwardable note in three parts, shown as the email the member gets (Commonhall's askPage and the guided ask's
 // note step).
 export function NoteAskForm({ connector, viewerName, communityName, parts: initialParts, blockedReason, target, connectorSlug }: NoteAskProps) {
   const [parts, setParts] = useState(initialParts);
@@ -204,7 +204,7 @@ export function NoteAskForm({ connector, viewerName, communityName, parts: initi
               <div>
                 <b>{connector.name}</b>
                 <span>
-                  {/* No top nudge: Founderhall's logo sits on the line by its own -3px, so the card stays 2 px shorter. */}
+                  {/* No top nudge: Commonhall's logo sits on the line by its own -3px, so the card stays 2 px shorter. */}
                   <CompanyLogo url={connector.companyLogoUrl} className="fh-colog mt-0" />
                   {connector.about}
                 </span>

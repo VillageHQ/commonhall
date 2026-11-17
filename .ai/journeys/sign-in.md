@@ -2,7 +2,7 @@
 
 > Sources: `.ai/features/fh-public-signin/NOTES.md`, `src/app/signin/`, `src/app/auth/`, `src/app/api/sign-in-link/`.
 
-Who: any member, usually on a phone. The screens are Founderhall's (one card under the fund's mark).
+Who: any member, usually on a phone. The screens are Commonhall's (one card under the fund's mark).
 
 1. The member opens `/signin` (old `/sign-in` redirects) → "Sign in to <community>", "Email me a sign-in link"
    first; in the demo, "Try it as Maya (admin)" and "Try it as Sam (member)". A quiet "Sign in with a password"

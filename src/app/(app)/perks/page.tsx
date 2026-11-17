@@ -15,7 +15,7 @@ import { modulePage } from "@/platform/modules/module-page";
 
 export const metadata: Metadata = { title: PAGE_TITLES.perks };
 
-// Founderhall's Perks (copy/member-perks-on.md): the head, BuiltFirst's marketplace in its frame, one line under it.
+// Commonhall's Perks (copy/member-perks-on.md): the head, BuiltFirst's marketplace in its frame, one line under it.
 // This page has its own Content-Security-Policy (next.config.mjs): frames from BuiltFirst only.
 export default modulePage(perksManifest, async function PerksPage() {
   await requireMember();

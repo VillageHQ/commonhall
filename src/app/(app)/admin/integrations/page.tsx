@@ -21,7 +21,7 @@ import { WEEKDAYS } from "@/platform/weekly-email/schedule";
 import { readWeeklySchedule } from "@/platform/weekly-email/schedule-store";
 import { AdminSection } from "@/shell/admin-section";
 
-// Founderhall's Admin › Integrations (integrations/views.mjs): Slack and Discord on the left, what gets posted on the
+// Commonhall's Admin › Integrations (integrations/views.mjs): Slack and Discord on the left, what gets posted on the
 // right. Every post links back to the portal.
 export const metadata: Metadata = { title: PAGE_TITLES.adminIntegrations };
 

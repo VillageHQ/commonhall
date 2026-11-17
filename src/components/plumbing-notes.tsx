@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 
 import { Note } from "@/components/ui/note";
 
-// Founderhall's self-host box (selfHostBox, admin pages only): what runs with no key, what needs a Village plan, and
+// Commonhall's self-host box (selfHostBox, admin pages only): what runs with no key, what needs a Village plan, and
 // what the managed plan does in week 1. On Set up › Mail, and on Set up › Village without a key.
 export function SelfHostBox({ pricingUrl, id = "self-host" }: { pricingUrl: string; id?: string }) {
   return (
@@ -19,7 +19,7 @@ export function SelfHostBox({ pricingUrl, id = "self-host" }: { pricingUrl: stri
       </p>
       <p className="fh-small" style={{ marginTop: 10 }}>
         <CircleCheck aria-hidden="true" className="fh-i fh-xs inline-block align-[-3px]" strokeWidth={1.5} /> <b>Managed plan:</b> Village sets up the mail domain and lookups
-        for you in week 1. <a href={pricingUrl}>Full pricing on the Common Hall site</a>
+        for you in week 1. <a href={pricingUrl}>Full pricing on the Commonhall site</a>
       </p>
     </section>
   );

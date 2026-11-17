@@ -17,7 +17,7 @@ It may sit behind NAT or a load balancer (as on Fly.io), where visitors reach it
 Right now community.example.test points at 2001:db8::99. If that's where visitors reach this server, the record is right.
 Keep it instead of creating the one above, and run the command again with that address:
 
-  curl -fsSL https://raw.githubusercontent.com/VillageHQ/community/main/install.sh | sudo COMMUNITY_DOMAIN=community.example.test COMMUNITY_SERVER_IP=2001:db8::99 bash
+  curl -fsSL https://raw.githubusercontent.com/VillageHQ/commonhall/main/install.sh | sudo COMMUNITY_DOMAIN=community.example.test COMMUNITY_SERVER_IP=2001:db8::99 bash
 
 If not, change or delete the record that points at 2001:db8::99, and create the one above.
 On Cloudflare, set the record to "DNS only" (the grey cloud).
@@ -47,7 +47,7 @@ The build couldn't look up internet addresses (DNS). Check this server's DNS set
 The whole build is in /opt/community/install.log.
 
 Nothing is running yet. Your settings are saved, so the next run picks up from here.
-16:docker build --network host -f /source/deploy/vps/Dockerfile -t ghcr.io/villagehq/community:latest /source
+16:docker build --network host -f /source/deploy/vps/Dockerfile -t ghcr.io/villagehq/commonhall:latest /source
 
 ######## Item 1: the build is killed for memory
 The build failed. Its last lines:
@@ -71,7 +71,7 @@ The build failed. Its last lines:
   #12 building
   ERROR: failed to solve
 
-Run the same command again. If it fails the same way, send us those lines: https://github.com/VillageHQ/community/issues
+Run the same command again. If it fails the same way, send us those lines: https://github.com/VillageHQ/commonhall/issues
 The whole build is in /opt/community/install.log.
 Warning: The build failed, so we're keeping the version you have. Try again later.
 Downloaded the database and the web server.
@@ -119,7 +119,7 @@ What to do next:
 Backups: this server backs up your data every day and keeps the last 7.
 Those copies sit on the same disk as your data, so they're not enough if the server is lost.
 Copy one to your own computer regularly. The guide shows how:
-  https://github.com/VillageHQ/community/blob/main/docs/self-host-vps.md
+  https://github.com/VillageHQ/commonhall/blob/main/docs/self-host-vps.md
 
 To see all the commands: community
 

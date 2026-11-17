@@ -58,7 +58,7 @@ function StripWords({ sharingMemberCount, isConnected }: { sharingMemberCount: n
   );
 }
 
-// Founderhall's search (village/views.mjs searchPage): the question as the title, the field, In our network |
+// Commonhall's search (village/views.mjs searchPage): the question as the title, the field, In our network |
 // Everywhere, example searches, the strip line, then the results.
 export function SearchScreen(props: SearchScreenProps) {
   const { communityName, sharingMemberCount, isConnected, isVillageOn, defaultScope } = props;

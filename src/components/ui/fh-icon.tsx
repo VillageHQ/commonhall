@@ -1,6 +1,6 @@
 import { cn } from "cn";
 
-// Founderhall's own drawings (lib/html.mjs) for the icons whose current lucide versions draw differently: the people
+// Commonhall's own drawings (lib/html.mjs) for the icons whose current lucide versions draw differently: the people
 // icon before "Paths come from…", and the guided ask's need cards. Same stroke and size as the other icons (`fh-i`).
 const PATHS = {
   users: (

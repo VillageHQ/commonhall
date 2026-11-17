@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = { title: "Parts", robots: { index: false, follow: false } };
 
-// Founderhall's crops of each part, kept with the build that matched them.
+// Commonhall's crops of each part, kept with the build that matched them.
 const CROPS_DIRECTORY = resolve(process.cwd(), ".ai/features/fh-foundation/crops");
 
 function readCrops() {
@@ -35,7 +35,7 @@ function readCrops() {
   }
 }
 
-// The parts review page: every shared part beside Founderhall's crop of it. A test page, off unless
+// The parts review page: every shared part beside Commonhall's crop of it. A test page, off unless
 // SHOW_PARTS_PAGE=true, so a real community never serves it.
 export default modulePage(PLATFORM_MANIFEST, async function PartsPage() {
   if (process.env.SHOW_PARTS_PAGE !== "true") notFound();

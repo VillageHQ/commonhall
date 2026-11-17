@@ -4,15 +4,15 @@ import { renderSignInLinkEmail } from "./sign-in-link-email";
 
 const LINK = "https://community.example/auth?token=abc";
 
-// Founderhall's email, word for word (fh-reference copy/emails/email-signin-link.md).
+// Commonhall's email, word for word (fh-reference copy/emails/email-signin-link.md).
 describe("the sign-in link email", () => {
   const email = renderSignInLinkEmail({ link: LINK, communityName: "Northwind Founders" });
 
-  it("has Founderhall's subject", () => {
+  it("has Commonhall's subject", () => {
     expect(email.subject).toBe("Your sign-in link for Northwind Founders");
   });
 
-  it("has Founderhall's plain-text body", () => {
+  it("has Commonhall's plain-text body", () => {
     expect(email.text).toBe(
       [
         "Hi,",

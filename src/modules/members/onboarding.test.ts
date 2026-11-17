@@ -22,7 +22,7 @@ const ABOUT = { name: "Nadia Cole", workingOn: "Payroll software for small clini
 
 type Member = Awaited<ReturnType<typeof createSignedInMember>>;
 
-// Founderhall's two welcome steps: step 1 (the card), step 2 (privacy), then done. No network step.
+// Commonhall's two welcome steps: step 1 (the card), step 2 (privacy), then done. No network step.
 describe("onboarding", () => {
   const database = createTestDatabase();
   let member: Member;
@@ -82,7 +82,7 @@ describe("onboarding", () => {
       expect(await readStep()).toBe(ONBOARDING_STEPS.introAsks);
     });
 
-    it("asks for the name first, in Founderhall's words", async () => {
+    it("asks for the name first, in Commonhall's words", async () => {
       const response = await post(postWelcome, { ...ABOUT, name: "  " });
 
       expect(response.status).toBe(UNPROCESSABLE_STATUS);

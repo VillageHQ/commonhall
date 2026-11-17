@@ -43,7 +43,7 @@ async function postImport(file: File, { invite, basis, termsDate }: { invite: bo
   return { errors: { form: message } satisfies Errors };
 }
 
-// Founderhall's import result (views-admin.mjs importPage): the counts, what happens next, the first people, and
+// Commonhall's import result (views-admin.mjs importPage): the counts, what happens next, the first people, and
 // every line that was not imported.
 function ImportResultSheet({ result }: { result: ImportResult }) {
   const more = result.importedCount - result.imported.length;

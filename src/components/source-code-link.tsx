@@ -3,9 +3,9 @@ import { cn } from "cn";
 // The AGPL asks a network service to offer its source to the people who use it.
 // A copy with changes should point NEXT_PUBLIC_SOURCE_CODE_URL at its own source.
 export const SOURCE_CODE_URL =
-  process.env.NEXT_PUBLIC_SOURCE_CODE_URL || "https://github.com/VillageHQ/community";
+  process.env.NEXT_PUBLIC_SOURCE_CODE_URL || "https://github.com/VillageHQ/commonhall";
 
-export const PRODUCT_CREDIT = "Common Hall by Village";
+export const PRODUCT_CREDIT = "Commonhall by Village";
 
 export function SourceCodeLink() {
   return (
@@ -27,7 +27,7 @@ function ProductMark() {
   );
 }
 
-// Founderhall's footers (crops footer-credit-admin.png, footer-phone.png). Member pages carry only the source link
+// Commonhall's footers (crops footer-credit-admin.png, footer-phone.png). Member pages carry only the source link
 // the AGPL asks for; admin pages and the sign-in page carry the product credit. The community leads everywhere else.
 export function SourceLine({ className }: { className?: string }) {
   return (

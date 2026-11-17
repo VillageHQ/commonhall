@@ -6,7 +6,7 @@ import { describeSchedule, weeklyScheduleSchema } from "@/platform/weekly-email/
 import { saveWeeklySchedule } from "@/platform/weekly-email/schedule-store";
 import { saveWeeklyEmailEnabled } from "@/shell/weekly-email-settings";
 
-// The schedule and Founderhall's "Send the weekly digest" switch, saved together (Asks & digest).
+// The schedule and Commonhall's "Send the weekly digest" switch, saved together (Asks & digest).
 const bodySchema = weeklyScheduleSchema.extend({ isEnabled: z.boolean().default(true) });
 
 export const POST = adminRoutes.member(

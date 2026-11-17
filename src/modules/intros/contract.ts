@@ -5,11 +5,11 @@ import { CONNECTOR_ERROR_CODES, CONNECTOR_LIMITS } from "../../platform/village/
 import { feedTextSchema } from "../../platform/text/text-schema.ts";
 import { removeBidiControls, removeNullBytes } from "../../platform/text/safe-text.ts";
 
-// Each step (the connector, then the person asked) has 7 days, as on Founderhall.
+// Each step (the connector, then the person asked) has 7 days, as on Commonhall.
 export const INTRO_LIFETIME_DAYS = 7;
 export const TARGET_ANSWER_MINIMUM_DAYS = 7;
 export const OUTCOME_PROMPT_AFTER_DAYS = 14;
-// Founderhall: the outcome question 14 days after the intro, one reminder 14 days after that.
+// Commonhall: the outcome question 14 days after the intro, one reminder 14 days after that.
 export const OUTCOME_REMINDER_AFTER_DAYS = 14;
 // The one reminder to the person asked, this many days after the app last emailed them.
 export const TARGET_REMINDER_AFTER_DAYS = 4;
@@ -21,12 +21,12 @@ export const EXPIRY_EMAIL_WINDOW_DAYS = 2;
 export const OUTCOME_PROMPT_WINDOW_DAYS = 45;
 export const CONSENT_TOKEN_MAXIMUM_LENGTH = 128;
 
-// PENDING THE OWNER'S DECISION. Founderhall shows the asker who said no ("Marcus said yes and asked Rosa", "Rosa can't
+// PENDING THE OWNER'S DECISION. Commonhall shows the asker who said no ("Marcus said yes and asked Rosa", "Rosa can't
 // take this one"); Community never lets the asker tell the connector's no from the person's no. false keeps
 // Community's rule: the asker sees the connector's step until the end, and every no reads as the connector's.
 export const REQUESTER_SEES_WHO_ANSWERED = false;
 
-// The connector's three answers, as Founderhall words them and as its email links carry them (`?a=yes`).
+// The connector's three answers, as Commonhall words them and as its email links carry them (`?a=yes`).
 export const CONNECTOR_CHOICES = { yes: "yes", notNow: "not_now", dontKnow: "dont_know" } as const;
 
 export type ConnectorChoice = (typeof CONNECTOR_CHOICES)[keyof typeof CONNECTOR_CHOICES];
@@ -244,7 +244,7 @@ const optionalEmailSchema = z
   .transform((value) => value || null)
   .pipe(z.email("Enter an email address, like clara@example.com.").toLowerCase().max(INTRO_LIMITS.emailLength).nullable());
 
-// Only the name is needed (Founderhall's "Who should Ada introduce you to?": Name, Role, Company).
+// Only the name is needed (Commonhall's "Who should Ada introduce you to?": Name, Role, Company).
 function optionalPersonTextSchema(label: string, maximumLength: number) {
   return z
     .string()

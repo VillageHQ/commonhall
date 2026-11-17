@@ -3,7 +3,7 @@
 import { Switch as SwitchPrimitive } from "radix-ui";
 import type { ComponentProps } from "react";
 
-// Founderhall's switch (crop switch.png): 44×26, off #B5B4AD, on the fund colour, a 20 px Leaf knob.
+// Commonhall's switch (crop switch.png): 44×26, off #B5B4AD, on the fund colour, a 20 px Leaf knob.
 // A dialog trigger overwrites data-state on its child, so the track follows aria-checked, which only the switch sets.
 type SwitchProps = ComponentProps<typeof SwitchPrimitive.Root> & { size?: "default" | "large" };
 

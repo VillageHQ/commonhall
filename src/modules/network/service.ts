@@ -558,7 +558,7 @@ export async function searchMemberNetwork(
   const { database, member } = context;
   const { searchScope } = await readVillageSearchSettings(database);
   const scope = readSearchWhere(where, searchScope);
-  // Without Village, search finds members by their profiles only (Founderhall's "no key" search).
+  // Without Village, search finds members by their profiles only (Commonhall's "no key" search).
   if (!(await readVillageKeys(database))) {
     return {
       query: prompt,

@@ -4,7 +4,7 @@ import { PROFILE_LIMITS } from "../modules/members/contract-profile.ts";
 import { MAXIMUM_NAME_LENGTH } from "../platform/auth/member-name.ts";
 import { removeBidiControls, removeNullBytes } from "../platform/text/safe-text.ts";
 
-// Founderhall's two welcome steps (views-member.mjs welcomePage): step 1 "Welcome to …" (who you are), step 2 "Your
+// Commonhall's two welcome steps (views-member.mjs welcomePage): step 1 "Welcome to …" (who you are), step 2 "Your
 // privacy". Shared by the pages, their forms and the two routes under /api/onboarding.
 export const WELCOME_ERRORS = {
   name: "Add your name, so members know who you are.",
@@ -65,7 +65,7 @@ export const WELCOME_DONE_FLASH = "You’re in. This is the directory.";
 type PrivacyChoices = { isHidden: boolean; acceptsIntroAsks: boolean | null };
 type LookupChoice = { consentedAt: Date | null };
 
-// Where step 2's switches start. Intro asks start on, as Founderhall's do. The profile fill-in is consent to a lookup,
+// Where step 2's switches start. Intro asks start on, as Commonhall's do. The profile fill-in is consent to a lookup,
 // so it starts off: only the member's own yes turns it on (ONB-02, PRIV-05).
 export function readWelcomePrivacyStart(privacy: PrivacyChoices, lookup: LookupChoice) {
   return { isHidden: privacy.isHidden, acceptsIntroAsks: privacy.acceptsIntroAsks !== false, allowsLookup: lookup.consentedAt !== null };

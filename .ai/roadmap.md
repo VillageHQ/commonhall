@@ -1,12 +1,12 @@
 # Roadmap: the merged fund community app
 
 > ⚠ RECONSTRUCTED from code on 2026-11-10 — needs confirmation
-> Sources: the merge plan the owner approved, the Founderhall feature inventory (161 features), `git log`, open pull
+> Sources: the merge plan the owner approved, the Commonhall feature inventory (161 features), `git log`, open pull
 > requests, `.ai/features/*/CHARTER.md`, and a check of each feature against the code on main (spot-checked by hand).
 
 ## How items are ranked
 Current priorities (most important first):
-1. Finish the merge: every Founderhall feature is done, or dropped on purpose (the parity map below).
+1. Finish the merge: every Commonhall feature is done, or dropped on purpose (the parity map below).
 2. Fix what the merge builds left behind (the known follow-ups).
 
 Each open item gets these yes/no checks; code adds the points (change a number to change the rule):
@@ -22,42 +22,42 @@ Each open item gets these yes/no checks; code adds the points (change a number t
 - order: waiting on an unfinished item = hidden · each open item waiting on it = +1, at most +2 · touching the files of an open pull request = ranked after it
 
 ## Now (in flight)
-- [ ] Founderhall transplant, area 3, intros: Founderhall's Your intros, tracker, one-step connector answer, public answer links for the connector, the person and the outcome, the opt-out page and every intro email word for word — fh-intros — open pull request — [spec](features/fh-intros/SPEC.md)
-- [ ] Founderhall transplant, foundation: Founderhall's look, shared parts and shell (menus, console, phone bars, footers, flash) on every Community screen, and a parts review page — fh-foundation — open pull request — [spec](features/fh-foundation/SPEC.md)
-- [ ] Founderhall transplant, Search and asking for an intro: Founderhall's Search (/search), the intro ask as a page (from a search result and from a profile), the guided ask (/ask), My network (/me/network) and the connector's email, on Community's engine — fh-search-ask — open pull request, [PR #52](https://github.com/VillageHQ/community/pull/52) — [spec](features/fh-search-ask/SPEC.md)
-- [ ] Founderhall transplant, Set up and the plumbing pages: Founderhall's Set up, Settings, Mail, Village, Import members, Sign-in links, Integrations, Perks and Audit log on Community's engine — fh-setup-plumbing — open pull request — [spec](features/fh-setup-plumbing/SPEC.md)
-- [ ] Founderhall transplant, area 6: the console's Home, Partner report, Intro log, Members, Invites, Asks & digest and Job board as Founderhall's, admins see who asked whom — fh-console — open pull request — [spec](features/fh-console/SPEC.md)
-- [ ] Founderhall transplant, dark mode: a dark version of Founderhall's look (owner's pick), token layer only, every pair WCAG AA — fh-dark — open pull request — [spec](features/fh-dark/SPEC.md)
-- [ ] Founderhall transplant, area 8: sign-in by emailed link first, one-button invites, the two welcome steps and every public page in Founderhall's card — fh-public-signin — open pull request — [spec](features/fh-public-signin/SPEC.md)
-- [ ] Founderhall transplant, area 4: Directory, a member's profile, My profile (edit one field at a time), Your data and Email settings on Founderhall's screens and paths, with past roles, the community's default for messages and the real "Delete my account" — fh-directory-profile — open pull request — [spec](features/fh-directory-profile/SPEC.md)
-- [ ] Founderhall transplant, area 5: Inbox, Jobs and Perks on Founderhall's screens, addresses and email words — fh-inbox-jobs-perks — open pull request — [spec](features/fh-inbox-jobs-perks/SPEC.md)
-- [ ] Founderhall transplant, area 1: Today and Asks & updates in Founderhall's screens, a page for each ask, Is this right?, Founderhall's emails — fh-today-asks — open pull request — [spec](features/fh-today-asks/SPEC.md)
+- [ ] Commonhall transplant, area 3, intros: Commonhall's Your intros, tracker, one-step connector answer, public answer links for the connector, the person and the outcome, the opt-out page and every intro email word for word — fh-intros — open pull request — [spec](features/fh-intros/SPEC.md)
+- [ ] Commonhall transplant, foundation: Commonhall's look, shared parts and shell (menus, console, phone bars, footers, flash) on every Community screen, and a parts review page — fh-foundation — open pull request — [spec](features/fh-foundation/SPEC.md)
+- [ ] Commonhall transplant, Search and asking for an intro: Commonhall's Search (/search), the intro ask as a page (from a search result and from a profile), the guided ask (/ask), My network (/me/network) and the connector's email, on Community's engine — fh-search-ask — open pull request, [PR #52](https://github.com/VillageHQ/commonhall/pull/52) — [spec](features/fh-search-ask/SPEC.md)
+- [ ] Commonhall transplant, Set up and the plumbing pages: Commonhall's Set up, Settings, Mail, Village, Import members, Sign-in links, Integrations, Perks and Audit log on Community's engine — fh-setup-plumbing — open pull request — [spec](features/fh-setup-plumbing/SPEC.md)
+- [ ] Commonhall transplant, area 6: the console's Home, Partner report, Intro log, Members, Invites, Asks & digest and Job board as Commonhall's, admins see who asked whom — fh-console — open pull request — [spec](features/fh-console/SPEC.md)
+- [ ] Commonhall transplant, dark mode: a dark version of Commonhall's look (owner's pick), token layer only, every pair WCAG AA — fh-dark — open pull request — [spec](features/fh-dark/SPEC.md)
+- [ ] Commonhall transplant, area 8: sign-in by emailed link first, one-button invites, the two welcome steps and every public page in Commonhall's card — fh-public-signin — open pull request — [spec](features/fh-public-signin/SPEC.md)
+- [ ] Commonhall transplant, area 4: Directory, a member's profile, My profile (edit one field at a time), Your data and Email settings on Commonhall's screens and paths, with past roles, the community's default for messages and the real "Delete my account" — fh-directory-profile — open pull request — [spec](features/fh-directory-profile/SPEC.md)
+- [ ] Commonhall transplant, area 5: Inbox, Jobs and Perks on Commonhall's screens, addresses and email words — fh-inbox-jobs-perks — open pull request — [spec](features/fh-inbox-jobs-perks/SPEC.md)
+- [ ] Commonhall transplant, area 1: Today and Asks & updates in Commonhall's screens, a page for each ask, Is this right?, Commonhall's emails — fh-today-asks — open pull request — [spec](features/fh-today-asks/SPEC.md)
 - [ ] Fix build after the parity audit: the feed opens from the menu and starts on, RIGHT / HIDE / FIX in the weekly email, the link page says what was done, "Hiring" on a founder's card, prices and a sign-up form on the website — fix-feed-digest-site — open pull request — [spec](features/fix-feed-digest-site/SPEC.md)
-- [ ] Founderhall transplant, follow-up after the owner's review: the emailed invite link confirms the address, the job board starts on, and round 4's small gaps — fh-followup — open pull request — [spec](features/fh-followup/SPEC.md)
-- [ ] Founderhall transplant, round 4: the whole app checked beside Founderhall at both widths, the fix pass and the owner's review pairs — fh-final-pass — open pull request — [spec](features/fh-final-pass/SPEC.md)
+- [ ] Commonhall transplant, follow-up after the owner's review: the emailed invite link confirms the address, the job board starts on, and round 4's small gaps — fh-followup — open pull request — [spec](features/fh-followup/SPEC.md)
+- [ ] Commonhall transplant, round 4: the whole app checked beside Commonhall at both widths, the fix pass and the owner's review pairs — fh-final-pass — open pull request — [spec](features/fh-final-pass/SPEC.md)
 - [ ] A Village check through Village's own API (keys, group, each member), the member's own status on Meet, a sent-email list with the do-not-send list, and no Vercel button on the website for now — village-check — open pull request — [spec](features/village-check/SPEC.md)
 - [ ] The small known bugs: sign-in keeps the typed email, switched-off pages answer 404, Today's "Check your card", Perks from the menu, Slack /ask follow-up, hyphenated words in matching, cohort on a single invite, long fund names on phones — fix-small — open pull request — [charter](features/fix-small/CHARTER.md)
-- [x] Intro fixes from the final check: empty "no" note, the yes on a forwarded link, reminders for quiet intros, a connector who said no, the "no thanks" page — fix-intros — merged, [PR #27](https://github.com/VillageHQ/community/pull/27)
-- [x] Running-the-app fixes from the final check: timed jobs on every host, a Village-down notice, one job source per careers link — fix-ops — merged, [PR #29](https://github.com/VillageHQ/community/pull/29) · [spec](features/fix-ops/SPEC.md)
-- [ ] An admin home that leads with this quarter's intros, then what needs the admin — admin-home — open pull request, [PR #32](https://github.com/VillageHQ/community/pull/32) — [spec](features/admin-home/SPEC.md)
-- [ ] A new admin lands on setup until it is done; the stuck-intros line says it counts older asks — admin-firstrun — open pull request, [PR #33](https://github.com/VillageHQ/community/pull/33) — [spec](features/admin-firstrun/SPEC.md)
+- [x] Intro fixes from the final check: empty "no" note, the yes on a forwarded link, reminders for quiet intros, a connector who said no, the "no thanks" page — fix-intros — merged, [PR #27](https://github.com/VillageHQ/commonhall/pull/27)
+- [x] Running-the-app fixes from the final check: timed jobs on every host, a Village-down notice, one job source per careers link — fix-ops — merged, [PR #29](https://github.com/VillageHQ/commonhall/pull/29) · [spec](features/fix-ops/SPEC.md)
+- [ ] An admin home that leads with this quarter's intros, then what needs the admin — admin-home — open pull request, [PR #32](https://github.com/VillageHQ/commonhall/pull/32) — [spec](features/admin-home/SPEC.md)
+- [ ] A new admin lands on setup until it is done; the stuck-intros line says it counts older asks — admin-firstrun — open pull request, [PR #33](https://github.com/VillageHQ/commonhall/pull/33) — [spec](features/admin-firstrun/SPEC.md)
 - [ ] Parity fixes, accounts and privacy: a forwarded invite tells its owner, fill-in consent starts off, paused connectors leave search, expired invites listed, intro email switches, no sign-in lockout by strangers — fix-accounts-privacy — open pull request — [spec](features/fix-accounts-privacy/SPEC.md)
 
 - [ ] Parity fixes: credit in partner reports, no-answer counts, Village alerts and credit view, a member answering as the person asked for, asking word helpers, faces — fix-intros-reports — open pull request — [spec](features/fix-intros-reports/SPEC.md)
-- [ ] Fixes from the Fly host test: HSTS on https, no overlapping queries in timed jobs, Deploy on Fly.io and a warning without CLIENT_IP_HEADER, revoked invites listed with Resend — fix-host-findings — open pull request, [PR #58](https://github.com/VillageHQ/community/pull/58) — [spec](features/fix-host-findings/SPEC.md)
-- [ ] Fix build, the small leftovers: cohort on Admin › Invites, Hiring follows who linked the jobs, one feed note and a Feed tab, intro page words and dates, "revoked" wording, the website plan above 2,000 members — fix-cleanup — open pull request, [PR #59](https://github.com/VillageHQ/community/pull/59) — [spec](features/fix-cleanup/SPEC.md)
+- [ ] Fixes from the Fly host test: HSTS on https, no overlapping queries in timed jobs, Deploy on Fly.io and a warning without CLIENT_IP_HEADER, revoked invites listed with Resend — fix-host-findings — open pull request, [PR #58](https://github.com/VillageHQ/commonhall/pull/58) — [spec](features/fix-host-findings/SPEC.md)
+- [ ] Fix build, the small leftovers: cohort on Admin › Invites, Hiring follows who linked the jobs, one feed note and a Feed tab, intro page words and dates, "revoked" wording, the website plan above 2,000 members — fix-cleanup — open pull request, [PR #59](https://github.com/VillageHQ/commonhall/pull/59) — [spec](features/fix-cleanup/SPEC.md)
 - [ ] Fix build: no server error on My network, and the README says the Sync network button needs the LinkedIn link first — fix-network-page — open pull request — [spec](features/fix-network-page/SPEC.md)
 - [ ] Installer fixes from the real-machine test: the real cause of a failed build, a safe memory step, the setup token until setup is done, DNS advice behind NAT and several server addresses, a working resolver for the build, a plain warning before a long build — fix-installer — open pull request — [spec](features/fix-installer/SPEC.md)
-- [ ] Asks board tabs (Open, Mine, Answered, Closed), search over every ask and answer, admin pin, reopen, and an Admin › Asks page — asks-tools — open pull request, [PR #39](https://github.com/VillageHQ/community/pull/39) — [charter](features/asks-tools/CHARTER.md) · [spec](features/asks-board-tools/SPEC.md)
+- [ ] Asks board tabs (Open, Mine, Answered, Closed), search over every ask and answer, admin pin, reopen, and an Admin › Asks page — asks-tools — open pull request, [PR #39](https://github.com/VillageHQ/commonhall/pull/39) — [charter](features/asks-tools/CHARTER.md) · [spec](features/asks-board-tools/SPEC.md)
 
 - [ ] Landing page v2: paper and ink, light and dark, blueprint hero with real faces, comparison and pricing — common-hall-v2 — open pull request — [spec](features/common-hall-v2/SPEC.md)
 - [ ] Landing page round 3: the ten rooms back as section 2, five screens on tabs that advance as the page scrolls, the comparison as title cards, fewer words — landing-v3 — open pull request — [notes](features/landing-v3/NOTES.md)
-- [ ] The app on the landing page's look: paper white and black, Newsreader headlines, the door-gap icon, the name Common Hall — app-kit — open pull request — [spec](features/app-kit/SPEC.md)
-- [x] (superseded by v2) The landing page becomes Common Hall by Village: the blueprint drawing set (design v15), founders walking between rooms, Schedule call and GitHub, the sign-up form kept — common-hall-site — open pull request — [spec](features/common-hall-site/SPEC.md)
+- [ ] The app on the landing page's look: paper white and black, Newsreader headlines, the door-gap icon, the name Commonhall — app-kit — open pull request — [spec](features/app-kit/SPEC.md)
+- [x] (superseded by v2) The landing page becomes Commonhall by Village: the blueprint drawing set (design v15), founders walking between rooms, Schedule call and GitHub, the sign-up form kept — common-hall-site — open pull request — [spec](features/common-hall-site/SPEC.md)
 
 ## Next (queued)
 - [ ] RIGHT / HIDE / FIX for filled-in lines in the weekly email, and a jobs card on Today (Today's "Check your card" now fills: fix-small) — parity — [spec](features/profile-confirm-lines/SPEC.md)
-- [ ] Intros from a profile without Village, and "Who <name> can introduce you to" — intros-no-village — open pull request, [PR #40](https://github.com/VillageHQ/community/pull/40) — [charter](features/intros-no-village/CHARTER.md) · [spec](features/intros-from-profile/SPEC.md)
+- [ ] Intros from a profile without Village, and "Who <name> can introduce you to" — intros-no-village — open pull request, [PR #40](https://github.com/VillageHQ/commonhall/pull/40) — [charter](features/intros-no-village/CHARTER.md) · [spec](features/intros-from-profile/SPEC.md)
 - [ ] The finer intro rules: the admin's outcome day, an event history (7 days per step and the connector on the joining email: fh-intros) — parity — [spec](features/intros-from-profile/SPEC.md)
 - [x] Reply by email for messages, intro threads and asks — parity — [spec](features/reply-by-email/SPEC.md)
 
@@ -82,7 +82,7 @@ Each open item gets these yes/no checks; code adds the points (change a number t
 - [ ] Invites when email is off: mailto and "Copy all links" — parity — [spec](features/invite-fallbacks/SPEC.md)
 - [ ] Hosting and data settings: region and data-protection contact (built; the agreement link is still open) — parity — [spec](features/hosting-data-settings/SPEC.md)
 - [ ] Managed-plan sign-up on the website — parity — [spec](features/site-signup/SPEC.md)
-- [ ] Rename the product to Common Hall across the app, README and docs (the landing page already says it)
+- [x] 2026-11-17 — Rename the product and the repository to Commonhall (VillageHQ/commonhall, package, image, app, landing page, docs, memory) — commonhall-rename
 - [ ] Landing page: named customers and references once there are real ones
 - [ ] SOC 2 and SSO (then the landing page may say so)
 - [ ] Import tools: Hivebrite, Affinity, Slack
@@ -93,33 +93,33 @@ Each open item gets these yes/no checks; code adds the points (change a number t
 ## Done
 - [x] 2026-11-11 — Jobs on member cards, profiles, the directory (Hiring chip and filter) and Today — [spec](features/jobs-on-cards/SPEC.md)
 - [x] 2026-11-10 — The demo shows the job board and perks, with made-up jobs and deals — [spec](features/demo-jobs-perks/SPEC.md)
-- [x] 2026-11-10 — The merged look: serif headings, flat sheets, fund name only, one way to ask — [PR #26](https://github.com/VillageHQ/community/pull/26) · [spec](features/look-theme/SPEC.md)
-- [x] 2026-11-10 — Demo mode for sales: a made-up community, one-click demo sign-in, nightly reset — [PR #25](https://github.com/VillageHQ/community/pull/25) · [spec](features/demo-mode/SPEC.md)
-- [x] 2026-11-10 — Project notes: vision, personas, journeys, this roadmap and the parity map — [PR #24](https://github.com/VillageHQ/community/pull/24) · [spec](features/project-notes/SPEC.md)
-- [x] 2026-11-10 — One marketing website, "Founderhall by Village", in `site/` — [PR #23](https://github.com/VillageHQ/community/pull/23)
-- [x] 2026-11-10 — Two preview bugs: helpers emailed but missing from Today, and matching on common words — [PR #22](https://github.com/VillageHQ/community/pull/22)
-- [x] 2026-11-10 — The Your data page: export, real delete, privacy switches, the required "accept intro asks" question — [PR #20](https://github.com/VillageHQ/community/pull/20)
-- [x] 2026-11-10 — Directory filters, intro reminder, email setup check, Village settings and four follow-ups — [PR #19](https://github.com/VillageHQ/community/pull/19)
-- [x] 2026-11-10 — Job board: hiring tools, hourly pull, public board and website widget — [PR #21](https://github.com/VillageHQ/community/pull/21)
-- [x] 2026-11-10 — Slack and Discord posts, Slack /ask, Perks — [PR #18](https://github.com/VillageHQ/community/pull/18)
-- [x] 2026-11-09 — Today home and the weekly email — [PR #17](https://github.com/VillageHQ/community/pull/17)
-- [x] 2026-11-09 — Profile fill-in, monthly credit cap, asks from empty searches — [PR #16](https://github.com/VillageHQ/community/pull/16)
-- [x] 2026-11-09 — Asks that reach the members who can help — [PR #15](https://github.com/VillageHQ/community/pull/15)
-- [x] 2026-11-09 — Partner report — [PR #14](https://github.com/VillageHQ/community/pull/14)
-- [x] 2026-11-09 — Reliable email and safe timed jobs — [PR #13](https://github.com/VillageHQ/community/pull/13)
-- [x] 2026-11-09 — Sign in by emailed link, invites from a list or CSV — [PR #12](https://github.com/VillageHQ/community/pull/12)
-- [x] 2026-11-09 — Licence switched to AGPL-3.0 — [PR #11](https://github.com/VillageHQ/community/pull/11)
-- [x] 2026-11-09 — Double opt-in intros with outcomes — [PR #10](https://github.com/VillageHQ/community/pull/10)
+- [x] 2026-11-10 — The merged look: serif headings, flat sheets, fund name only, one way to ask — [PR #26](https://github.com/VillageHQ/commonhall/pull/26) · [spec](features/look-theme/SPEC.md)
+- [x] 2026-11-10 — Demo mode for sales: a made-up community, one-click demo sign-in, nightly reset — [PR #25](https://github.com/VillageHQ/commonhall/pull/25) · [spec](features/demo-mode/SPEC.md)
+- [x] 2026-11-10 — Project notes: vision, personas, journeys, this roadmap and the parity map — [PR #24](https://github.com/VillageHQ/commonhall/pull/24) · [spec](features/project-notes/SPEC.md)
+- [x] 2026-11-10 — One marketing website, "Commonhall by Village", in `site/` — [PR #23](https://github.com/VillageHQ/commonhall/pull/23)
+- [x] 2026-11-10 — Two preview bugs: helpers emailed but missing from Today, and matching on common words — [PR #22](https://github.com/VillageHQ/commonhall/pull/22)
+- [x] 2026-11-10 — The Your data page: export, real delete, privacy switches, the required "accept intro asks" question — [PR #20](https://github.com/VillageHQ/commonhall/pull/20)
+- [x] 2026-11-10 — Directory filters, intro reminder, email setup check, Village settings and four follow-ups — [PR #19](https://github.com/VillageHQ/commonhall/pull/19)
+- [x] 2026-11-10 — Job board: hiring tools, hourly pull, public board and website widget — [PR #21](https://github.com/VillageHQ/commonhall/pull/21)
+- [x] 2026-11-10 — Slack and Discord posts, Slack /ask, Perks — [PR #18](https://github.com/VillageHQ/commonhall/pull/18)
+- [x] 2026-11-09 — Today home and the weekly email — [PR #17](https://github.com/VillageHQ/commonhall/pull/17)
+- [x] 2026-11-09 — Profile fill-in, monthly credit cap, asks from empty searches — [PR #16](https://github.com/VillageHQ/commonhall/pull/16)
+- [x] 2026-11-09 — Asks that reach the members who can help — [PR #15](https://github.com/VillageHQ/commonhall/pull/15)
+- [x] 2026-11-09 — Partner report — [PR #14](https://github.com/VillageHQ/commonhall/pull/14)
+- [x] 2026-11-09 — Reliable email and safe timed jobs — [PR #13](https://github.com/VillageHQ/commonhall/pull/13)
+- [x] 2026-11-09 — Sign in by emailed link, invites from a list or CSV — [PR #12](https://github.com/VillageHQ/commonhall/pull/12)
+- [x] 2026-11-09 — Licence switched to AGPL-3.0 — [PR #11](https://github.com/VillageHQ/commonhall/pull/11)
+- [x] 2026-11-09 — Double opt-in intros with outcomes — [PR #10](https://github.com/VillageHQ/commonhall/pull/10)
 - [x] Before the merge — Village SDK, Asks board, sealed Village secret, module switches, VPS installer, architecture, landing page — PRs #1–#7, #9
 
-## Founderhall parity map
-Every Founderhall feature, once, in the order of the Founderhall inventory. **done** = on main (with what ships it;
+## Commonhall parity map
+Every Commonhall feature, once, in the order of the Commonhall inventory. **done** = on main (with what ships it;
 "Community" = Community had it before the merge) · **dropped** = not carried over on purpose (the merge plan's
 reason, or the owner's later brief where it says so) · **open** = not on main yet (with its spec or build). Checked against the code on main on 2026-11-10.
 
 ### Marketing site
-- **done** · One-page marketing site — `site/`, "Founderhall by Village" (PR #23), now "Common Hall by Village" ([common-hall-site](features/common-hall-site/SPEC.md))
-- **dropped** · Animated phone replay — GSAP is not open source (merge plan revision 8). Motion came back on the Common Hall page (2026-11-13) as the page's own script, no library — [common-hall-site](features/common-hall-site/SPEC.md)
+- **done** · One-page marketing site — `site/`, "Commonhall by Village" (PR #23), now "Commonhall by Village" ([common-hall-site](features/common-hall-site/SPEC.md))
+- **dropped** · Animated phone replay — GSAP is not open source (merge plan revision 8). Motion came back on the Commonhall page (2026-11-13) as the page's own script, no library — [common-hall-site](features/common-hall-site/SPEC.md)
 - **dropped** · Pricing table — the owner's one-site brief (no prices on the page) overrides the merge plan, which kept pricing
 - **open** · Sign-up form — [site-signup](features/site-signup/SPEC.md)
 - **open** · Confirmation email — [site-signup](features/site-signup/SPEC.md)
@@ -185,7 +185,7 @@ reason, or the owner's later brief where it says so) · **open** = not on main y
 - **open** · No key / no path fallbacks — "Ask the community" (PR #16); no member-profile search: [search-without-village](features/search-without-village/SPEC.md)
 - **done** · Credit ledger and caps — `src/platform/village/credit-ledger.ts`, 80% and 100% emails (PR #16, Community)
 - **done** · Nudge — `src/modules/network/service-nudge.ts`, once per 30 days (PR #16)
-- **dropped** · "Intros via Village" — dead Founderhall client code (merge plan)
+- **dropped** · "Intros via Village" — dead Commonhall client code (merge plan)
 
 ### Intros
 - **done** · Ask for an intro from a profile, with or without Village (intros-no-village)
@@ -214,7 +214,7 @@ reason, or the owner's later brief where it says so) · **open** = not on main y
 - **done** · Status — close with an outcome, renew, admin remove (PR #15); admin pin and reopen (asks-tools)
 - **done** · Admin › Asks & digest — schedule (PR #17); the Admin › Asks page with counts, waiting asks, pins, reports and the allowance (asks-tools)
 - **done** · Skip ("Not this week") — `/api/asks/skip` (PR #17)
-- **dropped** · Reactions, audiences, editing posts — Founderhall didn't have them; the feed has reactions and editing (Community)
+- **dropped** · Reactions, audiences, editing posts — Commonhall didn't have them; the feed has reactions and editing (Community)
 
 ### Messaging and DMs
 - **done** · Member-to-member DMs — `src/modules/messages` (Community)
@@ -234,7 +234,7 @@ reason, or the owner's later brief where it says so) · **open** = not on main y
 - **done** · Email prefs — per topic on Your card, `/api/email/preferences` (PR #13)
 - **done** · One-click unsubscribe — `src/platform/email/unsubscribe.ts` (PR #13)
 - **done** · Other emails — `src/platform/email/kinds.ts`; the real delete replaced the delete-request email (PR #20)
-- **dropped** · In-app notification centre / push — Founderhall didn't have one; badges and unread counts (Community)
+- **dropped** · In-app notification centre / push — Commonhall didn't have one; badges and unread counts (Community)
 
 ### Job board
 - **done** · Link a hiring tool — `src/modules/job-board/rules-feeds.ts` (PR #21)
@@ -262,8 +262,8 @@ reason, or the owner's later brief where it says so) · **open** = not on main y
 - **open** · Inbound mail webhook — Resend only (PR #13, PR #17); no Postmark, MIME or shared key: [reply-by-email](features/reply-by-email/SPEC.md)
 - **done** · Exports — partner report CSV and print (PR #14), member JSON export (PR #20)
 - **done** · Job board widget — (PR #21)
-- **dropped** · Outgoing webhooks / public REST API / Zapier — Founderhall didn't have them
-- **dropped** · Calendar, CRM, Airtable, HubSpot, LinkedIn import — Founderhall didn't have them; CRM export is on the gaps list
+- **dropped** · Outgoing webhooks / public REST API / Zapier — Commonhall didn't have them
+- **dropped** · Calendar, CRM, Airtable, HubSpot, LinkedIn import — Commonhall didn't have them; CRM export is on the gaps list
 
 ### Admin
 - **open** · Console home — [admin-console](features/admin-console/SPEC.md)
@@ -306,7 +306,7 @@ reason, or the owner's later brief where it says so) · **open** = not on main y
 - **done** · Proxy awareness — `src/platform/http/client-ip.ts` (Community, PR #13)
 
 ### Languages and accessibility
-- **dropped** · i18n — Founderhall had none; other languages are on the gaps list
+- **dropped** · i18n — Commonhall had none; other languages are on the gaps list
 - **done** · Time zones — the weekly email's time zone (PR #17)
 - **done** · Accessibility — skip link, reduced motion (Community)
 - **done** · Mobile — phone tab bar (Community)

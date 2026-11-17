@@ -14,7 +14,7 @@ import { ReportDocument } from "@/modules/admin/components/report-document";
 
 export const metadata: Metadata = { title: PAGE_TITLES.adminReport };
 
-// Founderhall's partner report: the toolbar, then the printable document for one period (?period=quarter|last|all).
+// Commonhall's partner report: the toolbar, then the printable document for one period (?period=quarter|last|all).
 export default modulePage(adminManifest, async function AdminReportPage({ searchParams }: { searchParams: Promise<{ period?: string }> }) {
   const admin = await requireAdmin();
   const period = parseConsolePeriod((await searchParams).period);

@@ -51,7 +51,7 @@ async function saveSwitches({ privacy, allowsLookup, creditInReports }: Switches
   if (creditInReports !== null) await postRequest(API_ROUTES.profileReportCredit, { isOn: creditInReports }, reportCreditSchema);
 }
 
-// Founderhall's "Your switches" (member-me-data): don't look me up, hide me, who can message me, one Save. Community
+// Commonhall's "Your switches" (member-me-data): don't look me up, hide me, who can message me, one Save. Community
 // adds "Credit me in reports" (off by default) while intros are on.
 export function SwitchesSheet({ communityName, isHidden, messagePolicy, isMessagesOn, lookup, reportCredit = null, deviceRow }: SwitchesSheetProps) {
   const router = useRouter();
@@ -65,7 +65,7 @@ export function SwitchesSheet({ communityName, isHidden, messagePolicy, isMessag
     onSuccess: () => {
       flash("Privacy settings saved.");
       router.refresh();
-      // Founderhall comes back to the switches after a save.
+      // Commonhall comes back to the switches after a save.
       document.getElementById("switches")?.scrollIntoView({ block: "start" });
     },
   });
@@ -146,7 +146,7 @@ function stopSharing() {
 
 export type ShareState = { kind: "sharing" } | { kind: "connected" } | { kind: "not_connected" };
 
-// Founderhall's "Share my network" row on Your data.
+// Commonhall's "Share my network" row on Your data.
 export function ShareNetworkSheet({ state }: { state: ShareState }) {
   const router = useRouter();
   const flash = useFlash();

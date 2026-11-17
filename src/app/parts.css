@@ -1,4 +1,4 @@
-/* Founderhall's part styles (its portal's public/app.css, "app design v05"), ported value for value by
+/* Commonhall's part styles (its portal's public/app.css, "app design v05"), ported value for value by
    .ai/features/fh-foundation/port-css.mjs. Every class carries the fh- prefix; use the React parts in
    src/components/ui where one exists. Tokens (--ink, --paper, --fund…) live in globals.css. Do not edit by hand:
    change the source and rerun the script, or add an override in globals.css. */

@@ -32,7 +32,7 @@ async function signIn(returnPath: string, formData: FormData): Promise<SignInSta
 
 type SignInFieldsProps = { state: SignInState; passwordRef?: Ref<HTMLInputElement>; onEmailChange?: (email: string) => void };
 
-// Community keeps passwords (Founderhall has none): the same fields as the link form, with Founderhall's field parts.
+// Community keeps passwords (Commonhall has none): the same fields as the link form, with Commonhall's field parts.
 export function SignInFields({ state, passwordRef, onEmailChange }: SignInFieldsProps) {
   const hasError = Boolean(state.errorMessage);
   const describedByError = hasError ? ERROR_ID : undefined;

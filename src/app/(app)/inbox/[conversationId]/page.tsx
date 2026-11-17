@@ -22,7 +22,7 @@ async function readPage(requestedId: string) {
   return readThreadPage(getDatabase(), { viewerId: member.id, conversationId: conversationId.data, beforeSequence: null });
 }
 
-// Founderhall titles a thread with the other member's name.
+// Commonhall titles a thread with the other member's name.
 export async function generateMetadata({ params }: ConversationPageProps): Promise<Metadata> {
   const page = await readPage((await params).conversationId);
   return { title: page?.peer.name ?? PAGE_TITLES.messages };

@@ -70,7 +70,7 @@ export function readMailDomain(hostFromAddress: string | null, { domain }: Pick<
 }
 
 // Where replies come back: the subdomain set on Mail, else the host's RESEND_REPLY_DOMAIN, else reply. on the
-// registered domain (as Founderhall does), else the sending domain itself.
+// registered domain (as Commonhall does), else the sending domain itself.
 export function readMailReplyDomain(sendingDomain: string | null, hostReplyDomain: string | null, { replyDomain }: Pick<MailSettings, "replyDomain">, parentOf: (domain: string) => string) {
   if (replyDomain) return replyDomain;
   if (hostReplyDomain) return hostReplyDomain;

@@ -15,7 +15,7 @@ import { PartnerSendForm } from "@/modules/admin/components/partner-send-card";
 
 export const metadata: Metadata = { title: "Send to partners" };
 
-// Founderhall's Send to partners: the report as a plain email, the numbers and never the notes.
+// Commonhall's Send to partners: the report as a plain email, the numbers and never the notes.
 export default modulePage(adminManifest, async function AdminReportSendPage({ searchParams }: { searchParams: Promise<{ period?: string }> }) {
   await requireAdmin();
   const period = parseConsolePeriod((await searchParams).period);

@@ -39,7 +39,7 @@ function readNotice(params: Awaited<SignInPageProps["searchParams"]>, communityN
   return null;
 }
 
-// Founderhall's /signin. Its demo shows the email form too: there, as anywhere, the page then says "Check your email".
+// Commonhall's /signin. Its demo shows the email form too: there, as anywhere, the page then says "Check your email".
 export default modulePage(PLATFORM_MANIFEST, async function SignInPage({ searchParams }: SignInPageProps) {
   if (!(await isFirstAdminClaimed(getDatabase()))) redirect(ROUTES.setup);
 

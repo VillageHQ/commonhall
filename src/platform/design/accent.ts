@@ -17,8 +17,8 @@ const CONTRAST_DECIMALS = 2;
 
 const ACCENT_COLOR_PATTERN = /^#[0-9a-f]{6}$/i;
 
-// Founderhall's default fund colour, its spine green (design-system.md §1.1).
-// Ink: the Common Hall look's black. A community that never picked a colour gets it.
+// Commonhall's default fund colour, its spine green (design-system.md §1.1).
+// Ink: the Commonhall look's black. A community that never picked a colour gets it.
 export const DEFAULT_ACCENT_COLOR = "#111110";
 const SPINE_GREEN = "#2c4a3e";
 
@@ -142,7 +142,7 @@ export function deriveAccentTokens(brandHex: string, mode: ThemeMode) {
   return { accent, onAccent: pickOnAccent(accent), accentText, accentSoft, accentEdge, focusRing: accentText };
 }
 
-// Founderhall's fund colour (its lib/color.mjs): the admin's colour, darkened in steps of ×0.92 (same hue) until it
+// Commonhall's fund colour (its lib/color.mjs): the admin's colour, darkened in steps of ×0.92 (same hue) until it
 // reads at 4.5:1 on Leaf; "deep" is the fund ×0.75 (hover, text on the tint); "tint" is the fund mixed 84 % toward white.
 export const LEAF = "#ffffff";
 const FUND_DARKEN_STEP = 0.92;
@@ -203,7 +203,7 @@ function toLightAccentVariables(brandHex: string) {
   };
 }
 
-// The dark version of the same rule (Founderhall has no dark mode; the owner chose one). The tint is a dark wash of the
+// The dark version of the same rule (Commonhall has no dark mode; the owner chose one). The tint is a dark wash of the
 // fund's hue; the fund keeps its hue, is calmed to a modest chroma, and is lightened until it reads at 4.5:1 on every
 // dark surface it sits on (Leaf, Paper, Vellum and its own tint). "deep" is one step further from the page, as in light.
 export const DARK_SURFACES = { paper: "#0e0e0d", leaf: "#161615", vellum: "#1e1e1c" } as const;

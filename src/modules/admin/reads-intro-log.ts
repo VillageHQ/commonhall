@@ -8,7 +8,7 @@ import { INTRO_OUTCOMES, INTRO_STATES, OPEN_INTRO_STATES, type IntroOutcome, typ
 import { expireDueIntros } from "../intros/reads.ts";
 import { introRequest } from "../intros/schema.ts";
 
-// The console's intro log (Founderhall's /admin/intros, Home's "Latest in the intro log"): one row per intro asked,
+// The console's intro log (Commonhall's /admin/intros, Home's "Latest in the intro log"): one row per intro asked,
 // with who asked whom, its state and dates (admins see names, the owner's decision). Never the note or the reason.
 
 export const INTRO_LOG_FILTERS = { all: "all", open: "open", made: "made", declined: "declined", withdrawn: "withdrawn" } as const;
@@ -46,7 +46,7 @@ export type IntroLogRow = {
   targetCompany: string | null;
   connector: string;
   state: IntroState;
-  // Founderhall's word for the state: "with connector", "introduced", "declined by target"…
+  // Commonhall's word for the state: "with connector", "introduced", "declined by target"…
   stateWord: string;
   tone: IntroLogTone;
   filter: Exclude<IntroLogFilter, "all">;

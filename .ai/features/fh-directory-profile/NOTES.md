@@ -24,9 +24,9 @@
 - "Who can message me" has `default` (the column's default now): `readEffectiveMessagePolicy` turns it into the
   community's default, which is "anyone" until a setting exists.
 - Delete: Your data's "Delete my account" sheet (`DeleteAccountSheet`) runs the member's own real delete
-  (`/api/profile/delete`, type "delete" to confirm, `shell/account-deletion.ts`), the owner's decision. Founderhall's
+  (`/api/profile/delete`, type "delete" to confirm, `shell/account-deletion.ts`), the owner's decision. Commonhall's
   "Ask to delete" request and its admin email are not built here.
 
 ## Words
-Founderhall's words, from `fh-reference/copy/`. Your data says admins see who asked whom ("admins see names, states and
+Commonhall's words, from `fh-reference/copy/`. Your data says admins see who asked whom ("admins see names, states and
 dates"), the owner's decision of 2026-11-11; the delete sheet's words are Community's, since it deletes for real.

@@ -26,7 +26,7 @@ type SearchParams = Promise<{ period?: string; f?: string }>;
 
 const FILTER_ORDER = Object.values(INTRO_LOG_FILTERS) as IntroLogFilter[];
 
-// Founderhall's Intro log: every intro asked in the period, its state and dates, the weekly allowance and the outcome
+// Commonhall's Intro log: every intro asked in the period, its state and dates, the weekly allowance and the outcome
 // question's timing. Admins see who asked whom; never the note.
 export default modulePage(adminManifest, async function AdminIntroLogPage({ searchParams }: { searchParams: SearchParams }) {
   await requireAdmin();

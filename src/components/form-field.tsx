@@ -3,7 +3,7 @@ import type { ComponentProps, ReactNode } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
-// Founderhall's field (crop form-field.png): a 600 14 label above, the field, a 13 px Graphite hint below, and an
+// Commonhall's field (crop form-field.png): a 600 14 label above, the field, a 13 px Graphite hint below, and an
 // error line in Ribbon. Fields sit 16 px apart (`.field`).
 type FieldProps = { htmlFor: string; label: ReactNode; hint?: ReactNode; error?: ReactNode; children: ReactNode; className?: string };
 

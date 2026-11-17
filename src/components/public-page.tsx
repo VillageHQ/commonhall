@@ -23,7 +23,7 @@ type PublicPageProps = {
   children: ReactNode;
 };
 
-// Founderhall's public page (publicPage(), crop public-page-card.png): no menus; a 460 px column with the fund's mark
+// Commonhall's public page (publicPage(), crop public-page-card.png): no menus; a 460 px column with the fund's mark
 // (44 px tile + name 20/600) on top, one Leaf card (padding 24/20), and a 12 px footer. Desktop top padding 72.
 export function PublicPage({ community, withCredit = false, hosting, isWide = false, isTakeover = false, copyAs: Copy = "main", lead, slot = "public-page", children }: PublicPageProps) {
   return (
@@ -42,12 +42,12 @@ type PublicMessageProps = {
   community: { name: string; logo: CommunityLogo | null };
   title: ReactNode;
   children?: ReactNode;
-  // Founderhall's messagePage ends with one secondary button; badLinkPage with one primary.
+  // Commonhall's messagePage ends with one secondary button; badLinkPage with one primary.
   action?: ReactNode;
 };
 
-// Founderhall's messagePage (views-public.mjs): a public card with a heading, a lede and one button row. Used by the
-// Community-only public pages (sign-up closed, unsubscribe, the weekly answer…) so they read like Founderhall's.
+// Commonhall's messagePage (views-public.mjs): a public card with a heading, a lede and one button row. Used by the
+// Community-only public pages (sign-up closed, unsubscribe, the weekly answer…) so they read like Commonhall's.
 export function PublicMessage({ community, title, children, action }: PublicMessageProps) {
   return (
     <PublicPage community={community}>

@@ -20,7 +20,7 @@ function describeAllowance({ left, cap }: IntroAllowance) {
   return `${left} of ${cap} asks left this week`;
 }
 
-// Founderhall's allowance line (allowanceLine()): the pips and words, then the small note beside them.
+// Commonhall's allowance line (allowanceLine()): the pips and words, then the small note beside them.
 export function AllowanceLine({ allowance }: { allowance: IntroAllowance }) {
   return (
     <div className="fh-allow">
@@ -84,7 +84,7 @@ function PartOfRow({ intro }: { intro: Intro }) {
   );
 }
 
-// Founderhall's "Your intros" (introsPage()): the page head, the allowance line, "Waiting for your answer", "Your
+// Commonhall's "Your intros" (introsPage()): the page head, the allowance line, "Waiting for your answer", "Your
 // asks" and "Asks you were part of", as ruled rows that open each intro.
 const AGO = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
 

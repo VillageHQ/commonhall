@@ -6,7 +6,7 @@ import { ROUTES } from "@/platform/http/routes";
 
 export const metadata: Metadata = { title: PAGE_TITLES.notFound };
 
-// Founderhall's 404 inside the app (copy/member-perks-off.md): the dashed empty state, "Go to the start".
+// Commonhall's 404 inside the app (copy/member-perks-off.md): the dashed empty state, "Go to the start".
 export default function AppNotFound() {
   return (
     <div data-slot="empty-state" className="fh-empty">

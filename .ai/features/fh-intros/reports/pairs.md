@@ -1,13 +1,13 @@
-# Side-by-side pairs: Founderhall (left) and Community (right)
+# Side-by-side pairs: Commonhall (left) and Community (right)
 
 Each acceptance shot of area 3, retaken from Community's demo (same made-up people) at 1280 and 390 px, in
-`pairs/<shot>-<width>.jpg`. Founderhall's shots come from the shared reference capture.
+`pairs/<shot>-<width>.jpg`. Commonhall's shots come from the shared reference capture.
 
 | Shot | Differences the builder saw (the verifier's list is in the PR) |
 |---|---|
 | member-intros-list | none in the page body |
 | member-intros-list-after | none in the page body |
-| member-intros-empty | allowance count (Sam has a posted ask this week; Founderhall's shot is a new member): community data |
+| member-intros-empty | allowance count (Sam has a posted ask this week; Commonhall's shot is a new member): community data |
 | member-intro-tracker-asked, -asked-confirm | admins' line: "counts, never names" (rule pending, `ADMINS_SEE_INTRO_NAMES`) |
 | member-intro-tracker-introduced, -outcome-saved | admins' line (same) |
 | member-intro-withdrawn | admins' line |
@@ -18,5 +18,5 @@ Each acceptance shot of area 3, retaken from Community's demo (same made-up peop
 | public-intro-decide-closed | none in the card |
 | public-intro-optout | the address (community data) |
 
-Shared shell, not this area's (the foundation's): the fund mark ("NF" monogram where Founderhall's demo has a logo),
+Shared shell, not this area's (the foundation's): the fund mark ("NF" monogram where Commonhall's demo has a logo),
 count badges on menu items, Perks in the menu, the phone foot's "Jobs · Perks" links.

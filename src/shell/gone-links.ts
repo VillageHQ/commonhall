@@ -8,7 +8,7 @@ import { ROUTES } from "@/platform/http/routes";
 
 const MAXIMUM_TOKEN_LENGTH = 256;
 
-// Founderhall answers a used, expired or unknown sign-in or invite link with 410 Gone; the page shows the words.
+// Commonhall answers a used, expired or unknown sign-in or invite link with 410 Gone; the page shows the words.
 // Only reads: opening a link never uses it.
 export async function isGoneLinkPage(database: Database, pathname: string, token: string | null) {
   if (pathname !== ROUTES.signInLink && pathname !== ROUTES.join) return false;

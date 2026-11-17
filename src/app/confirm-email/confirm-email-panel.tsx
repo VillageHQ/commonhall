@@ -19,7 +19,7 @@ function confirmEmail(token: string) {
 const INVALID_LINK_WITH_NETWORK = "It may have expired or been used already. If your email isn't confirmed yet, open Network to get a new link, or ask your admin to confirm you.";
 const INVALID_LINK_WITHOUT_NETWORK = "It may have expired or been used already. If your email isn't confirmed yet, ask your admin to confirm it.";
 
-// Founderhall's message card (a heading, a lede, one button row) inside the public page.
+// Commonhall's message card (a heading, a lede, one button row) inside the public page.
 function Message({ title, description, children }: { title: string; description: string; children: ReactNode }) {
   return (
     <>

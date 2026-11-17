@@ -29,7 +29,7 @@ export const ASK_API_ROUTES = {
   status: "/api/asks/status",
 } as const;
 
-// One ask's page (Founderhall's /asks/<id>).
+// One ask's page (Commonhall's /asks/<id>).
 export function toAskPage(askId: string) {
   return `${ASKS_PAGE}/${askId}`;
 }
@@ -37,7 +37,7 @@ export function toAskPage(askId: string) {
 export const ASKS_ADMIN_PAGE = "/admin/asks";
 
 export const ASK_LIMITS = {
-  // Founderhall's one line (POST_MAX).
+  // Commonhall's one line (POST_MAX).
   titleLength: 500,
   targetLength: 160,
   companyLength: 120,
@@ -71,7 +71,7 @@ export const ASK_ANSWER_KINDS = { answer: "answer", knowSomeone: "know_someone",
 export const ASK_CATEGORIES = { intro: "intro", hire: "hire", customer: "customer", advice: "advice", other: "other" } as const;
 export const ASK_OUTCOMES = { solvedHere: "solved_here", solvedElsewhere: "solved_elsewhere", noLongerNeeded: "no_longer_needed" } as const;
 export const ASK_STATES = { open: "open", expired: "expired", closed: "closed" } as const;
-// The board's tabs, as Founderhall's Asks & updates: Open · Updates · Yours · Answered. Closed asks are the archive,
+// The board's tabs, as Commonhall's Asks & updates: Open · Updates · Yours · Answered. Closed asks are the archive,
 // under Answered. "closed" is kept for the older API.
 export const ASK_BOARD_TABS = { open: "open", updates: "updates", yours: "yours", answered: "answered", closed: "closed" } as const;
 export const ASK_TABS = [
@@ -82,14 +82,14 @@ export const ASK_TABS = [
 ] as const;
 export type AskTab = (typeof ASK_TABS)[number][0];
 
-// "I can help" on an ask (Founderhall's help form).
+// "I can help" on an ask (Commonhall's help form).
 export const ASK_HELP_KINDS = { knowSomeone: "know_someone", doneMyself: "done_myself" } as const;
 // What the ask's owner and an admin can do from the ask's page.
 export const ASK_STATUS_ACTIONS = { answered: "answered", reopen: "reopen", pin: "pin", unpin: "unpin", close: "close", remove: "remove" } as const;
 
 export const ASK_CONSENT = "Nobody is introduced without saying yes.";
 
-// The note at the top of the page after an action (Founderhall's flash words, `?m=` on its pages).
+// The note at the top of the page after an action (Commonhall's flash words, `?m=` on its pages).
 export const ASK_FLASHES = {
   posted: "Posted. We told the members who can help.",
   posted0: "Posted. Nobody has a path yet; it goes into Thursday’s digest.",
@@ -159,7 +159,7 @@ const DAY_MS = 86_400_000;
 const HOUR_MS = 3_600_000;
 const DAYS_BEFORE_A_DATE = 14;
 
-// "just now", "3 hours ago", "yesterday", "5 days ago", then the date (Founderhall's ago()).
+// "just now", "3 hours ago", "yesterday", "5 days ago", then the date (Commonhall's ago()).
 export function describeAgo(at: string | Date, now = new Date()) {
   const elapsed = now.getTime() - new Date(at).getTime();
   const days = Math.floor(elapsed / DAY_MS);
@@ -254,7 +254,7 @@ const optionalLineSchema = (maximumLength: number) =>
 
 const EMPTY_ASK = "Write your ask in a line: who or what you need.";
 
-// The one line of an ask or update, with Founderhall's words for an empty or a long one.
+// The one line of an ask or update, with Commonhall's words for an empty or a long one.
 export const askBodySchema = z
   .string({ error: EMPTY_ASK })
   .overwrite(removeNullBytes)

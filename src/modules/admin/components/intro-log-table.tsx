@@ -4,7 +4,7 @@ import { Pill } from "@/components/ui/pill";
 import { formatDayMonth } from "../console-periods";
 import { OUTCOME_WORDS, type IntroLogRow } from "../reads-intro-log";
 
-// Founderhall's intro log (crop intro-log-table.png): a 6-column ledger on desktop (Asked · Asked by · For an intro
+// Commonhall's intro log (crop intro-log-table.png): a 6-column ledger on desktop (Asked · Asked by · For an intro
 // to · Through · State · Then); on a phone each row is one line "Asker → Target via Connector", its pill, and the dates.
 
 function readTarget({ target, targetCompany }: IntroLogRow) {
@@ -32,7 +32,7 @@ function LogRow({ row }: { row: IntroLogRow }) {
       </span>
       <span className="fh-cell">{readTarget(row)}</span>
       <span className="fh-cell">{row.connector}</span>
-      {/* Founderhall's one-line pill: a long state word ("no answer from connector") ends in "…", whole on hover. */}
+      {/* Commonhall's one-line pill: a long state word ("no answer from connector") ends in "…", whole on hover. */}
       <span className="fh-cell" title={row.stateWord}>
         <Pill tone={row.tone} className="max-w-full">
           <span className="min-w-0 truncate">{row.stateWord}</span>

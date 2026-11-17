@@ -20,7 +20,7 @@ import { readPerksUrl } from "../modules/perks/service.ts";
 import { MODULES } from "../modules/registry.ts";
 import { readEnabledIds } from "./enabled-modules.ts";
 
-// Set up (Founderhall's setupPage): the plumbing pages in one place, each with one plain line and whether it is set
+// Set up (Commonhall's setupPage): the plumbing pages in one place, each with one plain line and whether it is set
 // up. A state is "done" (Set up), "todo" (Not yet), "needs" (a count that needs a look) or a small word of its own.
 export const SETUP_ROW_STATES = { done: "done", todo: "todo", needs: "needs", word: "word" } as const;
 
@@ -98,7 +98,7 @@ export function readSetupRows(facts: SetupFacts): SetupRow[] {
       title: "Integrations",
       href: facts.isChatOn ? CHAT_ADMIN_PAGE : ROUTES.adminFeatures,
       description: "New asks and a weekly line in your Slack or Discord; /ask from Slack.",
-      // Founderhall says "optional" until it posts; switched off, the row still leads to the switch.
+      // Commonhall says "optional" until it posts; switched off, the row still leads to the switch.
       state: facts.isChatOn && facts.isChatPosting ? done : OPTIONAL,
     },
     {

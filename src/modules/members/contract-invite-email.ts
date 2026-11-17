@@ -1,6 +1,6 @@
 import { INVITE_LIFETIME_DAYS } from "./contract-invite-state.ts";
 
-// The invite email's words (Founderhall's, word for word): the email itself and the preview on Admin › Invites
+// The invite email's words (Commonhall's, word for word): the email itself and the preview on Admin › Invites
 // both read them, so the preview is the email that goes out.
 
 // "Northwind Founders’" / "Ada’s".

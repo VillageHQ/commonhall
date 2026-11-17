@@ -2,7 +2,7 @@ import { ASK_CATEGORIES, type AskCategory } from "../asks/contract.ts";
 import { INTRO_OUTCOMES, INTRO_RESULTS, INTRO_STATES, OPEN_INTRO_STATES, type IntroResult } from "../intros/contract.ts";
 import type { ConsolePeriod } from "./console-periods.ts";
 
-// The partner report's numbers for one period (Founderhall's report, on Community's intros). The page, the CSV and
+// The partner report's numbers for one period (Commonhall's report, on Community's intros). The page, the CSV and
 // the email are all drawn from one ReportStats, so a number can't differ between them. Counts only: the only names
 // are connectors. What leaves the app (the email, the CSV, the printed page) names only connectors who turned on
 // "Credit me in reports" (`connectors`); the admin's page in the app names every connector (`allConnectors`).
@@ -45,7 +45,7 @@ const RESULT_WORDS: Record<IntroResult, readonly [string, string]> = {
   [INTRO_RESULTS.investor]: ["investor meeting", "investor meetings"],
 };
 
-// Founderhall's needs. Community's asks map onto them: advice is an expert; an intro ask or anything else is other.
+// Commonhall's needs. Community's asks map onto them: advice is an expert; an intro ask or anything else is other.
 export const NEED_LABELS = { customer: "Customer", hire: "Hire", investor: "Investor", expert: "Expert", other: "Other" } as const;
 
 const NEED_OF_CATEGORY: Record<AskCategory, keyof typeof NEED_LABELS> = {
@@ -242,7 +242,7 @@ export function readConnectorRows(stats: IntroStats, { everyone = false }: { eve
   return [...connectors.named, ...(connectors.others ? [connectors.others] : [])];
 }
 
-// The report as plain lines (the email's body), Founderhall's words.
+// The report as plain lines (the email's body), Commonhall's words.
 export function readReportLines({ intros: stats, asks, summary }: ReportStats) {
   const connectors = readConnectorRows(stats);
   return [
@@ -278,7 +278,7 @@ export function readReportLines({ intros: stats, asks, summary }: ReportStats) {
   ];
 }
 
-// Founderhall's partner-report email: the subject is the report's title; the body is plain text.
+// Commonhall's partner-report email: the subject is the report's title; the body is plain text.
 export function renderReportEmailText(report: ReportStats, note: string | null) {
   return [
     ...(note ? [note, ""] : []),

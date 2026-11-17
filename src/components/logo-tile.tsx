@@ -5,7 +5,7 @@ import Link from "next/link";
 import { LOGO_BACKDROPS, type LogoBackdrop } from "@/platform/branding/logo-rules";
 import { readInitials } from "@/platform/design/avatar-identity";
 
-// Founderhall's fund logo (crops fund-mark-monogram.png, fund-mark-large.png): 30 px (34 in the sidebar, 44 on
+// Commonhall's fund logo (crops fund-mark-monogram.png, fund-mark-large.png): 30 px (34 in the sidebar, 44 on
 // public pages), radius 7 (10 when large); without a logo, a monogram tile in the fund colour with Leaf initials.
 const DEFAULT_LOGO_SIZE_PX = 30;
 const LARGE_FROM_PX = 40;
@@ -74,7 +74,7 @@ export function FundMark({ name, logo, sub, href, size = "default", className }:
         <b>{name}</b>
       ) : (
         <span className="min-w-0">
-          {/* Founderhall's name is inline in a 22 px line (body 15/22), so the line box is 22 px, not the name's 20. */}
+          {/* Commonhall's name is inline in a 22 px line (body 15/22), so the line box is 22 px, not the name's 20. */}
           <b title={name} className="block truncate py-px">
             {name}
           </b>

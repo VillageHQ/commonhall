@@ -36,7 +36,7 @@ describe("the slots in the app", () => {
     await database.$client.end();
   });
 
-  it("titles Today as Founderhall does", async () => {
+  it("titles Today as Commonhall does", async () => {
     const { metadata } = await import("./today/page");
 
     expect(metadata.title).toBe("Today");

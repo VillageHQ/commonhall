@@ -1,6 +1,6 @@
 # Admin home (charter)
 
-Approved scope: the owner's build plan for the Founderhall merge (follow-up "an admin home led by the intro count").
+Approved scope: the owner's build plan for the Commonhall merge (follow-up "an admin home led by the intro count").
 The maintainer reviews after merge.
 
 ## Direction

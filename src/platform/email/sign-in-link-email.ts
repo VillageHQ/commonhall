@@ -5,7 +5,7 @@ export const SIGN_IN_LINK_LIFETIME_SECONDS = 15 * 60;
 
 type SignInLinkEmailFacts = { link: string; communityName: string };
 
-// Founderhall's sign-in link email, word for word (copy/emails/email-signin-link.md). "… for <community>", never
+// Commonhall's sign-in link email, word for word (copy/emails/email-signin-link.md). "… for <community>", never
 // "Your <community> sign-in link": the default name is "Your community".
 export function renderSignInLinkEmail({ link, communityName }: SignInLinkEmailFacts) {
   const community = toSingleLine(communityName);

@@ -2,7 +2,7 @@ import { cn } from "cn";
 
 type StepPillsProps = { label: string; steps: { id: string; label: string }[]; current: string };
 
-// Founderhall's onboarding steps: a row of step dots over "Step 1 of 2" (4 px bars, the fund colour up to the
+// Commonhall's onboarding steps: a row of step dots over "Step 1 of 2" (4 px bars, the fund colour up to the
 // current step). Each step keeps its name for screen readers.
 export function StepPills({ label: stepsLabel, steps, current }: StepPillsProps) {
   const currentPosition = Math.max(0, steps.findIndex(({ id }) => id === current));

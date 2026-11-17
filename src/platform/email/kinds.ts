@@ -24,7 +24,7 @@ export const EMAIL_KINDS = {
   introUpdate: "intro_update",
   introDeclined: "intro_declined",
   introReminder: "intro_reminder",
-  // The first email to the person asked (Founderhall's kind); the timed reminder is introTargetReminder.
+  // The first email to the person asked (Commonhall's kind); the timed reminder is introTargetReminder.
   introTargetAsk: "intro_target_ask",
   introTargetReminder: "intro_target_reminder",
   directMessage: "direct_message",

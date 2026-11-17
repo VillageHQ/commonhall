@@ -3,7 +3,7 @@ import { z } from "zod";
 import { DAILY_LOOKUP_LIMITS, MONTHLY_CREDIT_CAPS } from "../../platform/village/contract.ts";
 import { villageSettingsBodySchema } from "./contract-village-settings.ts";
 
-// Admin › Village › "Limits and switches" (Founderhall's form): one Save for the caps, where search starts, the
+// Admin › Village › "Limits and switches" (Commonhall's form): one Save for the caps, where search starts, the
 // service email, who can introduce, what members read on the connect screen and the nightly fill-in.
 // The Connection sheet's words for the two keys (the fields, and the lines once they are saved).
 export const SECRET_KEY_HINT = "From Village Platform Admin › Settings › API keys. Stays on this server, sealed in the database.";

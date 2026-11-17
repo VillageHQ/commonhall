@@ -1,4 +1,4 @@
-// Real screenshots of the built app on the Common Hall look (no overrides). Usage: node after.mjs <base> <out>
+// Real screenshots of the built app on the Commonhall look (no overrides). Usage: node after.mjs <base> <out>
 import { execSync } from "node:child_process";
 import { createRequire } from "node:module";
 import path from "node:path";

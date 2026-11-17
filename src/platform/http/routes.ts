@@ -3,11 +3,11 @@ export const ACCOUNT_DELETED_PARAM = "accountDeleted";
 
 export const ROUTES = {
   feed: "/",
-  // Founderhall's Today. "/" sends a member here.
+  // Commonhall's Today. "/" sends a member here.
   today: "/today",
   // The switchable feed's own page (Community-only).
   feedPage: "/feed",
-  // Founderhall's paths. The old ones (/sign-in, /sign-in/link, /join/<token>) redirect here (next.config.mjs).
+  // Commonhall's paths. The old ones (/sign-in, /sign-in/link, /join/<token>) redirect here (next.config.mjs).
   signIn: "/signin",
   signInLink: "/auth",
   signInAsNewAdmin: `/signin?${ADMIN_CREATED_PARAM}=true`,
@@ -24,27 +24,27 @@ export const ROUTES = {
   confirmEmail: "/confirm-email",
   unsubscribe: "/unsubscribe",
   weeklyAnswer: "/weekly",
-  // Founderhall's Inbox; the old /messages addresses redirect here (next.config.mjs).
+  // Commonhall's Inbox; the old /messages addresses redirect here (next.config.mjs).
   messages: "/inbox",
   // A first message to a member: the empty thread page; the first Send starts the conversation.
   newMessage: "/messages/new",
   intros: "/intros",
-  // Founderhall's public intro pages: a yes or no without signing in, and "stop intro asks". `/meet` redirects here.
+  // Commonhall's public intro pages: a yes or no without signing in, and "stop intro asks". `/meet` redirects here.
   introConsent: "/i",
   introOptOut: "/intro/optout",
   introConsentOld: "/meet",
-  // Founderhall's addresses. The old ones (/members, /members/<id>, /members/card, /members/data) answer with
+  // Commonhall's addresses. The old ones (/members, /members/<id>, /members/card, /members/data) answer with
   // permanent redirects (next.config.mjs).
   members: "/directory",
   people: "/people",
   editCard: "/me",
   yourData: "/me/data",
   emailSettings: "/me/email",
-  // Search (Founderhall's "/search"; the old "/network" redirects here), the guided ask, the intro ask page and My network.
+  // Search (Commonhall's "/search"; the old "/network" redirects here), the guided ask, the intro ask page and My network.
   network: "/search",
   guidedAsk: "/ask",
   introAsk: "/intros/new",
-  // The one-step ask from a search result (Founderhall keeps Search lit for it).
+  // The one-step ask from a search result (Commonhall keeps Search lit for it).
   searchAsk: "/search/ask",
   myNetwork: "/me/network",
   admin: "/admin",
@@ -61,7 +61,7 @@ export const ROUTES = {
   adminMail: "/admin/mail",
   adminImport: "/admin/import",
   adminLinks: "/admin/links",
-  // The console (Founderhall's menu): the Intro log, Invites, sending the partner report, and the weekly digest's
+  // The console (Commonhall's menu): the Intro log, Invites, sending the partner report, and the weekly digest's
   // preview (Asks & digest; the old /admin/weekly-email forwards here).
   adminIntroLog: "/admin/intros",
   adminInvites: "/admin/invites",
@@ -76,7 +76,7 @@ export const ROUTES = {
 // The emailed invite link's mark (members' service-invite-emailed.ts): the copied link has none.
 export const INVITE_EMAILED_FIELD = "e";
 
-// An invite's page: Founderhall's /invite?token=…, plus the emailed link's mark when it has one.
+// An invite's page: Commonhall's /invite?token=…, plus the emailed link's mark when it has one.
 export function toInvitePath(token: string, emailedMark: string | null = null) {
   const path = `${ROUTES.join}?token=${encodeURIComponent(token)}`;
   return emailedMark ? `${path}&${INVITE_EMAILED_FIELD}=${encodeURIComponent(emailedMark)}` : path;

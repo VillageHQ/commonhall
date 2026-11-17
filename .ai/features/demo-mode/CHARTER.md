@@ -1,6 +1,6 @@
 # Demo mode for sales (approved scope)
 
-Approved by the owner as part of the Founderhall-to-Community build plan (wave 3, plan item 12). This page restates
+Approved by the owner as part of the Commonhall-to-Community build plan (wave 3, plan item 12). This page restates
 the brief and records the small calls taken while building.
 
 ## Direction

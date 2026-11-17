@@ -7,7 +7,7 @@ import { Pill } from "@/components/ui/pill";
 import { ASK_CONSENT, ASK_KINDS, ASK_STATES, describeAgo, describeAnswerCount, describeCanHelp, toAskPage, type AskMember } from "../contract";
 import type { BoardPost } from "../reads-board";
 
-// Founderhall's ask parts (`.post`, the helpers strip, the status pill), shared by the board, the ask's page and Today.
+// Commonhall's ask parts (`.post`, the helpers strip, the status pill), shared by the board, the ask's page and Today.
 export const ICON = { "aria-hidden": true, className: "fh-i fh-xs", strokeWidth: 1.5 } as const;
 
 const SMALL_AVATAR_PX = 28;
@@ -16,10 +16,10 @@ export function MemberAvatar({ member, sizePx = SMALL_AVATAR_PX }: { member: Pic
   return <Avatar stableId={member.id} name={member.name} imageUrl={member.avatarUrl} sizePx={sizePx} />;
 }
 
-// The company's logo mark before the role (Founderhall's logo()).
+// The company's logo mark before the role (Commonhall's logo()).
 export function CompanyMark({ url }: { url: string | null }) {
   if (!url) return null;
-  // eslint-disable-next-line @next/next/no-img-element -- a small remote logo, as Founderhall draws it
+  // eslint-disable-next-line @next/next/no-img-element -- a small remote logo, as Commonhall draws it
   return <img className="fh-colog inline-block" src={url} alt="" loading="lazy" referrerPolicy="no-referrer" />;
 }
 
@@ -45,7 +45,7 @@ export function TargetLine({ who }: { who: string }) {
   );
 }
 
-// One ask in a list (Founderhall's postCard).
+// One ask in a list (Commonhall's postCard).
 export function PostCard({ post, now, isYoursTab = false }: { post: BoardPost; now: Date; isYoursTab?: boolean }) {
   const page = toAskPage(post.id);
   const isAsk = post.kind === ASK_KINDS.ask;
@@ -114,7 +114,7 @@ export function PostCard({ post, now, isYoursTab = false }: { post: BoardPost; n
   );
 }
 
-// Founderhall's consent line as asks draw it: small, 12 px under what comes before.
+// Commonhall's consent line as asks draw it: small, 12 px under what comes before.
 export function AskConsent({ children = ASK_CONSENT }: { children?: string }) {
   return (
     <p className="fh-consent fh-small" style={{ marginTop: 12 }}>

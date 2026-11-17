@@ -15,7 +15,7 @@ import { answerAsConnectorRequest, recordIntroOutcomeRequest, transitionIntroReq
 import { DecisionForm } from "./intro-decision";
 import { CHOICE_BY_OUTCOME, OUTCOME_LABELS, RESULT_LABELS, readConnectorChoices, readTargetEmailHint, readTargetEmailLabel } from "./intro-words";
 
-// Founderhall's flashes after a redirect (`?m=asked`, `?m=withdrawn`, `?m=outcome`).
+// Commonhall's flashes after a redirect (`?m=asked`, `?m=withdrawn`, `?m=outcome`).
 const FLASHES: Record<string, string> = {
   asked: "Asked. We emailed your note; you hear back here and by email.",
   withdrawn: "Withdrawn. Your ask is back.",

@@ -1,5 +1,5 @@
 spec:
-  name: village-community
+  name: commonhall
   databases:
     - name: db
       engine: PG
@@ -8,7 +8,7 @@ spec:
   services:
     - name: web
       git:
-        repo_clone_url: https://github.com/VillageHQ/community.git
+        repo_clone_url: https://github.com/VillageHQ/commonhall.git
         branch: main
       environment_slug: node-js
       instance_size_slug: apps-s-1vcpu-0.5gb

@@ -12,7 +12,7 @@ import { RequestFailure } from "@/platform/http/post-request";
 import { INTRO_ERROR_CODES, INTRO_LIMITS } from "../contract";
 import { RESULT_LABELS } from "./intro-words";
 
-// Founderhall's decision form (`.decide`, crop decide-form.png): option cards, the person's email (only with a yes),
+// Commonhall's decision form (`.decide`, crop decide-form.png): option cards, the person's email (only with a yes),
 // "Edit the note before it goes on", one block button, the consent line. Used by the connector on the intro page and
 // on the public page, by the person asked, and for "Was it helpful?".
 
@@ -34,7 +34,7 @@ type DecisionFormProps = {
   legend: string;
   choices: readonly DecisionChoice[];
   initialChoice?: string | null;
-  // The person's email, shown while "yes" is picked (Founderhall's `.ifyes`).
+  // The person's email, shown while "yes" is picked (Commonhall's `.ifyes`).
   email?: { label: string; hint: string; initial: string | null } | null;
   // The connector may edit the note before it goes on.
   note?: string | null;

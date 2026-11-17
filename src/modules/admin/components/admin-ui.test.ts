@@ -205,7 +205,7 @@ describe("the admin screens", () => {
   });
 
   describe("a member's Manage page", () => {
-    // Each member's tools sit on their own page now (Founderhall's Members table opens it); a result flashes at the top.
+    // Each member's tools sit on their own page now (Commonhall's Members table opens it); a result flashes at the top.
     function renderMembers(members: AdminMember[]) {
       const queryClient = createQueryClient();
       render(

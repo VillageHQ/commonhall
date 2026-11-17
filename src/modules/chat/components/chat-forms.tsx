@@ -18,7 +18,7 @@ import { postRequest } from "@/platform/http/post-request";
 
 import { CHAT_API_ROUTES, type ChatKind, type SlackChannel } from "../contract";
 
-// Founderhall's Integrations forms (integrations/views.mjs). After an action the page refreshes and a flash says what
+// Commonhall's Integrations forms (integrations/views.mjs). After an action the page refreshes and a flash says what
 // happened; a refusal shows on the card it belongs to.
 const TEST_FAILED = "The test post didn’t go through. The reason is on the card.";
 const SECRET_FIELD_CLASSES = "font-mono";

@@ -19,7 +19,7 @@ What these fixes do now. Charter: [CHARTER.md](CHARTER.md). How it works: [NOTES
 - **Hiring line:** a member's jobs are their company's jobs plus every job they linked themselves, on their profile
   and in the directory's Hiring chip and filter, so changing the company's words on their card never hides them.
 - **Feed:** pressing Post clears the last "Your post is live." before the new answer, so only one note shows. While
-  the feed is on, Feed is a phone tab (seven tabs, eight for an admin), in equal columns like Founderhall's; with
+  the feed is on, Feed is a phone tab (seven tabs, eight for an admin), in equal columns like Commonhall's; with
   eight, the labels are 10 px.
 - **Intro pages:** once the connector has the app email the person asked, the panel says "We emailed Rosa on
   12 Nov…" at once, not "Send Rosa this private link". The connector's intro pages write dates as "12 Nov".

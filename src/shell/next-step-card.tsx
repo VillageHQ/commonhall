@@ -4,7 +4,7 @@ import { ProgressTrack } from "@/components/progress-track";
 import type { NextStep } from "@/shell/next-steps";
 
 // Community's next step on Today (connect your network, confirm your email, finish your card), drawn as one of
-// Founderhall's Today items: a small line, the step, one line, and one secondary button.
+// Commonhall's Today items: a small line, the step, one line, and one secondary button.
 export function NextStepCard({ nextStep }: { nextStep: NextStep }) {
   const { icon: Icon, kicker, title, description, action, progress } = nextStep;
   return (

@@ -12,7 +12,7 @@ basis: e95a9f.17a7d4
 ---
 # Spec: Cohort on a single invite
 
-**Added:** 2026-11-10 (from the Founderhall parity map in `.ai/roadmap.md`)
+**Added:** 2026-11-10 (from the Commonhall parity map in `.ai/roadmap.md`)
 
 ## What & why
 The list and CSV import carry a cohort onto the invite; the single "Invite someone" form has no cohort field.

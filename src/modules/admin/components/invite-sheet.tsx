@@ -18,7 +18,7 @@ import { API_ROUTES, ROUTES } from "@/platform/http/routes";
 import { acknowledgedResponseSchema } from "@/platform/http/contract";
 import { postRequest } from "@/platform/http/post-request";
 
-// Founderhall's Import members and Mail pages (Set up). Invites only link to them.
+// Commonhall's Import members and Mail pages (Set up). Invites only link to them.
 const IMPORT_PAGE = "/admin/import";
 const MAIL_PAGE = ROUTES.adminMail;
 
@@ -42,7 +42,7 @@ function readOutcome(result: BulkInviteResult): Outcome {
   return { isOk: invited > 0, summary, lines: lines.slice(0, 8), links: result.links };
 }
 
-// No line holds an email address: Founderhall's "Paste at least one email address." (a list over the limit goes to
+// No line holds an email address: Commonhall's "Paste at least one email address." (a list over the limit goes to
 // the server, which says so).
 function isNothingToInvite(text: string) {
   if (!text.trim()) return true;
@@ -62,7 +62,7 @@ function mailtoFor(link: SentLink, signature: Signature) {
   return `mailto:${encodeURIComponent(link.email).replace("%40", "@")}?subject=${encodeURIComponent(words.subject)}&body=${encodeURIComponent(body)}`;
 }
 
-// Founderhall's "Send the sign-in links yourself": one ready mail per founder, each with only their own link.
+// Commonhall's "Send the sign-in links yourself": one ready mail per founder, each with only their own link.
 function SendYourself({ links, signature }: { links: SentLink[]; signature: Signature }) {
   const allId = useId();
   const [wasCopied, setWasCopied] = useState(false);
@@ -78,7 +78,7 @@ function SendYourself({ links, signature }: { links: SentLink[]; signature: Sign
               <Mail aria-hidden="true" className="size-3.5" strokeWidth={1.5} />
             </span>
             <div className="fh-who">
-              {/* One line each, cut with "…" on a narrow phone, as on Founderhall: an address is never split mid-word. */}
+              {/* One line each, cut with "…" on a narrow phone, as on Commonhall: an address is never split mid-word. */}
               <b title={link.name || link.email}>{link.name || link.email}</b>
               <span title={link.email}>{link.email}</span>
             </div>
@@ -129,7 +129,7 @@ function readToday() {
   return new Date().toISOString().slice(0, 10);
 }
 
-// Founderhall's "Invite members" sheet: one box for many people, the profile fill-in's consent, Send invites.
+// Commonhall's "Invite members" sheet: one box for many people, the profile fill-in's consent, Send invites.
 export function InviteSheet({ community, inviterName, inviterRole, isEmailOn, isFillInShown, savedBasis, savedTermsDate, children }: InviteSheetProps) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);

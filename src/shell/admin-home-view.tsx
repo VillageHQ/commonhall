@@ -13,8 +13,8 @@ import { ButtonLink, TextLink } from "@/shell/console-home-parts";
 import { ResendInviteButton } from "@/shell/console-home-resend";
 import type { ConsoleHome, IntroLedger } from "@/shell/console-home";
 
-// The console's Home after launch (Founderhall's /admin): every intro counted, members, the latest of the intro log;
-// beside them the network, lookups, asks and mail. Founderhall's parts and words.
+// The console's Home after launch (Commonhall's /admin): every intro counted, members, the latest of the intro log;
+// beside them the network, lookups, asks and mail. Commonhall's parts and words.
 
 const NUMBER = new Intl.NumberFormat("en-US");
 

@@ -240,7 +240,7 @@ describe("demo mode", () => {
         body: JSON.stringify({ prompt: "hospital procurement" }),
       });
       const search = (await searchResponse.json()) as { data: { full_name: string; linkedin_url: string }[] };
-      // The story Founderhall's demo tells: two people Sam knows first-hand, and Rosa through Marcus.
+      // The story Commonhall's demo tells: two people Sam knows first-hand, and Rosa through Marcus.
       expect(search.data.map(({ full_name }) => full_name)).toEqual(["Alex Kim", "Dana Morris", "Rosa Lindqvist"]);
       const pathsResponse = await guarded("https://village.demo.invalid/v2/people/paths", {
         method: "POST",

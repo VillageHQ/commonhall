@@ -27,7 +27,7 @@ const CLOSED_NOTICES = {
 
 export const metadata: Metadata = { title: PAGE_TITLES.signUp };
 
-// Community-only: there is no sign-up. Founderhall's message page, like its 404.
+// Community-only: there is no sign-up. Commonhall's message page, like its 404.
 export default modulePage(PLATFORM_MANIFEST, async function SignUpPage() {
   const isClaimed = await isFirstAdminClaimed(getDatabase());
   const notice = isClaimed ? CLOSED_NOTICES.inviteOnly : CLOSED_NOTICES.awaitingFirstAdmin;

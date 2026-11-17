@@ -29,7 +29,7 @@ const SENDS_PER_MINUTE = 3;
 
 export const PARTNER_REPORT_ERROR_CODES = { emailOff: "partner_report_email_off", tooFast: "partner_report_too_fast" } as const;
 
-// The email partners get (Founderhall's words): the report's title as the subject, the report as plain text.
+// The email partners get (Commonhall's words): the report's title as the subject, the report as plain text.
 export async function renderPartnerReportEmailFor(database: Database, { note, period }: { note: string | null; period: ConsolePeriodParam }) {
   const report = await readReportStats(database, period);
   const text = renderReportEmailText(report, note);

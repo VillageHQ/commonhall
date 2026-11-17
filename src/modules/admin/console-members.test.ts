@@ -30,7 +30,7 @@ describe("the console's Members table", () => {
     person({ id: "i", kind: "invite", name: null, email: "nadia@example.test", title: null, company: null, state: "invited", since: "2026-11-10T00:00:00.000Z" }),
   ];
 
-  it("counts Founderhall's filters, leaving removed members to their own", () => {
+  it("counts Commonhall's filters, leaving removed members to their own", () => {
     expect(countConsoleMembers(everyone)).toMatchObject({ all: 3, invited: 1, joined: 1, connected: 1, admins: 1, delete: 0, removed: 1 });
   });
 
@@ -45,7 +45,7 @@ describe("the console's Members table", () => {
     expect(sortConsoleMembers([everyone[3]!, everyone[1]!, everyone[0]!]).map(({ id }) => id)).toEqual(["a", "m", "i"]);
   });
 
-  it("reads the When and Role and company cells in Founderhall's words", () => {
+  it("reads the When and Role and company cells in Commonhall's words", () => {
     expect(readWhen(everyone[0]!)).toBe("joined 26 Sep");
     expect(readWhen(everyone[3]!)).toBe("invited 10 Nov");
     expect(readRoleAndCompany(everyone[0]!)).toBe("Founder, Gridwise");

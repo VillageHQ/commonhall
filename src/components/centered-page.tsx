@@ -5,7 +5,7 @@ import type { CommunityLogo } from "@/platform/branding/branding";
 
 type CenteredPageProps = { name: string; logo: CommunityLogo | null; children: ReactNode };
 
-// A page with no menus (a page that isn't there): Founderhall's public page.
+// A page with no menus (a page that isn't there): Commonhall's public page.
 export function CenteredPage({ name, logo, children }: CenteredPageProps) {
   return (
     <PublicPage community={{ name, logo }} slot="centered-page">

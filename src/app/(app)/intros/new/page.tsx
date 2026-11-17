@@ -19,7 +19,7 @@ export const metadata: Metadata = { title: PAGE_TITLES.introAsk };
 
 type NewIntroPageProps = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
-// "Write your forwardable note": the ask from a member's profile (Founderhall's /intros/new?via=…). The asker names the
+// "Write your forwardable note": the ask from a member's profile (Commonhall's /intros/new?via=…). The asker names the
 // person; the note is drafted from their profile in three parts. Needs no Village.
 export default modulePage(introsManifest, async function NewIntroPage({ searchParams }: NewIntroPageProps) {
   const member = await requireMember();

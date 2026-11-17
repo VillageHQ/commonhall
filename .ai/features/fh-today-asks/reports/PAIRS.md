@@ -1,7 +1,7 @@
-# Side-by-side pairs: Founderhall (left) and Community (right)
+# Side-by-side pairs: Commonhall (left) and Community (right)
 
 Every acceptance shot of area 1 at 1280 and 390 px, retaken from Community's demo (made-up people, production
-build) in Founderhall's order, in `pairs/<shot>-<width>.jpg`. Checked by a verifier who did not build it; the five
+build) in Commonhall's order, in `pairs/<shot>-<width>.jpg`. Checked by a verifier who did not build it; the five
 mismatches it found were fixed and re-checked (repair round 1).
 
 | Shot | Pairs |
@@ -35,5 +35,5 @@ mismatches it found were fixed and re-checked (repair round 1).
 - **Community-only functions kept (approved):** "New this week" card, "Report this ask / answer" quiet links, intro
   asks listed in "Your asks in motion", count badges on menu items (shell), the next-step card for a member who
   hasn't connected their network.
-- **Reference quirks:** Founderhall's compose-focus shot has an offset sidebar and no focus ring; on some phone
+- **Reference quirks:** Commonhall's compose-focus shot has an offset sidebar and no focus ring; on some phone
   shots its top bar sits mid-page (a capture artifact on its side).

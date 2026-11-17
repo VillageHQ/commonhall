@@ -28,7 +28,7 @@ function readStatus(url: string | null, isShown: boolean, isDemo: boolean) {
   return isShown ? "Members see Perks: on Today, in the menu and at /perks." : "Saved, but switched off: members don’t see Perks.";
 }
 
-// Founderhall's Admin › Perks (lib/perks.mjs). The page belongs to the admin module so it stays open while Perks is
+// Commonhall's Admin › Perks (lib/perks.mjs). The page belongs to the admin module so it stays open while Perks is
 // off: its switch is what turns Perks on. The preview frames BuiltFirst too, so this page shares /perks's
 // Content-Security-Policy (next.config.mjs).
 export default modulePage(adminManifest, async function AdminPerksPage() {

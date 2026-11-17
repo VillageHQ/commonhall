@@ -1,17 +1,17 @@
-# How the dark version of Founderhall's look works today
+# How the dark version of Commonhall's look works today
 
-Founderhall has no dark mode; the owner chose to keep one, designed as a dark version of Founderhall's look: calm,
+Commonhall has no dark mode; the owner chose to keep one, designed as a dark version of Commonhall's look: calm,
 warm, paper-like. Only the token layer changed. Light mode is untouched (pixel-identical to main on 14 screenshots,
 `reports/light-unchanged.txt`).
 
 ## Where things are
-- **Tokens** — the `.dark { … }` block in `src/app/globals.css`. Founderhall's names (`--ink`, `--paper`, `--leaf`…)
+- **Tokens** — the `.dark { … }` block in `src/app/globals.css`. Commonhall's names (`--ink`, `--paper`, `--leaf`…)
   and Community's older semantic names get the dark values; `--shadow` gets a dark shadow.
-- **Founderhall's literal colours** — `parts.css` is generated from Founderhall's CSS and holds a few literal colours
+- **Commonhall's literal colours** — `parts.css` is generated from Commonhall's CSS and holds a few literal colours
   (placeholder, chip hover, switch off, dashed edges, declined bar, mail header, logo tile, row hover). The dark block
   names them `--fh-placeholder`, `--fh-chip-hover`, `--fh-switch-off`, `--fh-dash`, `--fh-declined`, `--fh-scrollbar`,
   `--fh-mail-head`, `--fh-logo-tile`, and a short list of `.dark …` rules at the end of `globals.css` applies them.
-- **The fund colour** — `deriveDarkFundColors()` in `src/platform/design/accent.ts`, the dark twin of Founderhall's rule:
+- **The fund colour** — `deriveDarkFundColors()` in `src/platform/design/accent.ts`, the dark twin of Commonhall's rule:
   - *tint*: a dark wash of the fund's hue (OKLCH lightness 0.30, chroma at most 0.03), the "Why you" box and helpers strip;
   - *fund*: the admin's colour, same hue, chroma calmed to at most 0.13, lightened until it reads at 4.5:1 on Leaf,
     Paper, Vellum and its own tint. The primary button is the fund with dark Leaf words (the same 4.5:1);
@@ -21,7 +21,7 @@ warm, paper-like. Only the token layer changed. Light mode is untouched (pixel-i
   (`SYSTEM_THEME_SCRIPT` in `src/platform/design/theme.ts`).
 
 ## The palette
-| Token | Light (Founderhall) | Dark | Role |
+| Token | Light (Commonhall) | Dark | Role |
 |---|---|---|---|
 | `--paper` | `#f6f2e9` | `#1a1915` | the page: warm charcoal, not black |
 | `--side` | `#efe9dd` | `#151410` | the sidebar, one step below the page |

@@ -27,7 +27,7 @@ export const metadata: Metadata = { title: PAGE_TITLES.adminSettings };
 // Community's own: how this copy gets a new version, which depends on where it was deployed.
 const PLATFORM_UPDATES = [
   { platform: "Railway", steps: "Railway tells you when a new version is out, and you choose when to apply it." },
-  { platform: "Vercel", steps: "Pull the changes from VillageHQ/community into your copy on GitHub. Each push redeploys." },
+  { platform: "Vercel", steps: "Pull the changes from VillageHQ/commonhall into your copy on GitHub. Each push redeploys." },
   { platform: "DigitalOcean", steps: "Start a new deploy from your app's dashboard. It doesn't update by itself." },
 ];
 

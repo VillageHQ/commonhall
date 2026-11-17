@@ -59,7 +59,7 @@ function makeBoard(overrides: Partial<IntroBoard> = {}): IntroBoard {
   return { asksForYou: [], yourAsks: [], counts: { waitingOnYou: 0, updates: 0, outcomesDue: 0 }, ...overrides };
 }
 
-describe("the intro screens (Founderhall's)", () => {
+describe("the intro screens (Commonhall's)", () => {
   let posts: { path: string; body: Record<string, unknown> }[];
 
   beforeEach(() => {
@@ -185,7 +185,7 @@ describe("the intro screens (Founderhall's)", () => {
   describe("the connector's answer", () => {
     const asked = makeIntro({ viewerRole: INTRO_ROLES.introducer, requester: { ...MARCUS }, introducer: { ...SAM }, target: { name: "Rachel Kim", headline: "CFO at Brightside Clinics", linkedinSlug: null, isNamed: true } });
 
-    it("shows Founderhall's three choices, the person's email and the note to edit", () => {
+    it("shows Commonhall's three choices, the person's email and the note to edit", () => {
       renderInApp(createElement(IntroPage, { intro: asked, community: COMMUNITY, canEmail: true, hasThread: false }));
 
       expect(screen.getByText("Would you introduce them?")).toBeTruthy();

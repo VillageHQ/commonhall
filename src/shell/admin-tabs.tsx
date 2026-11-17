@@ -9,8 +9,8 @@ import type { AdminTabFacts } from "@/shell/admin-badges";
 import { ROUTES } from "@/platform/http/routes";
 import { ASKS_ADMIN_PAGE } from "@/modules/asks/contract";
 
-// The console's own menu is the sidebar (and the phone tabs). Community has pages Founderhall's menu has no item for;
-// each lights a console item. Set up's pages are reached from its list (/admin/setup), as in Founderhall; the Asks
+// The console's own menu is the sidebar (and the phone tabs). Community has pages Commonhall's menu has no item for;
+// each lights a console item. Set up's pages are reached from its list (/admin/setup), as in Commonhall; the Asks
 // item still lists its pages here as a row of chips under the page title, until its area builds Asks & digest.
 type AdminTab = { label: string; href: string; readBadge?: (facts: AdminTabFacts) => number; badgeDescription?: (count: number) => string };
 

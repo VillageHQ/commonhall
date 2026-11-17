@@ -6,7 +6,7 @@ import type { IntroThreadEntry } from "@/modules/intros/service-thread";
 type ThreadNames = { requesterName: string; targetName: string; introducerName: string; viewerAuthor: IntroThreadAuthor };
 
 // The replies to the introduction email, passed on between the asker, the person and the connector (copied). Read here;
-// answered by email. Founderhall's thread rows: who and when, then the words.
+// answered by email. Commonhall's thread rows: who and when, then the words.
 export function IntroThread({ entries, names }: { entries: readonly IntroThreadEntry[]; names: ThreadNames }) {
   const nameOf: Record<IntroThreadAuthor, string> = {
     [INTRO_THREAD_AUTHORS.requester]: names.requesterName,

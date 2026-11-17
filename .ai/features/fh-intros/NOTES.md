@@ -1,6 +1,6 @@
-# How the Founderhall intro screens work today
+# How the Commonhall intro screens work today
 
-Founderhall's intro screens, steps and emails on Community's intro engine. Founderhall's own code was the model:
+Commonhall's intro screens, steps and emails on Community's intro engine. Commonhall's own code was the model:
 `intros/views.mjs` (screens), `mail/templates.mjs` (emails), `intros/flow.mjs` (steps).
 
 ## Screens and where they live
@@ -18,9 +18,9 @@ Founderhall's intro screens, steps and emails on Community's intro engine. Found
   link), "Nothing to do" with the reason (answered, withdrawn, expired, or a link nobody issued). A GET never changes anything; `?a=yes` only
   picks the answer. `/intro/optout/<token>` takes the person's consent token. `/meet/<token>` redirects there (308).
 - All words are in `intro-words.ts` (screens) and `email-copy.ts` (emails); `email-copy.test.ts` checks every email
-  against Founderhall's text (`email-copy.fixtures.json`, captured from Founderhall's demo).
+  against Commonhall's text (`email-copy.fixtures.json`, captured from Commonhall's demo).
 
-## Engine added for Founderhall's flow
+## Engine added for Commonhall's flow
 - **Answer links** (`answer-links.ts`, table `intro_answer_link`): a token per email for the connector (in the ask and
   its reminder) and for the asker's outcome question. Only the SHA-256 is kept. `service-answers.ts` answers for the
   member the link was sent to: `answerAsConnector` (yes + the person's email + the edited note in one step, or no with
@@ -37,16 +37,16 @@ Founderhall's intro screens, steps and emails on Community's intro engine. Found
 - The asks-left line in emails reads the shared allowance through `src/platform/allowance/weekly-allowance.ts`; the
   reader is provided at boot in `src/instrumentation.ts`. Without it (scripts, tests) the line says only "Your ask is
   back."
-- Replies by email: the person's address may be on the YES line or the line after it (Founderhall's words).
+- Replies by email: the person's address may be on the YES line or the line after it (Commonhall's words).
 
 ## Kept as Community's rule, pending the owner (`contract.ts`)
-- `REQUESTER_SEES_WHO_ANSWERED = false`: the asker never learns whose no it was. Founderhall says "Marcus can't make this
+- `REQUESTER_SEES_WHO_ANSWERED = false`: the asker never learns whose no it was. Commonhall says "Marcus can't make this
   one"; Community says "They can't make this one" (pill, tracker, email), and the asker's tracker shows the
-  connector's step until the person said yes. `true` gives Founderhall's words exactly.
+  connector's step until the person said yes. `true` gives Commonhall's words exactly.
 - Admins: the owner decided (2026-11-11) that admins see who asked whom, states and dates (never the note), so the
-  note sheet uses Founderhall's words "names, states and dates" and the switch is gone.
+  note sheet uses Commonhall's words "names, states and dates" and the switch is gone.
 
 ## Known gaps
-- Founderhall sends from "Marcus Webb via Northwind Founders"; the outbox has one sender name for the community.
-- Founderhall's emails are plain text; Community also sends the same words as simple HTML.
+- Commonhall sends from "Marcus Webb via Northwind Founders"; the outbox has one sender name for the community.
+- Commonhall's emails are plain text; Community also sends the same words as simple HTML.
 - The phone shell's "Jobs · Perks" links and the menu count badges are the foundation's.

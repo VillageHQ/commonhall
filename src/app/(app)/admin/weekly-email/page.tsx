@@ -5,7 +5,7 @@ import { requireAdmin } from "@/platform/auth/session";
 import { ROUTES } from "@/platform/http/routes";
 import { modulePage } from "@/platform/modules/module-page";
 
-// The weekly email moved to Asks & digest; its preview is the digest preview (Founderhall's /admin/digest).
+// The weekly email moved to Asks & digest; its preview is the digest preview (Commonhall's /admin/digest).
 export default modulePage(adminManifest, async function AdminWeeklyEmailPage() {
   await requireAdmin();
   permanentRedirect(ROUTES.adminDigest);

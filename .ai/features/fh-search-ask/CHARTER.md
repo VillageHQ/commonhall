@@ -1,12 +1,12 @@
-# Charter: Founderhall transplant, area 2 — Search and asking for an intro
+# Charter: Commonhall transplant, area 2 — Search and asking for an intro
 
 Approved scope: the orchestrator's brief for round 3, area 2 (the owner approved the transplant plan, the route
-renames with permanent redirects, and bringing Founderhall's features over where a screen needs them).
+renames with permanent redirects, and bringing Commonhall's features over where a screen needs them).
 
 ## Direction
-Community's engine, Founderhall's screens copied exactly (structure, sections in order, parts, words, look, steps).
-Founderhall is the acceptance test: every acceptance shot of this area, retaken from Community at 390 and 1280 px
-with the same made-up demo people, matches the Founderhall shot except community data (names, counts).
+Community's engine, Commonhall's screens copied exactly (structure, sections in order, parts, words, look, steps).
+Commonhall is the acceptance test: every acceptance shot of this area, retaken from Community at 390 and 1280 px
+with the same made-up demo people, matches the Commonhall shot except community data (names, counts).
 
 **In**
 - Search moves to `/search` (label "Search"), with a permanent redirect from `/network`: H1 "Who are you trying to
@@ -23,7 +23,7 @@ with the same made-up demo people, matches the Founderhall shot except community
   path) → the note.
 - My network `/me/network` (new page): the connect screen and the connected screen; "Your network settings"
   moves there from the search page.
-- The email to the connector ("X, would you introduce Y to Z?") matches Founderhall's subject and body word for word.
+- The email to the connector ("X, would you introduce Y to Z?") matches Commonhall's subject and body word for word.
 - Every link to `/network` (menus, emails, pages) points at `/search`.
 
 **Out** (other areas): the intro tracker after sending and its flash (area 3), the profile page itself and its

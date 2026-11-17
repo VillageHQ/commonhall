@@ -17,7 +17,7 @@ import { readEnabledIds } from "@/shell/enabled-modules";
 
 import type { EmailSettingRow } from "./email-preferences-card";
 
-// The rows of Founderhall's Email settings: the weekly digest, asks and messages. Community's own: intro emails and
+// The rows of Commonhall's Email settings: the weekly digest, asks and messages. Community's own: intro emails and
 // intro reminders, each with its own switch like the others (PRIV-09), and the reminder to connect a network only for
 // a member who hasn't connected one.
 export async function readEmailSettingRows(database: Database, memberId: string): Promise<EmailSettingRow[] | null> {

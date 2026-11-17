@@ -25,7 +25,7 @@ import { hasNoBlockBetween, isOpenAsk, readSearchWords } from "./reads.ts";
 import { canRenewAsk, readAskState } from "./rules-state.ts";
 import { ask, askAnswer, askHelper, askOffer } from "./schema.ts";
 
-// Founderhall's Asks & updates and one ask's page, read on the server. The board's tabs: Open (open asks), Updates,
+// Commonhall's Asks & updates and one ask's page, read on the server. The board's tabs: Open (open asks), Updates,
 // Yours (the viewer's own), Answered (closed asks, the archive). A search looks through every ask and its answers.
 
 const BOARD_LIMIT = 100;
@@ -80,7 +80,7 @@ export type BoardPost = {
   helperCount: number;
   pathHelperCount: number;
   helperFaces: AskMember[];
-  // The viewer is one of the helpers: Founderhall's "You could help." with the reason only they read.
+  // The viewer is one of the helpers: Commonhall's "You could help." with the reason only they read.
   viewerWhyYou: string | null;
   viewerHasHelped: boolean;
   answerCount: number;
@@ -286,7 +286,7 @@ async function readPrivateOffers(database: Database, askId: string, viewerId: st
     .map((row) => ({ id: row.id, author: toMember(row.member), body: row.note, kind: ASK_ANSWER_KINDS.knowSomeone, createdAt: row.createdAt.toISOString(), isMine: false }) satisfies PostAnswer);
 }
 
-// "Your asks in motion" on Today: the viewer's open asks (not updates), newest first, with Founderhall's one line under each.
+// "Your asks in motion" on Today: the viewer's open asks (not updates), newest first, with Commonhall's one line under each.
 export async function readOpenOwnPosts(database: Database, viewerId: string, now = new Date()) {
   const rows = await selectPosts(database)
     .where(and(eq(ask.authorId, viewerId), eq(ask.kind, ASK_KINDS.ask), isOpenAsk(now)))

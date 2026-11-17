@@ -16,7 +16,7 @@ export const MESSAGE_EMAIL_WINDOW_MS = 15 * 60 * 1000;
 
 type MessageEmailFacts = { senderName: string; communityName: string; link: string; accentColor: string; canReply: boolean };
 
-// Founderhall's new-message email (copy/emails/email-message-notify.md), in plain words. One difference on purpose:
+// Commonhall's new-message email (copy/emails/email-message-notify.md), in plain words. One difference on purpose:
 // the email never carries the message itself, because every email is kept in the outbox and the admins' email log,
 // and admins must never read messages. With a reply address, replying to it posts the reply into the conversation.
 export function renderMessageEmail({ senderName, communityName, link, accentColor, canReply }: MessageEmailFacts) {

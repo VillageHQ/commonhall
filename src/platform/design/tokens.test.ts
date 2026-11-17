@@ -45,8 +45,8 @@ const TEXT_PAIRS = [
   ["--tint-f-fg", "--tint-f-bg"],
 ] as const;
 
-// Founderhall's own names (design-system.md §1.1), the pairs its parts draw.
-const FOUNDERHALL_TEXT_PAIRS = [
+// Commonhall's own names (design-system.md §1.1), the pairs its parts draw.
+const COMMONHALL_TEXT_PAIRS = [
   ["--ink", "--paper"],
   ["--ink", "--leaf"],
   ["--ink", "--vellum"],
@@ -76,8 +76,8 @@ describe.each([
     expect(failures).toEqual([]);
   });
 
-  it("keep Founderhall's text pairs readable", () => {
-    const failures = FOUNDERHALL_TEXT_PAIRS.filter(
+  it("keep Commonhall's text pairs readable", () => {
+    const failures = COMMONHALL_TEXT_PAIRS.filter(
       ([text, background]) => contrastRatio(readColor(tokens, text), readColor(tokens, background)) < AA_TEXT,
     );
 

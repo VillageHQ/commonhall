@@ -14,7 +14,7 @@ import { EMAIL_TEST_OUTCOMES, type EmailTestOutcome } from "./dns-check-contract
 
 export { EMAIL_TEST_OUTCOMES, type EmailTestOutcome };
 
-// Founderhall's mail test (copy/emails/email-mail-test.md), word for word: plain words, the HTML part says the same.
+// Commonhall's mail test (copy/emails/email-mail-test.md), word for word: plain words, the HTML part says the same.
 export function renderEmailTest(communityName: string, fromAddress: string) {
   const community = toSingleLine(communityName);
   const sender = splitFromAddress(toSingleLine(fromAddress)).address;

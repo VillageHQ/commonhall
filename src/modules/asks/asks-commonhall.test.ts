@@ -23,7 +23,7 @@ import { clearDatabase, createTestDatabase } from "@/test/database";
 import { FAKE_RESEND_API_KEY, startFakeResendServer } from "@/test/fake-resend-server";
 import { createSignedInMember } from "@/test/signed-in-member";
 
-// Founderhall's Asks & updates and Today on Community's engine: the words of its emails, "I can help", the status
+// Commonhall's Asks & updates and Today on Community's engine: the words of its emails, "I can help", the status
 // buttons, the board's tabs, and "Is this right?".
 const APP_URL = "http://localhost:3000";
 const OK_STATUS = 200;
@@ -37,7 +37,7 @@ function call(handler: Handler, member: Member, body: unknown) {
   return handler(new Request(`${APP_URL}/api/asks`, { method: "POST", headers: { "Content-Type": "application/json", Origin: APP_URL, Cookie: member.cookie }, body: JSON.stringify(body) }));
 }
 
-describe("Founderhall's asks and Today", () => {
+describe("Commonhall's asks and Today", () => {
   const database = createTestDatabase();
   let resend: Awaited<ReturnType<typeof startFakeResendServer>>;
   let amara: Member;
@@ -80,7 +80,7 @@ describe("Founderhall's asks and Today", () => {
   });
 
   describe("the words", () => {
-    it("writes the helper email word for word as Founderhall", () => {
+    it("writes the helper email word for word as Commonhall", () => {
       const email = renderHelperEmail(
         { APP_URL: "http://127.0.0.1:9600" } as never,
         { name: "Northwind Founders" } as never,
@@ -113,7 +113,7 @@ describe("Founderhall's asks and Today", () => {
       );
     });
 
-    it("writes the help-offered email word for word as Founderhall", () => {
+    it("writes the help-offered email word for word as Commonhall", () => {
       const email = renderHelpOfferedEmail({
         communityName: "Northwind Founders",
         authorName: "Amara Diallo",
@@ -146,7 +146,7 @@ describe("Founderhall's asks and Today", () => {
       );
     });
 
-    it("writes the digest reply notice word for word as Founderhall", () => {
+    it("writes the digest reply notice word for word as Commonhall", () => {
       const email = renderDigestHint("Northwind Founders", "We couldn’t read a code like HELP 1 in your reply.", "https://portal.northwind.example/today");
       expect(email.subject).toBe("Your reply to the digest did not go through");
       expect(email.text).toBe(
@@ -154,7 +154,7 @@ describe("Founderhall's asks and Today", () => {
       );
     });
 
-    it("names who an ask is trying to reach, and why you, as Founderhall does", () => {
+    it("names who an ask is trying to reach, and why you, as Commonhall does", () => {
       expect(describeAskWho({ targetText: "VP Supply Chain at a US hospital", targetCompany: "Mercy Ridge Hospital" })).toBe("VP Supply Chain at a US hospital · Mercy Ridge Hospital");
       expect(describeAskWho({ targetText: "Head of procurement at Halcyon Health", targetCompany: "Halcyon Health" })).toBe("Head of procurement at Halcyon Health");
       expect(describeWhyYou({ reason: "words", why: "can help with “Raising a seed round in New York; HIPAA basics for first-time founders.”", personName: null, personTitle: null, warmth: null })).toBe(

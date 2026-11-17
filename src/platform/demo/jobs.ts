@@ -1,6 +1,6 @@
 import { DEMO_EMAIL_DOMAIN } from "./mode.ts";
 
-// The demo's job board, the same made-up jobs as Founderhall's demo: three founders linked their company's hiring tool, and these are the jobs a pull "found".
+// The demo's job board, the same made-up jobs as Commonhall's demo: three founders linked their company's hiring tool, and these are the jobs a pull "found".
 // Every company, link and job is made up; the links point at example.com. In demo mode the hourly pull never
 // fetches, so these jobs stay until the nightly reset seeds them again.
 

@@ -8,7 +8,7 @@ checks: ["src/modules/asks/asks.test.ts", "src/modules/asks/rules.test.ts"]
 ---
 # Spec: asks board tools and Admin › Asks
 
-**Added:** 2026-11-11, the owner's pick from the Founderhall merge plan. It builds two parity specs:
+**Added:** 2026-11-11, the owner's pick from the Commonhall merge plan. It builds two parity specs:
 `.ai/features/asks-board-tools/SPEC.md` (tabs, search, pin, reopen) and the asks page in
 `.ai/features/admin-console/SPEC.md`.
 

@@ -8,7 +8,7 @@ import type { RequestContext } from "@/platform/http/request-context";
 import { readEnabledIds } from "./enabled-modules";
 import { setModuleState } from "./module-settings";
 
-// Set up › Perks (Founderhall's page): the embed code and "Show Perks to members". The switch is the Perks module's own
+// Set up › Perks (Commonhall's page): the embed code and "Show Perks to members". The switch is the Perks module's own
 // on/off, so the menu entry, the Today card and /perks follow it. Members see Perks only with a marketplace saved
 // (the demo shows its made-up deals without one).
 async function showPerks(context: RequestContext, isOn: boolean) {
