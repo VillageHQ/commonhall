@@ -162,7 +162,8 @@
   --border: #33332f;
   --rule: #33332f;
   --input: #8f8d85;
-  --logo-backdrop-dark: #f4f2ec;
+  /* A light logo needs a dark tile in both themes; an off-white one hid a white logo. */
+  --logo-backdrop-dark: #111110;
   --destructive: #e7a57e;
   --destructive-foreground: #0e0e0d;
   --destructive-soft: #3a2a1f;
