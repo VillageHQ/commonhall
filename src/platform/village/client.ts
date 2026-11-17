@@ -101,6 +101,12 @@ export async function mintVillageToken(connection: VillageConnection, { external
   return token;
 }
 
+// The app the secret key belongs to: its title (for "Connected to <name>") and its public key. Free.
+export async function readVillageAppDetails(session: VillageSession) {
+  const { title, public_key } = await session.village.app.get(withinDeadline(session));
+  return { title, publicKey: public_key };
+}
+
 export async function readVillageAppPublicKey(session: VillageSession) {
   const { public_key } = await session.village.app.get(withinDeadline(session));
   return public_key;

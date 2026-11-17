@@ -2,7 +2,7 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } 
 
 import { NETWORK_ERROR_CODES, networkStatusSchema, NETWORK_STAGES } from "@/modules/network/contract";
 import { readVillageGroup } from "@/modules/network/service-settings";
-import { readVillageKeys, saveVillageKeys } from "@/platform/village/settings";
+import { readVillageAppName, readVillageKeys, saveVillageKeys } from "@/platform/village/settings";
 import { memberNetwork } from "@/modules/members/schema";
 import { clearDatabase, createTestDatabase } from "@/test/database";
 import { FAKE_VILLAGE_KEYS, startFakeVillageServer } from "@/test/fake-village-server";
@@ -100,6 +100,15 @@ describe("the Village admin API", () => {
       expect(response.status).toBe(200);
       expect(responseBody).not.toContain(FAKE_VILLAGE_KEYS.secretKey);
       expect(await readVillageKeys(database)).toEqual(FAKE_VILLAGE_KEYS);
+    });
+
+    it("answers with the Village app's name and keeps it for \"Connected to <name>\"", async () => {
+      const admin = await createSignedInMember(database, "admin");
+
+      const response = await postKeys(jsonRequest(admin, FAKE_VILLAGE_KEYS));
+
+      expect(await response.json()).toMatchObject({ appName: "Fake app" });
+      expect(await readVillageAppName(database)).toBe("Fake app");
     });
 
     it("rejects a secret key Village refuses", async () => {

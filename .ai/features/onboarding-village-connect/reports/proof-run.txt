@@ -1,0 +1,18 @@
+[proof] fake Village at http://127.0.0.1:64783
+[proof] signed in, at http://127.0.0.1:9513/admin/setup
+[proof] saved 1-not-connected
+[proof] links:
+  Create a developer account -> https://village.ai/platform (target=_blank)
+  Finish Village's short checklist -> https://village.ai/platform/onboarding (target=_blank)
+  Open your keys page -> https://village.ai/platform/settings/api-keys (target=_blank)
+[proof] buttons in Connection: []
+[proof] wrong key says: Village rejected this secret key. Copy it again from API Keys in Village, and check that your Village app is active.
+[proof] key checks sent so far: ["wrong"]
+[proof] saved 2-wrong-key
+[proof] right pair says: Connected to Fake app
+[proof] pill: ConnectionConnected
+[proof] saved 3-connected
+[proof] after reload: Connected to Fake app·Replace the keys
+[proof] saved 4-replace-open
+[proof] key checks sent in all: ["wrong","right"]
+[proof] stopped app, browser and fake Village

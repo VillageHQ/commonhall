@@ -21,7 +21,7 @@ import {
   leaveVillageGroup,
   mintVillageToken,
   NETWORK_SOURCE,
-  readVillageAppPublicKey,
+  readVillageAppDetails,
   readVillagePaths,
   readVillagePathsBulk,
   readVillageUser,
@@ -266,9 +266,9 @@ export async function mintSyncToken(context: RequestContext) {
   return { token: await mintVillageToken(connected.villageConnection, connected.identity) };
 }
 
-async function readAppPublicKeyOrExplain(session: VillageSession) {
+async function readAppOrExplain(session: VillageSession) {
   try {
-    return await readVillageAppPublicKey(session);
+    return await readVillageAppDetails(session);
   } catch (error) {
     if (!isVillageError(error, "unauthorized")) throw error;
     throw new RequestError(
@@ -279,10 +279,12 @@ async function readAppPublicKeyOrExplain(session: VillageSession) {
   }
 }
 
+// Returns the Village app's name, so the screen can say "Connected to <name>" without another call.
 export async function verifyAndSaveVillageKeys(context: RequestContext, keys: VillageKeys) {
   const { session } = await connectMember(context, keys);
+  const app = await readAppOrExplain(session);
 
-  if ((await readAppPublicKeyOrExplain(session)) !== keys.publicKey) {
+  if (app.publicKey !== keys.publicKey) {
     throw new RequestError(
       UNPROCESSABLE_STATUS,
       NETWORK_ERROR_CODES.keysMismatched,
@@ -291,9 +293,10 @@ export async function verifyAndSaveVillageKeys(context: RequestContext, keys: Vi
   }
 
   await withAdminTransaction(context.database, context.member.id, async (transaction) => {
-    await saveVillageKeys(transaction, keys);
+    await saveVillageKeys(transaction, keys, process.env, app.title);
     await recordAdminAction(transaction, context.member.id, { action: AUDIT_ACTIONS.villageKeysSaved });
   });
+  return { appName: app.title };
 }
 
 export async function createCommunityGroup(context: RequestContext, name: string) {

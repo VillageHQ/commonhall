@@ -164,7 +164,13 @@ export function readKeyStorage(environment: Environment = process.env) {
   return readSetupToken(environment) ? KEY_STORAGE.sealed : KEY_STORAGE.unencrypted;
 }
 
-export async function saveVillageKeys(database: DatabaseOrTransaction, keys: VillageKeys, environment: Environment = process.env) {
+// The name "Connected to <name>" uses. Keys saved before it was kept have none; the screen then says "your Village app".
+export async function readVillageAppName(database: Database) {
+  const settings = await readSettings(database, [INSTANCE_SETTING_KEYS.villageAppName]);
+  return settings.get(INSTANCE_SETTING_KEYS.villageAppName) || null;
+}
+
+export async function saveVillageKeys(database: DatabaseOrTransaction, keys: VillageKeys, environment: Environment = process.env, appName = "") {
   // A preview may share production's database. Its token would seal the keys so production can't read them.
   if (isPreview(environment)) {
     throw new RequestError(UNPROCESSABLE_STATUS, VILLAGE_ERROR_CODES.keysUnstorable, "Village keys can't be changed from a preview. Save them on your live site.");
@@ -176,6 +182,7 @@ export async function saveVillageKeys(database: DatabaseOrTransaction, keys: Vil
   await saveSettings(database, {
     [INSTANCE_SETTING_KEYS.villagePublicKey]: keys.publicKey,
     [SECRET_KEY_LABEL]: token ? await sealSecret(keys.secretKey, token, SECRET_KEY_LABEL) : keys.secretKey,
+    [INSTANCE_SETTING_KEYS.villageAppName]: appName,
   });
 }
 
