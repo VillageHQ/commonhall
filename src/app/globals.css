@@ -546,7 +546,7 @@
 }
 
 .dark :is(.fh-topbar, .fh-report-actions) {
-  background: rgb(26 25 21 / 0.94);
+  background: rgb(14 14 13 / 0.94);
 }
 
 .dark .fh-mail-h {

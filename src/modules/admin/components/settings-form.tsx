@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { ACCEPTED_LOGO_TYPES } from "@/platform/branding/logo-rules";
 import type { CommunityLogo } from "@/platform/branding/branding";
-import { contrastRatio, DEFAULT_ACCENT_COLOR, deriveFundColors, LEAF, parseAccentColor, toAccentVariables } from "@/platform/design/accent";
+import { ACCENT_PRESETS, contrastRatio, DEFAULT_ACCENT_COLOR, deriveFundColors, LEAF, parseAccentColor, toAccentVariables } from "@/platform/design/accent";
 import { postRequest } from "@/platform/http/post-request";
 import { HOSTED_BY, PLANS } from "@/platform/settings/plan-api";
 import { MESSAGE_POLICY_DEFAULTS, SETTINGS_API_ROUTE, settingsResponseSchema, type SettingsField, type SettingsValues } from "@/modules/admin/contract-settings";
@@ -125,6 +125,24 @@ export function SettingsForm({ saved, uploadedLogo, isMailOn, serverPlan, manage
                 aria-invalid={errors.accent ? true : undefined}
                 aria-describedby={describedBy("accent")}
               />
+            </div>
+            {/* The ready colours (Ink first): a tap fills the field; the admin still saves with the form. */}
+            <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label="Ready colours">
+              {ACCENT_PRESETS.map((preset) => {
+                const isOn = previewColor.toLowerCase() === preset.color.toLowerCase();
+                return (
+                  <button
+                    key={preset.color}
+                    type="button"
+                    title={preset.name}
+                    aria-label={preset.name}
+                    aria-pressed={isOn}
+                    className="size-7 rounded-full border border-rule focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring aria-pressed:shadow-[0_0_0_2px_var(--leaf),0_0_0_3.5px_var(--ink)]"
+                    style={{ background: preset.color }}
+                    onClick={() => setValues((current) => ({ ...current, accent: preset.color.toUpperCase() }))}
+                  />
+                );
+              })}
             </div>
           </Field>
           <div className="fh-setrow" style={{ marginTop: 12, borderBottom: 0 }}>

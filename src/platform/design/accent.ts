@@ -160,7 +160,11 @@ function channelsToHex(channels: number[]) {
   return `#${pairs.join("")}`;
 }
 
+// Ink in the light theme: its tint is the kit's sunk paper, not a grey mixed from black.
+const LIGHT_INK = { fund: "#111110", deep: "#000000", tint: "#ecece8", isAdjusted: false } as const;
+
 export function deriveFundColors(brandHex: string) {
+  if (brandHex.toLowerCase() === DEFAULT_ACCENT_COLOR) return { ...LIGHT_INK };
   let channels = hexToChannels(brandHex);
   let fund = brandHex.toLowerCase();
   for (let step = 0; step < FUND_MAX_STEPS && contrastRatio(fund, LEAF) < AA_TEXT; step += 1) {
@@ -207,7 +211,12 @@ const DARK_FUND_MAX_CHROMA = 0.13;
 const DARK_TINT = { lightness: 0.3, maxChroma: 0.03 };
 const DARK_DEEP_LIFT = 0.07;
 
+// Ink in the dark theme: the landing page's dark buttons are paper on near-black, so the default inverts to the dark
+// theme's ink instead of stopping at the first grey that reads.
+const DARK_INK = { fund: "#f4f2ec", deep: "#ffffff", tint: "#2a2a27" } as const;
+
 export function deriveDarkFundColors(brandHex: string) {
+  if (brandHex.toLowerCase() === DEFAULT_ACCENT_COLOR) return { ...DARK_INK };
   const brand = hexToOklch(brandHex);
   const calm = { ...brand, chroma: Math.min(brand.chroma, DARK_FUND_MAX_CHROMA) };
   const tint = oklchToHex({ lightness: DARK_TINT.lightness, chroma: Math.min(brand.chroma, DARK_TINT.maxChroma), hue: brand.hue });

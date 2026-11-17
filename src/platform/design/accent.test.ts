@@ -156,6 +156,13 @@ describe("the fund colour in dark mode", () => {
     expect(failures).toEqual([]);
   });
 
+  it("inverts the default ink to paper in the dark theme, and gives it the sunk paper as its light tint", () => {
+    expect(deriveDarkFundColors(DEFAULT_ACCENT_COLOR)).toEqual({ fund: "#f4f2ec", deep: "#ffffff", tint: "#2a2a27" });
+    expect(deriveFundColors(DEFAULT_ACCENT_COLOR)).toEqual({ fund: "#111110", deep: "#000000", tint: "#ecece8", isAdjusted: false });
+    expect(contrastRatio("#f4f2ec", DARK_SURFACES.leaf)).toBeGreaterThanOrEqual(AA_TEXT);
+    expect(contrastRatio("#111110", "#ecece8")).toBeGreaterThanOrEqual(AA_TEXT);
+  });
+
   it("writes the dark fund, with dark Leaf words on the primary button", () => {
     const { fund } = deriveDarkFundColors(DEFAULT_ACCENT_COLOR);
     const css = renderAccentCss(DEFAULT_ACCENT_COLOR);
