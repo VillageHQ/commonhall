@@ -39,7 +39,7 @@ export class ResendRejectedEmailError extends Error {}
 async function readReason(response: Response) {
   const body: unknown = await response.json().catch(() => null);
   const message = body && typeof body === "object" && "message" in body && typeof body.message === "string" ? body.message : "";
-  return message ? `: ${message.slice(0, MAXIMUM_REASON_LENGTH)}` : "";
+  return message ? `: ${message.slice(0, MAXIMUM_REASON_LENGTH).replace(/\.$/, "")}` : "";
 }
 
 export async function sendResendEmail({ apiKey, fromAddress, apiUrl }: ResendConfig, email: OutgoingEmail) {
