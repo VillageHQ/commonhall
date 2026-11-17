@@ -36,7 +36,7 @@ export async function generateMetadata({ searchParams }: InvitePageProps): Promi
   return { title: invite ? PAGE_TITLES.join : PAGE_TITLES.linkNotValid, robots: { index: false, follow: false } };
 }
 
-// Founderhall's badLinkPage for an invite: used, expired, withdrawn or unknown all read the same, so the page never
+// Commonhall's badLinkPage for an invite: used, expired, withdrawn or unknown all read the same, so the page never
 // tells which invites exist. Someone who never joined needs a new invite, not a sign-in link (the owner's call), so
 // the sign-in link stays one line below. Too many tries from one place get Community's wait-a-minute line.
 function BadInviteLink({ community, isLimited }: { community: Community; isLimited: boolean }) {
@@ -55,7 +55,7 @@ function BadInviteLink({ community, isLimited }: { community: Community; isLimit
   );
 }
 
-// Founderhall's /invite?token= (confirmPage, kind invite).
+// Commonhall's /invite?token= (confirmPage, kind invite).
 export default modulePage(membersManifest, async function InvitePage({ searchParams }: InvitePageProps) {
   const { token, e: emailedMark } = await searchParams;
   const requestHeaders = await headers();

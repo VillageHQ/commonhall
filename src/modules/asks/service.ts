@@ -112,7 +112,7 @@ async function lockAskForOffer(transaction: Transaction, askId: string, helperId
   return target;
 }
 
-// The ask anyone may answer under: there, seen by them, not removed. Founderhall lets the author and members answer
+// The ask anyone may answer under: there, seen by them, not removed. Commonhall lets the author and members answer
 // any ask, open or answered, as many times as they like.
 async function lockAskForAnswer(transaction: Transaction, askId: string, memberId: string) {
   const [target] = await transaction

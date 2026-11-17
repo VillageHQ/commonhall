@@ -1,6 +1,6 @@
 # Profile fill-in and spending caps: charter
 
-Approved scope: the owner's build plan for merging Founderhall's strengths into Community (wave 2). The maintainer
+Approved scope: the owner's build plan for merging Commonhall's strengths into Community (wave 2). The maintainer
 agreed and reviews after merge. This page restates that brief; it is the scope of this build.
 
 ## Direction
@@ -43,7 +43,7 @@ data" export, filled-in words in directory search.
 
 ## Picks (small, reversible)
 
-- Default monthly cap: 7,500 credits (about $150), the figure Founderhall uses; the admin changes it on Credits.
+- Default monthly cap: 7,500 credits (about $150), the figure Commonhall uses; the admin changes it on Credits.
 - Months are UTC calendar months, like the daily limit's UTC days.
 - "Don't look me up" also deletes the lines already filled in.
 - With "ask each member", the question shows on the home page and the card page until the member answers.

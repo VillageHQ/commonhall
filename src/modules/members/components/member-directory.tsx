@@ -22,7 +22,7 @@ import { formatDayMonth } from "@/platform/text/format-date";
 
 import { directoryQuery } from "@/modules/members/queries-directory";
 
-// Founderhall's directory (member-directory-populated): one search box, five selects, the count, then two columns of
+// Commonhall's directory (member-directory-populated): one search box, five selects, the count, then two columns of
 // ruled rows. A row is one link to the profile: photo, serif name, logo + "Role, Company · City", the "working on"
 // line, square chips and "fresh as of".
 
@@ -157,7 +157,7 @@ function readCountLine(count: number, isFiltered: boolean) {
   return `${count} ${count === 1 ? "member" : "members"}`;
 }
 
-// Founderhall shows everyone on one page; a very large community gets a quiet "Earlier" / "More" pair.
+// Commonhall shows everyone on one page; a very large community gets a quiet "Earlier" / "More" pair.
 function MoreLinks({ page, pageCount, filters }: { page: number; pageCount: number; filters: DirectoryFilters }) {
   if (pageCount <= 1) return null;
   return (

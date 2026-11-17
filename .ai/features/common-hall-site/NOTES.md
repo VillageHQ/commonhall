@@ -1,4 +1,4 @@
-# Common Hall landing page: how the motion is built
+# Commonhall landing page: how the motion is built
 n> The page it describes is superseded by [common-hall-v2](../common-hall-v2/NOTES.md) (paper and ink, no pen or sheets). Kept for history.
 
 All of it lives in `site/assets/site.js`, the page's own script with no library. The source design is

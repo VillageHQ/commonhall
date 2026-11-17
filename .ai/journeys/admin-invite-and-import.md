@@ -13,7 +13,7 @@ Who: the fund's platform lead (admin) and portfolio founders.
 3. The founder opens `/invite?token=` (old `/join/<token>` links redirect) → "Join <community>", "You were invited
    as <email>" → "Accept and sign in": a passwordless account, signed in, email still unconfirmed (the confirmation
    email does that).
-4. Welcome, Founderhall's two steps: `/welcome` (name, what they work on, who they could help, role, company, city)
+4. Welcome, Commonhall's two steps: `/welcome` (name, what they work on, who they could help, role, company, city)
    → `/welcome/privacy` (directory visibility, intro asks, profile fill-in) → the directory with "You’re in. This
    is the directory." Sharing their network waits on the network page.
 5. The admin sees them as a member in Admin › Members, with the Manage menu (admin role, remove, and more).

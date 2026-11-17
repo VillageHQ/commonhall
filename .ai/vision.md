@@ -2,7 +2,7 @@
 
 > ⚠ RECONSTRUCTED from code on 2026-11-10 — needs confirmation
 > Sources: README.md, the module notes under src/modules/*/AGENTS.md, .ai/features/*/CHARTER.md, the merge plan the
-> owner approved (Community as the base, Founderhall's flows ported in).
+> owner approved (Community as the base, Commonhall's flows ported in).
 
 ## Vision
 Every fund's founder community runs on warm introductions. This app makes the community's combined network

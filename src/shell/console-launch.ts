@@ -16,7 +16,7 @@ import { networkManifest } from "../modules/network/manifest.ts";
 import { readVillageGroup } from "../modules/network/service-settings.ts";
 import { readEnabledIds } from "./enabled-modules.ts";
 
-// The console's launch checklist (Founderhall's): four steps from a fresh install to the first partner report, each
+// The console's launch checklist (Commonhall's): four steps from a fresh install to the first partner report, each
 // read from the app itself. Home shows it until all four are done once; then Home is the dashboard for good.
 
 export const LAUNCH_STEPS = { look: "look", invite: "invite", plumbing: "plumbing", report: "report" } as const;

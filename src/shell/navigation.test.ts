@@ -37,11 +37,11 @@ describe("the navigation", () => {
     }
   });
 
-  it("lists Founderhall's member menu in its order", () => {
+  it("lists Commonhall's member menu in its order", () => {
     expect(MEMBER_ITEMS.map(({ label }) => label)).toEqual([
       "Today",
       "Asks & updates",
-      // Community's feed, while it's on (Founderhall has none).
+      // Community's feed, while it's on (Commonhall has none).
       "Feed",
       "Search",
       "Directory",
@@ -53,7 +53,7 @@ describe("the navigation", () => {
     ]);
   });
 
-  it("gives Founderhall's six a phone tab, and Feed", () => {
+  it("gives Commonhall's six a phone tab, and Feed", () => {
     expect(MEMBER_ITEMS.flatMap(({ tabLabel }) => (tabLabel ? [tabLabel] : []))).toEqual(["Today", "Asks", "Feed", "Search", "Directory", "Intros", "Inbox"]);
   });
 
@@ -61,7 +61,7 @@ describe("the navigation", () => {
     expect(selectNavigationItems(NAVIGATION_SECTIONS.admin, false)).toEqual([]);
   });
 
-  it("lists Founderhall's console menu for admins", () => {
+  it("lists Commonhall's console menu for admins", () => {
     const labels = selectNavigationItems(NAVIGATION_SECTIONS.admin, true).map(({ label }) => label);
 
     expect(labels).toEqual(["Home", "Partner report", "Intro log", "Members", "Invites", "Asks & digest", "Job board", "Set up"]);

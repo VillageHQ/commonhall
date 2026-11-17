@@ -112,13 +112,13 @@ describe("the accent style sheet", () => {
   });
 });
 
-describe("the fund colour (Founderhall's rule)", () => {
+describe("the fund colour (Commonhall's rule)", () => {
   it.each([
     ["#24525A", { fund: "#24525a", deep: "#1b3e44", tint: "#dce3e5", isAdjusted: false }],
     ["#ffc93c", { fund: "#8e7021", deep: "#6b5419", tint: "#ede8db", isAdjusted: true }],
     ["#0f7f86", { fund: "#0f7f86", deep: "#0b5f65", tint: "#d9ebec", isAdjusted: false }],
     ["#e8604c", { fund: "#c45140", deep: "#933d30", tint: "#f6e3e0", isAdjusted: true }],
-  ] as const)("gives Founderhall's values for %s", (color, expected) => {
+  ] as const)("gives Commonhall's values for %s", (color, expected) => {
     expect(deriveFundColors(color)).toEqual(expected);
   });
 
@@ -134,7 +134,7 @@ describe("the fund colour (Founderhall's rule)", () => {
 });
 
 describe("the fund colour in dark mode", () => {
-  it("lightens Founderhall's demo teal until it reads on the dark sheets", () => {
+  it("lightens Commonhall's demo teal until it reads on the dark sheets", () => {
     const { fund, deep, tint } = deriveDarkFundColors("#24525A");
 
     expect({ fund, deep, tint }).toEqual({ fund: "#6e9da5", deep: "#83b3bb", tint: "#1b3236" });

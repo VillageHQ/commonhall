@@ -12,7 +12,7 @@ type SplitLayoutProps = {
   community: Community;
   you?: ConstellationPerson;
   people?: ConstellationPerson[];
-  // The brand panel's note. Founderhall's public page has no brand panel, so it waits for the areas to place it.
+  // The brand panel's note. Commonhall's public page has no brand panel, so it waits for the areas to place it.
   note?: ReactNode;
   copyAs?: ElementType;
   isTakeover?: boolean;
@@ -23,7 +23,7 @@ type SplitLayoutProps = {
   children: ReactNode;
 };
 
-// Every signed-out page now uses Founderhall's public page (one card under the fund's mark). The name stays so the
+// Every signed-out page now uses Commonhall's public page (one card under the fund's mark). The name stays so the
 // pages keep working until their areas rebuild them.
 export function SplitLayout({ community, note, copyAs, isTakeover = false, withCredit = false, hosting, isNoteShown = false, children }: SplitLayoutProps) {
   return (

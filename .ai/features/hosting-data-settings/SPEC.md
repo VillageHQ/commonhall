@@ -12,10 +12,10 @@ basis: e95a9f.69eb0c
 ---
 # Spec: Hosting and data settings
 
-**Added:** 2026-11-10 (from the Founderhall parity map in `.ai/roadmap.md`)
+**Added:** 2026-11-10 (from the Commonhall parity map in `.ai/roadmap.md`)
 
 ## What & why
-Buyers ask where a community's data is kept and whom to ask about it. Founderhall's settings recorded who hosts, the
+Buyers ask where a community's data is kept and whom to ask about it. Commonhall's settings recorded who hosts, the
 data region, the data-protection contact and a data agreement link.
 
 ## What it does now

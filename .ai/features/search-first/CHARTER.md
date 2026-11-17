@@ -18,7 +18,7 @@ intro from those paths. Out: changing how a member connects, consents or syncs; 
    one app-owned identity, "community search". It has a full grant (Village needs a real user to join a group; a
    `public` grant creates no user). It joins the community group once and never syncs, so it brings no network
    of its own. It uses the service email from Settings, or else the first admin's email (the same rule as the
-   profile fill-in). Its token never leaves the server. This follows Founderhall's community token.
+   profile fill-in). Its token never leaves the server. This follows Commonhall's community token.
 2. **Consent stays as it is.** A member's own network is searched, and shared, only after they agree and sync (which
    joins the group with their own identity). Then their searches run as themselves, and their own contacts count.
 3. **Paths only through members who shared.** Pooled paths keep only steps through members who joined the group.

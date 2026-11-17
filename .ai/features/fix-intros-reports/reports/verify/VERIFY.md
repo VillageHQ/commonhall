@@ -13,7 +13,7 @@ keys are the fake ones; a Village group was created. Where I moved data in the d
 two intros got `expires_at` in the past and then the `intro-expiry` job ran; two Village ledger rows were moved 3 days back
 so the per-day table has more than one row; `console_launched_at` was set so console Home shows the dashboard.
 
-Screenshots are JPEGs in this folder. Files named `sbs-*.jpg` put this build beside the Founderhall reference.
+Screenshots are JPEGs in this folder. Files named `sbs-*.jpg` put this build beside the Commonhall reference.
 
 ---
 

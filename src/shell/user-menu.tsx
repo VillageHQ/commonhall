@@ -12,7 +12,7 @@ import { ROUTES } from "@/platform/http/routes";
 
 export type ShellMember = { id: string; name: string; email: string; image?: string | null; isAdmin: boolean };
 
-// Founderhall has no account menu (crop sidebar-me-signout.png): the sidebar ends with the member's face, name and
+// Commonhall has no account menu (crop sidebar-me-signout.png): the sidebar ends with the member's face, name and
 // role, a plain Sign out link, then the footer line. My profile is a menu item; on a phone the avatar opens it.
 export function SidebarMember({ member }: { member: ShellMember }) {
   return (
@@ -49,8 +49,8 @@ export function PhoneProfileLink({ member }: { member: ShellMember }) {
   );
 }
 
-// Dark mode waits on the owner's decision (Founderhall has none). Until then the switch lives as one setting row on
-// Your data, where Founderhall's map puts it if it stays.
+// Dark mode waits on the owner's decision (Commonhall has none). Until then the switch lives as one setting row on
+// Your data, where Commonhall's map puts it if it stays.
 export function DarkModeRow() {
   const isDark = useIsDarkTheme();
   const id = useId();

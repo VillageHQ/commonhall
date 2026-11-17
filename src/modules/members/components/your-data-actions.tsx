@@ -30,7 +30,7 @@ async function downloadExport() {
   URL.revokeObjectURL(url);
 }
 
-// Founderhall's "Take it with you".
+// Commonhall's "Take it with you".
 export function ExportSheet() {
   const download = useMutation({ mutationFn: downloadExport });
   return (
@@ -58,7 +58,7 @@ function goToSignIn() {
   window.location.assign(ROUTES.signInAfterDeletion);
 }
 
-// Founderhall's "Delete my account" sheet holding the real delete (owner-approved): the member types the word, the
+// Commonhall's "Delete my account" sheet holding the real delete (owner-approved): the member types the word, the
 // account goes for good, and they land on sign-in. When Village could not be reached they read what is left first.
 export function DeleteAccountSheet({ communityName, isAdmin }: { communityName: string; isAdmin: boolean }) {
   const [isConfirming, setIsConfirming] = useState(false);

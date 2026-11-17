@@ -76,7 +76,7 @@ function usePollFailureExit(error: Error | null) {
   }, [exit]);
 }
 
-// Founderhall's thread page (threadPage): "‹ Inbox", the name, one line, the messages, the reply box. Community keeps
+// Commonhall's thread page (threadPage): "‹ Inbox", the name, one line, the messages, the reply box. Community keeps
 // older messages, retries, delete, report and block (a quiet link at the foot).
 function ThreadView({ conversationId, communityName }: { conversationId: string; communityName: string }) {
   const thread = useSuspenseInfiniteQuery(threadQuery(conversationId));

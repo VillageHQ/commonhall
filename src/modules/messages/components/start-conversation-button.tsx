@@ -13,7 +13,7 @@ export function toNewMessageHref(memberId: string) {
   return `${ROUTES.newMessage}?${new URLSearchParams({ to: memberId }).toString()}`;
 }
 
-// Founderhall's Message button: a link to `/messages/new?to=<member>`, which opens the conversation or starts one.
+// Commonhall's Message button: a link to `/messages/new?to=<member>`, which opens the conversation or starts one.
 export function StartConversationButton({ memberId, accessibleName, label, showsIcon = true, ...buttonProps }: MemberConversationProps) {
   return (
     <Button asChild {...buttonProps}>

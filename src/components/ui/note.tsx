@@ -2,7 +2,7 @@ import { cn } from "cn";
 import { CircleCheck, Clock, ShieldCheck, type LucideIcon } from "lucide-react";
 import type { ComponentProps, ReactNode } from "react";
 
-// Founderhall's note (design-system.md §3.5): Vellum; ok = Spine tint with a check; needs = Ribbon tint with a clock,
+// Commonhall's note (design-system.md §3.5): Vellum; ok = Spine tint with a check; needs = Ribbon tint with a clock,
 // its bold words in Ribbon. For a message after an action, use the flash (components/flash.tsx).
 const NOTE_ICONS: Record<string, LucideIcon | null> = { plain: null, ok: CircleCheck, needs: Clock };
 

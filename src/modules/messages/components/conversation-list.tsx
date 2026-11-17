@@ -30,7 +30,7 @@ function readPreview({ preview, isDeleted }: ConversationSummary["lastMessage"])
   return text.split("\n")[0] ?? "";
 }
 
-// Founderhall's thread row (`.threads .r`): avatar, serif name, the last line, the date on the right; a dot after the
+// Commonhall's thread row (`.threads .r`): avatar, serif name, the last line, the date on the right; a dot after the
 // name while something is unread.
 function ConversationRow({ summary }: { summary: ConversationSummary }) {
   const { id, peer, lastMessage, unreadCount, isBlockedByMe } = summary;
@@ -63,7 +63,7 @@ function ConversationRow({ summary }: { summary: ConversationSummary }) {
   );
 }
 
-// Founderhall's empty inbox: the dashed empty state, its line linking the directory.
+// Commonhall's empty inbox: the dashed empty state, its line linking the directory.
 function NoConversations() {
   return (
     <div data-slot="empty-state" className="fh-empty">
@@ -88,7 +88,7 @@ function ConversationRows() {
   const conversations = readInboxConversations(inbox.data);
   const isSearching = Boolean(search.trim() || appliedSearch.trim());
   const hasNoMatch = conversations.length === 0 && isSearching;
-  // Founderhall's inbox has no search. Community keeps it for a long inbox only: more than one page of conversations.
+  // Commonhall's inbox has no search. Community keeps it for a long inbox only: more than one page of conversations.
   const [isLong] = useState(inbox.hasNextPage);
 
   useEffect(() => {
@@ -147,7 +147,7 @@ function ConversationRows() {
   );
 }
 
-// The Inbox list (Founderhall's inboxPage): the rows, or the dashed empty state.
+// The Inbox list (Commonhall's inboxPage): the rows, or the dashed empty state.
 export function ConversationList() {
   return (
     <QueryBoundary loadingMessage="Gathering your conversations…">

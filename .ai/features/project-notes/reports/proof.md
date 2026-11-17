@@ -14,7 +14,7 @@ NOTES: PASS
 ```
 OK 18 item(s), 0 warning(s)
 ```
-## Parity map: every Founderhall feature exactly once
+## Parity map: every Commonhall feature exactly once
 ```
 features in the inventory: 161
 lines in the parity map: 161

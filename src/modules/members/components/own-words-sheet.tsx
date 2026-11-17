@@ -19,7 +19,7 @@ import { API_ROUTES, ROUTES } from "@/platform/http/routes";
 import { OWN_FIELD_KEYS, type OwnFieldKey } from "@/modules/members/contract-own-words";
 
 
-// Founderhall's "In your own words" (member-me-profile, member-me-edit-field): one ruled block per field with its
+// Commonhall's "In your own words" (member-me-profile, member-me-edit-field): one ruled block per field with its
 // source ("you" or "from public profiles") and an Edit link; Edit opens that one field in place, Save or Cancel.
 
 export type OwnField = {

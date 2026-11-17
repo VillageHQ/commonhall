@@ -21,5 +21,5 @@
   `renderAccentCss` adds the light fund colours for print.
 - **Demo logo.** `public/demo/northwind-logo.svg`, set as the `logoUrl` setting by the demo seed.
 - **The check itself** ran from `.ai/tmp/check/` (not committed): `lib.mjs` (one production server at a time behind a
-  lock, sign-in as any demo person with a one-minute link, full-page shots with the demo strip hidden, Founderhall |
+  lock, sign-in as any demo person with a one-minute link, full-page shots with the demo strip hidden, Commonhall |
   Community pairs) and one capture script per group.

@@ -45,7 +45,7 @@ type NumberSettingProps = {
   className?: string;
 };
 
-// One sheet with one number and Save (Founderhall's `.pair` form). After saving, the flash says so at the top.
+// One sheet with one number and Save (Commonhall's `.pair` form). After saving, the flash says so at the top.
 function NumberSetting({ id, title, label, name, value, minimum, maximum, hint, save, flash, className }: NumberSettingProps) {
   const router = useRouter();
   const showFlash = useFlash();

@@ -6,7 +6,7 @@ touches: ["src/modules/intros/", "src/shell/intro-*", "src/app/(app)/members/", 
 ---
 # Spec: Intros without Village, and "Ask for an intro" on profiles
 
-**Added:** 2026-11-11 (the owner's pick in the Founderhall merge plan). Part of [intros-from-profile](../intros-from-profile/SPEC.md).
+**Added:** 2026-11-11 (the owner's pick in the Commonhall merge plan). Part of [intros-from-profile](../intros-from-profile/SPEC.md).
 
 ## What it does
 Intros work when the fund has no Village, or Village is down. On any member's profile, "Ask <name> for an intro"

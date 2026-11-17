@@ -1,7 +1,7 @@
 import { DNS_CHECK_STATUSES, type DnsCheck, type DnsCheckLine } from "../../platform/email/dns-check-contract.ts";
 import { formatDayMonth } from "../../platform/text/format-date.ts";
 
-// Founderhall's mail checklist (mailChecks): the mail service, the sending domain, recent sends and the last live DNS
+// Commonhall's mail checklist (mailChecks): the mail service, the sending domain, recent sends and the last live DNS
 // check, each with a value line and a status word. Settings shows it; Mail shows the DNS rows.
 export const MAIL_CHECK_STATES = { pass: "ok", watch: "watch", fail: "fail" } as const;
 export type MailCheckState = (typeof MAIL_CHECK_STATES)[keyof typeof MAIL_CHECK_STATES];
@@ -67,7 +67,7 @@ export function readMailChecks({ mailService, isManaged, isDomainKnown, senderEm
   ];
 }
 
-// Set up › Mail's DNS checklist (Founderhall's mailPage): the mail service, the inbound replies webhook and one-click
+// Set up › Mail's DNS checklist (Commonhall's mailPage): the mail service, the inbound replies webhook and one-click
 // unsubscribe, then each line of the last "Check DNS now" with the record to add when one is missing.
 export type MailPageCheck = MailCheck & { toAdd: DnsCheckLine["toAdd"] };
 

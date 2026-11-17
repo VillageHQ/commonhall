@@ -13,7 +13,7 @@ import { removeBidiControls } from "../../platform/text/safe-text.ts";
 import type { SearchMember } from "./contract.ts";
 
 // Search shows members first, as "Member" rows: the members whose name, role, company, city, "can help with" or tags
-// match the search (Founderhall searches its directory the same way), and the members Village found.
+// match the search (Commonhall searches its directory the same way), and the members Village found.
 const MAXIMUM_MATCHED_MEMBERS = 4;
 
 const filledTitle = shownFillInColumn(FILL_IN_FIELDS.title);

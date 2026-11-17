@@ -4,9 +4,9 @@ status: in-progress
 waits-on: [fh-foundation]
 touches: ["src/app/(app)/directory/", "src/app/(app)/people/", "src/app/(app)/me/", "src/app/(app)/members/", "src/modules/members/", "src/shell/email-preferences-card.tsx", "src/shell/email-settings.ts", "src/shell/my-network-sheet.tsx", "src/shell/directory-hiring.ts", "src/shell/message-policy.ts"]
 ---
-# Spec: Directory, profiles, My profile, Your data (Founderhall transplant, area 4)
+# Spec: Directory, profiles, My profile, Your data (Commonhall transplant, area 4)
 
-**Added:** 2026-11-11 (the owner's decision: Community's engine, Founderhall's screens copied exactly).
+**Added:** 2026-11-11 (the owner's decision: Community's engine, Commonhall's screens copied exactly).
 
 ## What it does
 - **Directory** (`/directory`): one search box (name, company, city, skill or tag), five selects (stage, sector, city,

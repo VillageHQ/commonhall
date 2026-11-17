@@ -70,7 +70,7 @@ const NEEDS: { icon: LucideIcon; title: string; line: string }[] = [
 // Phone crops were taken at twice the pixels; they show at half their width.
 const PHONE_CROPS = new Set(["shell-tabbar-member-phone", "shell-tabbar-admin-phone", "shell-topbar-phone", "footer-phone"]);
 
-// Founderhall's crops keep 8 px around each part, except these, cut flush.
+// Commonhall's crops keep 8 px around each part, except these, cut flush.
 const UNPADDED_CROPS = new Set(["shell-sidebar-member", "shell-sidebar-admin", "shell-topbar-phone", "shell-tabbar-member-phone", "shell-tabbar-admin-phone", "shell-founder-view-strip", "public-page-card"]);
 
 // The page's own frame: phone parts shown at 390 px, the desktop sidebar at full height, whatever the window.
@@ -107,10 +107,10 @@ function Part({ id, title, crops, note, width, children }: PartProps) {
         {note ? <p className="fh-small fh-muted mt-1">{note}</p> : null}
       </div>
       <div className="parts-pane">
-        <p>Founderhall</p>
+        <p>Commonhall</p>
         {crop ? (
           // eslint-disable-next-line @next/next/no-img-element -- a local review picture, inlined
-          <img src={crop.src} alt={`Founderhall's ${title}`} className="parts-crop" style={{ width: isPhone ? crop.width / 2 : crop.width }} />
+          <img src={crop.src} alt={`Commonhall's ${title}`} className="parts-crop" style={{ width: isPhone ? crop.width / 2 : crop.width }} />
         ) : (
           <p className="fh-small">No crop for this part.</p>
         )}
@@ -141,7 +141,7 @@ export function PartsGallery({ crops, navigation }: { crops: Record<string, Crop
       <PageHeader
         eyebrow="Test page · off unless SHOW_PARTS_PAGE=true"
         title="Parts"
-        description="Every shared part, beside Founderhall's crop of it (fh-reference/crops). The parts live in src/components and src/components/ui; Founderhall's styles are in src/app/parts.css."
+        description="Every shared part, beside Commonhall's crop of it (fh-reference/crops). The parts live in src/components and src/components/ui; Commonhall's styles are in src/app/parts.css."
       />
 
       <h2 className="fh-h2 mt-7">The shell</h2>
@@ -347,7 +347,7 @@ export function PartsGallery({ crops, navigation }: { crops: Record<string, Crop
           <Pill tone="needs">Answer</Pill>
           <Pill tone="plain">Member</Pill>
         </div>,
-        { note: "Founderhall's crop is the first pill it found; the other tones follow its CSS." },
+        { note: "Commonhall's crop is the first pill it found; the other tones follow its CSS." },
       )}
       {part("switch", "Switch", <Switch defaultChecked aria-label="Send the weekly digest" />, { width: 60 })}
       {part(
@@ -377,7 +377,7 @@ export function PartsGallery({ crops, navigation }: { crops: Record<string, Crop
       {part("search-box", "Search box", <SearchBox placeholder="A person, a company or a role" aria-label="Search" />, { width: 952 })}
       {part("helpers-strip", "Search box on Asks", <SearchBox placeholder="Search every ask and its answers" aria-label="Search asks" />, {
         width: 574,
-        note: "Founderhall's crop of the helpers strip caught the asks search box; the helpers strip itself is in post-ask.",
+        note: "Commonhall's crop of the helpers strip caught the asks search box; the helpers strip itself is in post-ask.",
       })}
       {part(
         "filters-directory",
@@ -897,7 +897,7 @@ export function PartsGallery({ crops, navigation }: { crops: Record<string, Crop
             );
           })}
         </div>,
-        { width: 952, note: "Who asked whom shows here as in Founderhall; whether the console may show it waits on the owner (areas.md, area 6)." },
+        { width: 952, note: "Who asked whom shows here as in Commonhall; whether the console may show it waits on the owner (areas.md, area 6)." },
       )}
       {part(
         "row-moderation",
@@ -914,7 +914,7 @@ export function PartsGallery({ crops, navigation }: { crops: Record<string, Crop
             </Select>
           </Field>
         </div>,
-        { note: "Founderhall's crop of the moderation row caught the digest's Day and Hour selects; those are shown." },
+        { note: "Commonhall's crop of the moderation row caught the digest's Day and Hour selects; those are shown." },
       )}
       {part(
         "messages-bubbles",
@@ -1051,7 +1051,7 @@ export function PartsGallery({ crops, navigation }: { crops: Record<string, Crop
             ]}
           />
         </div>,
-        { width: 344, note: "Founderhall's crop of the KV tiles caught the breakdown; the tiles themselves are in the report document below." },
+        { width: 344, note: "Commonhall's crop of the KV tiles caught the breakdown; the tiles themselves are in the report document below." },
       )}
       {part(
         "checklist-status",
@@ -1066,7 +1066,7 @@ export function PartsGallery({ crops, navigation }: { crops: Record<string, Crop
             ]}
           />
         </div>,
-        { width: 344, note: "Founderhall's crop caught the neighbouring lookups sheet (see costbox); this is the checklist from the admin home's Mail card." },
+        { width: 344, note: "Commonhall's crop caught the neighbouring lookups sheet (see costbox); this is the checklist from the admin home's Mail card." },
       )}
       {part(
         "stepper-intro-tracker",
@@ -1133,7 +1133,7 @@ export function PartsGallery({ crops, navigation }: { crops: Record<string, Crop
             <ReportOutcomes />
           </div>
         </div>,
-        { width: 365, note: "Founderhall's crop of the table caught the report's head; the table itself is in the report document." },
+        { width: 365, note: "Commonhall's crop of the table caught the report's head; the table itself is in the report document." },
       )}
       {part("report-document", "Partner report", <ReportDocument />, { width: 836 })}
       {part(

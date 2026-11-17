@@ -1,9 +1,9 @@
-# Charter: a dark version of Founderhall's look
+# Charter: a dark version of Commonhall's look
 
-Approved scope (the owner's pick, from the build brief; Founderhall itself has no dark mode).
+Approved scope (the owner's pick, from the build brief; Commonhall itself has no dark mode).
 
 ## Direction
-Keep a dark mode, designed as a dark version of Founderhall's look: calm, warm, paper-like, a tool for founders and
+Keep a dark mode, designed as a dark version of Commonhall's look: calm, warm, paper-like, a tool for founders and
 VCs, never high-contrast or "gamey".
 
 In:

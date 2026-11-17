@@ -12,7 +12,7 @@ basis: e95a9f.8c8beb
 ---
 # Spec: A switched-off module answers 404
 
-**Added:** 2026-11-10 (from the Founderhall parity map in `.ai/roadmap.md`)
+**Added:** 2026-11-10 (from the Commonhall parity map in `.ai/roadmap.md`)
 
 ## What & why
 A page of a module the admin switched off answers 200 (with an "off" notice) instead of 404 in at least one place.

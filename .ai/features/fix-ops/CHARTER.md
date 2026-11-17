@@ -1,6 +1,6 @@
 # Running-the-app fixes from the final check (approved scope)
 
-Approved by the owner as part of the Founderhall-to-Community build plan (after wave 3). This page restates the brief.
+Approved by the owner as part of the Commonhall-to-Community build plan (after wave 3). This page restates the brief.
 
 ## Direction
 Three things the final check found when running the app for real.

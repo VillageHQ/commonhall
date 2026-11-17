@@ -1,6 +1,6 @@
-# Common Hall by Village: landing page
+# Commonhall by Village: landing page
 
-The public page for the app in this repo, under the name Common Hall by Village. One page in a light and a dark theme
+The public page for the app in this repo, under the name Commonhall by Village. One page in a light and a dark theme
 (paper and ink): a first screen with a blueprint house and eight made-up members, the ten rooms with their status, five real
 screens of the demo on tabs that advance as the page scrolls, a comparison, pricing, a data section and two ways in (a "Schedule a call" form and the self-host install). Plain HTML,
 CSS and JavaScript, no framework, no script library, no build step. It loads nothing from third parties: the fonts are
@@ -35,9 +35,9 @@ directory is `site` itself.
 - The prices are Village's offer: Community free (self-host); Enterprise $10,000 a year, 7,500 Village credits a
   month, up to 500 members, a quote above. Confirm them with Village before publishing.
 - The page says "ask us about EU hosting" for the managed plan until Village confirms where it can host.
-- The GitHub links, the install line and the set-up prompt point at `VillageHQ/community`. Change them if the
+- The GitHub links, the install line and the set-up prompt point at `VillageHQ/commonhall`. Change them if the
   repository is renamed.
-- The page says "Common Hall"; the app, the root README and the docs still use the old names (a roadmap line).
+- The page says "Commonhall"; the app, the root README and the docs still use the old names (a roadmap line).
 
 ## Keeping it in step with the app
 

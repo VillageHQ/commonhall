@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { FILL_IN_BASES } from "./contract-fill-in.ts";
 
-// Set up › Import members (CSV), ported from Founderhall's import page: one upload for a whole alumni list.
+// Set up › Import members (CSV), ported from Commonhall's import page: one upload for a whole alumni list.
 export const IMPORT_API_ROUTE = "/api/admin/invites/import";
 // Set up › Sign-in links: a new invite link to copy, with no email.
 export const INVITE_COPY_LINK_API_ROUTE = "/api/admin/invites/copy-link";

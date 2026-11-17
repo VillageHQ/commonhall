@@ -24,7 +24,7 @@ async function submitAccept(token: string, emailedMark: string | null): Promise<
   }
 }
 
-// Founderhall's invite confirm form: one full-width button. The welcome steps ask the name next. emailedMark comes from
+// Commonhall's invite confirm form: one full-width button. The welcome steps ask the name next. emailedMark comes from
 // the emailed link (absent on a copied one) and lets the join confirm the address.
 export function AcceptForm({ token, emailedMark }: { token: string; emailedMark: string | null }) {
   const [state, formAction, isPending] = useActionState(() => submitAccept(token, emailedMark), INITIAL_STATE);

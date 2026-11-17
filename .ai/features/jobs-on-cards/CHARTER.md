@@ -1,6 +1,6 @@
 # Charter: jobs on member cards, profiles, the directory and Today
 
-Approved scope (the owner's build plan for the Founderhall → Community merge, the owner's pick).
+Approved scope (the owner's build plan for the Commonhall → Community merge, the owner's pick).
 
 ## Direction
 When the job board is on:

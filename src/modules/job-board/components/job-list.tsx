@@ -14,7 +14,7 @@ function toCompanyHref(basePath: string, slug: string) {
   return `${basePath}?${new URLSearchParams({ [COMPANY_PARAM]: slug }).toString()}`;
 }
 
-// The members' board filter (Founderhall's `.dirform` select): "All companies", then each company with its count.
+// The members' board filter (Commonhall's `.dirform` select): "All companies", then each company with its count.
 // It applies on change; without scripts, the Filter button sends it.
 export function CompanyFilter({ basePath, companies, selected }: { basePath: string; companies: readonly BoardCompany[]; selected: string | null }) {
   if (companies.length < 2 && selected === null) return null;
@@ -61,7 +61,7 @@ export function CompanyTags({ basePath, companies }: { basePath: string; compani
   );
 }
 
-// Founderhall's job row (jobRow(), crop rows-jobs.png): the logo, the serif title, "Company · place · team · posted
+// Commonhall's job row (jobRow(), crop rows-jobs.png): the logo, the serif title, "Company · place · team · posted
 // 10 Nov" (+ "· via Name" for members), and Apply.
 export function JobList({ jobs, memberHref }: { jobs: readonly ListedJob[]; memberHref?: (memberId: string) => string }) {
   return (

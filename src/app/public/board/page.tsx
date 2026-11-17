@@ -23,7 +23,7 @@ async function readCompany(searchParams: PublicJobsPageProps["searchParams"]) {
   return typeof value === "string" && value.trim() ? value.trim() : null;
 }
 
-// Founderhall's page title stands alone: "Jobs at Northwind Founders companies".
+// Commonhall's page title stands alone: "Jobs at Northwind Founders companies".
 export async function generateMetadata({ searchParams }: PublicJobsPageProps): Promise<Metadata> {
   const [company, companies, community] = await Promise.all([readCompany(searchParams), readBoardCompanies(getDatabase()), readBrandingForPage()]);
   const current = companies.find(({ slug }) => slug === company) ?? null;
@@ -31,7 +31,7 @@ export async function generateMetadata({ searchParams }: PublicJobsPageProps): P
   return { title: { absolute: title } };
 }
 
-// For visitors at /jobs (src/proxy.ts sends them here): Founderhall's wide public page. Each job and its company,
+// For visitors at /jobs (src/proxy.ts sends them here): Commonhall's wide public page. Each job and its company,
 // never who shared it. While the board isn't public, a visitor is asked to sign in, as before.
 export default modulePage(jobBoardManifest, async function PublicJobsPage({ searchParams }: PublicJobsPageProps) {
   const database = getDatabase();

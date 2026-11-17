@@ -1,7 +1,7 @@
 import { cn } from "cn";
 import type { ComponentProps, ReactNode } from "react";
 
-// Founderhall's sheet (crop sheet-sidebar-card.png): flat Leaf, 1 px rule, radius 8, padding 18/16 → 22/24, no shadow.
+// Commonhall's sheet (crop sheet-sidebar-card.png): flat Leaf, 1 px rule, radius 8, padding 18/16 → 22/24, no shadow.
 export function Card({ className, ...props }: ComponentProps<"div">) {
   return (
     <div

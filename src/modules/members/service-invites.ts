@@ -386,7 +386,7 @@ function readStartingName({ inviteeName, email }: { inviteeName: string | null; 
   return inviteeName?.trim() || email.split("@")[0] || email;
 }
 
-// Founderhall's "Accept and sign in" passes no account: the member has no password (they sign in by emailed link, and
+// Commonhall's "Accept and sign in" passes no account: the member has no password (they sign in by emailed link, and
 // may add one on My profile) and is called by the invite's name or the start of their address until welcome step 1
 // asks. Community's older form passes a name and a password. A join from the emailed link (isFromEmail, checked by the
 // caller with isEmailedInvite) starts with the address confirmed; one from a copied link does not.

@@ -32,7 +32,7 @@ function describeSource(source: JobSourceView) {
 
 const ICON = { "aria-hidden": true, className: "fh-i fh-s", strokeWidth: 1.5 } as const;
 
-// Console › Job board (Founderhall's): the public board's switch and link, every linked board with Hide, and
+// Console › Job board (Commonhall's): the public board's switch and link, every linked board with Hide, and
 // Community's website widget lines.
 export default modulePage(jobBoardManifest, async function AdminJobsPage() {
   await requireAdmin();

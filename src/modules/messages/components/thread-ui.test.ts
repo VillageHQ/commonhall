@@ -408,7 +408,7 @@ describe("the thread on screen", () => {
   });
 
   describe("privacy", () => {
-    it("says, in Founderhall's words, that admins can't read it", () => {
+    it("says, in Commonhall's words, that admins can't read it", () => {
       renderThread([makePage([makeMessage(1)])]);
 
       expect(screen.getByText("Replies by email land here too. Northwind Founders’ admins can’t read messages in the portal.")).toBeTruthy();

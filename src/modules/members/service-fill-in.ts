@@ -269,7 +269,7 @@ export async function readFilledMemberCount(database: Database) {
   return row?.memberCount ?? 0;
 }
 
-// Founderhall's "Is this right?" lines, in its order and words: role, company, city.
+// Commonhall's "Is this right?" lines, in its order and words: role, company, city.
 const CHECKED_FIELDS: readonly CheckedField[] = [FILL_IN_FIELDS.title, FILL_IN_FIELDS.company, FILL_IN_FIELDS.location];
 
 // The filled-in words on the member's card they haven't said "Right" to: on show (not hidden, and not replaced by

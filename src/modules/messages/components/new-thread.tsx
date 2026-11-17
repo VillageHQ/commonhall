@@ -13,7 +13,7 @@ import { MessageComposer } from "./message-composer";
 
 type NewThreadProps = { member: { id: string; name: string }; communityName: string };
 
-// Founderhall's first message (`/messages/new?to=`): the thread page with no messages yet. The first Send starts the
+// Commonhall's first message (`/messages/new?to=`): the thread page with no messages yet. The first Send starts the
 // conversation and opens it in the Inbox, so nobody gets an empty conversation from a click on Message.
 export function NewThread({ member, communityName }: NewThreadProps) {
   const router = useRouter();

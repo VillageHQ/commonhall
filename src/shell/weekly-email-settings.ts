@@ -4,7 +4,7 @@ import type { DatabaseOrTransaction } from "../platform/database/client.ts";
 import { readSettings, saveSettings } from "../platform/settings/store.ts";
 import { readLocalParts, WEEKDAYS } from "../platform/weekly-email/schedule.ts";
 
-// Founderhall's "Send the weekly digest" switch (Asks & digest). On unless an admin switched it off; while off, the
+// Commonhall's "Send the weekly digest" switch (Asks & digest). On unless an admin switched it off; while off, the
 // timed job sends nobody a digest. The schedule itself stays in the platform's weekly email settings.
 export const WEEKLY_EMAIL_ENABLED_SETTING = "weekly_email_enabled";
 const OFF = "false";

@@ -7,7 +7,7 @@ import { FILL_IN_FIELD_LABELS, FILL_IN_FIELDS, readPastRoles, toRoleYears, type 
 
 import { FilledLineActions, PastRolesToggle } from "./filled-line-actions";
 
-// Founderhall's "Filled in from public profiles" sheet (views villageSection): Role, Company and City with their
+// Commonhall's "Filled in from public profiles" sheet (views villageSection): Role, Company and City with their
 // dates, then Past roles. On My profile each line has Correct and Hide, and the past roles hide as one.
 
 export const WORDED_LINE_FIELDS: readonly FillInField[] = [FILL_IN_FIELDS.title, FILL_IN_FIELDS.company, FILL_IN_FIELDS.location];

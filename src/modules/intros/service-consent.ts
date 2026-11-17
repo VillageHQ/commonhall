@@ -250,7 +250,7 @@ async function readEarlierAnswer(database: Database, environment: Environment, i
   return { answer: settled, isRepeat: true };
 }
 
-// "Don't send me intro asks" from the link in the person's email (Founderhall's opt-out page). It works on a link whose
+// "Don't send me intro asks" from the link in the person's email (Commonhall's opt-out page). It works on a link whose
 // ask already closed too: the choice is saved, and any ask still waiting for them closes, nobody told why.
 export async function stopIntroAsks(context: AnswerContext, token: string) {
   const { database, environment, request, viewerId } = context;

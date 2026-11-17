@@ -511,7 +511,7 @@ test_image_fallback() {
   assert_says "building it on this server"
   assert_says "2.5 GB"
   assert_says "bigger server"
-  assert_called "docker build --network host -f /source/deploy/vps/Dockerfile -t ghcr.io/villagehq/community:latest /source"
+  assert_called "docker build --network host -f /source/deploy/vps/Dockerfile -t ghcr.io/villagehq/commonhall:latest /source"
   assert_true "keeps the build output in its log" grep -q "#12 building" /opt/community/install.log
 
   it "doesn't build when the download works"
@@ -760,7 +760,7 @@ test_helper() {
   assert_exit 0
   assert_says "up to date at https://$DOMAIN"
   assert_says "Downloading Community's files (main)"
-  assert_called "codeload.github.com/VillageHQ/community/tar.gz/main"
+  assert_called "codeload.github.com/VillageHQ/commonhall/tar.gz/main"
   assert_never_says "unbound variable"
 
   it "shows help with no command and rejects an unknown one"

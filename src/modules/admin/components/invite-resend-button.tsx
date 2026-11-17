@@ -11,7 +11,7 @@ import { ROUTES } from "@/platform/http/routes";
 
 import { INVITE_FLASH_PARAM, INVITE_FLASHES } from "./invite-flashes";
 
-// Founderhall's Resend: a fresh link goes out and the old one stops working; the Invites page says so. With mail
+// Commonhall's Resend: a fresh link goes out and the old one stops working; the Invites page says so. With mail
 // off, nothing can be emailed, so the new link is shown there for the admin to send.
 export function InviteResendButton({ inviteId }: { inviteId: string }) {
   const router = useRouter();

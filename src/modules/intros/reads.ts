@@ -163,7 +163,7 @@ function readRequesterDeadline({ createdAt, expiresAt, targetAgreedAt, acceptedA
   return targetAgreedAt || acceptedAt ? expiresAt : readIntroDeadline(createdAt);
 }
 
-// Once the person said yes, the asker may know the connector said yes first; before that, only with Founderhall's rule.
+// Once the person said yes, the asker may know the connector said yes first; before that, only with Commonhall's rule.
 const STATES_AFTER_BOTH_YES: readonly string[] = [INTRO_STATES.targetAgreed, INTRO_STATES.completed];
 
 function readIntroForRequester(request: typeof introRequest.$inferSelect, now: Date, outcomeDays: number) {

@@ -4,9 +4,9 @@ status: in-progress
 waits-on: [fh-foundation]
 touches: ["src/app/(app)/admin/", "src/app/api/admin/", "src/modules/admin/", "src/shell/console-home.ts", "src/shell/admin-asks*.ts(x)", "src/shell/weekly-email*.ts"]
 ---
-# The admin console (Founderhall transplant, area 6)
+# The admin console (Commonhall transplant, area 6)
 
-What it does now: the console's everyday screens use Founderhall's screens on Community's engine.
+What it does now: the console's everyday screens use Commonhall's screens on Community's engine.
 - `/admin` Home: the live dashboard (asked / made / declined headline, Every intro counted, Members, Latest in the
   intro log, Members who connected their network, Lookups this month, Asks & updates, Mail) and, before launch, the
   four-step launch checklist.
@@ -19,7 +19,7 @@ What it does now: the console's everyday screens use Founderhall's screens on Co
   `/admin/digest` the digest as it goes out, for any member, and a test send. `/admin/weekly-email` redirects there.
 - `/admin/jobs` the Job board settings, public link and embed lines.
 - Admins see who asked whom (the owner's decision, 2026-11-11); notes and reasons stay private.
-- Emails: the invite, the partner report and the digest, word for word as Founderhall's (the digest ends with
+- Emails: the invite, the partner report and the digest, word for word as Commonhall's (the digest ends with
   "Stop the weekly digest").
 
 Kept from Community on purpose (Community-only functions): Revoke on invites, "Free up a LinkedIn profile" on
@@ -27,5 +27,5 @@ Members, "A made-up member" in the digest picker, "Pull now" on linked job board
 and approvals waiting). Pin shows only on open asks: Community's engine pins open asks only.
 
 Round 4 (fh-final-pass) added the "admins see names" line on the intro-ask pages, removed the old "Credit me in
-reports" switch and made Founderhall's spine green the default fund colour. Still a kept call: a fresh install's
-public job board starts off (Founderhall's starts on). Side by side: `reports/pairs/` and `reports/pairs.md`.
+reports" switch and made Commonhall's spine green the default fund colour. Still a kept call: a fresh install's
+public job board starts off (Commonhall's starts on). Side by side: `reports/pairs/` and `reports/pairs.md`.

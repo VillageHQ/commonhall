@@ -18,7 +18,7 @@ export const metadata: Metadata = { title: JOB_BOARD_PAGE_TITLES.board };
 
 type JobsPageProps = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
-// Founderhall's members' board (memberBoardPage): the head with the hiring line, the Company select, the job rows.
+// Commonhall's members' board (memberBoardPage): the head with the hiring line, the Company select, the job rows.
 export default modulePage(jobBoardManifest, async function JobsPage({ searchParams }: JobsPageProps) {
   await requireMember();
   const value = (await searchParams)[COMPANY_PARAM];

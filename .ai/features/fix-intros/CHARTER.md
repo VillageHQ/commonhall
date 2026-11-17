@@ -1,6 +1,6 @@
 # Charter: intro fixes from the final check
 
-Approved scope (the owner's brief after wave 3 of the Founderhall merge; the maintainer reviews after merge).
+Approved scope (the owner's brief after wave 3 of the Commonhall merge; the maintainer reviews after merge).
 Evidence: the merged app's final reliability check (scenarios C5, C6, C7, F2) and the parity map in `.ai/roadmap.md`.
 
 ## Direction

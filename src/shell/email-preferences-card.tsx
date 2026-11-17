@@ -22,7 +22,7 @@ async function saveChanges(changes: readonly { topic: EmailTopic; isOn: boolean 
   for (const change of changes) await postRequest(API_ROUTES.emailPreferences, change, preferenceSchema);
 }
 
-// Founderhall's Email settings (member-me-email): one row per email the member can switch off, and one Save.
+// Commonhall's Email settings (member-me-email): one row per email the member can switch off, and one Save.
 export function EmailSettingsForm({ rows }: { rows: readonly EmailSettingRow[] }) {
   const router = useRouter();
   const flash = useFlash();

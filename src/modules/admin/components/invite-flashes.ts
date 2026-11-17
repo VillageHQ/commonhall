@@ -1,4 +1,4 @@
-// The flash an Invites page shows after an action, carried in its address (?m=resent), Founderhall's way.
+// The flash an Invites page shows after an action, carried in its address (?m=resent), Commonhall's way.
 export const INVITE_FLASH_PARAM = "m";
 
 export const INVITE_FLASHES = {

@@ -4,7 +4,7 @@ import { ButtonLink, TextLink } from "@/shell/console-home-parts";
 import type { LaunchStep } from "@/shell/console-launch";
 import { ROUTES } from "@/platform/http/routes";
 
-// The console's Home before launch (Founderhall's launch checklist): four steps, in order, each with its status.
+// The console's Home before launch (Commonhall's launch checklist): four steps, in order, each with its status.
 export function ConsoleLaunchView({ firstName, steps }: { firstName: string; steps: readonly LaunchStep[] }) {
   return (
     <>

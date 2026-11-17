@@ -1,4 +1,4 @@
-# Common Hall landing page, version 2: CHARTER (approved)
+# Commonhall landing page, version 2: CHARTER (approved)
 
 Approved by Absi on 2026-11-14 in Telegram topic 75190, on decision page wuWS4ksp23ZjVtSHgVuOqQ, with three answers:
 logo **03** (the floor plan with a door gap); prices **Community free / Enterprise $10,000 a year, 7,500 credits a month,
@@ -30,7 +30,7 @@ named customers, SOC 2, SSO or import tools (not true yet: roadmap lines).
    grow and succeed." Sub-line "Your own portal, under your name. Warm intros, member directory, asks, jobs and perks.
    Village runs it, or you do." Buttons: split button "Set up with Claude ▾" (caret menu: Claude / OpenAI; each opens a
    small dialog with a copyable set-up prompt and the install line) and outlined "Schedule call" (to the form). Under
-   them a GitHub card: GitHub mark, `VillageHQ/community`, "AGPL-3.0 · Star and fork", arrow. Right (desktop) or below
+   them a GitHub card: GitHub mark, `VillageHQ/commonhall`, "AGPL-3.0 · Star and fork", arrow. Right (desktop) or below
    (phone): the **blueprint house** from version 1 (walls, doors that swing, room labels and icons) at most ~520 px
    wide on desktop, with fewer lines, no sheet/revision labels, no stamps. Eight made-up people (the app's own demo
    portraits, `public/demo/faces/`) walk between rooms; hover, focus or tap shows name and title; on a cycle two of
@@ -64,14 +64,14 @@ Cut: "Merged in public", the sample intro counts, sheet/revision labels, stamps,
 - **Type:** a professional pairing, self-hosted (OFL woff2 latin subsets in `site/assets/fonts/`): Newsreader 500 for
   the H1 and section titles, IBM Plex Sans 400/500/600 for body and UI, JetBrains Mono for the install line. Buttons:
   solid ink button (paper text), outlined button, 6 px radius, 15 px/600, real hover and focus states.
-- **Logo 03:** `brand/logos-r2/l3/` mark + lockup "Common Hall · BY VILLAGE"; favicon from the mark.
+- **Logo 03:** `brand/logos-r2/l3/` mark + lockup "Commonhall · BY VILLAGE"; favicon from the mark.
 
 ## Deciding facts (lead's calls, reversible)
 1. Site rules unchanged: the Content Security Policy (`default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'`), no third-party scripts, fonts or libraries; everything is the page's own code.
 2. The form contract is unchanged (`#signup-form`, `data-endpoint`, fields name/email/community/members/plan/website).
 3. Every claim is true of the app on `main`: the admin counts intros today (hires and deals are "coming"); Perks is
    Partly; WhatsApp/Telegram/Signal and chat→portal are Coming; the CSV import page exists.
-4. The set-up prompt tells the assistant to clone `VillageHQ/community`, run the install script, and read
+4. The set-up prompt tells the assistant to clone `VillageHQ/commonhall`, run the install script, and read
    `docs/self-host-vps.md`; it sends nothing anywhere.
 5. The app's own name stays; `.ai/design/DESIGN.md` gets the paper/ink themes, type and buttons.
 6. Works from 320 px; reduced motion and no-JS: everything drawn and still, no canvas.

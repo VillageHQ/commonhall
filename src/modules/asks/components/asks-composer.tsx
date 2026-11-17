@@ -13,7 +13,7 @@ import { ICON } from "./post-parts";
 
 type ComposerProps = { communityName: string; allowance: AskAllowance; draft?: { body: string; target: string } | null };
 
-// Founderhall's composer (crop composer-ask.png): Ask | Update, one line and Post, "Who are you trying to reach?"
+// Commonhall's composer (crop composer-ask.png): Ask | Update, one line and Post, "Who are you trying to reach?"
 // folded away, then the week's allowance as pips. A post goes to its own page with the flash.
 export function AsksComposer({ communityName, allowance, draft = null }: ComposerProps) {
   const router = useRouter();

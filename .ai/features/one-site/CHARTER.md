@@ -1,10 +1,10 @@
-# One marketing site: Founderhall by Village
+# One marketing site: Commonhall by Village
 
-Approved scope (from the owner's build plan, item 8 of the Founderhall → Community merge).
+Approved scope (from the owner's build plan, item 8 of the Commonhall → Community merge).
 
 ## Direction
 One marketing page for the merged product, in `site/`, still plain static HTML, CSS and a little JavaScript with no
-third-party loads. The name is **Founderhall by Village**. It carries Founderhall's message and sections (the
+third-party loads. The name is **Commonhall by Village**. It carries Commonhall's message and sections (the
 fund-first story, Today, double opt-in intros, the partner report, the trust points) on top of Community's page, in
 the approved quiet look: serif headings, hairline edges, no glow.
 

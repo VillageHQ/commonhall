@@ -40,7 +40,7 @@ export const INSTANCE_SETTING_KEYS = {
   dataLocation: "data_location",
   dataContactName: "data_contact_name",
   dataContactEmail: "data_contact_email",
-  // Set up › Settings (Founderhall's settings page): hosting, plan, the mail sender, the default message policy.
+  // Set up › Settings (Commonhall's settings page): hosting, plan, the mail sender, the default message policy.
   hostingBy: "hosting_by",
   plan: "plan",
   managedSetupBy: "managed_setup_by",

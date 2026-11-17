@@ -32,7 +32,7 @@ type PrivacySheetProps = {
   acceptsIntroAsks: boolean | null;
 };
 
-// Founderhall's Privacy sheet on My profile: who sees me in the directory, intro asks, one Save privacy.
+// Commonhall's Privacy sheet on My profile: who sees me in the directory, intro asks, one Save privacy.
 export function PrivacySheet({ communityName, isHidden, acceptsIntroAsks }: PrivacySheetProps) {
   const router = useRouter();
   const flash = useFlash();

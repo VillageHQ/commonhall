@@ -16,7 +16,7 @@ type ProfileHeadProps = {
   children?: ReactNode;
 };
 
-// Founderhall's profile head (crop profile-head.png): the 80 px photo, the serif name, logo + "Role, Company · City",
+// Commonhall's profile head (crop profile-head.png): the 80 px photo, the serif name, logo + "Role, Company · City",
 // then what the page adds under it (chips and actions, or "This is how members see you").
 export function ProfileHead({ memberId, name, imageUrl, companyLogoUrl, hasCompany, roleLine, children }: ProfileHeadProps) {
   return (

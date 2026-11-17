@@ -41,7 +41,7 @@ type BubbleProps = {
   actionRef?: RefObject<HTMLButtonElement | null>;
 };
 
-// Founderhall's message (`.msg`, crop messages-bubbles.png): theirs on Leaf with a rule, yours on the fund tint at the
+// Commonhall's message (`.msg`, crop messages-bubbles.png): theirs on Leaf with a rule, yours on the fund tint at the
 // right; under the words, who, the date and "by email" when it came as an email reply. Delete or Report is a quiet
 // link there, shown on hover and focus (Community keeps both).
 function Bubble({ entry, peerName, action, actionRef }: BubbleProps) {

@@ -86,7 +86,7 @@ function FeatureAction({ feature, onChanged }: { feature: Feature; onChanged: Ch
   return feature.isOn ? <TurnOffSwitch feature={feature} onChanged={onChanged} /> : <TurnOnSwitch feature={feature} onChanged={onChanged} />;
 }
 
-// One Founderhall setting row per feature (crop setrow.png): its name and one line left, its switch right. A feature
+// One Commonhall setting row per feature (crop setrow.png): its name and one line left, its switch right. A feature
 // paused because what it needs is off says so, and offers to turn that on instead of a switch.
 function FeatureRow({ feature, onChanged }: { feature: Feature; onChanged: ChangeHandler }) {
   const { id, label, description, needsVillage, missingRequirement } = feature;

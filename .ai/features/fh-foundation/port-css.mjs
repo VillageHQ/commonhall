@@ -1,4 +1,4 @@
-// Ports Founderhall's portal stylesheet (public/app.css) into src/app/parts.css, so Community's parts use the same
+// Ports Commonhall's portal stylesheet (public/app.css) into src/app/parts.css, so Community's parts use the same
 // rules value for value. Every class is prefixed `fh-` (Tailwind owns names such as .grid, .hidden and .block), bare
 // element rules and the font faces are dropped (globals.css and next/font own those), and the result sits in the
 // `components` layer, below Tailwind's utilities.
@@ -7,7 +7,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 const [source] = process.argv.slice(2);
-if (!source) throw new Error("Pass the path to Founderhall's app.css");
+if (!source) throw new Error("Pass the path to Commonhall's app.css");
 const css = readFileSync(source, "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
 
 // Selectors whose element part belongs to the page itself, not to a part.
@@ -58,7 +58,7 @@ function convert(text) {
   return output;
 }
 
-const header = `/* Founderhall's part styles (its portal's public/app.css, "app design v05"), ported value for value by
+const header = `/* Commonhall's part styles (its portal's public/app.css, "app design v05"), ported value for value by
    .ai/features/fh-foundation/port-css.mjs. Every class carries the fh- prefix; use the React parts in
    src/components/ui where one exists. Tokens (--ink, --paper, --fund…) live in globals.css. Do not edit by hand:
    change the source and rerun the script, or add an override in globals.css. */\n`;

@@ -69,7 +69,7 @@ function useLiveBadges(items: readonly ShellNavigationItem[], badges: Navigation
 
 type NavigationBadgeProps = { count: number | undefined; description?: string };
 
-// A count beside a menu item or on a tab: Founderhall's small Ink badge.
+// A count beside a menu item or on a tab: Commonhall's small Ink badge.
 export function NavigationBadge({ count, description }: NavigationBadgeProps) {
   if (!count) return null;
   return (
@@ -120,7 +120,7 @@ export function SidebarNavigation({ navigation, isAdmin, badges, pathname }: She
   );
 }
 
-// The console's tabs keep Founderhall's order (Home · Intros · Asks · Members · Set up), not the sidebar's.
+// The console's tabs keep Commonhall's order (Home · Intros · Asks · Members · Set up), not the sidebar's.
 function orderTabs(tabs: readonly ShellNavigationItem[], mode: ShellMode) {
   if (mode !== SHELL_MODES.console) return tabs;
   return [...tabs].sort((first, second) => CONSOLE_TAB_ORDER.indexOf(first.key) - CONSOLE_TAB_ORDER.indexOf(second.key));

@@ -1,6 +1,6 @@
 # Charter: the demo shows the job board and perks
 
-Approved scope (the owner's build plan for the Founderhall → Community merge, wave 1).
+Approved scope (the owner's build plan for the Commonhall → Community merge, wave 1).
 
 ## Direction
 Demo mode today switches the job board, perks, Slack/Discord and the feed off, so a buyer never sees the job board

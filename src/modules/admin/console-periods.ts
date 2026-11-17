@@ -1,6 +1,6 @@
 import { REPORT_PERIOD_KEYS, type ReportPeriodKey } from "./contract-partner-report.ts";
 
-// The console's period switch (Founderhall's): "Q4 to date · Q3 · Since launch". The address carries Founderhall's
+// The console's period switch (Commonhall's): "Q4 to date · Q3 · Since launch". The address carries Commonhall's
 // words (?period=quarter|last|all); anything else reads as this quarter.
 export const CONSOLE_PERIODS = { quarter: REPORT_PERIOD_KEYS.thisQuarter, last: REPORT_PERIOD_KEYS.lastQuarter, all: REPORT_PERIOD_KEYS.sinceLaunch } as const;
 
@@ -18,7 +18,7 @@ export function readPeriodParam(key: ReportPeriodKey): ConsolePeriodParam {
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-// "11 Nov": Founderhall's short date, in UTC like the report's quarters.
+// "11 Nov": Commonhall's short date, in UTC like the report's quarters.
 export function formatDayMonth(date: Date) {
   return `${date.getUTCDate()} ${MONTHS[date.getUTCMonth()]}`;
 }

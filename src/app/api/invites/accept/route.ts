@@ -104,7 +104,7 @@ export const POST = membersRoutes.open(
       return respondMessage(CONFLICT_STATUS, INVITE_ERROR_CODES.signedIn, "Sign out first, then open this link again.");
     }
 
-    // Founderhall's "Accept and sign in" sends only the token. A name and a password (Community's older form) still work.
+    // Commonhall's "Accept and sign in" sends only the token. A name and a password (Community's older form) still work.
     const hasFields = typeof body === "object" && body !== null && "password" in body;
     const fields = hasFields ? acceptFieldsBodySchema.safeParse(body) : null;
     if (fields && !fields.success) {

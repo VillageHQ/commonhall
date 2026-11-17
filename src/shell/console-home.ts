@@ -24,7 +24,7 @@ import { readIntroLog, type IntroLogRow } from "../modules/admin/reads-intro-log
 import { readAsksFigures } from "./admin-asks.ts";
 import { readEnabledIds } from "./enabled-modules.ts";
 
-// The console's Home (Founderhall's /admin): every intro counted since launch, the members, the latest of the intro
+// The console's Home (Commonhall's /admin): every intro counted since launch, the members, the latest of the intro
 // log, and the network, lookups, asks and mail at a glance. Counts only, except the intro log rows, which name who
 // asked whom (admins see names; notes stay private).
 
@@ -32,7 +32,7 @@ const LATEST_INTRO_ROWS = 6;
 const WAITING_INVITE_ROWS = 5;
 const RECENT_SENDS = 50;
 
-// Founderhall's ledger numbers, from the intro log. Withdrawn asks count nowhere (the asker took them back).
+// Commonhall's ledger numbers, from the intro log. Withdrawn asks count nowhere (the asker took them back).
 export type IntroLedger = {
   asked: number;
   connectorYes: number;

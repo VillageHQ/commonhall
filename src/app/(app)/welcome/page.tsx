@@ -22,7 +22,7 @@ function readStartingName(name: string, email: string) {
   return name === email.split("@")[0] ? "" : name;
 }
 
-// Founderhall's welcome step 1 of 2 (views-member.mjs welcomePage, step 1), inside the member shell.
+// Commonhall's welcome step 1 of 2 (views-member.mjs welcomePage, step 1), inside the member shell.
 export default modulePage(membersManifest, async function WelcomePage() {
   const member = await requireMember();
   const database = getDatabase();

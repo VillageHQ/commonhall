@@ -41,7 +41,7 @@ import { readCompanyJobs } from "@/modules/job-board/reads-hiring";
 
 type ProfilePageProps = { params: Promise<{ memberId: string }> };
 
-// The tab reads "Ada Okafor · Northwind Founders", as Founderhall's does. A member hidden from the directory keeps
+// The tab reads "Ada Okafor · Northwind Founders", as Commonhall's does. A member hidden from the directory keeps
 // the plain title, so their name never shows on a page that answers "not found".
 export async function generateMetadata({ params }: ProfilePageProps): Promise<Metadata> {
   const { memberId } = await params;
@@ -64,7 +64,7 @@ function ExternalLinkLine({ href, label }: { href: string; label: string }) {
   );
 }
 
-// Founderhall's member profile (member-profile-other): the head on the page, the member's own words, the lines
+// Commonhall's member profile (member-profile-other): the head on the page, the member's own words, the lines
 // filled in from public profiles, and "Who <first name> can introduce you to" on the right.
 export default modulePage(membersManifest, async function MemberProfilePage({ params }: ProfilePageProps) {
   const viewer = await requireMember();

@@ -17,7 +17,7 @@ import { readFillInSettings, saveLookupChoice } from "../modules/members/service
 import { introsManifest } from "../modules/intros/manifest.ts";
 import type { WelcomeAboutBody, WelcomePrivacyBody } from "./welcome-steps.ts";
 
-// Founderhall's two welcome steps: the card (step 1, `card`), then privacy (step 2, `introAsks`), then done.
+// Commonhall's two welcome steps: the card (step 1, `card`), then privacy (step 2, `introAsks`), then done.
 // Sharing a network is no longer a step: it waits on the network page.
 export async function resolveOnboardingStep(database: Database, member: SessionMember): Promise<OnboardingStep> {
   const [profile] = await database

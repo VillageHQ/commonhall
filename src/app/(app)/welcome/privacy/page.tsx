@@ -19,7 +19,7 @@ import { WelcomeStepsHead } from "../welcome-steps-head";
 
 export const metadata: Metadata = { title: PAGE_TITLES.welcome };
 
-// Founderhall's welcome step 2 of 2, "Your privacy". Intro asks start on, as Founderhall's do; the profile fill-in
+// Commonhall's welcome step 2 of 2, "Your privacy". Intro asks start on, as Commonhall's do; the profile fill-in
 // starts off, since it is consent (ONB-02). A member who already chose keeps their choice.
 export default modulePage(membersManifest, async function WelcomePrivacyPage() {
   const member = await requireMember();

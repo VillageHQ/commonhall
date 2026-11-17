@@ -19,13 +19,13 @@ const MAIL_ON_LINE = "Links whose email failed to send. Copy one and send it you
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-// Founderhall's admin dates: "11 Nov 15:08 UTC".
+// Commonhall's admin dates: "11 Nov 15:08 UTC".
 function formatMoment(date: Date) {
   const time = `${String(date.getUTCHours()).padStart(2, "0")}:${String(date.getUTCMinutes()).padStart(2, "0")}`;
   return `${date.getUTCDate()} ${MONTHS[date.getUTCMonth()]} ${time} UTC`;
 }
 
-// Set up › Sign-in links: Founderhall's links page, for the invites a person can only get by hand.
+// Set up › Sign-in links: Commonhall's links page, for the invites a person can only get by hand.
 export default modulePage(adminManifest, async function AdminLinksPage() {
   await requireAdmin();
   const isMailOn = readResendConfig(process.env) !== null;

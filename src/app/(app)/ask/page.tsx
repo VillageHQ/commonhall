@@ -27,7 +27,7 @@ function readParam(value: string | string[] | undefined) {
   return typeof value === "string" ? value.trim() : "";
 }
 
-// Founderhall's guided ask: what you need, who, the best way in, the note. Intros stays lit.
+// Commonhall's guided ask: what you need, who, the best way in, the note. Intros stays lit.
 export default modulePage(introsManifest, async function GuidedAskPage({ searchParams }: GuidedAskPageProps) {
   const member = await requireMember();
   const database = getDatabase();

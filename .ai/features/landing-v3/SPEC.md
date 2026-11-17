@@ -11,7 +11,7 @@ for its whole life). This round changed four parts of it, approved on 16 Novembe
 - A third section shows five real screens on tabs (Directory, Find a path, Ask for an intro, Asks board, Admin home).
   The stage pins and the tabs advance as the page scrolls; a tap works; plain tabs under reduced motion; all five
   stacked without JavaScript.
-- The comparison is eight title cards and a tick table (✓ / Partly / —) for Common Hall, Getro, Cabal, Metal and
+- The comparison is eight title cards and a tick table (✓ / Partly / —) for Commonhall, Getro, Cabal, Metal and
   Discord, with the price row; the 11-row comparison folds under "Read the details".
 - Pricing, Your data and Two ways in keep their facts and lose their explaining sentences.
 

@@ -21,7 +21,7 @@ import { readVillageSearchSettings } from "@/modules/network/service-settings";
 
 export const metadata: Metadata = { title: PAGE_TITLES.network };
 
-// Founderhall's Search: who you are trying to reach, through the networks members share.
+// Commonhall's Search: who you are trying to reach, through the networks members share.
 export default modulePage(networkManifest, async function SearchPage() {
   const member = await requireMember();
   const database = getDatabase();

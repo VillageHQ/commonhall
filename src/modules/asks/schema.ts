@@ -32,7 +32,7 @@ export const ask = pgTable(
     // The person the ask wants to reach, as a LinkedIn profile name. Optional; only asks have one.
     targetSlug: text("target_slug"),
     targetName: text("target_name"),
-    // Founderhall's "Who are you trying to reach?": a person or a role, and a company. Optional; only asks have them.
+    // Commonhall's "Who are you trying to reach?": a person or a role, and a company. Optional; only asks have them.
     targetText: text("target_text"),
     targetCompany: text("target_company"),
     listedAt: askTimestamp("listed_at").notNull().defaultNow(),

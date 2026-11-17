@@ -213,7 +213,7 @@ describe("asks", () => {
       ]);
     });
 
-    it("says how long an ask is when it runs past Founderhall's one line", async () => {
+    it("says how long an ask is when it runs past Commonhall's one line", async () => {
       const response = await call(postCreate, asker, { title: "x".repeat(ASK_LIMITS.titleLength + 3) });
 
       expect(await response.json()).toMatchObject({ message: `That is ${ASK_LIMITS.titleLength + 3} characters; keep it to ${ASK_LIMITS.titleLength}.` });

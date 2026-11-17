@@ -30,7 +30,7 @@ function readFrom(community: string, fromAddress: string | null) {
   return fromAddress.includes("<") ? fromAddress : `${community} <${fromAddress}>`;
 }
 
-// Asks & digest › Preview (Founderhall's /admin/digest): the digest as it goes out, for any member, and a test send.
+// Asks & digest › Preview (Commonhall's /admin/digest): the digest as it goes out, for any member, and a test send.
 export default modulePage(adminManifest, async function AdminDigestPage({ searchParams }: DigestPageProps) {
   const admin = await requireAdmin();
   const { member, m } = await searchParams;
@@ -82,7 +82,7 @@ export default modulePage(adminManifest, async function AdminDigestPage({ search
           <section className="fh-sheet">
             <h2 className="fh-h3">Send me a test digest</h2>
             <p className="fh-small mt-1.5">
-              {/* Founderhall adds the bracket only while the preview shows the admin's own digest. */}
+              {/* Commonhall adds the bracket only while the preview shows the admin's own digest. */}
               To {admin.email}, with your own items this week{ownIsEmpty && requested === admin.id ? " (even when there is nothing to answer)" : ""}.
             </p>
             <DigestTestButton />

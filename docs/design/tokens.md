@@ -1,4 +1,4 @@
-# VillageHQ/community design tokens
+# VillageHQ/commonhall design tokens
 
 Direction: "The front room". Warm, tactile, full of faces. Reference: `mockup.html` in this folder.
 
@@ -6,7 +6,7 @@ Direction: "The front room". Warm, tactile, full of faces. Reference: `mockup.ht
 > values in `src/app/globals.css` and the neutrals in `src/platform/design/accent.ts` are that kit's, and the default
 > brand colour is ink `#111110`. The notes below describe the earlier warm palette; the rules still hold.
 
-> Since the Founderhall look, the app uses `deriveFundColors()` (light) and `deriveDarkFundColors()` (dark) in
+> Since the Commonhall look, the app uses `deriveFundColors()` (light) and `deriveDarkFundColors()` (dark) in
 > `src/platform/design/accent.ts`; the dark palette and its contrast table are in `.ai/features/fh-dark/NOTES.md`.
 > The derivation below (`deriveAccentTokens()`) is kept for reference and is no longer used by the app.
 

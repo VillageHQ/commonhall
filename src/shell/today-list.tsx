@@ -24,7 +24,7 @@ import { FactButtons, NotThisWeekButton } from "./today-actions";
 import type { TodayItems } from "./today";
 
 export const TODAY_END_LINE = "That’s everything this week.";
-// Founderhall's "Ask for an intro" opens its guided ask (/ask), which another build area adds. Until then it opens the
+// Commonhall's "Ask for an intro" opens its guided ask (/ask), which another build area adds. Until then it opens the
 // network search, or the composer when search is off, so the main button never leads nowhere.
 export const GUIDED_ASK_PAGE = "/ask";
 const COMPOSE_PAGE = `${ASKS_PAGE}#compose`;
@@ -35,7 +35,7 @@ function firstWord(name: string) {
   return name.trim().split(/\s+/)[0] ?? name;
 }
 
-// "Sam’s", "James’" (Founderhall's poss()).
+// "Sam’s", "James’" (Commonhall's poss()).
 export function possessive(name: string) {
   return name.endsWith("s") ? `${name}’` : `${name}’s`;
 }
@@ -44,7 +44,7 @@ function plural(count: number, one: string, many: string) {
   return count === 1 ? one : many;
 }
 
-// "CFO at Brightside Clinics" → "CFO, Brightside Clinics", as Founderhall writes a person's role.
+// "CFO at Brightside Clinics" → "CFO, Brightside Clinics", as Commonhall writes a person's role.
 function describeTargetAbout(headline: string | null) {
   return headline ? headline.replace(" at ", ", ") : "";
 }
@@ -72,7 +72,7 @@ type TodayPageProps = {
   askIntroHref: string;
 };
 
-// Founderhall's Today (todayPage): what needs you in the main column (asks on your paths, intros waiting for your
+// Commonhall's Today (todayPage): what needs you in the main column (asks on your paths, intros waiting for your
 // yes, lines to check), your own asks and the community's boards in the right rail.
 export function TodayPage({ today, memberName, communityName, digestDay, dateLabel, allowance, perksCommunityName, openJobCount, nextSteps, lookupQuestion, flash, now, askIntroHref }: TodayPageProps) {
   const first = firstWord(memberName);

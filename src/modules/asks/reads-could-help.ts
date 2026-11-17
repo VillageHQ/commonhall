@@ -29,7 +29,7 @@ async function readHelperWords(database: Database, memberId: string) {
 
 const PROFILE_LINE_LENGTH = 90;
 
-// Founderhall's "Why you:" for an ask the member wasn't routed to: their own "can help with" line, quoted.
+// Commonhall's "Why you:" for an ask the member wasn't routed to: their own "can help with" line, quoted.
 function describeProfileWhy(canHelpWith: string, matchedWords: readonly string[]) {
   const line = canHelpWith.replace(/\s+/g, " ");
   if (!line) return describeWhyYou({ reason: ASK_HELPER_REASONS.words, why: `can help with ${matchedWords.join(", ")}`, personName: null, personTitle: null, warmth: null });
@@ -112,7 +112,7 @@ export async function readAsksYouCouldHelp(database: Database, memberId: string,
 
   return [...rows.values()]
     .map((row) => ({ row, matchedWords: findMatchedWords(`${row.title} ${row.detail ?? ""}`, helperWords.words) }))
-    // Founderhall's rule: Today and the weekly email show the asks this member was routed to when they were posted.
+    // Commonhall's rule: Today and the weekly email show the asks this member was routed to when they were posted.
     .filter(({ row }) => row.why !== null)
     .toSorted((first, second) => second.row.listedAt.getTime() - first.row.listedAt.getTime() || second.row.id.localeCompare(first.row.id))
     .slice(0, HELPABLE_ASKS_SHOWN)

@@ -10,7 +10,7 @@ const FAILURE_COPY: Record<string, string> = {
 
 const DEMO_ORDER: readonly DemoAccount[] = ["admin", "member"];
 
-// Only rendered with DEMO_MODE=true. A plain form, so it works before any script loads (Founderhall's demo-login).
+// Only rendered with DEMO_MODE=true. A plain form, so it works before any script loads (Commonhall's demo-login).
 export function DemoSignIn({ failure }: { failure: string | undefined }) {
   const failureCopy = failure ? (FAILURE_COPY[failure] ?? FAILURE_COPY.missing) : null;
   return (

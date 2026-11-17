@@ -1,4 +1,4 @@
-// The digest's plain text, shown the way a mail app shows it (Founderhall's mailTextHtml): each "Label: <link>" line
+// The digest's plain text, shown the way a mail app shows it (Commonhall's mailTextHtml): each "Label: <link>" line
 // becomes a button, inert in a preview, so no raw address is printed on the page.
 const LABELLED_LINK = /^(\s*)(.*?):\s+(https?:\/\/\S+)\s*$/u;
 const TRAILING_LINK = /^(.*?)\s(https?:\/\/\S+)\s*$/u;

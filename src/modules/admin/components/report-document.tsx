@@ -132,7 +132,7 @@ function AsksAndUpdates({ asks }: { asks: NonNullable<ReportStats["asks"]> }) {
 
 type ReportDocumentProps = { report: ReportStats; preparedBy: string; logo: Parameters<typeof LogoTile>[0]["logo"]; now?: Date };
 
-// Founderhall's partner report (crop report-document.png): a printable paper document with an Ink rule on top.
+// Commonhall's partner report (crop report-document.png): a printable paper document with an Ink rule on top.
 export function ReportDocument({ report, preparedBy, logo, now = new Date() }: ReportDocumentProps) {
   const { intros: stats, asks, period } = report;
   return (

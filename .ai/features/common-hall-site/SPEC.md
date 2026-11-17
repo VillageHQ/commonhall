@@ -1,16 +1,16 @@
-# Common Hall landing page
+# Commonhall landing page
 
 > Superseded by [common-hall-v2](../common-hall-v2/SPEC.md) (paper and ink, light and dark). Kept for history.
 
-What it does now (since 2026-11-13; replaces the Founderhall page in [one-site](../one-site/SPEC.md)).
+What it does now (since 2026-11-13; replaces the Commonhall page in [one-site](../one-site/SPEC.md)).
 
 - `site/` is one static page (`index.html`, `assets/site.css`, `assets/boot.js`, `assets/site.js`) that sells the app
-  in this repo as **Common Hall by Village**. No framework, no build step, no cookies, no analytics, and the same
+  in this repo as **Commonhall by Village**. No framework, no build step, no cookies, no analytics, and the same
   Content Security Policy as before: only this site's own files load. The motion is the page's own script, no
   library; the fonts (Figtree, JetBrains Mono) are files in `site/assets/`.
 - The page is a drawing set of four sheets, each one screen tall, with a sheet tag ("Sheet N of 4"):
   1. **Plan** — "Read every room *before* you move in.", one sub-line, the **Schedule call** button (to the form) and
-     an outlined **GitHub** button with the GitHub mark (to `VillageHQ/community`), the round AGPL 3.0 stamp, the
+     an outlined **GitHub** button with the GitHub mark (to `VillageHQ/commonhall`), the round AGPL 3.0 stamp, the
      floor plan of the ten modules (walls, doors, the long table, room labels and line icons) with six made-up
      founders, and three facts.
   2. **Rooms** — a room schedule: each module with a key plan, a **Built** / **Partly** / **Coming** stamp and one
@@ -36,5 +36,5 @@ What it does now (since 2026-11-13; replaces the Founderhall page in [one-site](
   for the opening, scrolls the page) and with reduced motion (full-page shots in `reports/`), and fails on outside
   requests, console errors, horizontal overflow or a missing anchor.
 
-Not here: renaming the app, README and docs to Common Hall; a dark version; a server for the form; publishing or
+Not here: renaming the app, README and docs to Commonhall; a dark version; a server for the form; publishing or
 deploying the page; a calendar link (roadmap lines for the first two).

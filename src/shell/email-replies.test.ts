@@ -319,7 +319,7 @@ describe("answering by replying to the email", () => {
     it("sends each their own copy, the connector copied, and passes replies to the others while the asker reads them in the app", async () => {
       const { alex, alexEmail, hanaEmail, intro, sent, toTarget, toAlex } = await seedJoined();
       expect(sent).toHaveLength(3);
-      // Founderhall's introduction: the asker and the person see each other's address once both said yes.
+      // Commonhall's introduction: the asker and the person see each other's address once both said yes.
       expect(toTarget?.text).toContain(alexEmail);
       expect(toTarget?.text).toContain("Reply to this email to write to Alex");
       // Members never see each other's address: the connector's copy shows neither.

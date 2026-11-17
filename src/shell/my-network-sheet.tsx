@@ -15,7 +15,7 @@ import { API_ROUTES, ROUTES } from "@/platform/http/routes";
 import { formatDayMonth } from "@/platform/text/format-date";
 import { toMembersOf, toPossessive } from "@/modules/members/rules-words";
 
-// The honest network line (Founderhall's NETWORK_LINE). Never "they never see your contacts".
+// The honest network line (Commonhall's NETWORK_LINE). Never "they never see your contacts".
 export const NETWORK_LINE =
   "Members who search can see that you know a person and ask you for an intro. They can’t download your contacts, see how you know them beyond a warmth word, or reach anyone without your yes.";
 
@@ -28,7 +28,7 @@ function stopSharing() {
   return postRequest(API_ROUTES.networkLeave, { confirmed: true }, acknowledgedResponseSchema);
 }
 
-// Founderhall's "My network" sheet on My profile (views networkPanel).
+// Commonhall's "My network" sheet on My profile (views networkPanel).
 export function MyNetworkSheet({ state, communityName }: { state: MyNetworkState; communityName: string }) {
   const router = useRouter();
   const flash = useFlash();

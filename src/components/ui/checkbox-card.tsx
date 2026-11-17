@@ -1,7 +1,7 @@
 import { cn } from "cn";
 import type { ComponentProps, ReactNode } from "react";
 
-// Founderhall's option card (crops option-radio-card.png, decide-form.png): a radio or checkbox card, padding 14,
+// Commonhall's option card (crops option-radio-card.png, decide-form.png): a radio or checkbox card, padding 14,
 // rule border, radius 8, Leaf; a bold line and a 13.5 Graphite line; checked = fund border + inset fund ring.
 type OptionCardProps = Omit<ComponentProps<"input">, "type" | "children"> & {
   type?: "radio" | "checkbox";

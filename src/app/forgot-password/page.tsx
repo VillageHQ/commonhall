@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = { title: PAGE_TITLES.forgotPassword };
 
-// Community-only (Founderhall has no passwords), as a Founderhall public card.
+// Community-only (Commonhall has no passwords), as a Commonhall public card.
 function WithoutEmail() {
   return (
     <>

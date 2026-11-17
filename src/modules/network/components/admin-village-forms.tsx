@@ -21,7 +21,7 @@ import { API_ROUTES } from "@/platform/http/routes";
 import { PUBLIC_KEY_HINT, SECRET_KEY_HINT, VILLAGE_LIMITS_API, type VillageLimitsBody } from "../contract-village-admin";
 import { INTRODUCER_RULES, SEARCH_SCOPES, type IntroducerRule, type SearchScope } from "../contract-village-settings";
 
-// Admin › Village's forms (Founderhall's Village page). Each action says what happened in the flash at the top.
+// Admin › Village's forms (Commonhall's Village page). Each action says what happened in the flash at the top.
 
 function errorText(error: unknown) {
   return error instanceof Error ? error.message : "That didn't work. Try again.";
@@ -111,7 +111,7 @@ type VillageLimitsFormProps = {
   defaults: { cap: string; dailyLimit: number };
 };
 
-// "Limits and switches": one Save, as in Founderhall.
+// "Limits and switches": one Save, as in Commonhall.
 export function VillageLimitsForm({ values, sharingMembers, defaultServiceEmail, communityName, defaults }: VillageLimitsFormProps) {
   const router = useRouter();
   const flash = useFlash();
@@ -166,7 +166,7 @@ export function VillageLimitsForm({ values, sharingMembers, defaultServiceEmail,
         hint="The community’s own Village account (it owns the members’ group and runs searches for members who haven’t connected). Default: the first admin’s address, so change it only if Village asked for another."
         className="fh-field"
       >
-        {/* Filled in with the address in use, as Founderhall shows its default: the saved one, else the first admin's. */}
+        {/* Filled in with the address in use, as Commonhall shows its default: the saved one, else the first admin's. */}
         <Input id="v-email" name="service_email" type="email" defaultValue={values.serviceEmail || defaultServiceEmail || ""} placeholder="e.g. village@fund.example" />
       </Field>
       <div className="fh-pair mt-3">
@@ -281,7 +281,7 @@ export function FillInBasisForm({ basis, termsDate }: { basis: FillInBasis | nul
           onChange={() => setChoice(FILL_IN_BASES.terms)}
           title="Members agreed in our membership terms on"
           description={
-            // Always shown, as on Founderhall and on Invites; needed only when this option is chosen.
+            // Always shown, as on Commonhall and on Invites; needed only when this option is chosen.
             <span className="mt-1.5 block">
               <Input
                 type="date"

@@ -5,7 +5,7 @@ import { CircleCheck, Clock } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { createContext, use, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
-// Founderhall's flash (crop flash-ok.png): after an action, a note at the top of the page you land on says what
+// Commonhall's flash (crop flash-ok.png): after an action, a note at the top of the page you land on says what
 // happened. It replaces toasts. ok = Spine tint with a check; needs = Ribbon tint with a clock.
 export const FLASH_KINDS = { ok: "ok", needs: "needs" } as const;
 

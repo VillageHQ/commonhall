@@ -1,6 +1,6 @@
 # Job board and website widget (approved scope)
 
-Approved by the owner as part of the Founderhall-to-Community build plan (wave 3). This page restates the brief.
+Approved by the owner as part of the Commonhall-to-Community build plan (wave 3). This page restates the brief.
 
 ## Direction
 Founders in the community show their companies' open jobs. Members see one board; the admin can open a public
@@ -11,7 +11,7 @@ In:
 2. A founder links their company's hiring tool by pasting its careers link (the board's name is detected) for the
    12 tools with a public feed and no key: Greenhouse, Lever, Ashby, Workable, SmartRecruiters, Recruitee, Breezy,
    Rippling, Teamtailor, BambooHR, Personio, Jobvite. Or adds jobs by hand. Pull now, hide, remove. The feed
-   readers come from Founderhall, with their saved sample feeds as tests.
+   readers come from Commonhall, with their saved sample feeds as tests.
 3. An hourly pull through the job runner. A failed pull shows its problem in plain words and keeps the last good
    jobs; jobs added by hand are kept.
 4. The members' board, filtered by company. A public board (admin switch, off by default) showing only company,

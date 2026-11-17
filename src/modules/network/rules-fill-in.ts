@@ -69,7 +69,7 @@ function readYear(date: string | null | undefined) {
   return date ? (YEAR.exec(date.trim())?.[1] ?? null) : null;
 }
 
-// Founderhall's "Past roles": the work history, newest first, as a JSON line.
+// Commonhall's "Past roles": the work history, newest first, as a JSON line.
 function readPastRolesLine(history: VillageWork[] | null | undefined) {
   const roles = (history ?? []).flatMap((work): PastRole[] => {
     const title = cleanLine(work?.title, PROFILE_LIMITS.title);

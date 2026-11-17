@@ -14,10 +14,10 @@ import { ASK_ROW_STATUSES, describeHours, type AdminAskRow, type AdminAsks, type
 import { AskRowActions, DigestSettingsForm } from "./admin-asks-actions";
 import { ReportedAsks } from "./reported-asks";
 
-// What a member reads when there is no ask yet (Founderhall's EMPTY_ASKS).
+// What a member reads when there is no ask yet (Commonhall's EMPTY_ASKS).
 export const EMPTY_ASKS = "No open asks yet. When a founder needs someone, the ask shows here and in Thursday’s digest.";
 
-// The flash after an action on Asks & digest (?m=…), in Founderhall's words.
+// The flash after an action on Asks & digest (?m=…), in Commonhall's words.
 export const ASKS_FLASHES: Record<string, string> = {
   pin: "Pinned.",
   unpin: "Unpinned.",
@@ -30,7 +30,7 @@ function plural(count: number, one: string, many = `${one}s`) {
   return `${count} ${count === 1 ? one : many}`;
 }
 
-// Founderhall's "Asks & updates" block: four tiles and one line. The console home shows it with a link here.
+// Commonhall's "Asks & updates" block: four tiles and one line. The console home shows it with a link here.
 export function AsksBlock({ figures, hasLink = true }: { figures: AsksFigures; hasLink?: boolean }) {
   const { open, answered, medianHours, posted, withHelpers, helped, intros, introsMade, updates } = figures;
   return (
@@ -89,7 +89,7 @@ function AskRow({ row, canPin }: { row: AdminAskRow; canPin: boolean }) {
 
 type AdminAsksViewProps = AdminAsks & { flash: string | null };
 
-// Asks & digest (Founderhall's): the figures, the weekly digest's settings, every ask and update with Pin / Close /
+// Asks & digest (Commonhall's): the figures, the weekly digest's settings, every ask and update with Pin / Close /
 // Remove, and Community's reported asks when there are any.
 export function AdminAsksView({ figures, rows, reported, weeklyAllowance, schedule, isDigestOn, nextDigest, digest, canPin, flash }: AdminAsksViewProps) {
   return (

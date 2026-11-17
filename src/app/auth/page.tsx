@@ -28,7 +28,7 @@ export async function generateMetadata({ searchParams }: AuthPageProps): Promise
   return { title: email ? PAGE_TITLES.signIn : PAGE_TITLES.linkNotValid, robots: { index: false, follow: false } };
 }
 
-// Founderhall's /auth (confirmPage, badLinkPage). Opening the emailed link never signs anyone in: the page reads the
+// Commonhall's /auth (confirmPage, badLinkPage). Opening the emailed link never signs anyone in: the page reads the
 // link without using it, and only the button's POST signs in, so a mail scanner that opens it changes nothing.
 export default modulePage(PLATFORM_MANIFEST, async function SignInLinkPage({ searchParams }: AuthPageProps) {
   const community = await readBrandingForPage();

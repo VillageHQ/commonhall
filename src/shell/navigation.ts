@@ -19,12 +19,12 @@ type MenuEntry = Omit<ShellNavigationItem, "icon" | "href"> & {
   href?: string;
 };
 
-// Founderhall's member menu, in its order: Today · Asks & updates · Search · Directory · Jobs · Intros · Inbox ·
+// Commonhall's member menu, in its order: Today · Asks & updates · Search · Directory · Jobs · Intros · Inbox ·
 // [Perks] · My profile. Six of them are phone tabs, and Community's Feed while it's on.
 const MEMBER_MENU: readonly MenuEntry[] = [
   { key: MEMBER_KEYS.today, label: "Today", tabLabel: "Today", icon: CalendarCheck, href: ROUTES.today },
   { key: MEMBER_KEYS.asks, label: "Asks & updates", tabLabel: "Asks", icon: Hand, moduleId: "asks", badge: NAVIGATION_BADGES.asks },
-  // Community's switchable feed (on where no admin chose; Founderhall has none): its own page and phone tab, listed
+  // Community's switchable feed (on where no admin chose; Commonhall has none): its own page and phone tab, listed
   // only while it's on.
   { key: MEMBER_KEYS.feed, label: "Feed", tabLabel: "Feed", icon: Newspaper, moduleId: "feed" },
   { key: MEMBER_KEYS.search, label: "Search", tabLabel: "Search", icon: Search, moduleId: "network" },
@@ -36,7 +36,7 @@ const MEMBER_MENU: readonly MenuEntry[] = [
   { key: MEMBER_KEYS.me, label: "My profile", icon: UserRound, href: ROUTES.editCard },
 ];
 
-// Founderhall's console menu: Home · Partner report · Intro log · Members · Invites · Asks & digest · Job board · Set up.
+// Commonhall's console menu: Home · Partner report · Intro log · Members · Invites · Asks & digest · Job board · Set up.
 // Set up leads to Settings, where the setup checklist and the plumbing pages start, until the Set up list is built.
 const CONSOLE_MENU: readonly MenuEntry[] = [
   { key: CONSOLE_KEYS.home, label: "Home", tabLabel: "Home", icon: LayoutDashboard, href: ROUTES.admin },

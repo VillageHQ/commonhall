@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { renderEmailTest } from "@/platform/email/test-email";
 
 describe("the mail test", () => {
-  it("says Founderhall's plain words, with the address it was sent from", () => {
+  it("says Commonhall's plain words, with the address it was sent from", () => {
     const email = renderEmailTest("Northwind Founders", "Northwind Founders <intros@mail.northwind.example>");
 
     expect(email.subject).toBe("Test from Northwind Founders");

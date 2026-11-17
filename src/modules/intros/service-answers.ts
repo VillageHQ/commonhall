@@ -62,7 +62,7 @@ async function readCheckedTargetEmail(database: Database, environment: Environme
   return { intro, address };
 }
 
-// The connector answers in one step, as on Founderhall: yes (with the person's email, and the note as they edited
+// The connector answers in one step, as on Commonhall: yes (with the person's email, and the note as they edited
 // it), not this time, or "I don't know them well enough". A yes asks the person by email at once; with no email in
 // this community, the connector gets the link to send themselves (Community's way).
 export async function answerAsConnector(context: RequestContext, { introId, choice, targetEmail, note, reason }: ConnectorAnswerBody) {

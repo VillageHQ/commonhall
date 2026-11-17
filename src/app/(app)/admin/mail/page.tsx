@@ -133,7 +133,7 @@ function SendingLog({ mail }: { mail: MailOverview }) {
   );
 }
 
-// Set up › Mail (Founderhall's mailPage): who mail comes from, the DNS checklist, the DNS settings, a test, the last 30
+// Set up › Mail (Commonhall's mailPage): who mail comes from, the DNS checklist, the DNS settings, a test, the last 30
 // days, the do-not-send list and the sending log. Community sends every kind of email from one address.
 export default modulePage(adminManifest, async function AdminMailPage() {
   await requireAdmin();

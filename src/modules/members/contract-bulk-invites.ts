@@ -4,7 +4,7 @@ import { MAXIMUM_NAME_LENGTH } from "../../platform/auth/member-name.ts";
 import { removeBidiControls, removeNullBytes } from "../../platform/text/safe-text.ts";
 import { createInviteBodySchema } from "./contract-invites.ts";
 
-// Ported from Founderhall's invite-list and member-CSV readers: the same formats and limits, Community's style.
+// Ported from Commonhall's invite-list and member-CSV readers: the same formats and limits, Community's style.
 export const MAXIMUM_LISTED_INVITES = 500;
 export const MAXIMUM_CSV_ROWS = 20_000;
 export const MAXIMUM_CSV_BYTES = 8 * 1024 * 1024;

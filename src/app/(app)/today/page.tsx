@@ -35,7 +35,7 @@ export const metadata: Metadata = { title: "Today" };
 
 type TodayRouteProps = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
-// Founderhall's Today: the member home. Admins see it as the founder view; their setup lives on the console's Home.
+// Commonhall's Today: the member home. Admins see it as the founder view; their setup lives on the console's Home.
 export default modulePage(membersManifest, async function TodayRoute({ searchParams }: TodayRouteProps) {
   const member = await requireMember();
   const database = getDatabase();

@@ -50,7 +50,7 @@ export async function readBoardJobs(database: DatabaseOrTransaction, companySlug
   return rows.map((row) => ({ ...row, postedAt: row.postedAt?.toISOString() ?? null }));
 }
 
-// The job and its company (name, logo), as Founderhall's public board: never the member who linked it.
+// The job and its company (name, logo), as Commonhall's public board: never the member who linked it.
 export async function readPublicJobs(database: DatabaseOrTransaction, companySlug: string | null): Promise<PublicJob[]> {
   const jobs = await readBoardJobs(database, companySlug);
   return jobs.map(({ id, title, location, department, url, postedAt, company, companySlug: slug, companyLogoUrl }) => ({ id, title, location, department, url, postedAt, company, companySlug: slug, companyLogoUrl }));

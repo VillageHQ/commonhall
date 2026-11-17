@@ -68,7 +68,7 @@ describe("a page of a switched-off module, before it renders", () => {
     expect(await rewriteOf("/")).toBeNull();
   });
 
-  it("finds the bad sign-in and invite links Founderhall answers with 410, and nothing else", async () => {
+  it("finds the bad sign-in and invite links Commonhall answers with 410, and nothing else", async () => {
     for (const path of ["/auth", "/invite"]) {
       expect(await isGoneLinkPage(database, path, null), path).toBe(true);
       expect(await isGoneLinkPage(database, path, "not-a-real-token"), path).toBe(true);

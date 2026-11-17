@@ -21,7 +21,7 @@ function readStates(facts: SetupFacts) {
 }
 
 describe("the Set up list", () => {
-  it("lists Founderhall's plumbing pages, then Community's Features and Reports", () => {
+  it("lists Commonhall's plumbing pages, then Community's Features and Reports", () => {
     expect(readSetupRows(FRESH_INSTALL).map(({ title }) => title)).toEqual([
       "Settings",
       "Mail",
@@ -36,7 +36,7 @@ describe("the Set up list", () => {
     ]);
   });
 
-  it("says what a fresh install still needs, in Founderhall's words", () => {
+  it("says what a fresh install still needs, in Commonhall's words", () => {
     expect(readStates(FRESH_INSTALL)).toEqual([
       ["Settings", "Not yet"],
       ["Mail", "Not yet"],
@@ -62,7 +62,7 @@ describe("the Set up list", () => {
     expect(states).toContainEqual(["Reports", "2 open"]);
   });
 
-  it("sends a switched-off feature's row to the switch, in Founderhall's words", () => {
+  it("sends a switched-off feature's row to the switch, in Commonhall's words", () => {
     const rows = readSetupRows({ ...FRESH_INSTALL, isNetworkOn: false, isChatOn: false, isPerksOn: false });
     const row = (key: string) => rows.find((candidate) => candidate.key === key);
     expect(row("village")?.state).toEqual({ kind: SETUP_ROW_STATES.word, text: "off" });

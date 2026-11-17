@@ -213,7 +213,7 @@ describe("asking if an intro helped", () => {
       await resend.stop();
     });
 
-    it("waits 14 days by default, and reminds 14 days after that (Founderhall's timing)", () => {
+    it("waits 14 days by default, and reminds 14 days after that (Commonhall's timing)", () => {
       expect(OUTCOME_PROMPT_AFTER_DAYS).toBe(14);
       expect(OUTCOME_REMINDER_AFTER_DAYS).toBe(14);
     });

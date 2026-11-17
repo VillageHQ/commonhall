@@ -17,7 +17,7 @@ const TOKEN_SEPARATOR = ".";
 const PAYLOAD_SEPARATOR = ":";
 
 export const UNSUBSCRIBE_PAGE_FIELD = "fromPage";
-// A plain-text email (Founderhall's words) places its own "Stop … : <link>" line: the sender puts the member's
+// A plain-text email (Commonhall's words) places its own "Stop … : <link>" line: the sender puts the member's
 // unsubscribe page where this mark is, instead of adding the usual footer.
 export const UNSUBSCRIBE_URL_MARK = "[[unsubscribe-url]]";
 
@@ -45,10 +45,10 @@ export async function readUnsubscribeToken(database: Database, environment: Envi
   return { memberId, topic };
 }
 
-// Founderhall's own stop line, for the topics whose emails took its words ("Stop emails about new messages: <link>").
+// Commonhall's own stop line, for the topics whose emails took its words ("Stop emails about new messages: <link>").
 const STOP_WORDS: Partial<Record<EmailTopic, string>> = { messages: "new messages" };
 
-// Founderhall's emails end "Sent by <community> via its member portal."; the stop line sits above that sign-off.
+// Commonhall's emails end "Sent by <community> via its member portal."; the stop line sits above that sign-off.
 const SIGN_OFF_PATTERN = /\n\nSent by [^\n]+ via its member portal\.$/;
 
 export function placeTextFooter(text: string, footer: string) {

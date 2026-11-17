@@ -5,7 +5,7 @@ import { readBrandingForPage } from "@/platform/branding/branding";
 
 export const metadata: Metadata = { title: "Nothing to do", robots: { index: false, follow: false } };
 
-// Founderhall's answer to an unknown or cut-short intro link: the closed card's words, with a 404.
+// Commonhall's answer to an unknown or cut-short intro link: the closed card's words, with a 404.
 export default async function IntroLinkNotFound() {
   const community = await readBrandingForPage();
   return (

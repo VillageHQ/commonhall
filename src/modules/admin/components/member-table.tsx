@@ -9,7 +9,7 @@ import { ROUTES } from "@/platform/http/routes";
 import { formatShortDate, readRoleAndCompany, readWhen, STATUS_PILLS, type ConsoleMember } from "../console-members";
 import { InviteResendButton } from "./invite-resend-button";
 
-// One row of Founderhall's members table (crop row-member-admin.png): avatar · name and email · role and company ·
+// One row of Commonhall's members table (crop row-member-admin.png): avatar · name and email · role and company ·
 // when · status. A member's row opens their Manage page; an invited person's row has Resend.
 function MemberRow({ member }: { member: ConsoleMember }) {
   const name = member.name || member.email || "Someone";

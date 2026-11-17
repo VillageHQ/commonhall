@@ -3,7 +3,7 @@ import { cn } from "cn";
 import { CircleAlert, CircleCheck, Info } from "lucide-react";
 import type { ComponentProps } from "react";
 
-// Founderhall's note (design-system.md §3.5): padding 12/14, radius 6, 14/20; Vellum, or Spine tint when it went
+// Commonhall's note (design-system.md §3.5): padding 12/14, radius 6, 14/20; Vellum, or Spine tint when it went
 // well, or Ribbon tint when something needs the reader (its bold words in Ribbon).
 const alertVariants = cva("fh-note text-left text-ink [&_b]:font-semibold [&_strong]:font-semibold", {
   variants: {

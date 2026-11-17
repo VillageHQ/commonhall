@@ -401,7 +401,7 @@ ${HELP_NOTE}`;
     });
   });
 
-  // The 2026-11-12 parity audit (TODAY-06): Founderhall numbers the lines filled in from public profiles and takes
+  // The 2026-11-12 parity audit (TODAY-06): Commonhall numbers the lines filled in from public profiles and takes
   // RIGHT / HIDE / FIX by reply or link, as it takes HELP / SKIP / YES / NO.
   describe("lines on the profile", () => {
     async function seedFilledLine(memberId: string) {

@@ -164,7 +164,7 @@ describe("accepting an invite", () => {
     });
   });
 
-  // Founderhall's "Accept and sign in": the token alone. The name comes in welcome step 1.
+  // Commonhall's "Accept and sign in": the token alone. The name comes in welcome step 1.
   describe("with one button, no password", () => {
     function acceptWithButton() {
       return postAccept(acceptRequest({ token }));

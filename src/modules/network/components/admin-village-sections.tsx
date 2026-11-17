@@ -13,20 +13,20 @@ import { PUBLIC_KEY_HINT, SECRET_KEY_HINT } from "../contract-village-admin";
 import type { readLookupsThisMonth, readNetworkReach } from "../reads-village-admin";
 import type { FillInLastRun } from "../service-village-admin";
 
-// Admin › Village (Founderhall's page, `village/views.mjs`): the parts with no form. The forms are in
+// Admin › Village (Commonhall's page, `village/views.mjs`): the parts with no form. The forms are in
 // admin-village-forms.tsx; the page is src/app/(app)/admin/village/page.tsx.
 
 const NUMBER = new Intl.NumberFormat("en-US");
 const n = (value: number) => NUMBER.format(value);
 
 // Where "Full pricing" goes: the source repository's README (Community has no pricing page of its own).
-export const PRICING_URL = "https://github.com/VillageHQ/community#readme";
+export const PRICING_URL = "https://github.com/VillageHQ/commonhall#readme";
 
 // The member-facing promise, word for word as members read it.
 export const NETWORK_LINE =
   "Members who search can see that you know a person and ask you for an intro. They can’t download your contacts, see how you know them beyond a warmth word, or reach anyone without your yes.";
 
-// Self-host honesty: what runs with no key, what needs a Village plan (Founderhall's `selfHostBox`).
+// Self-host honesty: what runs with no key, what needs a Village plan (Commonhall's `selfHostBox`).
 export function SelfHostBox() {
   return (
     <section className="fh-sheet fh-selfhost" id="self-host">
@@ -41,7 +41,7 @@ export function SelfHostBox() {
       </p>
       <p className="fh-small mt-2.5">
         <CircleCheck aria-hidden="true" className="fh-i fh-xs inline" strokeWidth={1.5} /> <b>Managed plan:</b> Village sets up the mail domain and lookups for you in week 1.{" "}
-        <a href={PRICING_URL}>Full pricing on the Common Hall site</a>
+        <a href={PRICING_URL}>Full pricing on the Commonhall site</a>
       </p>
     </section>
   );
@@ -65,7 +65,7 @@ function readGroupLine(check: NonNullable<VillageCheckRead["check"]>) {
   return "";
 }
 
-// The last "Test the connection" (Community's Village check), as Founderhall's test note, with each member's answer.
+// The last "Test the connection" (Community's Village check), as Commonhall's test note, with each member's answer.
 export function ConnectionTestResult({ check, members }: Pick<VillageCheckRead, "check" | "members">) {
   if (!check) return null;
   const isOk = check.keys === VILLAGE_CHECK_KEYS.ok;
@@ -171,7 +171,7 @@ type CreditMeterProps = {
   now?: Date;
 };
 
-// "Lookups this month" (Founderhall's `creditMeter`): the month's credits against the cap, by kind, and the pace.
+// "Lookups this month" (Commonhall's `creditMeter`): the month's credits against the cap, by kind, and the pace.
 export function CreditMeter({ lookups, used, cap, isConfigured, dailyLimit, outOfCreditsAt, now = new Date() }: CreditMeterProps) {
   const share = cap ? Math.min(100, (used / cap) * 100) : 0;
   const day = now.getUTCDate();
@@ -337,7 +337,7 @@ export function LookupsPerMember({ members, windowDays }: { members: MemberUsage
 
 type Reach = Awaited<ReturnType<typeof readNetworkReach>>;
 
-// "Members who connected their network" (Founderhall's `networkMeter`).
+// "Members who connected their network" (Commonhall's `networkMeter`).
 export function NetworkMeter({ reach, isConfigured }: { reach: Reach; isConfigured: boolean }) {
   return (
     <>
@@ -372,7 +372,7 @@ export function NudgeSentNote({ sentAt, nextAt, isNoAsks = false }: { sentAt: Da
   );
 }
 
-// Email off: a nudge can't go out. Community-only (Founderhall always has mail).
+// Email off: a nudge can't go out. Community-only (Commonhall always has mail).
 export function NudgeNeedsEmail() {
   return (
     <Note kind="needs" icon={EyeOff} className="mt-3">
@@ -381,7 +381,7 @@ export function NudgeNeedsEmail() {
   );
 }
 
-// "What this costs" (Founderhall's `costBox`): the two plans and their prices, word for word.
+// "What this costs" (Commonhall's `costBox`): the two plans and their prices, word for word.
 export function CostBox() {
   return (
     <section className="fh-sheet fh-costbox" id="cost">
@@ -402,13 +402,13 @@ export function CostBox() {
       </dl>
       <p className="fh-small fh-muted mt-2.5">A lookup is a profile fill-in, a search or a path check. The meter shows how many this month.</p>
       <p className="fh-small mt-2">
-        <a href={PRICING_URL}>Full pricing on the Common Hall site</a>
+        <a href={PRICING_URL}>Full pricing on the Commonhall site</a>
       </p>
     </section>
   );
 }
 
-// Saved keys, as Founderhall shows keys it already has: a line each, no field (replacing them is under the address).
+// Saved keys, as Commonhall shows keys it already has: a line each, no field (replacing them is under the address).
 export function SavedKeyLines() {
   return (
     <>

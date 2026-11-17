@@ -89,7 +89,7 @@ async function readNetworkState(database: ReturnType<typeof getDatabase>, member
   return { kind: "connected", connectedAt: row.villageLinkedAt.toISOString(), isSharing: row.groupJoinedAt !== null, hasAgreed: row.sharingConsentedAt !== null };
 }
 
-// Founderhall's My profile (member-me-profile): the head as members see it, the own words edited one field at a
+// Commonhall's My profile (member-me-profile): the head as members see it, the own words edited one field at a
 // time, the lines filled in from public profiles, Privacy, My network and Our jobs.
 export default modulePage(membersManifest, async function MyProfilePage() {
   const member = await requireMember();

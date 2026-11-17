@@ -16,8 +16,8 @@ import { modulePage } from "@/platform/modules/module-page";
 
 export const metadata: Metadata = { title: PAGE_TITLES.feed };
 
-// Community's switchable feed (Founderhall has none): posts, replies and reactions on a page of their own, in
-// Founderhall's page head and one column. On where no admin chose; its menu item shows only while it's on.
+// Community's switchable feed (Commonhall has none): posts, replies and reactions on a page of their own, in
+// Commonhall's page head and one column. On where no admin chose; its menu item shows only while it's on.
 export default modulePage(feedManifest, async function FeedPage() {
   const member = await requireMember();
   const database = getDatabase();

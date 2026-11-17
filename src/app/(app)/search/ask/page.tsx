@@ -30,7 +30,7 @@ function readBack(value: string) {
   return value.startsWith(`${ROUTES.network}?`) || value === ROUTES.network ? value : ROUTES.network;
 }
 
-// "Ask Marcus to introduce you to Rosa Lindqvist": the one-step ask from a search result (Founderhall's
+// "Ask Marcus to introduce you to Rosa Lindqvist": the one-step ask from a search result (Commonhall's
 // oneStepAskPage). Search stays lit; the path comes from the asker's own search, saved for a day.
 export default modulePage(networkManifest, async function SearchAskPage({ searchParams }: SearchAskPageProps) {
   const member = await requireMember();

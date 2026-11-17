@@ -10,7 +10,7 @@ export const FILL_IN_FIELDS = {
   face: "face",
   companyLogo: "company_logo",
   companyDomain: "company_domain",
-  // Founderhall's "Past roles": the work history, as JSON (`PastRole[]`), hidden or shown as one line.
+  // Commonhall's "Past roles": the work history, as JSON (`PastRole[]`), hidden or shown as one line.
   pastRoles: "past_roles",
 } as const;
 

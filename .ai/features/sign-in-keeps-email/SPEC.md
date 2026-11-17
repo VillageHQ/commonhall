@@ -12,7 +12,7 @@ basis: e95a9f.63025a
 ---
 # Spec: Sign-in keeps the typed email
 
-**Added:** 2026-11-10 (from the Founderhall parity map in `.ai/roadmap.md`)
+**Added:** 2026-11-10 (from the Commonhall parity map in `.ai/roadmap.md`)
 
 ## What & why
 On `/sign-in`, switching to "Sign in with a password instead" clears the email already typed, and the empty field then blocks sign-in with no message.

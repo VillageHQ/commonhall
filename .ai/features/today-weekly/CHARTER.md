@@ -1,6 +1,6 @@
 # Today home and the weekly email: charter
 
-Approved scope: the owner's build plan for merging Founderhall's strengths into Community (wave 2). The maintainer
+Approved scope: the owner's build plan for merging Commonhall's strengths into Community (wave 2). The maintainer
 agreed and reviews after merge. This page restates that brief; it is the scope of this build.
 
 ## Direction

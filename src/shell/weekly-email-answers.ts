@@ -156,7 +156,7 @@ export async function answerFromLink(database: Database, environment: Environmen
   return answerItem(database, environment, { ...link, via: ACTION_SOURCES.link, words });
 }
 
-// Founderhall's digestHint, word for word: why a reply to the digest did nothing, and where to answer instead. At most
+// Commonhall's digestHint, word for word: why a reply to the digest did nothing, and where to answer instead. At most
 // one a day per address, so two mail robots can't loop through us.
 export function renderDigestHint(communityName: string, why: string, link: string) {
   const text = [why, "", `Open this week’s items instead: ${link}`, "", describeEmailFoot(communityName)].join("\n");
@@ -207,7 +207,7 @@ export async function answerFromReply(database: Database, environment: Environme
     const { outcome } = await answerItem(database, environment, { weeklyEmailId, itemNumber, action: code, via: ACTION_SOURCES.reply, words });
     results.push({ code: `${code.toUpperCase()} ${itemNumber}`, outcome });
   }
-  // Founderhall's hint for a FIX with nothing after it.
+  // Commonhall's hint for a FIX with nothing after it.
   if (results.some(({ outcome }) => outcome === ANSWER_OUTCOMES.needsWords)) {
     await sendDigestHint(database, environment, member.email, "Write your own words after FIX and its number, like FIX 3 Lisbon, so we know what to put on your profile. Nothing changed for that line.");
   }

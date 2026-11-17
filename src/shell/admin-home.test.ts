@@ -152,7 +152,7 @@ describe("the admin home", () => {
     expect(readAdminHomeItems(facts, { pendingInvites: 0, stuckIntros: 0, isNetworkOn: true })).toEqual([expect.objectContaining({ href: ROUTES.adminVillage })]);
   });
 
-  it("counts every intro like Founderhall's ledger and names who asked whom, never the note", async () => {
+  it("counts every intro like Commonhall's ledger and names who asked whom, never the note", async () => {
     const now = new Date();
     await seedIntro({ state: INTRO_STATES.completed, acceptedAt: now, askedTargetAt: now, targetAgreedAt: now, closedAt: now, outcome: INTRO_OUTCOMES.helped });
     await seedIntro({ state: INTRO_STATES.askingTarget, askedTargetAt: now });
@@ -197,7 +197,7 @@ describe("the admin home", () => {
     ]);
   });
 
-  it("words each launch step like Founderhall, with its link", () => {
+  it("words each launch step like Commonhall, with its link", () => {
     const facts = { communityName: "Harbor Ventures", isLookSet: false, hasLogo: false, invitesSent: 2, isMailSet: false, isNetworkSet: false, mailDomain: null, hasMadeIntro: false };
     const text = describeLaunchSteps(facts).map(({ text: parts }) => parts.map(({ text: words }) => words).join(""));
 

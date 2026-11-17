@@ -21,7 +21,7 @@ export const plexMono = localFont({
   variable: "--font-plex-mono",
 });
 
-// Titles and people's names: Newsreader, the landing page's serif (Common Hall look, 17 November 2026). One variable
+// Titles and people's names: Newsreader, the landing page's serif (Commonhall look, 17 November 2026). One variable
 // file per style carries the weight and optical-size axes, so a 34 px title is set in the display cut.
 export const newsreader = localFont({
   src: [

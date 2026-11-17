@@ -13,7 +13,7 @@ import { useJobAction } from "@/modules/job-board/components/use-job-action";
 
 const COPIED_RESET_MS = 2_000;
 
-// Founderhall's copy row: the line in a read-only mono field, Copy at the end.
+// Commonhall's copy row: the line in a read-only mono field, Copy at the end.
 export function CopyRow({ value, label, icon }: { value: string; label: string; icon: React.ReactNode }) {
   const [wasCopied, setWasCopied] = useState(false);
   return (

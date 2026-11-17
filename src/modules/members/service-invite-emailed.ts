@@ -9,7 +9,7 @@ import { secretsMatch } from "../../platform/secrets/secrets-match.ts";
 
 const PURPOSE = "invite-emailed";
 
-// The owner's call (2026-11-12, Founderhall's flow): whoever opens the invite link that was EMAILED to them has shown
+// The owner's call (2026-11-12, Commonhall's flow): whoever opens the invite link that was EMAILED to them has shown
 // they read that inbox, so joining confirms the address. The emailed link carries this mark beside its token: a keyed
 // hash of the token with the app's secret, so nobody can add it to a bare link. The link an admin copies has no mark,
 // so a join from a copied link still sends "Confirm your email".

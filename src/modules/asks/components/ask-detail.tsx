@@ -39,7 +39,7 @@ function Warmth({ warmth }: { warmth: string | null }) {
 
 type HelperRowProps = { helper: PostHelper; viewer: AskMember; viewerId: string; isOwn: boolean; isOpen: boolean; askId: string; askTarget: string; offeredKind: string | null };
 
-// Founderhall's helperRow: the member, how they could help, and on your own open ask the intro and message buttons.
+// Commonhall's helperRow: the member, how they could help, and on your own open ask the intro and message buttons.
 function HelperRow({ helper, viewer, viewerId, isOwn, isOpen, askId, askTarget, offeredKind }: HelperRowProps) {
   const { member } = helper;
   const line = describeHelperLine(helper);
@@ -124,7 +124,7 @@ type AskDetailProps = {
   now: Date;
 };
 
-// Founderhall's one ask (postPage): back link, the ask, who can help, the answers and the reply box; "I can help" or
+// Commonhall's one ask (postPage): back link, the ask, who can help, the answers and the reply box; "I can help" or
 // the owner's box in the right rail.
 export function AskDetail({ detail, viewer, isViewerAdmin, flash, now }: AskDetailProps) {
   const { post, helpers, privateOffers } = detail;

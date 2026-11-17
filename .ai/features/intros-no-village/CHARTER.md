@@ -1,6 +1,6 @@
 # Charter: intros without Village, and "Ask for an intro" on profiles
 
-**Approved:** 2026-11-11, the owner's pick in the build plan (Founderhall merge, wave 1). This page is the approved scope.
+**Approved:** 2026-11-11, the owner's pick in the build plan (Commonhall merge, wave 1). This page is the approved scope.
 **Spec:** [intros-from-profile](../intros-from-profile/SPEC.md) (this build covers its first two items).
 
 ## Direction
@@ -22,7 +22,7 @@ on the joining email). They stay on the roadmap.
    connector's own address already is. A member's own address is refused.
 3. **No network membership needed.** Today an ask closes if either member hasn't joined the Village group. A named ask
    needs only two active members. Path asks keep the old rule.
-4. **"Who <name> can introduce you to"** follows Founderhall. Village never hands over a member's contact list, so the
+4. **"Who <name> can introduce you to"** follows Commonhall. Village never hands over a member's contact list, so the
    panel says whether the member shares their network with the community, then offers Search: when they know the person,
    the path shows "via <name>". It never lists their contacts.
 5. **Network becomes optional.** Intros still imports Network's public files for path asks, but only uses them when

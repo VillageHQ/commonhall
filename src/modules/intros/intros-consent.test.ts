@@ -378,7 +378,7 @@ describe("double opt-in intros", () => {
 
       expect(page).toContain("Would you like to meet Amara?");
       expect(page).toContain("Amara Osei");
-      // Founderhall's page shows the note, not the asker's headline.
+      // Commonhall's page shows the note, not the asker's headline.
       expect(page).toContain("Jonas Lindqvist");
       expect(page).toContain("We sell freight tools");
     });
@@ -460,7 +460,7 @@ describe("double opt-in intros", () => {
       const { intro } = await askAndReachTarget();
 
       expect((await answer(token)).status).toBe(GONE_STATUS);
-      // Founderhall answers an unknown link with a 404 and the closed card's words.
+      // Commonhall answers an unknown link with a 404 and the closed card's words.
       await expect(renderPage(token)).rejects.toMatchObject({ digest: NOT_FOUND_DIGEST });
       expect(renderToStaticMarkup(await IntroLinkNotFound())).toContain("Nothing to do");
       expect((await readRow(intro.id)).state).toBe(INTRO_STATES.askingTarget);
@@ -624,7 +624,7 @@ describe("double opt-in intros", () => {
         return call(postEmail, jonas, { introId, token, targetEmail });
       }
 
-      it("sends the target the link, with the note as Founderhall does", async () => {
+      it("sends the target the link, with the note as Commonhall does", async () => {
         configureResend();
         const { intro, token, link } = await askAndReachTarget();
         await vi.waitFor(() => expect(resend.state.emails.length).toBeGreaterThan(0), EVENTUALLY);
@@ -635,7 +635,7 @@ describe("double opt-in intros", () => {
         const body = JSON.stringify(resend.state.emails.map(({ body: sent }) => sent));
         expect(body).toContain(TARGET_EMAIL);
         expect(body).toContain(link);
-        // Founderhall's ask carries the note, written to be forwarded.
+        // Commonhall's ask carries the note, written to be forwarded.
         expect(body).toContain("freight");
       });
 

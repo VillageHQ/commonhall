@@ -14,7 +14,7 @@ import { FILL_IN_FIELDS } from "./contract-fill-in.ts";
 import { shownFillInColumn } from "./service-fill-in.ts";
 import { isListedMember } from "./service-privacy.ts";
 
-// Founderhall lists everyone on one page; a large community pages with a quiet "More".
+// Commonhall lists everyone on one page; a large community pages with a quiet "More".
 export const DIRECTORY_PAGE_SIZE = 60;
 
 // Lists show a filled-in role, company and face where the member left theirs empty, and the company's logo by its rule.
@@ -46,7 +46,7 @@ function matchesSearch(database: Database, search: string) {
     .select({ userId: memberTag.userId })
     .from(memberTag)
     .where(and(eq(memberTag.userId, user.id), ilike(memberTag.tag, pattern)));
-  // Founderhall's "Name, company or skill": any of the member's own words, the shown role, company and city, or a tag.
+  // Commonhall's "Name, company or skill": any of the member's own words, the shown role, company and city, or a tag.
   return or(
     ilike(user.name, pattern),
     ilike(shownTitle, pattern),

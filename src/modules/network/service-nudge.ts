@@ -68,7 +68,7 @@ export async function readConnectMeter(database: Database, adminId: string, now 
   };
 }
 
-// Founderhall's words (Admin › Village › Nudge): plain text first; the HTML part says the same.
+// Commonhall's words (Admin › Village › Nudge): plain text first; the HTML part says the same.
 export function renderConnectNudge(memberName: string, communityName: string, link: string, accentColor: string) {
   const firstName = readFirstName(toSingleLine(memberName));
   const community = toSingleLine(communityName);

@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = { title: PAGE_TITLES.resetPassword };
 
-// Community-only (Founderhall has no passwords), as a Founderhall public card.
+// Community-only (Commonhall has no passwords), as a Commonhall public card.
 export default modulePage(PLATFORM_MANIFEST, async function ResetPasswordPage({ searchParams }: { searchParams: Promise<{ token?: string }> }) {
   const community = await readBrandingForPage();
   const { token } = await searchParams;

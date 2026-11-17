@@ -70,4 +70,4 @@ Demo mode and the test fakes hand these pictures out as the "public profile" pic
 ## The community's logo (`northwind-logo.svg`)
 
 A made-up mark for the made-up "Northwind Founders", drawn by hand in SVG (a tile, a sail and three wind lines),
-the same file as Founderhall's demo. Released under the repository's licence (AGPL-3.0).
+the same file as Commonhall's demo. Released under the repository's licence (AGPL-3.0).

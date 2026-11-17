@@ -8,7 +8,7 @@ import { PAGE_TITLES } from "@/platform/branding/page-metadata";
 
 export const metadata: Metadata = { title: PAGE_TITLES.notFound };
 
-// Founderhall's 404 (server.mjs notFound): the dashed empty box inside the public card.
+// Commonhall's 404 (server.mjs notFound): the dashed empty box inside the public card.
 export default async function NotFound() {
   await connection();
   const { name, logo } = await readBrandingForPage();

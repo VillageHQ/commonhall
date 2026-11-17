@@ -79,7 +79,7 @@ function toSearchPerson(person: DemoOutsider, index: number) {
   };
 }
 
-// The demo's search: the story people (Founderhall's demo) whose words match any word of the search, else the other
+// The demo's search: the story people (Commonhall's demo) whose words match any word of the search, else the other
 // made-up people who do; nobody for a search that matches no one ("zebra keeper in antarctica").
 const STOP_WORDS = new Set(["a", "an", "the", "in", "at", "for", "of", "on", "to", "from", "with", "who", "someone", "somebody", "people", "us"]);
 

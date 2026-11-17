@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: AskPageProps): Promise<Metada
   return { title: found ? found.detail.post.body.slice(0, TITLE_LENGTH) : "Asks & updates" };
 }
 
-// Founderhall's one ask: who can help, the answers, "I can help", and the owner's buttons.
+// Commonhall's one ask: who can help, the answers, "I can help", and the owner's buttons.
 export default modulePage(asksManifest, async function AskPage({ params, searchParams }: AskPageProps) {
   const [{ askId }, query] = await Promise.all([params, searchParams]);
   const found = await readAsk(askId);

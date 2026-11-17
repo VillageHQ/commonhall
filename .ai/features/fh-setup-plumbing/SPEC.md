@@ -4,9 +4,9 @@ status: in-progress
 waits-on: [fh-foundation]
 touches: ["src/app/(app)/admin/", "src/app/api/admin/", "src/modules/admin/", "src/modules/network/", "src/modules/chat/", "src/modules/perks/", "src/shell/admin-setup-rows.ts"]
 ---
-# Set up and the plumbing pages (Founderhall transplant, area 7)
+# Set up and the plumbing pages (Commonhall transplant, area 7)
 
-What it does now: the console's Set up area uses Founderhall's screens on Community's engine.
+What it does now: the console's Set up area uses Commonhall's screens on Community's engine.
 - `/admin/setup` lists the plumbing pages, each with one line and a state: Settings, Mail, Village, Import members,
   Sign-in links, Integrations, Perks, Audit log, plus Community's Features and Reports.
 - `/admin/settings` Branding · Mail · Hosting & data · Plan; right column Mail checklist, Village, Audit log, and
@@ -18,7 +18,7 @@ What it does now: the console's Set up area uses Founderhall's screens on Commun
 - `/admin/import` (CSV import) and `/admin/links` (invite links waiting to be sent by hand).
 - `/admin/integrations` (was `/admin/chat`), `/admin/perks` (with "Show Perks to members"), `/admin/audit`
   (was `/admin/audit-log`). Old addresses redirect permanently.
-- Emails: the mail test and the Village nudge, word for word as Founderhall's.
+- Emails: the mail test and the Village nudge, word for word as Commonhall's.
 
 Open, for the owner: emailed sign-in links are not shown on Sign-in links (a login token); Village's sync-screen
 settings stay locked on (privacy). See `reports/side-by-side.md`.

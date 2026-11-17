@@ -212,7 +212,7 @@ export async function readConsoleMembers(database: Database, now = new Date()): 
     avatarUrl: null,
     isAdmin: false,
     title: null,
-    // Founderhall shows "No profile yet" until they sign in; the company still matches a search.
+    // Commonhall shows "No profile yet" until they sign in; the company still matches a search.
     company: null,
     searchExtra: row.company,
     companyLogoUrl: null,

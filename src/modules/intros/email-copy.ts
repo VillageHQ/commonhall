@@ -2,7 +2,7 @@ import { readFirstName } from "../../platform/design/avatar-identity.ts";
 import { escapeHtml, toSingleLine } from "../../platform/email/email-text.ts";
 import { removeBidiControls } from "../../platform/text/safe-text.ts";
 
-// The words of every intro email, copied from Founderhall (plain text, brief, consent said out loud). Each returns
+// The words of every intro email, copied from Commonhall (plain text, brief, consent said out loud). Each returns
 // { subject, text, html }; the html is the same text, line for line, with its links clickable.
 
 const first = (name: string) => toSingleLine(readFirstName(removeBidiControls(name)));
@@ -14,7 +14,7 @@ export function possessive(name: string, apostrophe = "'") {
   return /s$/i.test(trimmed) ? `${trimmed}${apostrophe}` : `${trimmed}${apostrophe}s`;
 }
 
-// Founderhall writes "role, company"; Village's headlines say "role at company".
+// Commonhall writes "role, company"; Village's headlines say "role at company".
 export function toRoleAndCompany(headline: string | null) {
   const trimmed = headline?.trim() ?? "";
   const atIndex = trimmed.lastIndexOf(" at ");
@@ -105,7 +105,7 @@ type TargetAskFacts = {
   links: { yes: string; no: string };
   optOutLink: string;
   isReminder?: boolean;
-  // Replies by email are on, so the introduction copies the connector (Founderhall's words). Off, the words don't say so.
+  // Replies by email are on, so the introduction copies the connector (Commonhall's words). Off, the words don't say so.
   copiesConnector?: boolean;
 };
 

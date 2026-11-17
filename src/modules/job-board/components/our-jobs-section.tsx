@@ -42,7 +42,7 @@ function readEmptyLine(source: JobSourceView) {
   return source.lastPulledAt && !source.lastError ? "No open jobs on that board right now." : "";
 }
 
-// One linked company (Founderhall's sourceBlock): its name, how it is pulled, its jobs, then Pull now · Hide · Remove.
+// One linked company (Commonhall's sourceBlock): its name, how it is pulled, its jobs, then Pull now · Hide · Remove.
 function SourceBlock({ source, jobs }: { source: JobSourceView; jobs: readonly SourceJob[] }) {
   const shown = jobs.slice(0, SHOWN_JOBS);
   const isLockedByAdmin = source.hiddenByAdmin;
@@ -112,7 +112,7 @@ type OurJobsSectionProps = {
   isPublicBoardOn: boolean;
 };
 
-// Founderhall's "Our jobs" sheet on My profile (ourJobsSection): the line, each linked company, then the form to link
+// Commonhall's "Our jobs" sheet on My profile (ourJobsSection): the line, each linked company, then the form to link
 // one (folded under "Add another company or board" once one is linked). Its anchor is #jobs.
 export function OurJobsSection({ sources, jobsBySource, company, isCompanyFixed, communityName, isPublicBoardOn }: OurJobsSectionProps) {
   const canAddMore = sources.length < JOB_BOARD_LIMITS.sourcesPerMember;

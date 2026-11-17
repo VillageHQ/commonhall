@@ -28,7 +28,7 @@ async function confirmSignIn(token: string): Promise<ConfirmState> {
   }
 }
 
-// Founderhall's confirm form: one full-width Sign in button. Nobody is signed in until a person presses it.
+// Commonhall's confirm form: one full-width Sign in button. Nobody is signed in until a person presses it.
 export function SignInLinkConfirm({ token }: { token: string }) {
   const [state, formAction, isPending] = useActionState(() => confirmSignIn(token), INITIAL_STATE);
 

@@ -1,4 +1,4 @@
-# Independent re-verification: Common Hall landing page (site/), round 2
+# Independent re-verification: Commonhall landing page (site/), round 2
 
 Verifier: independent agent (not the builder), 2026-11-13. Commit `8f48d05` ("print state, frame redraw after form
 errors, install line wrap, 24 px founder hit areas"). Scope: the two defects and two notes in `verify.md`, plus a
@@ -19,7 +19,7 @@ Chromium. Scripts, logs and every screenshot are outside the repo in `C:/ai/code
 Nothing from the first report. One older print fault, outside this round's scope (it was in `31f6fa4` too, the same in
 the first round's `d-print.pdf`):
 
-1. **The printed page opens with two near-empty A4 pages.** Page 1 holds only the header ("Common Hall by Village",
+1. **The printed page opens with two near-empty A4 pages.** Page 1 holds only the header ("Commonhall by Village",
    "Two ways in"). Page 2 holds only sheet 1's empty frame and its "Sheet 1 of 4 Plan" tag. The plan and heading start
    on page 3 without the top of their frame (`V2/p1-1280-print.pdf` pages 1 to 3). Cause: at A4 print width (794 px)
    sheet 1 is 1126 px tall (its `.hero-grid` 1066 px), which is more than one A4 page (1123 px). `@media print { .sheet { break-inside: avoid } }`

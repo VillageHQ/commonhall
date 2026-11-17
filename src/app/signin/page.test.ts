@@ -73,7 +73,7 @@ describe("the sign-in page", () => {
     expect(html).toContain("A checklist takes you through the rest.");
   });
 
-  it("asks everyone else for the email their invite went to, in Founderhall's words", async () => {
+  it("asks everyone else for the email their invite went to, in Commonhall's words", async () => {
     const html = renderToStaticMarkup(await SignInPage({ searchParams: Promise.resolve({}) }));
 
     expect(html).toContain("Sign in to ");

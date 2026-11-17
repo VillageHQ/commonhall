@@ -213,7 +213,7 @@ describe("searching before connecting your own network", () => {
     await database.delete((await import("@/platform/settings/schema")).instanceSettings);
 
     expect(await readStatus(newcomer)).toMatchObject({ stage: NETWORK_STAGES.notConfigured, canSearch: false });
-    // Without Village, search finds member profiles only (Founderhall's search with no key).
+    // Without Village, search finds member profiles only (Commonhall's search with no key).
     expect(await search(newcomer)).toMatchObject({ status: 200, body: { isProfilesOnly: true, people: [] } });
 
     await saveVillageKeys(database, FAKE_VILLAGE_KEYS);

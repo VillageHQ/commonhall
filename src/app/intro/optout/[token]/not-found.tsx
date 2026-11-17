@@ -5,7 +5,7 @@ import { readBrandingForPage } from "@/platform/branding/branding";
 
 export const metadata: Metadata = { title: "Stop intro asks", robots: { index: false, follow: false } };
 
-// Founderhall's opt-out page for an unknown link: the question without its button, and a 404.
+// Commonhall's opt-out page for an unknown link: the question without its button, and a 404.
 export default async function IntroOptOutNotFound() {
   const community = await readBrandingForPage();
   return (

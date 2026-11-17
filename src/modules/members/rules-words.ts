@@ -1,4 +1,4 @@
-// Founderhall's possessive of a name: "Northwind Founders’", "Ada’s".
+// Commonhall's possessive of a name: "Northwind Founders’", "Ada’s".
 export function toPossessive(name: string) {
   const trimmed = name.trim();
   return /s$/i.test(trimmed) ? `${trimmed}’` : `${trimmed}’s`;

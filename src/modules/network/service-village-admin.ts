@@ -45,7 +45,7 @@ function describeChanges(before: VillageAdminSettings, after: VillageAdminSettin
   return changes.join(", ");
 }
 
-// One Save, as in Founderhall. Each part keeps its own audit line; a part that didn't change writes none.
+// One Save, as in Commonhall. Each part keeps its own audit line; a part that didn't change writes none.
 export async function saveVillageLimits(context: RequestContext, body: VillageLimitsBody) {
   const { database, member } = context;
   const [cap, dailyLimit, before] = await Promise.all([readMonthlyCreditCap(database), readDailyLookupLimit(database), readVillageAdminSettings(database)]);

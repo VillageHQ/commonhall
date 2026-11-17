@@ -24,7 +24,7 @@ const NOTE = "I'm Sam, Co-founder & CEO at Tallyhealth.";
 
 type SentBody = { to: string[]; subject: string; text: string };
 
-// Founderhall's links that answer without signing in: the connector's (from the ask email) and the asker's outcome
+// Commonhall's links that answer without signing in: the connector's (from the ask email) and the asker's outcome
 // link, and the person's "stop intro asks" page.
 describe("intro links from emails", () => {
   const database = createTestDatabase();
@@ -105,7 +105,7 @@ describe("intro links from emails", () => {
       expect((await readRow(intro.id)).state).toBe(INTRO_STATES.requested);
     });
 
-    it("asks for the person's email with a yes, as Founderhall does", async () => {
+    it("asks for the person's email with a yes, as Commonhall does", async () => {
       const { intro } = await seedIntro();
       const token = await issueAnswerLink(database, intro.id, INTRO_LINK_PURPOSES.connector);
 

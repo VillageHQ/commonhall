@@ -24,7 +24,7 @@ import { adminManifest } from "@/modules/admin/manifest";
 
 export const metadata: Metadata = { title: "Invites" };
 
-// Founderhall's Invites: paste many people at once, the profile fill-in's consent, who is still waiting to sign in,
+// Commonhall's Invites: paste many people at once, the profile fill-in's consent, who is still waiting to sign in,
 // and the email that goes out. Community-only: Revoke, and expired and revoked invites stay listed, marked, with Resend.
 export default modulePage(adminManifest, async function AdminInvitesPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const admin = await requireAdmin();
@@ -67,7 +67,7 @@ export default modulePage(adminManifest, async function AdminInvitesPage({ searc
                   </span>
                   <div className="fh-who">
                     <b>{invite.name || invite.email}</b>
-                    {/* The address on one line, cut with "…" on a narrow phone, as Founderhall's: never split mid-word. The dates
+                    {/* The address on one line, cut with "…" on a narrow phone, as Commonhall's: never split mid-word. The dates
                         get their own line, so a long address can't hide when the link ended, and wrap rather than being
                         cut where Resend and Revoke leave the row narrow (about 1034 px). */}
                     <span title={invite.email}>{invite.email}</span>

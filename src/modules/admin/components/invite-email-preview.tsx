@@ -2,7 +2,7 @@ import { readInviteWords } from "@/modules/members/contract-invite-email";
 
 type InviteEmailPreviewProps = { community: string; from: string; inviterName: string; inviterRole: string | null };
 
-// Founderhall's mail preview (crop mail-preview.png): the invite as it goes out, with a made-up founder's name.
+// Commonhall's mail preview (crop mail-preview.png): the invite as it goes out, with a made-up founder's name.
 export function InviteEmailPreview({ community, from, inviterName, inviterRole }: InviteEmailPreviewProps) {
   const words = readInviteWords({ community, inviteeName: "Ada Okafor", inviterName, inviterRole });
   return (

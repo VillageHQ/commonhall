@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Sets up Community on a Ubuntu 22.04, 24.04 or 26.04, or Debian 12 server.
 #
-#   curl -fsSL https://raw.githubusercontent.com/VillageHQ/community/main/install.sh | sudo bash
+#   curl -fsSL https://raw.githubusercontent.com/VillageHQ/commonhall/main/install.sh | sudo bash
 #
 # Run it again at any time to upgrade. It never changes your settings or your data.
 #
@@ -11,7 +11,7 @@
 #   COMMUNITY_DOMAIN           the address of your community, like community.example.com
 #   COMMUNITY_NONINTERACTIVE   set to 1 to never ask anything
 #   COMMUNITY_REF              the branch or tag to install files from (default: main)
-#   COMMUNITY_IMAGE            the app image (default: ghcr.io/villagehq/community:latest)
+#   COMMUNITY_IMAGE            the app image (default: ghcr.io/villagehq/commonhall:latest)
 #   COMMUNITY_BIND_ADDRESS     use only this one of the server's addresses, if another program holds ports 80 or 443 on another
 #   COMMUNITY_SERVER_IP        this server's public addresses, separated by commas, if we can't detect them (for example
 #                              behind NAT or a load balancer): the addresses your domain should point at
@@ -28,10 +28,10 @@ readonly ENV_FILE="$INSTALL_DIRECTORY/.env"
 readonly HELPER_PATH="/usr/local/bin/community"
 readonly SYSTEMD_DIRECTORY="/etc/systemd/system"
 readonly INSTALL_LOG="$INSTALL_DIRECTORY/install.log"
-readonly DEFAULT_IMAGE="ghcr.io/villagehq/community:latest"
-readonly SOURCE_ARCHIVE_URL="https://codeload.github.com/VillageHQ/community/tar.gz"
-readonly INSTALL_COMMAND="curl -fsSL https://raw.githubusercontent.com/VillageHQ/community/main/install.sh | sudo bash"
-readonly ISSUES_URL="https://github.com/VillageHQ/community/issues"
+readonly DEFAULT_IMAGE="ghcr.io/villagehq/commonhall:latest"
+readonly SOURCE_ARCHIVE_URL="https://codeload.github.com/VillageHQ/commonhall/tar.gz"
+readonly INSTALL_COMMAND="curl -fsSL https://raw.githubusercontent.com/VillageHQ/commonhall/main/install.sh | sudo bash"
+readonly ISSUES_URL="https://github.com/VillageHQ/commonhall/issues"
 readonly POSTGRES_VOLUME="community_postgres-data"
 readonly SWAP_FILE="/swapfile"
 readonly SWAP_MARK="$INSTALL_DIRECTORY/.swapfile-made-by-installer"
@@ -205,7 +205,7 @@ choose_domain() {
     app_url="$(read_setting APP_URL)"
     say "Keeping your current address: $app_url"
     if [ -n "${COMMUNITY_DOMAIN:-}" ] && [ "$(normalize_domain "$COMMUNITY_DOMAIN")" != "$domain" ]; then
-      warn "You passed ${COMMUNITY_DOMAIN}, but we never change existing settings. The guide shows how to change the address: https://github.com/VillageHQ/community/blob/main/docs/self-host-vps.md"
+      warn "You passed ${COMMUNITY_DOMAIN}, but we never change existing settings. The guide shows how to change the address: https://github.com/VillageHQ/commonhall/blob/main/docs/self-host-vps.md"
     fi
     if [ -n "${COMMUNITY_BIND_ADDRESS:-}" ] && [ "$COMMUNITY_BIND_ADDRESS" != "$(read_setting COMMUNITY_BIND_ADDRESS)" ]; then
       warn "You passed COMMUNITY_BIND_ADDRESS=${COMMUNITY_BIND_ADDRESS}, but we never change existing settings."
@@ -352,7 +352,7 @@ explain_nat() {
     say "If visitors reach it on another address, point $domain there instead, and run the command again with it:"
   fi
   say ""
-  say "  curl -fsSL https://raw.githubusercontent.com/VillageHQ/community/main/install.sh | sudo COMMUNITY_DOMAIN=$domain COMMUNITY_SERVER_IP=$listed bash"
+  say "  curl -fsSL https://raw.githubusercontent.com/VillageHQ/commonhall/main/install.sh | sudo COMMUNITY_DOMAIN=$domain COMMUNITY_SERVER_IP=$listed bash"
   say ""
   if [ "${#other_addresses[@]}" -gt 0 ]; then
     say "If not, change or delete the record that points at ${other_addresses[*]}, and create the one above."
@@ -481,7 +481,7 @@ explain_port_conflict() {
   if can_share_ports_by_address "$listeners"; then
     suggestion="either stop that program, or keep it and let your community use only this server's public address:
 
-  curl -fsSL https://raw.githubusercontent.com/VillageHQ/community/main/install.sh | sudo COMMUNITY_DOMAIN=$domain COMMUNITY_BIND_ADDRESS=${server_addresses[0]:-<public address>} bash"
+  curl -fsSL https://raw.githubusercontent.com/VillageHQ/commonhall/main/install.sh | sudo COMMUNITY_DOMAIN=$domain COMMUNITY_BIND_ADDRESS=${server_addresses[0]:-<public address>} bash"
   fi
   die "Another program on this server is already using the web ports, and your community needs them.
 Nothing has been set up yet.
@@ -891,7 +891,7 @@ print_first_install_summary() {
   say "Backups: this server backs up your data every day and keeps the last 7."
   say "Those copies sit on the same disk as your data, so they're not enough if the server is lost."
   say "Copy one to your own computer regularly. The guide shows how:"
-  say "  https://github.com/VillageHQ/community/blob/main/docs/self-host-vps.md"
+  say "  https://github.com/VillageHQ/commonhall/blob/main/docs/self-host-vps.md"
   say ""
   say "To see all the commands: community"
 }

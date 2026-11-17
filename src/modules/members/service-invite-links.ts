@@ -9,7 +9,7 @@ import { invite } from "./schema.ts";
 import { INVITE_EMAIL_STATUSES } from "./contract-invite-state.ts";
 import { OPEN_INVITE } from "./service-invites.ts";
 
-// Set up › Sign-in links (Founderhall's links page): the open invites a person can only get by hand. With mail off,
+// Set up › Sign-in links (Commonhall's links page): the open invites a person can only get by hand. With mail off,
 // every open invite; with mail on, those whose email failed or was never sent (an import with email off).
 // Only the hash of an invite token is kept, so the page shows no link until the admin makes a new one (Copy).
 export const WAITING_LINKS_LIMIT = 200;

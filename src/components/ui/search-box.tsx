@@ -2,7 +2,7 @@ import { cn } from "cn";
 import { Search } from "lucide-react";
 import type { ComponentProps } from "react";
 
-// Founderhall's search box (crop search-box.png): a 52 px field, 16 px text, radius 10, the one shadow, the search
+// Commonhall's search box (crop search-box.png): a 52 px field, 16 px text, radius 10, the one shadow, the search
 // icon inset at 14 px.
 export function SearchBox({ className, ...inputProps }: Omit<ComponentProps<"input">, "type">) {
   return (

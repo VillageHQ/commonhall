@@ -16,12 +16,12 @@ What it does now:
   marks the line right, HIDE hides it (it stays hidden on refresh), FIX puts the member's own words on the card (the
   first line after the code, or the link page's field). FIX with no words changes nothing, keeps the item open and
   sends one hint email. Each item is answered once.
-- **The link page says what was done.** After the button the page reads "Done" and the answer in Founderhall's words.
+- **The link page says what was done.** After the button the page reads "Done" and the answer in Commonhall's words.
   The button's redirect goes back by path, so it works whatever address the server sees itself under; the one-click
   unsubscribe page's button does the same.
 - **A hiring founder's directory card says "Hiring · N open jobs"** (the profile already listed the jobs).
-- **The website (`site/`) has Founderhall's price table and its sign-up form.** The form checks its five fields in
-  Founderhall's words and posts JSON only to the address in `data-endpoint`; that is empty, so a valid submit sends
+- **The website (`site/`) has Commonhall's price table and its sign-up form.** The form checks its five fields in
+  Commonhall's words and posts JSON only to the address in `data-endpoint`; that is empty, so a valid submit sends
   nothing and says "Nothing was sent". Without JavaScript the form doesn't show. Nothing is deployed.
 
 Proof: `reports/` (screens at 390 and 1280 px) and `reports/check/CHECK.md` (the independent check, row by row).

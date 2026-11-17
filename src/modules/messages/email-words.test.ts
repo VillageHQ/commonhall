@@ -6,7 +6,7 @@ import { renderMessageEmail } from "./email";
 
 const LINK = "https://portal.example.com/inbox/3";
 
-describe("the new-message email, in Founderhall's words", () => {
+describe("the new-message email, in Commonhall's words", () => {
   it("names the sender, links the Inbox and signs off as the community", () => {
     const email = renderMessageEmail({ senderName: "Sam Lee", communityName: "Northwind Founders", link: LINK, accentColor: "#24525A", canReply: true });
 

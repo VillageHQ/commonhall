@@ -104,7 +104,7 @@ function ConnectorMain({ intro, community, canEmail, hasThread }: IntroPageProps
   );
 }
 
-// One intro (Founderhall's introPage()): back link, title and pill, the lede, then two columns: the asker's tracker or
+// One intro (Commonhall's introPage()): back link, title and pill, the lede, then two columns: the asker's tracker or
 // the connector's answer, and the note.
 export function IntroPage(props: IntroPageProps) {
   const { intro, community } = props;
@@ -115,8 +115,8 @@ export function IntroPage(props: IntroPageProps) {
       <FlashOnArrival />
       <BackLink href={ROUTES.intros}>Your intros</BackLink>
       <div className="fh-pagehead">
-        {/* Founderhall's row (gap 12). The column gap is a hair under, so a title and pill that fill the phone row exactly
-            stay on one line as on Founderhall instead of wrapping on a sub-pixel. */}
+        {/* Commonhall's row (gap 12). The column gap is a hair under, so a title and pill that fill the phone row exactly
+            stay on one line as on Commonhall instead of wrapping on a sub-pixel. */}
         <div className="flex flex-wrap items-start justify-between gap-x-[11.9px] gap-y-3">
           <h1 className="fh-h1">{readIntroTitle(intro)}</h1>
           <Pill tone={pill.tone}>{pill.label}</Pill>

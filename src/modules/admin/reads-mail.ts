@@ -21,7 +21,7 @@ import { readReplyDomain } from "../../platform/weekly-email/tokens.ts";
 const WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
 const RECENT_SENDS = 50;
 export const MAIL_LOG_SIZE = 50;
-// Founderhall’s fallback when no domain is known yet (the lede and the reply hint).
+// Commonhall’s fallback when no domain is known yet (the lede and the reply hint).
 const PLACEHOLDER_DOMAIN = "example.com";
 
 export const MAIL_LOG_STATES = { sent: "sent", failed: "failed", notSent: "not sent", waiting: "waiting" } as const;

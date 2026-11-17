@@ -20,7 +20,7 @@ export function formatDateAndTimeUtc(date: string | Date) {
   return `${DATE_AND_TIME.format(new Date(date))} UTC`;
 }
 
-// Founderhall's dates on admin pages: "11 Nov" and "11 Nov 15:13 UTC" (24-hour, no year).
+// Commonhall's dates on admin pages: "11 Nov" and "11 Nov 15:13 UTC" (24-hour, no year).
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 export function formatDayMonth(date: string | Date) {
@@ -34,7 +34,7 @@ export function formatDayMonthTimeUtc(date: string | Date) {
   return `${formatDayMonth(moment)} ${time} UTC`;
 }
 
-// Founderhall's day: "1 Sep", with the year when it is not this year ("1 Sep 2025").
+// Commonhall's day: "1 Sep", with the year when it is not this year ("1 Sep 2025").
 export function formatDay(date: string | Date, now = new Date()) {
   const day = new Date(date);
   const year = day.getUTCFullYear();

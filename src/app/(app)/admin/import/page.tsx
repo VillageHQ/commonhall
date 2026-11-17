@@ -13,7 +13,7 @@ import { AdminSection } from "@/shell/admin-section";
 
 export const metadata: Metadata = { title: PAGE_TITLES.adminImport };
 
-// Set up › Import members (CSV): Founderhall's import page. The paste-a-list invite stays on Invites.
+// Set up › Import members (CSV): Commonhall's import page. The paste-a-list invite stays on Invites.
 export default modulePage(adminManifest, async function AdminImportPage() {
   await requireAdmin();
   const database = getDatabase();

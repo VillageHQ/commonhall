@@ -2,7 +2,7 @@ import { cn } from "cn";
 import { Check, Clock } from "lucide-react";
 import type { CSSProperties, ReactNode } from "react";
 
-// Founderhall's figures (design-system.md §3.9). Numbers are always sans and tabular.
+// Commonhall's figures (design-system.md §3.9). Numbers are always sans and tabular.
 
 // KV tiles (crop kv-tiles.png): 2 → 4 columns divided by 1 px rule lines; a 24/28 figure over a 13 px label.
 export function KvTiles({ tiles, className }: { tiles: readonly { label: ReactNode; value: ReactNode; isGood?: boolean }[]; className?: string }) {

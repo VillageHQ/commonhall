@@ -21,7 +21,7 @@ const IN_APP_FETCH_TIMEOUT_MS = 5000;
 // The same for a signed-in member, inside the app's frame (src/app/(app)/not-here/).
 const MODULE_OFF_IN_APP_PATH = `${ROUTES.notHere}/_module-off`;
 
-// Founderhall serves both job boards at /jobs: a signed-in member gets the members' board, a visitor the public one
+// Commonhall serves both job boards at /jobs: a signed-in member gets the members' board, a visitor the public one
 // (its page lives at /public/board; the old /public/jobs redirects here). While the board isn't public, a visitor is sent to sign in.
 function readVisitorJobsPath(request: NextRequest) {
   if (request.nextUrl.pathname !== JOB_BOARD_PAGES.board) return null;

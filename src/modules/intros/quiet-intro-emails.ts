@@ -77,7 +77,7 @@ async function sendQuietIntroEmails(database: Database, environment: Environment
           .returning({ id: introRequest.id });
         if (!claimed) return false;
         const queued = (await queueIntroEmail(transaction, environment, branding, id, kind.event)) !== null;
-        // The connector who said yes hears that the person never answered (Founderhall's "closed" email).
+        // The connector who said yes hears that the person never answered (Commonhall's "closed" email).
         if (kind.event === INTRO_EMAIL_EVENTS.expired && (await wasTargetAsked(transaction, id))) {
           await queueIntroEmail(transaction, environment, branding, id, INTRO_EMAIL_EVENTS.closedUnanswered);
         }

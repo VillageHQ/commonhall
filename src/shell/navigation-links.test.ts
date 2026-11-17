@@ -65,13 +65,13 @@ afterEach(() => {
 });
 
 describe("the phone tab bar", () => {
-  it("shows a member Founderhall's six tabs, and Feed while the feed is on", () => {
+  it("shows a member Commonhall's six tabs, and Feed while the feed is on", () => {
     renderShellPart(TabBar);
 
     expect(readNames("Sections")).toEqual(["Today", "Asks", "Feed", "Search", "Directory", "Intros", "Inbox"]);
   });
 
-  it("fits every tab in equal columns, as Founderhall's bar does", () => {
+  it("fits every tab in equal columns, as Commonhall's bar does", () => {
     renderShellPart(TabBar, { isAdmin: true });
 
     const bar = screen.getByRole("navigation", { name: "Sections" });

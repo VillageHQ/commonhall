@@ -14,7 +14,7 @@ const NOTICE_COPY = {
   error: { title: "Your search didn't finish", action: "Back to Search" },
 };
 
-// A search runs on while the member browses; Founderhall's toast says when it is done.
+// A search runs on while the member browses; Commonhall's toast says when it is done.
 function SearchOutcomeNotice({ prompt, scope }: { prompt: string; scope: SearchWhere }) {
   const { status } = useQuery({ ...networkSearchQuery(prompt, scope), enabled: false });
   if (status === "pending") return null;

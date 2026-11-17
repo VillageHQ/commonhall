@@ -18,7 +18,7 @@ type StepRowProps = {
   children?: ReactNode;
 };
 
-// Founderhall's launch list row (crop checklist-status.png, admin-first-home-launch-checklist): a 26 px numbered
+// Commonhall's launch list row (crop checklist-status.png, admin-first-home-launch-checklist): a 26 px numbered
 // circle (the fund colour with a tick when done), a 600 16/22 title, a Graphite line, ruled under each.
 export function StepRow({ state, isDone = state === STEP_STATES.done, number, title, description, action, children }: StepRowProps) {
   return (

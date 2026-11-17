@@ -6,7 +6,7 @@ const STAGE_PARAM = "stage";
 const SECTOR_PARAM = "sector";
 const CITY_PARAM = "city";
 const COHORT_PARAM = "cohort";
-// Founderhall's name for the "Updated" filter; "updated" still reads, for older links.
+// Commonhall's name for the "Updated" filter; "updated" still reads, for older links.
 const UPDATED_PARAM = "fresh";
 const OLD_UPDATED_PARAM = "updated";
 const HIRING_PARAM = "hiring";

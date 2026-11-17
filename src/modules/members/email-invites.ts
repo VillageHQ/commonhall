@@ -15,7 +15,7 @@ type InviteEmailFacts = {
   accentColor: string;
 };
 
-// Founderhall's invite, word for word. Plain text first; the HTML is the same words, with the link as a button.
+// Commonhall's invite, word for word. Plain text first; the HTML is the same words, with the link as a button.
 export function renderInviteEmail({ link, inviterName, inviterRole, inviteeName, communityName, accentColor }: InviteEmailFacts) {
   const community = toSingleLine(communityName);
   const words = readInviteWords({

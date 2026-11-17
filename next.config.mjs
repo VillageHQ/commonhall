@@ -67,29 +67,29 @@ export const nextConfig = {
   redirects: async () => [
     // The weekly email moved into Asks & digest; its preview is the digest preview. A real 308, before the page streams.
     { source: "/admin/weekly-email", destination: "/admin/digest", permanent: true },
-    // Set up's pages took Founderhall's addresses; old links and bookmarks land on the new ones.
+    // Set up's pages took Commonhall's addresses; old links and bookmarks land on the new ones.
     { source: "/admin/email", destination: "/admin/mail", permanent: true },
     { source: "/admin/audit-log", destination: "/admin/audit", permanent: true },
     { source: "/admin/chat", destination: "/admin/integrations", permanent: true },
     { source: "/admin/credits", destination: "/admin/village", permanent: true },
-    // Founderhall's public paths. Links in emails sent before the rename keep working (the query string carries over).
+    // Commonhall's public paths. Links in emails sent before the rename keep working (the query string carries over).
     { source: "/sign-in", destination: "/signin", permanent: true },
     { source: "/sign-in/link", destination: "/auth", permanent: true },
     { source: "/join/:token", destination: "/invite?token=:token", permanent: true },
     // Demo faces moved from drawn .svg to .webp portraits; a demo seeded before that keeps the old links until its reset.
     { source: "/demo/faces/:name([a-z0-9-]+)\.svg", destination: "/demo/faces/:name.webp", permanent: true },
-    // Founderhall's addresses for the directory and profiles (the transplant). Old links in emails and bookmarks still
+    // Commonhall's addresses for the directory and profiles (the transplant). Old links in emails and bookmarks still
     // work; the query goes along.
     { source: "/members", destination: "/directory", permanent: true },
     { source: "/members/card", destination: "/me", permanent: true },
     { source: "/members/data", destination: "/me/data", permanent: true },
     { source: "/members/:memberId", destination: "/people/:memberId", permanent: true },
-    // Founderhall's addresses: Messages became the Inbox, and the public job board moved to /jobs (visitors see it
-    // there; members see their own board). /messages/new stays: it is Founderhall's "Message" page.
+    // Commonhall's addresses: Messages became the Inbox, and the public job board moved to /jobs (visitors see it
+    // there; members see their own board). /messages/new stays: it is Commonhall's "Message" page.
     { source: "/messages", destination: "/inbox", permanent: true },
     { source: "/messages/:conversationId((?!new$)[^/]+)", destination: "/inbox/:conversationId", permanent: true },
     { source: "/public/jobs", destination: "/jobs", permanent: true },
-    // Search took Founderhall's address; old links and bookmarks (and their ?q=) land on it.
+    // Search took Commonhall's address; old links and bookmarks (and their ?q=) land on it.
     { source: "/network", destination: "/search", permanent: true },
   ],
 };

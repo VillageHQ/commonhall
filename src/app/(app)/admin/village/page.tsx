@@ -103,7 +103,7 @@ export default modulePage(networkManifest, async function AdminVillagePage() {
   const isConfigured = keyState.keys !== null;
   const hasSavedKeys = keyState.status !== VILLAGE_KEY_STATUSES.missing;
   const keyProblem = KEY_PROBLEMS[keyState.status];
-  // Keys this site can read show as Founderhall's "set on the server" lines; anything else keeps the fields open.
+  // Keys this site can read show as Commonhall's "set on the server" lines; anything else keeps the fields open.
   const areKeysReadable = isConfigured && !keyProblem;
   const apiUrl = `${(resolveVillageApiUrl(process.env) ?? DEFAULT_VILLAGE_API_URL).replace(/\/+$/, "")}/v2`;
   const appUrl = resolveVillageAppUrl(process.env);

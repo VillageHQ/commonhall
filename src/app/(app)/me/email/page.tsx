@@ -13,7 +13,7 @@ import { readEmailSettingRows } from "@/shell/email-settings";
 
 export const metadata: Metadata = { title: PAGE_TITLES.emailSettings };
 
-// Founderhall's Email settings (member-me-email).
+// Commonhall's Email settings (member-me-email).
 export default modulePage(membersManifest, async function EmailSettingsPage() {
   const member = await requireMember();
   const database = getDatabase();

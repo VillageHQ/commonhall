@@ -401,7 +401,7 @@ describe("asks that reach helpers", () => {
       expect(intro).toMatchObject({ requesterId: amara.userId, introducerId: jonas.userId, state: INTRO_STATES.requested, askId, isConnectorOffer: false });
     });
 
-    // ASK-06: Founderhall lets the author ask any listed helper. A helper found by profile words has no path, so it is
+    // ASK-06: Commonhall lets the author ask any listed helper. A helper found by profile words has no path, so it is
     // a named intro for the person the author names, with that helper as the connector.
     it("asks a word helper for the intro too, as a named intro for the person the author names", async () => {
       const { id: askId } = await post(amara);
@@ -530,7 +530,7 @@ describe("asks that reach helpers", () => {
       expect((await readBoard(gardener)).asks[0]?.answers.map(({ body }) => body)).toEqual(["And one more thing."]);
     });
 
-    it("lets the author answer their own ask, and anyone answer an update (as Founderhall)", async () => {
+    it("lets the author answer their own ask, and anyone answer an update (as Commonhall)", async () => {
       const { id: askId } = await post(amara);
       const { id: updateId } = await post(amara, { kind: ASK_KINDS.update, title: "We won", category: ASK_CATEGORIES.other, targetLinkedin: null });
 

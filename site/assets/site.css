@@ -1,4 +1,4 @@
-/* Common Hall by Village: the landing page. Paper and ink, in a light and a dark theme. Every style is in this file
+/* Commonhall by Village: the landing page. Paper and ink, in a light and a dark theme. Every style is in this file
    (the page's Content Security Policy allows no inline styles). Fonts are the files beside it. */
 
 @font-face { font-family: "Newsreader"; font-style: normal; font-weight: 500; font-display: swap; src: url("fonts/newsreader-latin-500-normal.woff2") format("woff2"); }

@@ -26,7 +26,7 @@ function readMemberSentence(memberCount: number, communityName: string, isCommun
 
 type DirectoryPageProps = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
-// Founderhall's Directory (member-directory-populated).
+// Commonhall's Directory (member-directory-populated).
 export default modulePage(membersManifest, async function DirectoryPage({ searchParams }: DirectoryPageProps) {
   await requireMember();
   const filters = parseDirectoryFilters(await searchParams);

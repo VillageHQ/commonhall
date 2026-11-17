@@ -12,7 +12,7 @@ basis: e95a9f.8c36f3
 ---
 # Spec: A connector who said no leaves the paths list
 
-**Added:** 2026-11-10 (from the Founderhall parity map in `.ai/roadmap.md`)
+**Added:** 2026-11-10 (from the Commonhall parity map in `.ai/roadmap.md`)
 
 ## What & why
 After a connector says no to an intro, they still show as a way in on the asker's paths list for that person.

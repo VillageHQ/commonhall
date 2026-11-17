@@ -133,7 +133,7 @@ async function readMemberFacts(database: Database, memberId: string) {
   return member ?? null;
 }
 
-// The introduction, as Founderhall sends it: one email each to the asker, the person and the connector, whose replies
+// The introduction, as Commonhall sends it: one email each to the asker, the person and the connector, whose replies
 // run through the app's intro thread so everyone in it gets them. Without replies by email, the asker and the person
 // each get a copy whose reply goes to the other; the connector then gets the app's notice instead. Returns whether the
 // connector was copied.

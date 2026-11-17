@@ -59,7 +59,7 @@ function person(key: string) {
   return found;
 }
 
-// People named only as an intro's target, never shown with a face or looked up: Founderhall's demo asks Sam to
+// People named only as an intro's target, never shown with a face or looked up: Commonhall's demo asks Sam to
 // introduce Marcus to Rachel Kim.
 const INTRO_ONLY_TARGETS: readonly (typeof DEMO_OUTSIDERS)[number][] = [
   { slug: "rachel-kim-demo", name: "Rachel Kim", title: "CFO", company: "Brightside Clinics", location: "Boston" },
@@ -90,7 +90,7 @@ async function seedMembers(transaction: Transaction, ago: ReturnType<typeof make
       userId: id,
       title: demoPerson.title,
       company: demoPerson.company,
-      // Sam's city comes from public profiles, not his own words, so his Today asks "Is this right?" (as Founderhall's demo).
+      // Sam's city comes from public profiles, not his own words, so his Today asks "Is this right?" (as Commonhall's demo).
       location: demoPerson.key === CITY_FROM_FILL_IN.key ? null : demoPerson.location,
       bio: demoPerson.bio,
       canHelpWith: demoPerson.canHelpWith,
@@ -151,7 +151,7 @@ function headline(demoPerson: DemoPerson) {
   return `${demoPerson.title} at ${demoPerson.company}`;
 }
 
-// Sam's intros are Founderhall's demo intros, so the two apps can be compared side by side: Marcus waits on Sam's
+// Sam's intros are Commonhall's demo intros, so the two apps can be compared side by side: Marcus waits on Sam's
 // answer about Rachel Kim, and Sam's ask to Alex Kim through Priya was introduced. Other members' intros fill the rest.
 const CURRENT_INTROS: readonly IntroSeed[] = [
   {
@@ -342,7 +342,7 @@ async function seedIntros(transaction: Transaction, ids: Ids, ago: ReturnType<ty
   }
 }
 
-// Founderhall's demo asks, word for word, so the two apps compare on the same people: 8 asks and 2 updates.
+// Commonhall's demo asks, word for word, so the two apps compare on the same people: 8 asks and 2 updates.
 type AskHelperSeed = { helper: string; reason: "path" | "words"; why: string; person?: string; title?: string; warmth?: "close" | "knows" | "met" };
 type AskAnswerSeed = { author: string; body: string; kind?: "answer" | "know_someone" | "done_myself"; daysAgo: number; hoursAgo?: number };
 
@@ -496,7 +496,7 @@ async function seedAsks(transaction: Transaction, ids: Ids, ago: ReturnType<type
   }
 }
 
-// The same thread as Founderhall's demo; Sam answered Priya by replying to the email.
+// The same thread as Commonhall's demo; Sam answered Priya by replying to the email.
 const THREAD: readonly [string, string, number, boolean][] = [
   ["priya.shah", "Saw your VP Sales ask. Want to compare scorecards on Thursday? 30 minutes is plenty.", 50, false],
   ["sam.lee", "Yes please. Thursday 4pm London works. I’ll bring our job spec.", 48, true],
@@ -631,7 +631,7 @@ async function seedSettings(transaction: Transaction, environment: Environment, 
     [INSTANCE_SETTING_KEYS.villageGroupId]: DEMO_VILLAGE_GROUP.id,
     [INSTANCE_SETTING_KEYS.villageGroupInviteLink]: DEMO_VILLAGE_GROUP.inviteLink,
     [INSTANCE_SETTING_KEYS.demoSeededAt]: now.toISOString(),
-    // Founderhall's demo logo (made up, public/demo/northwind-logo.svg).
+    // Commonhall's demo logo (made up, public/demo/northwind-logo.svg).
     [INSTANCE_SETTING_KEYS.logoUrl]: DEMO_COMMUNITY_LOGO_URL,
     [INSTANCE_SETTING_KEYS.demoResetAt]: now.toISOString(),
     ...toDataHomeSettings(DEMO_DATA_HOME),

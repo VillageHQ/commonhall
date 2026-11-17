@@ -176,7 +176,7 @@ describe("the partner report", () => {
       expect(intros?.periods[REPORT_PERIOD_KEYS.sinceLaunch]).toMatchObject({ asked: 15, introduced: 4, declined: 3, expired: 4, withdrawn: 1, open: 3, helped: 2, notHelped: 1, helpedPercent: 67 });
     });
 
-    it("counts this quarter the Founderhall way, and every line adds up", async () => {
+    it("counts this quarter the Commonhall way, and every line adds up", async () => {
       const { intros: stats, title } = await readReportStats(database, "quarter");
 
       expect(stats).toMatchObject({
@@ -216,7 +216,7 @@ describe("the partner report", () => {
       expect((await readReportStats(database, "quarter")).summary).toBe(`No intros asked for yet in ${label}.`);
     });
 
-    it("writes the email the Founderhall way, from the same read", async () => {
+    it("writes the email the Commonhall way, from the same read", async () => {
       const report = await readReportStats(database, "quarter");
       const text = renderReportEmailText(report, "Our quarter.");
 

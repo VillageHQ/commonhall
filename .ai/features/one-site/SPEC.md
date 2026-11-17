@@ -1,12 +1,12 @@
-# One marketing site: Founderhall by Village
+# One marketing site: Commonhall by Village
 
-> Update 2026-11-13: the page is now **Common Hall by Village**, the blueprint drawing set; what it does now is in
-> [common-hall-site/SPEC.md](../common-hall-site/SPEC.md). This spec describes the Founderhall page it replaced.
+> Update 2026-11-13: the page is now **Commonhall by Village**, the blueprint drawing set; what it does now is in
+> [common-hall-site/SPEC.md](../common-hall-site/SPEC.md). This spec describes the Commonhall page it replaced.
 
 What it does now.
 
 - `site/` is one static page (`index.html`, `assets/site.css`, `assets/site.js`) that sells the app in this repo as
-  **Founderhall by Village**. No framework, no build step, no forms, no cookies, no analytics, and a Content Security
+  **Commonhall by Village**. No framework, no build step, no forms, no cookies, no analytics, and a Content Security
   Policy that allows only this site's own files. Nothing loads from a third party.
 - Sections: hero (the Today sketch), fund first, Today and the weekly email, double opt-in intros (with the consent
   page sketch), the partner report (sketch using the app's own rows), trust points and the consent text, optional

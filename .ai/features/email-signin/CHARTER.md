@@ -1,6 +1,6 @@
 # Charter: sign-in by email link + bulk invites
 
-Approved scope (wave 1 of the Founderhall → Community merge, part 4). Security change: the owner approves the merge.
+Approved scope (wave 1 of the Commonhall → Community merge, part 4). Security change: the owner approves the merge.
 
 ## Direction
 1. **Sign-in by emailed link.** Shown first on /sign-in when email is configured. Password sign-in stays for anyone

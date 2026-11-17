@@ -163,7 +163,7 @@ function AcceptedActions({ intro }: { intro: Intro }) {
   );
 }
 
-// Community's "Report this note" (no Founderhall part), with its confirmation: admins read the note only then.
+// Community's "Report this note" (no Commonhall part), with its confirmation: admins read the note only then.
 export function ReportNote({ intro }: { intro: Intro }) {
   const [isConfirming, setIsConfirming] = useState(false);
   const reportButton = useRef<HTMLButtonElement>(null);
@@ -202,7 +202,7 @@ export function ReportNote({ intro }: { intro: Intro }) {
   );
 }
 
-// Community's own follow-ups after the connector's yes (no Founderhall screen): share the person's link by hand when the
+// Community's own follow-ups after the connector's yes (no Commonhall screen): share the person's link by hand when the
 // community sends no email, or join them by hand when the person said yes without an address.
 export function ConnectorFollowUp({ intro }: { intro: Intro }) {
   if (intro.state === INTRO_STATES.askingTarget) return <AskingTargetActions intro={intro} />;

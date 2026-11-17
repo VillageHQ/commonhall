@@ -15,7 +15,7 @@ import { CONSENT_ANSWERS, targetMemberAnswerSchema, type IntroForTarget } from "
 
 type Answer = typeof CONSENT_ANSWERS.yes | typeof CONSENT_ANSWERS.noThanks;
 
-// INTRO-06: an intro waiting on a member because they are the person asked for. The emailed page's words (Founderhall's
+// INTRO-06: an intro waiting on a member because they are the person asked for. The emailed page's words (Commonhall's
 // decisionPage), answered in place: "Yes, introduce us" or "No thanks". Used on Today and Your intros.
 export function TargetMemberAsk({ intro, ago }: { intro: IntroForTarget; ago: string }) {
   const router = useRouter();

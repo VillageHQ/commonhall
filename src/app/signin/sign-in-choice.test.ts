@@ -10,7 +10,7 @@ afterEach(cleanup);
 const COMMUNITY = { name: "Northwind Founders", logo: null };
 
 describe("the sign-in page's two ways in", () => {
-  it("leads with the emailed link, in Founderhall's words", () => {
+  it("leads with the emailed link, in Commonhall's words", () => {
     render(createElement(SignInScreen, { community: COMMUNITY, isLinkOn: true, returnPath: null }));
 
     expect(screen.getByRole("heading", { name: "Sign in to Northwind Founders" })).toBeTruthy();

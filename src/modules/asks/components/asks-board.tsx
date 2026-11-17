@@ -39,7 +39,7 @@ function toTabHref(tab: AskTab, search: string | null) {
   return `${ASKS_PAGE}?${params.toString()}`;
 }
 
-// Founderhall's Asks & updates (asksPage): head, then the composer, the archive search, the tabs and the posts in one
+// Commonhall's Asks & updates (asksPage): head, then the composer, the archive search, the tabs and the posts in one
 // column; "How asks work" in the right rail on a desktop.
 export function AsksBoard({ communityName, tab, search, posts, counts, allowance, flash, draft, now }: AsksBoardProps) {
   return (

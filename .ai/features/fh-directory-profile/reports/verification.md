@@ -16,7 +16,7 @@ shared foundation · **d** a real defect of this area.
 | both | 21 members, other names, logos, portraits, cities, sectors, the filter options and "fresh as of" dates; jobs count 14 | a |
 | both | Team members carry "Fund" and "Venture" pills, and "Fund" shows up as a stage option (the demo team's stage and sector) | a |
 | both | Nadia Cole's card has no pills (she has not filled in stage, sector or cohort) | a |
-| 390 | "fresh as of 30 Oct" drops to its own line on some cards: the date and the "Pre-seed" pill are wider than in Founderhall's cards | a |
+| 390 | "fresh as of 30 Oct" drops to its own line on some cards: the date and the "Pre-seed" pill are wider than in Commonhall's cards | a |
 | both | Badges on Asks, Intros, Inbox; Perks in the menu; "Jobs · Perks" links above Sign out on the phone; fund mark "NF" instead of a logo | c |
 | both | Structure, search box, five filters (2+2+1 on the phone), count line, two-column cards, pills, rules, spacing: same | none |
 
@@ -24,9 +24,9 @@ shared foundation · **d** a real defect of this area.
 | Width | Difference | Class |
 |---|---|---|
 | both | Different portrait and logo, refreshed dates (22 Oct, fresh as of 30 Oct) | a |
-| both | A "Looking for" block (Ada has one in the demo data; Founderhall's Ada has none) | a |
+| both | A "Looking for" block (Ada has one in the demo data; Commonhall's Ada has none) | a |
 | both | Tags (Climate, Hardware), Links (LinkedIn), "Block Ada Okafor" | b |
-| both | The Message button's icon is a round speech bubble; Founderhall's is a square one. The button comes from the Inbox area's `start-conversation-button.tsx` (`MessageCircle`) | c |
+| both | The Message button's icon is a round speech bubble; Commonhall's is a square one. The button comes from the Inbox area's `start-conversation-button.tsx` (`MessageCircle`) | c |
 | both | Sidebar badges, Perks, phone foot links | c |
 | both | Head, chips, two buttons, "In Ada's own words" sheet, filled-in sheet, past roles, "Who Ada can introduce you to" with Search and the consent line: same words and layout | none |
 
@@ -35,22 +35,22 @@ shared foundation · **d** a real defect of this area.
 |---|---|---|
 | both | City is marked "you" (Sam's own words in the demo) and the City filled-in line says "(your own words show instead)"; dates 22 Oct / 9 Aug | a |
 | both | Extra rows Tags, LinkedIn, Website; cards "Credit me in reports" and "How you sign in" (password) | b |
-| both | The jobs card is "Your company's jobs" with "Manage or link another", not Founderhall's "Our jobs" with the job list | c (jobs area) |
-| both | **Privacy option cards are 16 px apart; Founderhall's are 8 px apart** (`.fh-opt + .fh-opt` already adds 8 px, and the wrapper in `privacy-sheet.tsx` line 63 adds `grid gap-2` on top) | **d** |
+| both | The jobs card is "Your company's jobs" with "Manage or link another", not Commonhall's "Our jobs" with the job list | c (jobs area) |
+| both | **Privacy option cards are 16 px apart; Commonhall's are 8 px apart** (`.fh-opt + .fh-opt` already adds 8 px, and the wrapper in `privacy-sheet.tsx` line 63 adds `grid gap-2` on top) | **d** |
 | both | Head, "In your own words" with you/from public profiles marks and Edit links, the "you" note, filled-in lines with Correct and Hide, past roles with "Hide my past roles", Privacy, My network: same words and layout | none |
 
 ### member-me-edit-field
 | Width | Difference | Class |
 |---|---|---|
 | both | Same as member-me-profile (rows a/b/c and the option-card gap) | a/b/c/**d** |
-| 390 | Founderhall's shot has its top bar drawn over the name field (a capture artefact on its side); Community's field shows whole | none |
-| both | The open field shows a focus ring (the input has focus on load); Founderhall's capture shows it without focus | none |
+| 390 | Commonhall's shot has its top bar drawn over the name field (a capture artefact on its side); Community's field shows whole | none |
+| both | The open field shows a focus ring (the input has focus on load); Commonhall's capture shows it without focus | none |
 | both | Input, Save, Cancel in place of the value, other rows unchanged: same | none |
 
 ### member-me-profile-new (Nadia Cole)
 | Width | Difference | Class |
 |---|---|---|
-| both | The "NC" avatar tint is grey-green; Founderhall's is sand (the foundation picks the tint from the name) | c |
+| both | The "NC" avatar tint is grey-green; Commonhall's is sand (the foundation picks the tint from the name) | c |
 | both | Extra rows Tags, LinkedIn, Website ("Not filled in"); Credit me in reports (off); How you sign in | b |
 | both | Jobs card: "Your company's jobs", Company + Careers link, "Link our hiring tool" / "Add jobs by hand instead" (and "From your card" wording) instead of "Our jobs" with Hiring tool and "Pull our jobs" | c (jobs area) |
 | both | Privacy option cards 16 px apart instead of 8 | **d** (same as above) |
@@ -60,25 +60,25 @@ shared foundation · **d** a real defect of this area.
 | Width | Difference | Class |
 |---|---|---|
 | both | "Hosted by Northwind Founders, EU, Frankfurt, DigitalOcean." vs "EU (Frankfurt)."; privacy@example.com | a (hosting settings) |
-| both | "admins see counts, not names." where Founderhall says "admins see names, states and dates." (Community's rule: admins never see who asked whom) | b |
+| both | "admins see counts, not names." where Commonhall says "admins see names, states and dates." (Community's rule: admins never see who asked whom) | b |
 | both | Consent record: one line ("recorded that you agreed in its membership terms on 25 Apr") instead of three; dates 22 Oct / 9 Aug | a |
 | both | Extra consent rows "Members can ask you for intros", "Named in partner reports"; a Dark mode row under Your switches | b |
-| both | The "Your switches" heading icon is Lucide `sliders-horizontal` (three lines); Founderhall's is `settings-2` (two lines with knobs) | **d** (minor) |
+| both | The "Your switches" heading icon is Lucide `sliders-horizontal` (three lines); Commonhall's is `settings-2` (two lines with knobs) | **d** (minor) |
 | both | "Who can message me" option cards are 16 px apart instead of 8 (`your-data-switches.tsx` line 105, `grid gap-2` on top of the part's own margin) | **d** |
-| both | Founderhall's "Your picture" row has overlapping words (a bug on its side); Community's reads cleanly | none |
-| both | Export is a button that downloads `my-data-<date>.json` (Founderhall: a link to /me/data.json). Looks the same; the download works (26 sections) | b |
+| both | Commonhall's "Your picture" row has overlapping words (a bug on its side); Community's reads cleanly | none |
+| both | Export is a button that downloads `my-data-<date>.json` (Commonhall: a link to /me/data.json). Looks the same; the download works (26 sections) | b |
 | both | Order and words of the other sheets (What is stored, What the lookup service receives, Share my network, Take it with you, Delete my account): same | none |
 
 ### member-me-data-saved
 | Width | Difference | Class |
 |---|---|---|
-| both | Flash "Privacy settings saved." at the top: same. Address stays /me/data (Founderhall: /me/data?m=privacy#switches) | none (not visible) |
+| both | Flash "Privacy settings saved." at the top: same. Address stays /me/data (Commonhall: /me/data?m=privacy#switches) | none (not visible) |
 | both | Rest as member-me-data | a/b/**d** |
 
 ### member-me-data-json
 | Width | Difference | Class |
 |---|---|---|
-| both | Founderhall's shot is the same page as -saved; Community's is too. Same differences as -saved | a/b/**d** |
+| both | Commonhall's shot is the same page as -saved; Community's is too. Same differences as -saved | a/b/**d** |
 
 ### member-me-data-delete-asked
 | Width | Difference | Class |
@@ -101,12 +101,12 @@ shared foundation · **d** a real defect of this area.
 
 Outbox row (kind `deletion_request`), sent to the admin (maya.ortiz@example.com), one row only after two tries:
 
-- Subject: `Sam Lee asked to delete their account`: same as Founderhall.
+- Subject: `Sam Lee asked to delete their account`: same as Commonhall.
 - Text body, word for word the same as `copy/emails/email-delete-request-to-admin.md`:
   "Hi, / Sam Lee (sam.lee@example.com) asked Northwind Founders to delete their account, from the Your data page. /
   See them in Members: <base>/admin/members?f=delete / Sent by Northwind Founders via its member portal."
   Only the host differs.
-- Community also stores an HTML part with the same four paragraphs (Founderhall's is plain text only). The outbox needs an
+- Community also stores an HTML part with the same four paragraphs (Commonhall's is plain text only). The outbox needs an
   HTML part; the words are the same. Class b.
 
 Result: **pass**.
@@ -119,7 +119,7 @@ Result: **pass**.
 | Save an empty Name | Refused with "Enter your name."; name unchanged after reload. |
 | Cancel an edit (City typed "Nowhere") | Editor closes, address back to /me, City still New York after reload. |
 | Correct links | 2nd Correct opens /me?edit=company with the Company field open; 1st opens /me?edit=role with Role open, in view. Loading /me?edit=company directly opens Company. |
-| Edit link | Opens the field in place without changing the address (Founderhall's link goes to ?edit=...). Works; not visible. |
+| Edit link | Opens the field in place without changing the address (Commonhall's link goes to ?edit=...). Works; not visible. |
 | Hide / Show a filled-in line | Hide City → line struck, button turns to Show, flash, survives reload; Show undoes it. Hide Role → another member (Nadia) no longer sees the Role line on Sam's profile; Show brings it back. |
 | Hide / Show past roles | Hidden roles struck, "Show my past roles" appears; Nadia no longer sees them; Show brings them back. |
 | Save privacy: Nobody | Flash "Privacy settings saved." plus "You are hidden from the directory. Admins still see you in the member list." Nobody stays checked after reload; Your data's "Hide me from the directory" is on; Sam is gone from the directory for himself and for Nadia (20 members); Nadia gets the not-found page on Sam's profile. Put back to Everyone; Nadia sees Sam again. |
@@ -150,14 +150,14 @@ date is now 11 Nov because of the test edits. Sam has one deletion request and o
    keeping the query. Also keep the query on /members/<id>.
 3. **Option cards 16 px apart instead of 8**: My profile → Privacy (`privacy-sheet.tsx` line 63) and Your data → Who can message
    me (`your-data-switches.tsx` line 105). Fix: drop `grid gap-2` (the part already spaces cards 8 px).
-4. **"Your switches" icon**: `SlidersHorizontal` where Founderhall uses Lucide `settings-2` (`your-data-switches.tsx`). Fix: use `Settings2`.
+4. **"Your switches" icon**: `SlidersHorizontal` where Commonhall uses Lucide `settings-2` (`your-data-switches.tsx`). Fix: use `Settings2`.
 
 Everything else is community data (a), kept Community function (b) or owned elsewhere (c). The deletion email matches word for word.
 
 ## Re-check after the repair (a second verifier, only what failed)
 1. A hidden member's name in the title: PASS (title "Member · Northwind Founders", no name in the HTML; back to the name once listed again).
 2. Old addresses: PASS (308, query kept, for /members, /members/card, /members/data, /members/<id>).
-3. Option-card spacing: PASS (8 px between cards on /me and /me/data, as Founderhall's).
+3. Option-card spacing: PASS (8 px between cards on /me and /me/data, as Commonhall's).
 4. "Your switches" icon: PASS (Lucide settings-2).
 
 Verdict after repair: PASS. The pairs in `pairs/` were retaken after the repair.
@@ -166,17 +166,17 @@ Verdict after repair: PASS. The pairs in `pairs/` were retaken after the repair.
 
 The owner changed two things after the first check: members keep the real "Delete my account", and Your data says the
 admins see who asked whom. So the sections above on the deletion email and on "admins see counts, not names" no longer
-apply: the request flow, its table and its email are removed, and row 63's sentence now matches Founderhall's word for word.
+apply: the request flow, its table and its email are removed, and row 63's sentence now matches Commonhall's word for word.
 
 An independent verifier retook Your data at 390 and 1280 px (as a member, after Save, and at the delete confirm step) beside
-Founderhall's `member-me-data`, `-saved`, `-json` and `-delete-asked` shots (pairs in `pairs/member-me-data*.jpg`).
+Commonhall's `member-me-data`, `-saved`, `-json` and `-delete-asked` shots (pairs in `pairs/member-me-data*.jpg`).
 - Matches: the intros sentence ("…admins see names, states and dates."); the "Privacy settings saved." flash.
 - Owner-decided: the Delete my account sheet uses Community's words and the real delete ("Delete my account" → type
-  "delete" → "Delete my account for good" / "Keep my account") instead of Founderhall's request and "Asked <date>" state.
+  "delete" → "Delete my account for good" / "Keep my account") instead of Commonhall's request and "Asked <date>" state.
 - Community data and kept Community functions as before (hosting line, consent rows, Dark mode row, Perks).
 - Found and fixed: a double click on "Delete my account for good" sent a second request whose "already gone" hid the
   first answer (now one submit per page); a leftover comment in the email list; 8 px too much under "Who can message me"
-  (now 18 px, as Founderhall). Re-check: all three pass.
+  (now 18 px, as Commonhall). Re-check: all three pass.
 
 Delete click-through with made-up members (Priya Shah, Tomas Novak, Zara Ahmed, Noah Berg; `delete-flow/`): a wrong word
 keeps the button disabled; "Keep my account" returns to the button; the right word deletes; with no Village in the demo

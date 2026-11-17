@@ -136,7 +136,7 @@ type RenderContext = {
 
 type RenderedEmail = { subject: string; text: string; html: string };
 
-// The Community-only notices (no Founderhall email): the person said yes but the community sends no email, so the
+// The Community-only notices (no Commonhall email): the person said yes but the community sends no email, so the
 // connector joins them by hand.
 function renderLegacyNotice(lines: readonly string[], link: string): RenderedEmail {
   const text = [...lines.slice(1), link].join("\n\n");
@@ -180,7 +180,7 @@ async function renderOutcomeFor({ connection, environment, community, introId, f
   });
 }
 
-// Who the asker hears said no: Founderhall names them; with Community's rule nobody is named.
+// Who the asker hears said no: Commonhall names them; with Community's rule nobody is named.
 function readWhoDeclined(facts: EmailFacts) {
   if (!REQUESTER_SEES_WHO_ANSWERED) return "They";
   return readFirstName(facts.state === INTRO_STATES.targetDeclined ? facts.targetName : facts.introducerName);

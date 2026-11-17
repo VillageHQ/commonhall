@@ -1,6 +1,6 @@
 # Independent verification (a separate agent that did not write the code)
 
-Round 0 on a fresh demo database and a production build, signed in as Sam; pairs in this folder (Founderhall left,
+Round 0 on a fresh demo database and a production build, signed in as Sam; pairs in this folder (Commonhall left,
 Community right). Round 1 re-checked only what failed and what changed.
 
 ## Acceptance shots
@@ -13,7 +13,7 @@ Community right). Round 1 re-checked only what failed and what changed.
 | member-message-sent-thread | PASS | PASS | "Block Ada" (kept). Round 0: hydration error. Fixed. |
 | member-jobs-board | PASS | PASS | Shell items only; logos are data. |
 | public-jobs-board | PASS | PASS | Footer hosting text comes from the demo's data-location setting (data). |
-| member-perks-on | PASS (expected) | PASS (expected) | The demo's made-up deals fill the frame (Founderhall's demo frame is blank). |
+| member-perks-on | PASS (expected) | PASS (expected) | The demo's made-up deals fill the frame (Commonhall's demo frame is blank). |
 | member-perks-off | PASS (round 1) | PASS (round 1) | Round 0: status 200. Fixed: 404, in the app frame, title "Not found · Northwind Founders". |
 
 Shell items owned by the foundation, not this area: count badges on menu items, the "NF" fund mark, the phone-foot

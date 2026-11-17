@@ -8,7 +8,7 @@ readonly BACKUPS_DIRECTORY="$COMMUNITY_HOME/backups"
 readonly BACKUPS_KEPT=7
 readonly BACKUP_WARNING_AGE_SECONDS=$((2 * 24 * 60 * 60))
 readonly HEALTH_TIMEOUT_SECONDS=180
-readonly INSTALLER_URL="https://raw.githubusercontent.com/VillageHQ/community/${COMMUNITY_REF:-main}/install.sh"
+readonly INSTALLER_URL="https://raw.githubusercontent.com/VillageHQ/commonhall/${COMMUNITY_REF:-main}/install.sh"
 
 say() { printf '%s\n' "$*"; }
 die() {
@@ -72,7 +72,7 @@ backup() {
   remove_old_backups
   say "Backup saved: $target"
   say "This copy sits on the same disk as your data. If the server is lost, it's lost too."
-  say "Copy backups to another place regularly. The guide shows how: https://github.com/VillageHQ/community/blob/main/docs/self-host-vps.md"
+  say "Copy backups to another place regularly. The guide shows how: https://github.com/VillageHQ/commonhall/blob/main/docs/self-host-vps.md"
 }
 
 wait_for_healthy_app() {

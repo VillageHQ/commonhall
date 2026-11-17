@@ -3,7 +3,7 @@
 import { cn } from "cn";
 import Link from "next/link";
 
-// Founderhall's segmented control (crop segmented-control.png): a Vellum track (3 px padding, radius 8); segments
+// Commonhall's segmented control (crop segmented-control.png): a Vellum track (3 px padding, radius 8); segments
 // 32 px, 500 14 Graphite; the chosen one is Leaf with a small shadow and Ink text. "In our network / Everywhere",
 // report periods, Ask / Update.
 type Segment<Value extends string> = { value: Value; label: string };

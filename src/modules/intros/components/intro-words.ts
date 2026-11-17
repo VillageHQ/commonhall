@@ -6,7 +6,7 @@ import { formatDayMonth } from "@/platform/text/format-date";
 import { REQUESTER_SEES_WHO_ANSWERED, INTRO_OUTCOMES, INTRO_ROLES, INTRO_STATES, OUTCOME_CHOICES, type Intro, type IntroOutcome, type OutcomeChoice } from "../contract";
 import { possessive, toRoleAndCompany } from "../email-copy";
 
-// Founderhall's words for an intro's screens (intros/views.mjs), on Community's states.
+// Commonhall's words for an intro's screens (intros/views.mjs), on Community's states.
 
 export const CONSENT_LINE = "Nobody is introduced without saying yes.";
 
@@ -22,7 +22,7 @@ export const CHOICE_BY_OUTCOME: Record<IntroOutcome, OutcomeChoice> = {
   [INTRO_OUTCOMES.notYet]: OUTCOME_CHOICES.tooEarly,
 };
 
-// "What came of it?" Founderhall's four ticks; "Nothing yet" saves no result.
+// "What came of it?" Commonhall's four ticks; "Nothing yet" saves no result.
 export const RESULT_LABELS = {
   customer: "A customer conversation started",
   hire: "A hire",
@@ -64,7 +64,7 @@ export function readIntroTitle(intro: Pick<Intro, "requester" | "introducer" | "
   return `${askerFirst} ↔ ${targetFirst}, via ${connectorFirst}`;
 }
 
-// Who the asker hears said no. Founderhall names the connector; with Community's rule (the asker can't tell whose no
+// Who the asker hears said no. Commonhall names the connector; with Community's rule (the asker can't tell whose no
 // it was) nobody is named.
 export function readWhoSaidNo(connectorFirst: string, isAsker: boolean) {
   return REQUESTER_SEES_WHO_ANSWERED || !isAsker ? connectorFirst : "They";
@@ -94,7 +94,7 @@ export function readStatusPill(intro: Pick<Intro, "state" | "outcome" | "request
   }
 }
 
-// The state in Founderhall's intro-log words, for "Asks you were part of".
+// The state in Commonhall's intro-log words, for "Asks you were part of".
 const STATE_WORDS: Record<string, string> = {
   [INTRO_STATES.requested]: "with connector",
   [INTRO_STATES.accepted]: "with connector",
@@ -118,7 +118,7 @@ export function readIntroLede(intro: Pick<Intro, "target">) {
   return about ? `${about}. ${CONSENT_LINE}` : CONSENT_LINE;
 }
 
-// Founderhall writes "role, company"; Village's headlines say "role at company".
+// Commonhall writes "role, company"; Village's headlines say "role at company".
 export function readTargetAbout(intro: Pick<Intro, "target">) {
   return toRoleAndCompany(intro.target.headline) ?? "";
 }
@@ -132,7 +132,7 @@ export function readTargetCompany(intro: Pick<Intro, "target">) {
   return commaIndex >= 0 ? headline.slice(commaIndex + 2) : headline;
 }
 
-// The owner decided (2026-11-11): admins see who asked whom, like Founderhall, and members are told so here.
+// The owner decided (2026-11-11): admins see who asked whom, like Commonhall, and members are told so here.
 export function readPrivacyLine(community: string) {
   return `Only the people in this intro see the note. ${poss(community)} admins see names, states and dates.`;
 }
@@ -146,7 +146,7 @@ type TrackerStep = { key: string; state: StepperState; title: string; detail: st
 
 const date = (value: string | null) => (value ? formatDayMonth(value) : "");
 
-// The asker's tracker (Founderhall's tracker()): asked · connector decides · person decides · introduced · helpful.
+// The asker's tracker (Commonhall's tracker()): asked · connector decides · person decides · introduced · helpful.
 export function readTrackerSteps(intro: Intro, community: string): TrackerStep[] {
   const { connectorFirst: c, targetFirst: t } = readNames(intro);
   const state = intro.state;

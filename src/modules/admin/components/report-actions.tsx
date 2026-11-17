@@ -14,7 +14,7 @@ import { PeriodSwitch } from "./period-switch";
 
 const ICON = { "aria-hidden": true, strokeWidth: 1.5 } as const;
 
-// Founderhall's report toolbar: the period switch, Send to partners, CSV and PDF (the browser's print to PDF).
+// Commonhall's report toolbar: the period switch, Send to partners, CSV and PDF (the browser's print to PDF).
 // It never prints.
 export function ReportActions({ period }: { period: ConsolePeriodParam }) {
   const download = useMutation({ mutationFn: () => downloadPartnerReportCsv(period) });

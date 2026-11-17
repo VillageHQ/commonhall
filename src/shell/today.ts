@@ -28,7 +28,7 @@ export type TodayItems = {
   // Words public profiles put on the member's card this past week, to check on Today.
   profileLines: LineToCheck[];
   ownAsks: OwnAsk[];
-  // Founderhall's "Your asks in motion": your open asks with their one line, and your open intro asks.
+  // Commonhall's "Your asks in motion": your open asks with their one line, and your open intro asks.
   ownPosts: BoardPost[];
   introsInMotion: Intro[];
   newMembers: Awaited<ReturnType<typeof readNewMembers>>["newMembers"];
@@ -82,7 +82,7 @@ export function describeProfileLine({ label, value }: Pick<LineToCheck, "label" 
   return `${label}: ${value}`;
 }
 
-// The numbers a member answers by: asks first, then intros, then lines on their profile (Founderhall's order). Only
+// The numbers a member answers by: asks first, then intros, then lines on their profile (Commonhall's order). Only
 // things with an answer get one.
 export function numberWeeklyItems({ helpableAsks, introsToAnswer, profileLines }: TodayItems): WeeklyEmailItem[] {
   const unnumbered = [
@@ -93,7 +93,7 @@ export function numberWeeklyItems({ helpableAsks, introsToAnswer, profileLines }
   return unnumbered.map((item, index) => ({ ...item, number: index + 1 }));
 }
 
-// Something to answer or finish, or a line on their profile to check (Founderhall's digest goes for any of them).
+// Something to answer or finish, or a line on their profile to check (Commonhall's digest goes for any of them).
 // New members and your own asks alone don't make an email.
 export function needsMemberThisWeek(items: TodayItems) {
   return items.helpableAsks.length + items.introsToAnswer.length + items.introsToFinish.length + items.profileLines.length > 0;

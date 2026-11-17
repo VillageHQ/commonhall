@@ -1,4 +1,4 @@
-// The forwardable note, drafted from the asker's own profile (Founderhall's intros/flow.mjs draftNote and shortNote).
+// The forwardable note, drafted from the asker's own profile (Commonhall's intros/flow.mjs draftNote and shortNote).
 // The asker changes anything before it goes.
 
 export type AskerProfile = { name: string; title: string | null; company: string | null; bio: string | null; needs: string | null };
