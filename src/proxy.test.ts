@@ -1,6 +1,8 @@
 import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
+import { nextConfig } from "../next.config.mjs";
+
 import { MODULES } from "@/modules/registry";
 import { saveModuleState } from "@/platform/modules/enablement";
 import { MODULE_KINDS, type ToggleableManifest } from "@/platform/modules/manifest";
@@ -60,6 +62,24 @@ describe("a page of a switched-off module, before it renders", () => {
     expect(await rewriteOf("/jobs?company=kilnworks")).toContain(`${VISITOR_JOBS_PAGE}?company=kilnworks`);
     expect(await rewriteOf("/jobs", { isSignedIn: true })).toBeNull();
     expect(await rewriteOf("/jobs/yours")).toBeNull();
+  });
+
+  // A server bound to 127.0.0.1 behind an https tunnel: Next proxies any rewrite whose address differs from the
+  // server's own, over https, and the plain-http server answers 500. Every rewrite keeps the request's own address.
+  it("keeps every rewrite on the server's own address (127.0.0.1 behind an https tunnel)", async () => {
+    // next.config.mjs turns the URL renaming off; Next's build passes that on to the proxy through this variable.
+    expect(nextConfig.skipProxyUrlNormalize).toBe(true);
+    vi.stubEnv("__NEXT_NO_MIDDLEWARE_URL_NORMALIZE", "1");
+    const tunnelled = "https://127.0.0.1:9494";
+    const jobBoard = toggleable.find(({ id }) => id === "job-board");
+    if (!jobBoard) throw new Error("no job board module");
+    await saveModuleState(database, jobBoard, true);
+    const jobs = await proxy(new NextRequest(`${tunnelled}/jobs?company=kilnworks`));
+    expect(jobs.headers.get(REWRITE_HEADER)).toBe(`${tunnelled}${VISITOR_JOBS_PAGE}?company=kilnworks`);
+    await saveModuleState(database, jobBoard, false);
+    const off = await proxy(new NextRequest(`${tunnelled}/jobs`));
+    expect(off.headers.get(REWRITE_HEADER)).toBe(`${tunnelled}/_module-off`);
+    vi.unstubAllEnvs();
   });
 
   it("leaves core pages alone", async () => {
