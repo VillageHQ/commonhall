@@ -70,9 +70,9 @@ async function routePage(request: NextRequest) {
   }
   const visitorJobsPath = readVisitorJobsPath(request);
   if (!visitorJobsPath) return NextResponse.next();
-  const target = request.nextUrl.clone();
-  target.pathname = visitorJobsPath;
-  return NextResponse.rewrite(target);
+  // Built on request.url, never request.nextUrl: nextUrl renames 127.0.0.1 to localhost, and Next then proxies the
+  // rewrite as another site's (with https behind a tunnel: a 500). next.config.mjs keeps request.url on the server's own address.
+  return NextResponse.rewrite(new URL(`${visitorJobsPath}${request.nextUrl.search}`, request.url));
 }
 
 export const config = {

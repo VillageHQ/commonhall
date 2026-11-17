@@ -42,6 +42,9 @@ const BUILD_OUTPUT = process.env.COMMUNITY_STANDALONE_BUILD === "true" ? "standa
 export const nextConfig = {
   output: BUILD_OUTPUT,
   poweredByHeader: false,
+  // src/proxy.ts sees the server's own address (127.0.0.1 when bound to it) in request.url. Without this, Next hands it
+  // "localhost", its rewrites look like another site's, and behind an https tunnel they fail with a 500.
+  skipProxyUrlNormalize: true,
   outputFileTracingIncludes: { "/*": ["./drizzle/**/*"] },
   headers: async () => [
     { source: EVERY_PATH_BUT_THE_WIDGET_FRAME, headers: SECURITY_HEADERS },
