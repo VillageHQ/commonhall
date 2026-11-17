@@ -97,6 +97,15 @@ describe("search", () => {
     expect(searchBodies).toEqual([{ prompt: "cto", scope: "network" }]);
   });
 
+  it("says no member profile matches, rather than that nobody knows them, when only profiles were searched", async () => {
+    answer = { ...NO_RESULT, query: "a former CFO", isProfilesOnly: true };
+    address.params = new URLSearchParams({ q: "a former CFO" });
+    renderSearch({ isConnected: false });
+
+    await waitFor(() => expect(screen.getByText("No member profile matches “a former CFO”")).toBeTruthy());
+    expect(screen.queryByText(/knows a former CFO yet/)).toBeNull();
+  });
+
   it("says the intro paths couldn't load, not that nobody knows them, when Village failed them", async () => {
     answer = { ...RESULT, scope: "global", members: [], pathsUnavailable: true, people: [{ ...RESULT.people[0], paths: [] }] };
     address.params = new URLSearchParams({ q: "cto", scope: "global" });

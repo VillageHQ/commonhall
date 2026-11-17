@@ -158,7 +158,7 @@ function NoPathCard({ query, scope, canAskCommunity, communityName, digestDay, i
   return (
     <div className="fh-empty fh-nopath" style={{ marginTop: 16 }} role="status">
       <h2 className="fh-h2">
-        Nobody in {communityName} knows {toReachPhrase(query)} yet
+        {isProfilesOnly ? `No member profile matches “${query}”` : `Nobody in ${communityName} knows ${toReachPhrase(query)} yet`}
       </h2>
       {canAskCommunity ? (
         <>
