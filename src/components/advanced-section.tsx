@@ -27,7 +27,7 @@ export function AdvancedSection({ summary, openWhen = null, children }: Advanced
     function openForHash() {
       const id = decodeURIComponent(window.location.hash.slice(1));
       const target = id ? document.getElementById(id) : null;
-      if (!target || !reference.current?.contains(target) || target === reference.current) return;
+      if (!target || !reference.current?.contains(target)) return;
       // Opening the element fires onToggle, which keeps the state in step.
       reference.current.open = true;
       requestAnimationFrame(() => target.scrollIntoView({ block: "start" }));

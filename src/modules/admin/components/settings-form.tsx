@@ -2,7 +2,7 @@
 
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useState, type ChangeEvent, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ChangeEvent, type ReactNode } from "react";
 
 import { AdvancedSection } from "@/components/advanced-section";
 import { FLASH_KINDS, useFlash } from "@/components/flash";
@@ -60,6 +60,15 @@ export function SettingsForm({ saved, uploadedLogo, isMailOn, serverPlan, manage
   const [logoNote, setLogoNote] = useState<string | null>(null);
   const isManaged = (values.plan || serverPlan) === PLANS.managed;
   const advancedErrors = ADVANCED_FIELDS.some((field) => errors[field]) ? errors : null;
+  const formRef = useRef<HTMLFormElement>(null);
+
+  // A failed save lands on the first field that needs a fix (Advanced has opened by then if it is in there).
+  useEffect(() => {
+    const field = formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]');
+    if (!field) return;
+    field.focus({ preventScroll: true });
+    field.scrollIntoView({ block: "center" });
+  }, [errors]);
 
   const save = useMutation({
     mutationFn: (body: SettingsValues) => postRequest(SETTINGS_API_ROUTE, body, settingsResponseSchema),
@@ -68,8 +77,8 @@ export function SettingsForm({ saved, uploadedLogo, isMailOn, serverPlan, manage
       if (isSaved) {
         flash("Settings saved.");
         router.refresh();
+        window.scrollTo({ top: 0 });
       } else flash("Some settings need a fix.", { kind: FLASH_KINDS.needs });
-      window.scrollTo({ top: 0 });
     },
     onError: (error) => flash(error.message, { kind: FLASH_KINDS.needs }),
   });
@@ -99,6 +108,7 @@ export function SettingsForm({ saved, uploadedLogo, isMailOn, serverPlan, manage
 
   return (
     <form
+      ref={formRef}
       className="fh-grid"
       noValidate
       onSubmit={(event) => {
