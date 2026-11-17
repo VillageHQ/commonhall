@@ -110,13 +110,35 @@ describe("Connect Village", () => {
     expect(screen.queryByRole("alert")).toBeNull();
   });
 
+  it("says the keys are saved when a box changed during a check that saved them", async () => {
+    let finishFirst: (response: Response) => void = () => undefined;
+    fetchSpy.mockImplementationOnce(() => new Promise<Response>((resolve) => (finishFirst = resolve)));
+    fetchSpy.mockResolvedValueOnce(answer(422, { message: "This public key doesn't belong to the same Village app as the secret key." }));
+    const onConnected = vi.fn();
+    render(createElement(VillageConnect, { appUrl: "https://village.ai", connectedAppName: null, onConnected }));
+
+    paste("Paste the secret key", "sk_right");
+    paste("Paste the public key", "pk_right");
+    await waitForCheck();
+    paste("Paste the public key", "pk_other");
+    await waitForCheck();
+    await act(async () => finishFirst(answer(200, { message: "Village keys saved.", appName: "Northwind Founders" })));
+    await waitForCheck();
+
+    expect(onConnected).toHaveBeenCalledWith("Northwind Founders");
+    expect(screen.getByRole("alert").textContent).toContain("doesn't belong");
+    expect(screen.getByRole("button", { name: "Keep the saved keys" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Keep the saved keys" }));
+    expect(screen.getByRole("status").textContent).toBe("Connected to Northwind Founders");
+  });
+
   it("starts folded when keys are saved, and unfolds to replace them", () => {
     render(createElement(VillageConnect, { appUrl: "https://village.ai", connectedAppName: "" }));
 
     expect(screen.getByRole("status").textContent).toBe("Connected to your Village app");
     fireEvent.click(screen.getByRole("button", { name: "Replace the keys" }));
 
-    expect(screen.getByLabelText("Paste the secret key")).toBeTruthy();
+    expect(document.activeElement).toBe(screen.getByLabelText("Paste the secret key"));
     expect(screen.getByRole("button", { name: "Keep the saved keys" })).toBeTruthy();
   });
 });

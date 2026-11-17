@@ -19,7 +19,7 @@ import { villageKeysResponseSchema } from "../contract-village-admin";
 // pages, two paste boxes, and no Save button. As soon as both boxes hold a value the keys are checked with Village and
 // saved (POST /api/admin/village/keys); the answer shows under the boxes.
 
-const CHECK_DELAY_MS = 400;
+const CHECK_DELAY_MS = 600;
 const FALLBACK_APP_NAME = "your Village app";
 
 type Keys = { secretKey: string; publicKey: string };
@@ -54,13 +54,17 @@ export function VillageConnect({ appUrl, connectedAppName, onConnected }: Villag
     setResult({ kind: "checking" });
     try {
       const { appName } = await postRequest(API_ROUTES.villageKeys, pair, villageKeysResponseSchema);
-      if (!nextKeys.current) {
+      // These keys are saved now, even if a box changed meanwhile: the screen says so, and a waiting pair is still
+      // checked with the boxes left open (a failure then shows beside "Keep the saved keys").
+      setConnectedName(appName);
+      onConnected?.(appName);
+      router.refresh();
+      if (nextKeys.current) {
+        setIsReplacing(true);
+      } else {
         setResult(null);
-        setConnectedName(appName);
         setIsReplacing(false);
         setKeys({ secretKey: "", publicKey: "" });
-        onConnected?.(appName);
-        router.refresh();
       }
     } catch (failure) {
       if (!nextKeys.current) setResult({ kind: "failed", message: failure instanceof Error ? failure.message : "Village couldn't check these keys. Try again." });
@@ -117,6 +121,7 @@ export function VillageConnect({ appUrl, connectedAppName, onConnected }: Villag
       <Field htmlFor="village-secret-key" label="Paste the secret key" className="fh-field">
         <Input
           id="village-secret-key"
+          autoFocus={isReplacing}
           name="secretKey"
           type="password"
           autoComplete="off"

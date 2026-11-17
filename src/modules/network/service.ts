@@ -65,6 +65,7 @@ import {
   toPooledSearchRefusal,
 } from "./service-search-pool.ts";
 import { INTRODUCER_RULES, SEARCH_SCOPES } from "./contract-village-settings.ts";
+import { recordVillageOutcome } from "../../platform/village/health.ts";
 import { readVillageKeys, saveVillageKeys, type VillageKeys } from "../../platform/village/settings.ts";
 import { readReachableMembers } from "./reads-reachable-members.ts";
 import { readSearchMembers } from "./reads-member-matches.ts";
@@ -98,11 +99,12 @@ function emailNotConfirmedError() {
 async function connectMember(
   { database, environment, member, deadlineAtMs }: RequestContext,
   keys: VillageKeys,
+  isTrial = false,
 ) {
   if (!(await isMemberEmailTrusted(database, member))) throw emailNotConfirmedError();
 
   const network = await ensureMemberNetwork(database, member.id);
-  const villageConnection: VillageConnection = { apiUrl: resolveVillageApiUrl(environment), secretKey: keys.secretKey, deadlineAtMs };
+  const villageConnection: VillageConnection = { apiUrl: resolveVillageApiUrl(environment), secretKey: keys.secretKey, deadlineAtMs, isTrial };
   const identity = { externalId: network.villageExternalId, email: member.email };
   return { session: createVillageSession(villageConnection, identity), villageConnection, identity, network };
 }
@@ -280,8 +282,9 @@ async function readAppOrExplain(session: VillageSession) {
 }
 
 // Returns the Village app's name, so the screen can say "Connected to <name>" without another call.
+// The keys are tried before they're saved, so a mistyped key never marks this community's saved keys as refused.
 export async function verifyAndSaveVillageKeys(context: RequestContext, keys: VillageKeys) {
-  const { session } = await connectMember(context, keys);
+  const { session } = await connectMember(context, keys, true);
   const app = await readAppOrExplain(session);
 
   if (app.publicKey !== keys.publicKey) {
@@ -296,6 +299,8 @@ export async function verifyAndSaveVillageKeys(context: RequestContext, keys: Vi
     await saveVillageKeys(transaction, keys, process.env, app.title);
     await recordAdminAction(transaction, context.member.id, { action: AUDIT_ACTIONS.villageKeysSaved });
   });
+  // Village just answered these keys, so an old "keys refused" notice no longer holds.
+  await recordVillageOutcome(context.database, null);
   return { appName: app.title };
 }
 

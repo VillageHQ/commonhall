@@ -1,7 +1,9 @@
+import { VillageError } from "@villagehq/sdk";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { NETWORK_ERROR_CODES, networkStatusSchema, NETWORK_STAGES } from "@/modules/network/contract";
 import { readVillageGroup } from "@/modules/network/service-settings";
+import { readVillageHealth, recordVillageOutcome, VILLAGE_TROUBLES } from "@/platform/village/health";
 import { readVillageAppName, readVillageKeys, saveVillageKeys } from "@/platform/village/settings";
 import { memberNetwork } from "@/modules/members/schema";
 import { clearDatabase, createTestDatabase } from "@/test/database";
@@ -122,6 +124,29 @@ describe("the Village admin API", () => {
       expect(response.status).toBe(422);
       expect(await response.json()).toMatchObject({ code: NETWORK_ERROR_CODES.keysRejected });
       expect(await readVillageKeys(database)).toBeNull();
+    });
+
+    // The screen checks keys as soon as both are pasted, so a typo must not look like Village refusing the saved keys.
+    it("keeps a refused trial key out of the community's Village health", async () => {
+      const admin = await createSignedInMember(database, "admin");
+      await saveVillageKeys(database, FAKE_VILLAGE_KEYS);
+      vi.spyOn(console, "error").mockImplementation(() => undefined);
+
+      await postKeys(jsonRequest(admin, { publicKey: FAKE_VILLAGE_KEYS.publicKey, secretKey: "sk_typo" }));
+      await new Promise((resolve) => setTimeout(resolve, 300));
+
+      expect((await readVillageHealth(database)).trouble).toBeNull();
+      expect(await readVillageKeys(database)).toEqual(FAKE_VILLAGE_KEYS);
+    });
+
+    it("clears an old refused-keys notice once new keys are saved", async () => {
+      const admin = await createSignedInMember(database, "admin");
+      await recordVillageOutcome(database, new VillageError({ code: "unauthorized", message: "refused" }));
+      expect((await readVillageHealth(database)).trouble).toBe(VILLAGE_TROUBLES.keysRejected);
+
+      await postKeys(jsonRequest(admin, FAKE_VILLAGE_KEYS));
+
+      expect((await readVillageHealth(database)).trouble).toBeNull();
     });
 
     it("rejects a public key from another app", async () => {

@@ -20,7 +20,9 @@ const JSON_CONTENT_TYPE = "json";
 
 const villageApps = new Map<string, VillageApp>();
 
-export type VillageConnection = { apiUrl: string | undefined; secretKey: string; deadlineAtMs: number };
+// `isTrial`: keys an admin is trying before they're saved. Their answers say nothing about this community's own keys,
+// so they never record Village's health (a mistyped key must not raise "Village refused this community's keys").
+export type VillageConnection = { apiUrl: string | undefined; secretKey: string; deadlineAtMs: number; isTrial?: boolean };
 export type VillageIdentity = { externalId: string; email: string };
 export type VillageSession = { village: Village; deadlineAtMs: number };
 
@@ -60,6 +62,10 @@ function onVillageRequest(event: VillageRequestEvent) {
   logVillageFailure(event);
 }
 
+function onTrialRequest(event: VillageRequestEvent) {
+  logVillageFailure(event);
+}
+
 function logVillageFailure(event: VillageRequestEvent) {
   const { operation, durationMs, requestId, error } = event;
   if (!error || error.isExpected || isLeaveOutcome(event)) return;
@@ -69,14 +75,14 @@ function logVillageFailure(event: VillageRequestEvent) {
   );
 }
 
-function readVillageApp({ apiUrl, secretKey }: VillageConnection) {
-  const key = createHash("sha256").update(`${apiUrl}\n${secretKey}`).digest("hex");
+function readVillageApp({ apiUrl, secretKey, isTrial = false }: VillageConnection) {
+  const key = createHash("sha256").update(`${apiUrl}\n${secretKey}\n${isTrial ? "trial" : "saved"}`).digest("hex");
   const cached = villageApps.get(key);
   if (cached) return cached;
 
   const oldestKey = villageApps.keys().next().value;
   if (villageApps.size >= MAXIMUM_VILLAGE_APPS && oldestKey) villageApps.delete(oldestKey);
-  const villageApp = createVillageApp({ secretKey, apiUrl, fetch: fetchVillageJson, onRequest: onVillageRequest });
+  const villageApp = createVillageApp({ secretKey, apiUrl, fetch: fetchVillageJson, onRequest: isTrial ? onTrialRequest : onVillageRequest });
   villageApps.set(key, villageApp);
   return villageApp;
 }
