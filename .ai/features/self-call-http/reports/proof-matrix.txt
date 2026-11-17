@@ -1,0 +1,20 @@
+server[-H 127.0.0.1] /perks  behind-https-tunnel=404  plain-http=404
+server[-H 127.0.0.1] /admin/integrations  behind-https-tunnel=404  plain-http=404
+server[-H 127.0.0.1] /jobs  behind-https-tunnel=307  plain-http=307
+server[-H 127.0.0.1] /jobs?company=x  behind-https-tunnel=307  plain-http=307
+server[-H 127.0.0.1] /signin  behind-https-tunnel=307  plain-http=307
+  'Failed to proxy' lines in server log: 0
+server[default] /perks  behind-https-tunnel=404  plain-http=404
+server[default] /admin/integrations  behind-https-tunnel=404  plain-http=404
+server[default] /jobs  behind-https-tunnel=307  plain-http=307
+server[default] /jobs?company=x  behind-https-tunnel=307  plain-http=307
+server[default] /signin  behind-https-tunnel=307  plain-http=307
+  'Failed to proxy' lines in server log: 0
+server[-H 0.0.0.0] /perks  behind-https-tunnel=404  plain-http=404
+server[-H 0.0.0.0] /admin/integrations  behind-https-tunnel=404  plain-http=404
+server[-H 0.0.0.0] /jobs  behind-https-tunnel=307  plain-http=307
+server[-H 0.0.0.0] /jobs?company=x  behind-https-tunnel=307  plain-http=307
+server[-H 0.0.0.0] /signin  behind-https-tunnel=307  plain-http=307
+  'Failed to proxy' lines in server log: 0
+signed-in /perks behind-https-tunnel=307
+signed-in /admin/integrations behind-https-tunnel=307
