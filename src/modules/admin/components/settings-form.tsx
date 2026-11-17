@@ -114,14 +114,14 @@ export function SettingsForm({ saved, uploadedLogo, isMailOn, serverPlan, manage
   return (
     <form
       ref={formRef}
-      className="fh-grid"
+      className={guided ? undefined : "fh-grid"}
       noValidate
       onSubmit={(event) => {
         event.preventDefault();
         save.mutate(values);
       }}
     >
-      <div className="fh-c7 fh-stack">
+      <div className={guided ? "fh-stack" : "fh-c7 fh-stack"}>
         <section className="fh-sheet">
           <h2 className="fh-h3">Branding</h2>
           {input("name", "Community name", "Shown at the top of every page and in every email.", { maxLength: 80, required: true })}

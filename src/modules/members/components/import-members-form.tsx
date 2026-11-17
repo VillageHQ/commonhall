@@ -116,9 +116,10 @@ function ImportResultSheet({ result }: { result: ImportResult }) {
   );
 }
 
-type ImportMembersFormProps = { communityBasis: FillInBasis | null; communityTermsDate: string | null; today: string };
+// `isCompact`: one column, without "The columns" sheet (the guided start's narrow step; the file hint names them).
+type ImportMembersFormProps = { communityBasis: FillInBasis | null; communityTermsDate: string | null; today: string; isCompact?: boolean };
 
-export function ImportMembersForm({ communityBasis, communityTermsDate, today }: ImportMembersFormProps) {
+export function ImportMembersForm({ communityBasis, communityTermsDate, today, isCompact = false }: ImportMembersFormProps) {
   const router = useRouter();
   const fileInput = useRef<HTMLInputElement>(null);
   const [basis, setBasis] = useState<FillInBasis>(communityBasis ?? FILL_IN_BASES.ask);
@@ -157,7 +158,7 @@ export function ImportMembersForm({ communityBasis, communityTermsDate, today }:
   return (
     <div className="fh-grid">
       {result ? <ImportResultSheet result={result} /> : null}
-      <form className="fh-sheet fh-c7" noValidate onSubmit={submit}>
+      <form className={isCompact ? "fh-sheet fh-c12" : "fh-sheet fh-c7"} noValidate onSubmit={submit}>
         <label className="fh-label" htmlFor="imp-file">
           Your CSV file
         </label>
@@ -245,6 +246,7 @@ export function ImportMembersForm({ communityBasis, communityTermsDate, today }:
           </Button>
         </div>
       </form>
+      {isCompact ? null : (
       <section className="fh-sheet fh-c5">
         <h2 className="fh-h3">The columns</h2>
         <table className="fh-tbl" style={{ marginTop: 10 }}>
@@ -276,6 +278,7 @@ export function ImportMembersForm({ communityBasis, communityTermsDate, today }:
           search.
         </p>
       </section>
+      )}
     </div>
   );
 }

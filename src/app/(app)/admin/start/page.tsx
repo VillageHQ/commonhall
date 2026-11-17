@@ -35,7 +35,7 @@ export const metadata: Metadata = { title: "Get started" };
 // One line per step: what it does for the organizer.
 const STEP_LINES: Record<GuidedStepKey, string> = {
   look: "Members see your name, logo and colour on every page and email.",
-  village: "Village shows which members know whom, so founders find a warm intro to the people they need.",
+  village: "Founders find a warm path to the people they need, through members who already know them.",
   card: "You are a member too: founders see your card in the directory and on every intro you make.",
   invite: "Founders get a one-tap sign-in link; nobody needs a password.",
 };
@@ -102,10 +102,10 @@ async function InviteContent({ database, admin }: { database: Database; admin: S
         savedBasis={fillIn.basis}
         savedTermsDate={fillIn.termsDate}
       />
-      <details className="fh-sheet mt-4">
-        <summary className="fh-h3 cursor-pointer">Or upload a CSV</summary>
+      <details className="mt-4">
+        <summary className="fh-h3 cursor-pointer">Or upload a CSV, with the email switch</summary>
         <div className="mt-3">
-          <ImportMembersForm communityBasis={fillIn.basis} communityTermsDate={fillIn.termsDate} today={new Date().toISOString().slice(0, 10)} />
+          <ImportMembersForm communityBasis={fillIn.basis} communityTermsDate={fillIn.termsDate} today={new Date().toISOString().slice(0, 10)} isCompact />
         </div>
       </details>
       <div className="fh-btn-row mt-4">
