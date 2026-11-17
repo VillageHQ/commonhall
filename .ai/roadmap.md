@@ -91,6 +91,7 @@ Each open item gets these yes/no checks; code adds the points (change a number t
 - Gaps neither product had (merge plan): Google/Microsoft sign-in and SSO, groups inside one community, CRM export, events, other languages.
 
 ## Done
+- [x] 2026-11-17 — Sign-in links list one import A–Z, so the admin can copy them down the list — [spec](features/signin-links-order/SPEC.md)
 - [x] 2026-11-11 — Jobs on member cards, profiles, the directory (Hiring chip and filter) and Today — [spec](features/jobs-on-cards/SPEC.md)
 - [x] 2026-11-10 — The demo shows the job board and perks, with made-up jobs and deals — [spec](features/demo-jobs-perks/SPEC.md)
 - [x] 2026-11-10 — The merged look: serif headings, flat sheets, fund name only, one way to ask — [PR #26](https://github.com/VillageHQ/commonhall/pull/26) · [spec](features/look-theme/SPEC.md)
