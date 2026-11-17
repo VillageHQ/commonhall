@@ -1,0 +1,7 @@
+{
+  "admin": { "name": "Robin Organizer", "email": "robin@example.com" },
+  "brand": { "name": "Northwind Founders", "descriptor": "The Northwind Ventures portfolio", "accent": "#7A3E9D", "logo": "logo.png" },
+  "village": { "publicKey": "pk_fake" },
+  "members": { "csv": "members.csv", "basis": "ask" },
+  "confirmWaiting": true
+}

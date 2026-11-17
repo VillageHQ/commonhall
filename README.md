@@ -68,6 +68,7 @@ There's no button, but the container image runs on Fly as it is. We tried it onc
    - **Add your Village keys:** create your account on [Village's platform](https://village.ai/platform) with **New developer account**, and follow [Village's checklist](https://village.ai/platform/onboarding), which asks for a payment method before your app goes live. Copy both keys from [API Keys](https://village.ai/platform/settings/api-keys) and paste them in. We check them with Village before saving. In [App Settings](https://village.ai/platform/settings/app-settings), set **Title** to your community's name, because members see it when they sync.
    - **Create the group:** first open **Network**, add your LinkedIn and sync in Village's window. The **Sync network** button shows only after you save your LinkedIn link. Then create the group. **Your own Village network becomes shared with every current and future member.**
    - **Invite your first members:** see below.
+   - **Rather have Claude do it?** [Set up with Claude](docs/SETUP-WITH-CLAUDE.md): one setup file and `pnpm setup:instance` do the admin, the look, the Village keys and the member import in a few seconds, emailing nobody.
 3. **Say hello.** Post a welcome in the feed, so the first founder doesn't walk into an empty room.
 
 ## How to invite people
@@ -243,6 +244,7 @@ Next.js App Router, TypeScript, Tailwind, shadcn/ui, Better Auth (email and pass
 | DigitalOcean | None by default | Not confirmed: [docs](https://docs.digitalocean.com/support/where-can-i-find-the-client-ip-address-of-a-request-connecting-to-my-app/) say App Platform adds `do-connecting-ip` but not that it replaces a client-sent value. |
 | Your own server, with `install.sh` | `x-real-ip` | Tested: Caddy overwrites a client-sent value, and only Caddy can reach the app. |
 | Fly.io | `fly-client-ip`, once you set `CLIENT_IP_HEADER=fly-client-ip` | Not on by default. [Fly's docs](https://fly.io/docs/networking/request-headers/) name it as the client's IP. The app warns at start when it runs on Fly without it. |
+| Behind a Cloudflare tunnel | `cf-connecting-ip`, once you set `CLIENT_IP_HEADER=cf-connecting-ip` | [Cloudflare's docs](https://developers.cloudflare.com/fundamentals/reference/http-headers/) name it as the visitor's IP. Safe only when the tunnel is the one way in: the app must not listen on a public port. |
 | Anywhere else | None by default | Set `CLIENT_IP_HEADER` only if your proxy overwrites that header and clients can't reach the app directly. |
 
 With no trusted header, sign-in is limited per account instead: 5 wrong passwords in a minute pause that one account, and nobody else. Other paths, like password-reset requests, share one bucket per path, which can't be spoofed. Once a live test shows DigitalOcean replaces a client-sent `do-connecting-ip`, set `CLIENT_IP_HEADER=do-connecting-ip`.

@@ -1,10 +1,11 @@
 # scripts
 
 > ⚠ RECONSTRUCTED from code on 2026-11-10 — needs confirmation
-> Sources: `package.json` scripts, the two files here.
+> Sources: `package.json` scripts, the files here.
 
-- `migrate.ts`: runs the database migrations (`pnpm db:migrate`). The app also migrates on boot.
-- `auth-schema-config.ts`: the config `pnpm db:auth-schema` uses to regenerate
-  `src/platform/database/auth-schema.ts` from Better Auth. It needs no real database or secret.
+- `migrate.ts`: runs the migrations (`pnpm db:migrate`); the app also migrates on boot.
+- `auth-schema-config.ts`: `pnpm db:auth-schema` regenerates `src/platform/database/auth-schema.ts` from Better
+  Auth with it; no database or secret needed.
+- `setup-instance.ts`: `pnpm setup:instance` (guide: `docs/SETUP-WITH-CLAUDE.md`).
 
-Both import from `src/`; keep them thin and put logic in `src/platform/`.
+All import from `src/`; keep them thin and put logic in `src/platform/`.
