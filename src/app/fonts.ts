@@ -1,6 +1,6 @@
 import localFont from "next/font/local";
 
-// Founderhall's three faces, self-hosted so no page calls a font service (licence: src/app/_fonts/OFL.txt).
+// Three faces, self-hosted so no page calls a font service (licence: src/app/_fonts/OFL.txt).
 // Body and everything you click: IBM Plex Sans.
 export const plexSans = localFont({
   src: "./_fonts/IBMPlexSans.woff2",
@@ -21,15 +21,15 @@ export const plexMono = localFont({
   variable: "--font-plex-mono",
 });
 
-// Titles and people's names: Source Serif 4, Founderhall's own files (they carry the optical-size axis, so a
-// 34 px title is set in the display cut).
-export const sourceSerif = localFont({
+// Titles and people's names: Newsreader, the landing page's serif (Common Hall look, 17 November 2026). One variable
+// file per style carries the weight and optical-size axes, so a 34 px title is set in the display cut.
+export const newsreader = localFont({
   src: [
-    { path: "./_fonts/SourceSerif4-Roman.woff2", weight: "200 900", style: "normal" },
-    { path: "./_fonts/SourceSerif4-Italic.woff2", weight: "200 900", style: "italic" },
+    { path: "./_fonts/Newsreader-opsz-normal.woff2", weight: "200 800", style: "normal" },
+    { path: "./_fonts/Newsreader-opsz-italic.woff2", weight: "200 800", style: "italic" },
   ],
   display: "swap",
-  variable: "--font-source-serif",
+  variable: "--font-newsreader",
 });
 
-export const FONT_VARIABLES = [plexSans.variable, plexMono.variable, sourceSerif.variable].join(" ");
+export const FONT_VARIABLES = [plexSans.variable, plexMono.variable, newsreader.variable].join(" ");

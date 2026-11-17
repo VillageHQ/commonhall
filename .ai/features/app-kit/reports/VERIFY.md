@@ -1,0 +1,44 @@
+# Verification: Common Hall look on the community portal (demo, http://127.0.0.1:9498)
+
+Verifier: independent, did not build this. Worktree commit 20886d3. Playwright (Chromium), real browser, 1280x800 and 390x844, light and dark (dark = prefers-color-scheme emulation, plus the real switch on /me/data). No file under src/, site/, docs/ or README.md was edited. Nothing was saved in the branding form.
+Evidence folder: `.ai/tmp/app-kit/verify/` (scripts: lib, sweep, crit, probe*, brand*, print, break*, credit .mjs; data: sweep.json, crit.json; images: shots/).
+
+## Criteria
+
+1. PASS. Light tokens on /today: --background #fafaf7, --foreground #111110, --primary #111110 (--primary-foreground #ffffff). Body bg rgb(250,250,247), text rgb(17,17,16). crit.json; shots/today_light_laptop.png, today_light_phone.png.
+2. PASS. Dark: --background #0e0e0d, --foreground #f4f2ec; body bg and text match. /today, /directory, /admin at both sizes read fine, no dark-on-dark, no white blocks (shots/today_dark_*.png, directory_dark_laptop.png, admin_dark_laptop.png, admin_dark_phone.png). See defect 2 (grey primary buttons in dark).
+3. PASS. h1 font-family starts with `newsreader` (the next/font name; face "newsreader 200-800" status loaded); `document.fonts.check("500 30px Newsreader")` = true; titles, people's names and card headings render in the serif. Body is `plexSans` (IBM Plex Sans), loaded. h1 weight is 600, not 500 (noted only).
+4. PASS (light). "Ask for an intro" = bg rgb(17,17,16), text rgb(250,250,247). "I can help" / "Answer" primary = #111110 with white text. Secondary ("Post an ask", "Not this week") = white with a graphite outline. Focus ring = 2px solid ink, 2px offset, visible on the black button (shots/focus_ask_light.png, focus_ask_dark.png). In dark, "Ask for an intro" is paper-white, but primary buttons are grey #969694 (defect 2).
+5. FAIL (leftover cream). Computed-style scan of 40 page runs (8 member pages + 2 admin pages x light/dark x 2 sizes): no #1b2420 or #2c4a3e background, text or border anywhere. Cream IS left on the phone top bar: `.fh-topbar` background is rgba(246,242,233,.94) = #f6f2e9 in light on all 10 pages at 390px (visible against the paper canvas in shots/phone_today_viewport.png and reflow320_today.png). Source: src/app/parts.css line 14 (and `.fh-report-actions`, line 222, same cream). In dark the same two classes use a warm rgb(26 25 21 / .94) (src/app/globals.css line 548), not #161615 / #0e0e0d. A few box-shadows in parts.css still use the old green rgba(27,36,32,...) (lines 95, 390, 464, 573; barely visible). Everything else is readable: the only text-contrast hit in the scan is a false positive on the "80% warning" tick label (readable in the screenshots). Per-person avatar tints (pale green/teal/tan, dark equivalents) come from the deliberate --tint-* palette, not the old brand green.
+6. PARTIAL / FAIL on the link clause. GET /icon.svg = 200, an SVG with `rect fill="#111110"` and `path fill="#FAFAF7"` (the door-gap floor plan). But `<link rel="icon">` on every page points to `/demo/northwind-logo.svg` (the teal Northwind logo), not /icon.svg, because the demo community has a logo set and src/platform/branding/page-metadata.ts line 60 uses the community logo when there is one. So the tab icon in this demo is not the new icon. Probably intended for a community with a logo; the criterion as written is not met here.
+7. PASS. "Common Hall by Village" is in the /signin footer ("Common Hall by Village · Open source · Hosted by ...") and in the admin sidebar footer on every /admin page. Member pages show only "Source code (AGPL-3.0)" with no credit (by design per the comment in src/components/source-code-link.tsx; the criterion says "signed-in footer or settings", met via admin). "Founderhall" appears nowhere: not in rendered text, titles, or HTML outside script/style, on /signin, 11 member pages and 6 admin pages (credit.mjs output).
+8. PARTIAL. The preset list ("Ink", "Spine green", ...) exists only in code (ACCENT_PRESETS in src/platform/design/accent.ts, Ink first, Spine green = #2c4a3e) and is rendered only by BrandCard, which no page renders (0 `input[name=accentPreset]` on /admin/settings and /admin/setup). The branding card that does exist on /admin/settings has a colour picker + hex field defaulting to #111110. Typing #2c4a3e (Spine green's value) gave a green swatch, "Passes 9.7 : 1 on white", and the header preview got --fund/--primary #2c4a3e (light) and #7c9d8f (dark); shots/brand_spine_preview_light.png. Not saved; a reload showed #111110 again. The preview mark shows the Northwind logo because a logo URL is set, so only the swatch visibly turns green.
+9. PASS. WCAG contrast on /today (minimum 4.5):
+   - Light: body text on canvas 18.07; h1 on canvas 18.07; card text on card (#fff) 18.89; muted text on card 8.90; lede on canvas 8.51; ink button text 18.07; primary button text (white on #111110) 18.89; secondary button text 18.89; pill text on #f2f1ec 16.71; demo banner text 5.96.
+   - Dark: body on canvas 17.25; card text on card (#161615) 16.18; muted on card 8.92; lede on canvas 9.51; ink button text 17.25; primary button text (#161615 on #969694) 6.11; secondary text 16.18; pill 14.92; demo banner 5.96.
+   - A full text scan of every page/size/theme found nothing under 4.5 except the "80% warning" false positive.
+10. PASS. 0 console errors and 0 page errors on 40 page runs (both themes, both sizes), plus /signin, /me/data, /admin/setup, /admin/members, /admin/invites, /admin/intros, the theme switch and the resize cycle.
+11. PASS. Demo banner = rust #9c4e22 (white text). On /intros the waiting intro's "Answer" pill is rust text (#9c4e22, dark #e7a57e) on a pale rust fill, class `fh-pill fh-needs` (shots/intros_light_laptop.png). The "Answer" button on /today is a black primary button, not a pill.
+12. PASS. /admin in dark with print media emulated: body bg rgb(250,250,247), text rgb(17,17,16), cards white, tokens switch to light (shots/print_admin_dark.png, print_admin_dark.pdf). Cosmetic: a faint beige strip (the hidden sidebar's 264px column) shows behind the left cards.
+
+## Break attempts
+
+- Resize 1280 -> 390 -> 1280 -> 820 -> 390 -> 1280 on /today: sidebar and phone top bar/tab bar swap correctly each time, no horizontal overflow (0 px at every size).
+- Mobile menu: there is no hamburger or menu on phones; the top bar has the community link and a profile link, plus a 7-item bottom tab bar. Tapped Directory, Inbox, Intros, Today: all navigate correctly.
+- Theme switch twice (the "Dark mode" switch on /me/data): light -> dark -> light, the class toggles each time, dark persists across navigation (cookie), a rapid double click ends where it started, no errors. The switch lives only on /me/data.
+- Sign-in tab order: skip link, email, "Email me a sign-in link", Maya, Sam, "Sign in with a password", "Open source"; every stop shows a 2px ink outline; focus wraps cleanly.
+- Zoom 200%: laptop (640 px wide) and 320 px reflow: no overflow, nothing clipped, tab bar fits (shots/zoom200_laptop_today.png, reflow320_today.png). Phone at 200% (195 px wide, an extreme case): the tab bar labels collide and "Inbox" is cut off at the right edge (shots/zoom200_phone_today.png). Page content itself does not overflow.
+
+## Defects
+
+1. Cream (#f6f2e9, 94% alpha) phone top bar in light mode; `.fh-report-actions` the same; both use a warm near-black (26,25,21) in dark; old green rgba(27,36,32) shadows. Files: parts.css lines 14, 222, 95, 390, 464, 573; globals.css line 548. Breaks criterion 5.
+2. Dark theme: primary buttons ("I can help", "Answer", "Save settings", "Right", "Partner report") are mid-grey #969694 with dark text and look disabled, while "Ask for an intro" in the same theme is paper-white. Readable (6.11:1) but inconsistent and weak against the page. Cause: the inline brand variables set --primary #969694 in dark for the default ink colour.
+3. The favicon link points at the demo community's logo, not /icon.svg (criterion 6 link clause).
+4. The preset colour list (Ink first) is not reachable in any page; BrandCard is dead code. Criterion 8 as worded can only be checked through the hex field.
+5. Print: faint beige strip behind cards where the sidebar column was (cosmetic).
+6. Phone at 195 px width: tab bar labels overlap, "Inbox" clipped (extreme zoom only).
+7. The "Why you" and "member can help" boxes use a flat #d9d9d9 grey (derived from the ink brand colour); readable, noticeably heavier than the #f2f1ec sunk boxes elsewhere (subjective).
+
+## Verdict
+
+FAIL on criteria 5 (leftover cream, warm dark and old green shadows) and 6 (the icon link), with 8 only partly checkable (no preset UI). Criteria 1, 2, 3, 4, 7, 9, 10, 11 and 12 PASS. The look is otherwise consistent and readable in both themes and sizes; the cream phone top bar and the grey dark-mode primary buttons are the visible faults.

@@ -19,7 +19,7 @@ export function SelfHostBox({ pricingUrl, id = "self-host" }: { pricingUrl: stri
       </p>
       <p className="fh-small" style={{ marginTop: 10 }}>
         <CircleCheck aria-hidden="true" className="fh-i fh-xs inline-block align-[-3px]" strokeWidth={1.5} /> <b>Managed plan:</b> Village sets up the mail domain and lookups
-        for you in week 1. <a href={pricingUrl}>Full pricing on the Founderhall site</a>
+        for you in week 1. <a href={pricingUrl}>Full pricing on the Common Hall site</a>
       </p>
     </section>
   );

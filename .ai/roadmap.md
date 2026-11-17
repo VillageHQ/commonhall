@@ -52,7 +52,7 @@ Each open item gets these yes/no checks; code adds the points (change a number t
 
 - [ ] Landing page v2: paper and ink, light and dark, blueprint hero with real faces, comparison and pricing — common-hall-v2 — open pull request — [spec](features/common-hall-v2/SPEC.md)
 - [ ] Landing page round 3: the ten rooms back as section 2, five screens on tabs that advance as the page scrolls, the comparison as title cards, fewer words — landing-v3 — open pull request — [notes](features/landing-v3/NOTES.md)
-- [ ] The app on the landing page's look: paper white and black, Newsreader headlines, the door-gap icon, the name Common Hall (Absi's pick, 16 November 2026: a plan page first)
+- [ ] The app on the landing page's look: paper white and black, Newsreader headlines, the door-gap icon, the name Common Hall — app-kit — open pull request — [spec](features/app-kit/SPEC.md)
 - [x] (superseded by v2) The landing page becomes Common Hall by Village: the blueprint drawing set (design v15), founders walking between rooms, Schedule call and GitHub, the sign-up form kept — common-hall-site — open pull request — [spec](features/common-hall-site/SPEC.md)
 
 ## Next (queued)

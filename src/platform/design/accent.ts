@@ -18,10 +18,13 @@ const CONTRAST_DECIMALS = 2;
 const ACCENT_COLOR_PATTERN = /^#[0-9a-f]{6}$/i;
 
 // Founderhall's default fund colour, its spine green (design-system.md §1.1).
-export const DEFAULT_ACCENT_COLOR = "#2c4a3e";
+// Ink: the Common Hall look's black. A community that never picked a colour gets it.
+export const DEFAULT_ACCENT_COLOR = "#111110";
+const SPINE_GREEN = "#2c4a3e";
 
 export const ACCENT_PRESETS = [
-  { name: "Spine green", color: DEFAULT_ACCENT_COLOR },
+  { name: "Ink", color: DEFAULT_ACCENT_COLOR },
+  { name: "Spine green", color: SPINE_GREEN },
   { name: "Village teal", color: "#0f7f86" },
   { name: "Sunbeam", color: "#ffc93c" },
   { name: "Midnight", color: "#14213d" },
@@ -30,8 +33,8 @@ export const ACCENT_PRESETS = [
 ] as const;
 
 export const NEUTRALS = {
-  light: { canvas: "#f8f6f0", surface: "#ffffff", sunk: "#f2efe7" },
-  dark: { canvas: "#15140f", surface: "#201e18", sunk: "#2a2820" },
+  light: { canvas: "#fafaf7", surface: "#ffffff", sunk: "#f2f1ec" },
+  dark: { canvas: "#0e0e0d", surface: "#161615", sunk: "#1e1e1c" },
 };
 
 function hexToLinear(hex: string): LinearRgb {
@@ -141,7 +144,7 @@ export function deriveAccentTokens(brandHex: string, mode: ThemeMode) {
 
 // Founderhall's fund colour (its lib/color.mjs): the admin's colour, darkened in steps of ×0.92 (same hue) until it
 // reads at 4.5:1 on Leaf; "deep" is the fund ×0.75 (hover, text on the tint); "tint" is the fund mixed 84 % toward white.
-export const LEAF = "#fffdf8";
+export const LEAF = "#ffffff";
 const FUND_DARKEN_STEP = 0.92;
 const FUND_MAX_STEPS = 40;
 const FUND_DEEP_FACTOR = 0.75;
@@ -157,7 +160,11 @@ function channelsToHex(channels: number[]) {
   return `#${pairs.join("")}`;
 }
 
+// Ink in the light theme: its tint is the kit's sunk paper, not a grey mixed from black.
+const LIGHT_INK = { fund: "#111110", deep: "#000000", tint: "#ecece8", isAdjusted: false } as const;
+
 export function deriveFundColors(brandHex: string) {
+  if (brandHex.toLowerCase() === DEFAULT_ACCENT_COLOR) return { ...LIGHT_INK };
   let channels = hexToChannels(brandHex);
   let fund = brandHex.toLowerCase();
   for (let step = 0; step < FUND_MAX_STEPS && contrastRatio(fund, LEAF) < AA_TEXT; step += 1) {
@@ -199,12 +206,17 @@ function toLightAccentVariables(brandHex: string) {
 // The dark version of the same rule (Founderhall has no dark mode; the owner chose one). The tint is a dark wash of the
 // fund's hue; the fund keeps its hue, is calmed to a modest chroma, and is lightened until it reads at 4.5:1 on every
 // dark surface it sits on (Leaf, Paper, Vellum and its own tint). "deep" is one step further from the page, as in light.
-export const DARK_SURFACES = { paper: "#1a1915", leaf: "#23211c", vellum: "#2f2c25" } as const;
+export const DARK_SURFACES = { paper: "#0e0e0d", leaf: "#161615", vellum: "#1e1e1c" } as const;
 const DARK_FUND_MAX_CHROMA = 0.13;
 const DARK_TINT = { lightness: 0.3, maxChroma: 0.03 };
 const DARK_DEEP_LIFT = 0.07;
 
+// Ink in the dark theme: the landing page's dark buttons are paper on near-black, so the default inverts to the dark
+// theme's ink instead of stopping at the first grey that reads.
+const DARK_INK = { fund: "#f4f2ec", deep: "#ffffff", tint: "#2a2a27" } as const;
+
 export function deriveDarkFundColors(brandHex: string) {
+  if (brandHex.toLowerCase() === DEFAULT_ACCENT_COLOR) return { ...DARK_INK };
   const brand = hexToOklch(brandHex);
   const calm = { ...brand, chroma: Math.min(brand.chroma, DARK_FUND_MAX_CHROMA) };
   const tint = oklchToHex({ lightness: DARK_TINT.lightness, chroma: Math.min(brand.chroma, DARK_TINT.maxChroma), hue: brand.hue });

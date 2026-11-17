@@ -5,7 +5,7 @@ import { cn } from "cn";
 export const SOURCE_CODE_URL =
   process.env.NEXT_PUBLIC_SOURCE_CODE_URL || "https://github.com/VillageHQ/community";
 
-export const PRODUCT_CREDIT = "Founderhall by Village";
+export const PRODUCT_CREDIT = "Common Hall by Village";
 
 export function SourceCodeLink() {
   return (

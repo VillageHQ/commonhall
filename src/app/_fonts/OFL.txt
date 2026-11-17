@@ -1,8 +1,8 @@
 The fonts in this folder are used under the SIL Open Font License, Version 1.1.
 
-Source Serif 4 (SourceSerif4-Roman.woff2, SourceSerif4-Italic.woff2)
-Copyright 2014-2021 Adobe (http://www.adobe.com/), with Reserved Font Name 'Source'.
-https://github.com/adobe-fonts/source-serif
+Newsreader (Newsreader-opsz-normal.woff2, Newsreader-opsz-italic.woff2)
+Copyright 2020 The Newsreader Project Authors (http://github.com/productiontype/Newsreader).
+https://github.com/productiontype/Newsreader (the files come from @fontsource-variable/newsreader 5.3.0)
 
 IBM Plex Sans and IBM Plex Mono (IBMPlexSans.woff2, IBMPlexMono-400.woff2, IBMPlexMono-500.woff2)
 Copyright (c) 2017 IBM Corp. with Reserved Font Name "Plex".

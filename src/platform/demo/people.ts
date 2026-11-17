@@ -7,7 +7,8 @@ import { DEMO_EMAIL_DOMAIN } from "./mode.ts";
 export const DEMO_COMMUNITY = {
   name: "Northwind Founders",
   descriptor: "The founder network of a made-up fund",
-  accentColor: "#24525a",
+  // Ink, the default: the demo shows the Common Hall look as a community that picked no colour sees it.
+  accentColor: "#111110",
 } as const;
 
 // The community's logo: a made-up mark, the same as Founderhall's demo (public/demo/northwind-logo.svg).

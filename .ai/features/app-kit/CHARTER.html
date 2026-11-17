@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The app on the Common Hall look: the plan</title>
+<style>
+  body{margin:0 auto;padding:16px;font:16px/1.5 -apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:#111;background:#fff;max-width:720px}
+  h1{font-size:22px;line-height:1.25;margin:0 0 12px}
+  h2{font-size:18px;margin:22px 0 8px}
+  .box{border:1px solid #ddd;border-radius:8px;padding:12px;margin:0 0 14px;background:#fafafa}
+  .small{font-size:14px;color:#444}
+  .steps{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 6px}
+  .steps span{border:1px solid #bbb;border-radius:999px;padding:2px 10px;font-size:13px;background:#fff}
+  .steps .done{background:#e6f4ea;border-color:#8fc39a}
+  .steps .now{background:#111;color:#fff;border-color:#111}
+  .pair{display:flex;gap:10px;margin:8px 0}
+  .pair figure{flex:1;margin:0;min-width:0}
+  .pair img,.one img{width:100%;height:auto;border:1px solid #ccc;border-radius:6px;display:block}
+  .one{margin:8px 0}
+  figcaption{font-size:13px;color:#444;margin-top:4px}
+  .sw{display:flex;gap:6px;margin:6px 0;align-items:center}
+  .sw i{display:block;width:30px;height:30px;border-radius:6px;border:1px solid #bbb}
+  .sw span{font-size:13px;color:#444}
+  fieldset{border:1px solid #bbb;border-radius:8px;padding:12px;margin:14px 0}
+  legend{font-weight:600;padding:0 6px}
+  label{display:block;padding:8px 6px;margin:4px 0;border-radius:6px;background:#fff;border:1px solid #e3e3e3}
+  label input{margin-right:8px}
+  .gain{color:#2e7d32}.cost{color:#9c4e22}
+  details{margin:10px 0}summary{cursor:pointer;font-weight:600}
+  ul{padding-left:20px;margin:6px 0}
+</style>
+</head>
+<body>
+<h1>The app on the Common Hall look: paper white, black ink, the landing page's serif</h1>
+
+<div class="box small">
+  <b>Where the project is.</b> Goal: Common Hall, the open-source founder community portal, looks like one product on its landing page and inside the app.
+  <div class="steps"><span class="done">Name picked</span><span class="done">Landing page, 3 rounds</span><span class="now">Now: the app's look</span><span>Next: build it</span></div>
+  Absi asked for this plan on 16 November. Nothing is built yet.
+</div>
+<p class="small">The pictures are the real demo with the new colours and font laid over it in the browser. Three picks below, Qareen's marked.</p>
+
+<h2>1. Before and after: a member's Today page</h2>
+<div class="pair">
+  <figure><img src="today-phone-before.png" alt="Today on a phone today: cream background, dark-green text, a teal button"><figcaption><b>Now</b>: cream, green, teal buttons</figcaption></figure>
+  <figure><img src="today-phone-after.png" alt="Today on a phone with the new look: paper-white background, black text and buttons, Newsreader headline"><figcaption><b>After</b>: paper white, black, the landing page's serif</figcaption></figure>
+</div>
+<div class="one"><img src="today-desktop-after.png" alt="Today on a laptop with the new look"><figcaption>The same page on a laptop, after.</figcaption></div>
+
+<h2>2. The admin console and the dark theme</h2>
+<div class="one"><img src="admin-desktop-after.png" alt="The admin console home with the new look: black bars and buttons on paper white"><figcaption>The admin home, after. The counters and bars turn black; rust stays only for warnings and the demo banner.</figcaption></div>
+<div class="one"><img src="directory-desktop-after-dark.png" alt="The directory in the dark theme with the new look: near-black background, paper-white text"><figcaption>The directory in the dark theme, after: the landing page's near-black and paper-white ink.</figcaption></div>
+
+<h2>3. What changes, and what stays</h2>
+<div class="sw"><i style="background:#FAFAF7"></i><i style="background:#F2F1EC"></i><i style="background:#111110"></i><i style="background:#9c4e22"></i><span>paper white, a darker paper for boxes, black ink, and rust for warnings only</span></div>
+<p class="small"><b>Changes:</b> the colour values for light and dark (one list each), the headline font (Newsreader, the landing page's serif, self-hosted like today), the app icon (the floor plan with a door gap), and the standard button colour, black. <b>Stays:</b> every screen and part as it is, the body font, each community's own logo and its own chosen brand colour, the made-up portraits.</p>
+<details><summary>The detail</summary>
+<ul>
+  <li>Colours live in one list of named values per theme at the top of the app's style file. The sign-in, the console, the emails' web views and the demo banner all read from it.</li>
+  <li>Buttons follow the community's brand colour today (the demo's is dark green). A community that set none gets black instead of green. The admin's colour picker keeps its five ready colours and gains black as the first.</li>
+  <li>Newsreader comes as one variable font file (weights 200 to 800, open licence), so titles keep their optical sizes as with Source Serif today.</li>
+  <li>The icon: the door-gap floor plan on an ink square, the landing page's favicon. The "by Village" mark stays Village's.</li>
+  <li>Two automatic tests pin the old colours (they check that every text is readable on its background, in both themes); they are updated to the new colours and must pass.</li>
+  <li>About 2 hours to build, 1 hour to check. A separate checker reads Today, the directory, an intro, the asks board, sign-in and the console, on phone and laptop, light and dark. The demo on this PC gets the new look so Absi can click through it. Undo: revert the pull request.</li>
+</ul>
+</details>
+
+<p class="small">Qareen recommends building it as planned because the app and its landing page then read as one product, and the change is a value swap, not a redesign.</p>
+<fieldset>
+  <legend>Does the app move onto this look as shown?</legend>
+  <label><input type="radio" name="go" value="go" checked required> <b>Qareen builds it as shown, one pull request (recommended)</b><br><span class="gain">+ one look everywhere</span> · <span class="cost">− two hours of work to review once</span></label>
+  <label><input type="radio" name="go" value="change"> <b>Qareen changes the plan first: Absi says what in a comment</b></label>
+</fieldset>
+
+<p class="small">Qareen recommends black for communities that set no colour because it matches the landing page, and a community can still pick its own colour.</p>
+<fieldset>
+  <legend>What colour do buttons get in a community that never picked a brand colour?</legend>
+  <label><input type="radio" name="default_colour" value="ink" checked required> <b>Black ink, like the landing page (recommended)</b><br><span class="gain">+ one look out of the box</span> · <span class="cost">− less colour on the page</span></label>
+  <label><input type="radio" name="default_colour" value="green"> <b>The dark green of today</b><br><span class="gain">+ a warmer default</span> · <span class="cost">− the demo stays two-toned</span></label>
+</fieldset>
+
+<p class="small">The app still calls itself by its old name, Founderhall, in three visible places: the "by Village" credit and two pricing links; the README's title still says Community. Qareen recommends renaming them in the same pull request because they are four strings, and the roadmap already lists the rename.</p>
+<fieldset>
+  <legend>When do the four visible old names become "Common Hall"?</legend>
+  <label><input type="radio" name="rename" value="now" checked required> <b>In the same pull request (recommended)</b><br><span class="gain">+ done with the look</span> · <span class="cost">− a slightly bigger diff</span></label>
+  <label><input type="radio" name="rename" value="later"> <b>Later, as its own change</b><br><span class="gain">+ the look ships alone</span> · <span class="cost">− the old name stays a while longer</span></label>
+</fieldset>
+</body>
+</html>

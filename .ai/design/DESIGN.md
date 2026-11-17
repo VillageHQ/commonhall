@@ -12,6 +12,11 @@ The design system's rules live with the code, not here:
 The merged look (serif headings, hairline edges, plain buttons, only the fund's name for members) is in
 `docs/design/tokens.md`; what it changed on each screen is in `.ai/features/look-theme/SPEC.md`.
 
+**Since 17 November 2026 the app and the landing page share one kit (Common Hall):** paper white `#fafaf7` / black ink
+`#111110` in light, `#0e0e0d` / `#f4f2ec` in dark, Newsreader for titles, IBM Plex Sans for text, the door-gap mark as the
+icon, rust only for warnings. A community's own brand colour still drives its buttons; the default is ink. The values and
+where they live: `.ai/features/app-kit/NOTES.md`.
+
 ## The landing page (`site/`)
 Its own small system, in `site/assets/site.css` (see `.ai/features/common-hall-v2/NOTES.md`):
 - **Themes:** light = paper `#FAFAF7`, ink `#111110`; dark = `#0E0E0D` ground, `#F4F2EC` ink. No navy, no green. Cards and
