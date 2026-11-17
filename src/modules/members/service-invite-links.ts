@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, desc, eq, gt, inArray, isNull, or } from "drizzle-orm";
+import { and, asc, desc, eq, gt, inArray, isNull, or } from "drizzle-orm";
 
 import type { Database } from "../../platform/database/client.ts";
 import { OUTBOX_STATUSES } from "../../platform/email/outbox.ts";
@@ -28,6 +28,7 @@ export async function readWaitingInviteLinks(database: Database, { isMailOn, now
     .from(invite)
     .leftJoin(emailOutbox, eq(emailOutbox.id, invite.emailOutboxId))
     .where(and(OPEN_INVITE, gt(invite.expiresAt, now), isMailOn ? NOT_EMAILED : undefined))
-    .orderBy(desc(invite.createdAt), desc(invite.id))
+    // An import makes all its invites in one moment; A–Z by email keeps those rows in an order the admin can follow.
+    .orderBy(desc(invite.createdAt), asc(invite.email), asc(invite.id))
     .limit(WAITING_LINKS_LIMIT);
 }
