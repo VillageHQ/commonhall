@@ -6,11 +6,14 @@ import type { Database } from "../platform/database/client.ts";
 import type { Environment } from "../platform/environment.ts";
 import { readBranding } from "../platform/branding/branding.ts";
 import { readResendConfig } from "../platform/email/resend.ts";
+import { OUTBOX_STATUSES } from "../platform/email/outbox.ts";
+import { emailOutbox } from "../platform/email/schema.ts";
 import { readSettings, saveSettings } from "../platform/settings/store.ts";
 import { INSTANCE_SETTING_KEYS } from "../platform/settings/schema.ts";
 import { readVillageKeys } from "../platform/village/settings.ts";
 import { INTRO_STATES } from "../modules/intros/contract.ts";
 import { introRequest } from "../modules/intros/schema.ts";
+import { invite } from "../modules/members/schema.ts";
 import { readInviteCounts } from "../modules/members/service-invites.ts";
 import { networkManifest } from "../modules/network/manifest.ts";
 import { readVillageGroup } from "../modules/network/service-settings.ts";
@@ -27,7 +30,9 @@ export type LaunchFacts = {
   communityName: string;
   isLookSet: boolean;
   hasLogo: boolean;
-  invitesSent: number;
+  // Every invite made, and how many of them were emailed (an import with email off adds people and emails nobody).
+  invitesAdded: number;
+  invitesEmailed: number;
   isMailSet: boolean;
   isNetworkSet: boolean;
   mailDomain: string | null;
@@ -42,7 +47,8 @@ export type LaunchStep = { key: LaunchStepKey; title: string; isDone: boolean; t
 export const LAUNCH_LINKS = {
   look: "/admin/settings",
   invites: "/admin/invites",
-  mail: "/admin/email",
+  links: "/admin/links",
+  mail: "/admin/mail",
   village: "/admin/village",
   report: "/admin/report",
 } as const;
@@ -53,12 +59,22 @@ function plural(count: number, one: string, many: string) {
 
 export function describeLaunchSteps(facts: LaunchFacts): LaunchStep[] {
   const from = facts.mailDomain ?? "your domain";
-  const look: LaunchText = facts.isLookSet
-    ? [{ text: `${facts.communityName}, your ${[facts.hasLogo ? "logo" : null, "colour"].filter(Boolean).join(" and ")}. Done.` }]
-    : [{ text: "Your fund’s name, colour and logo on every page and email. " }, { text: "Set your look →", href: LAUNCH_LINKS.look }];
-  const invite: LaunchText = facts.invitesSent
-    ? [{ text: `${facts.invitesSent} ${plural(facts.invitesSent, "invite", "invites")} sent. ` }, { text: "Invite more →", href: LAUNCH_LINKS.invites }]
-    : [{ text: "Paste 10–20 emails. They get a one-tap sign-in; nobody needs a password. " }, { text: "Invite founders →", href: LAUNCH_LINKS.invites }];
+  // The look is done with a logo: a saved name alone still shows initials on every page.
+  const isLookDone = facts.isLookSet && facts.hasLogo;
+  const look: LaunchText = isLookDone
+    ? [{ text: `${facts.communityName}, your logo and colour. Done.` }]
+    : facts.isLookSet
+      ? [{ text: `${facts.communityName} is saved; members still see your initials. ` }, { text: "Add your logo →", href: LAUNCH_LINKS.look }]
+      : [{ text: "Your fund’s name, colour and logo on every page and email. " }, { text: "Set your look →", href: LAUNCH_LINKS.look }];
+  const unsent = facts.invitesAdded - facts.invitesEmailed;
+  const invite: LaunchText = !facts.invitesAdded
+    ? [{ text: "Paste 10–20 emails. They get a one-tap sign-in; nobody needs a password. " }, { text: "Invite founders →", href: LAUNCH_LINKS.invites }]
+    : unsent === 0
+      ? [{ text: `${facts.invitesAdded} ${plural(facts.invitesAdded, "invite", "invites")} sent. ` }, { text: "Invite more →", href: LAUNCH_LINKS.invites }]
+      : [
+          { text: facts.invitesEmailed ? `${facts.invitesAdded} added, ${facts.invitesEmailed} emailed. ` : `${facts.invitesAdded} added, no email sent yet. ` },
+          { text: `Send ${plural(unsent, "their link", "their links")} from Sign-in links →`, href: LAUNCH_LINKS.links },
+        ];
   const plumbing: LaunchText =
     facts.isMailSet && facts.isNetworkSet
       ? [{ text: `Done: invites and digests are emailed from ${from}, and founders can connect their networks.` }]
@@ -74,8 +90,8 @@ export function describeLaunchSteps(facts: LaunchFacts): LaunchStep[] {
     ? [{ text: "Your first intro is counted. " }, { text: "Open the partner report →", href: LAUNCH_LINKS.report }]
     : [{ text: "Appears here the day the first intro is counted. You can send it to partners as a PDF." }];
   return [
-    { key: LAUNCH_STEPS.look, title: "Your fund’s look", isDone: facts.isLookSet, text: look },
-    { key: LAUNCH_STEPS.invite, title: "Invite your first founders", isDone: facts.invitesSent > 0, text: invite },
+    { key: LAUNCH_STEPS.look, title: "Your fund’s look", isDone: isLookDone, text: look },
+    { key: LAUNCH_STEPS.invite, title: "Invite your first founders", isDone: facts.invitesAdded > 0, text: invite },
     { key: LAUNCH_STEPS.plumbing, title: "Mail and the network", isDone: facts.isMailSet && facts.isNetworkSet, text: plumbing },
     { key: LAUNCH_STEPS.report, title: "Your first partner report", isDone: facts.hasMadeIntro, text: report },
   ];
@@ -90,7 +106,7 @@ function readMailDomain(fromAddress: string | null) {
 export async function readLaunchFacts(database: Database, environment: Environment, now = new Date()): Promise<LaunchFacts> {
   const enabledIds = await readEnabledIds(database);
   const isNetworkOn = enabledIds.has(networkManifest.id);
-  const [branding, invites, keys, group, [made]] = await Promise.all([
+  const [branding, invites, keys, group, [made], [emailed]] = await Promise.all([
     readBranding(database),
     readInviteCounts(database, now),
     isNetworkOn ? readVillageKeys(database, environment) : null,
@@ -99,13 +115,15 @@ export async function readLaunchFacts(database: Database, environment: Environme
       .select({ value: count() })
       .from(introRequest)
       .where(and(eq(introRequest.state, INTRO_STATES.completed), eq(introRequest.isWithheld, false))),
+    database.select({ value: count() }).from(invite).innerJoin(emailOutbox, eq(emailOutbox.id, invite.emailOutboxId)).where(eq(emailOutbox.status, OUTBOX_STATUSES.sent)),
   ]);
   const mail = readResendConfig(environment);
   return {
     communityName: branding.name,
     isLookSet: branding.isSaved,
     hasLogo: branding.logo !== null,
-    invitesSent: invites.all,
+    invitesAdded: invites.all,
+    invitesEmailed: emailed?.value ?? 0,
     // In demo mode mail is kept in the sending log, which counts as set up.
     isMailSet: mail !== null,
     // With the network switched off there is no Village to connect.
