@@ -12,7 +12,7 @@ import type { Database } from "@/platform/database/client";
 import { EMAIL_KINDS, EMAIL_TOPICS } from "@/platform/email/kinds";
 import { UNSUBSCRIBE_URL_MARK } from "@/platform/email/unsubscribe";
 import { isEmailWanted, queueEmail } from "@/platform/email/outbox";
-import { sendQueuedEmailNow } from "@/platform/email/outbox-sender";
+import { isEmailGivenUp, sendQueuedEmailNow } from "@/platform/email/outbox-sender";
 import { readResendConfig } from "@/platform/email/resend";
 import { emailOptOut } from "@/platform/email/schema";
 import type { Environment } from "@/platform/environment";
@@ -306,7 +306,7 @@ export function readDigestMembers(database: Database) {
   return database.select({ id: user.id, name: user.name }).from(user).where(isActiveMember()).orderBy(asc(user.name));
 }
 
-export const TEST_SEND_OUTCOMES = { sent: "sent", queued: "queued", emailOff: "email_off", switchedOff: "switched_off" } as const;
+export const TEST_SEND_OUTCOMES = { sent: "sent", queued: "queued", refused: "refused", emailOff: "email_off", switchedOff: "switched_off" } as const;
 
 // Sends the admin their own week now, with working links and reply codes, to their own address only.
 export async function sendWeeklyTest(database: Database, environment: Environment, admin: SessionMember) {
@@ -327,5 +327,6 @@ export async function sendWeeklyTest(database: Database, environment: Environmen
     await recordOutboxId(transaction, id, queued);
     return queued;
   });
-  return (await sendQueuedEmailNow(database, environment, outboxId)) ? TEST_SEND_OUTCOMES.sent : TEST_SEND_OUTCOMES.queued;
+  if (await sendQueuedEmailNow(database, environment, outboxId)) return TEST_SEND_OUTCOMES.sent;
+  return (await isEmailGivenUp(database, outboxId)) ? TEST_SEND_OUTCOMES.refused : TEST_SEND_OUTCOMES.queued;
 }

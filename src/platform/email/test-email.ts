@@ -7,7 +7,7 @@ import type { Environment } from "../environment.ts";
 import { escapeHtml, toSingleLine } from "./email-text.ts";
 import { EMAIL_KINDS } from "./kinds.ts";
 import { queueEmail } from "./outbox.ts";
-import { readSenderConfig, sendQueuedEmailNow } from "./outbox-sender.ts";
+import { isEmailGivenUp, readSenderConfig, sendQueuedEmailNow } from "./outbox-sender.ts";
 import { splitFromAddress } from "./mail-settings.ts";
 import { readResendConfig } from "./resend.ts";
 import { EMAIL_TEST_OUTCOMES, type EmailTestOutcome } from "./dns-check-contract.ts";
@@ -37,5 +37,6 @@ export async function sendEmailTest(database: Database, environment: Environment
     memberId: adminId,
     ...renderEmailTest(branding.name, sender.fromAddress),
   });
-  return (await sendQueuedEmailNow(database, environment, queuedId)) ? EMAIL_TEST_OUTCOMES.sent : EMAIL_TEST_OUTCOMES.queued;
+  if (await sendQueuedEmailNow(database, environment, queuedId)) return EMAIL_TEST_OUTCOMES.sent;
+  return (await isEmailGivenUp(database, queuedId)) ? EMAIL_TEST_OUTCOMES.refused : EMAIL_TEST_OUTCOMES.queued;
 }
