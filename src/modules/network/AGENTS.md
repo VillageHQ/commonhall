@@ -1,11 +1,11 @@
 # Network
 
-Village search, sync, the community group and intro paths. Toggleable. The only module using Village.
+Village search, sync, the community group and intro paths. Toggleable; the only Village module.
 
 - `service.ts`: joining, search (one bulk paths call, kept 10 minutes), paths, keys, group, leaving, link approval.
 - `service-search-pool.ts`: members who haven't joined search as the app's identity (in the group, unsynced).
-- `service-departure.ts`: takes a removed member out of the group. Never throws.
-- `service-settings.ts`, `contract-village-settings.ts`: group, daily limit, and the Village settings: search scope, who can introduce, the service email.
+- `service-departure.ts`: removes a departed member from the group. Never throws.
+- `service-settings.ts`, `contract-village-settings.ts`: group, daily limit, search scope, who can introduce, service email.
 - `reads-*.ts`: progress, reachable members, credit usage, search's member rows.
 - `contract*.ts`: schemas, constants. `queries.ts`: client requests. `components/`: the UI (`search-*`: /search; `my-network-screen`: /me/network; `village-connect`: Connect Village).
 - `service-fill-in.ts`, `rules-fill-in.ts`, `integration.ts`: the profile fill-in: email first, then LinkedIn every 30 days; nightly (02:00–05:59 UTC) or on request. Lookups run as the app's public identity, never as a member.
@@ -14,11 +14,10 @@ Village search, sync, the community group and intro paths. Toggleable. The only 
 - `*-village-check.ts`: the admin's Village check and the member's My network line. Free calls only, once a minute.
 - `slots.tsx`: `ConnectorAskSlot` and `ConnectorPromiseSlot`. Intros fills them, so network never imports intros.
 
-The Village client, credentials, credit ledger, error mapping and trouble emails live in `src/platform/village`. `health.ts` there records Village's last answer and trouble; admins see it, members see "Search is unavailable right now".
+The Village client, credentials, credit ledger, error mapping and trouble emails live in `src/platform/village`. `health.ts` there records Village's last answer and trouble (never for tried keys, `isTrial`); admins see it, members see "Search is unavailable right now".
 
 Rules:
 
-- Keys only being tried (`isTrial`) never record Village's health.
 - The secret key stays on the server. A member token leaves it only through `/api/network/sync-token`, for the signed-in member at the sync step.
 - Never search or share a member's own network before they agree and sync.
 - Never name a path through a member who hasn't agreed to share. With "chosen members" on, paths through other members are dropped before anything reads them, and only the chosen can offer intros.
