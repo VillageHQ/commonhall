@@ -92,6 +92,8 @@ Each open item gets these yes/no checks; code adds the points (change a number t
 
 ## Done
 - [x] 2026-11-17 — A careers link with no job board offers "Add the jobs by hand instead" — [spec](features/jobs-by-hand-fallback/SPEC.md)
+- [x] 2026-11-17 — An email Resend refuses is given up at once, not retried for 4 hours — [spec](features/outbox-permanent-fail/SPEC.md)
+- [x] 2026-11-17 — Sign-in links list one import A–Z, so the admin can copy them down the list — [spec](features/signin-links-order/SPEC.md)
 - [x] 2026-11-17 — An uploaded logo on the dark tile shows again (was an empty black square) — [charter](features/logo-dark-tile/CHARTER.md)
 - [x] 2026-11-17 — Pages no longer crash (500) on a server bound to 127.0.0.1 behind an https tunnel (self-call-http) — [notes](features/self-call-http/NOTES.md)
 - [x] 2026-11-11 — Jobs on member cards, profiles, the directory (Hiring chip and filter) and Today — [spec](features/jobs-on-cards/SPEC.md)

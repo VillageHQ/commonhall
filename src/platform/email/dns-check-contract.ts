@@ -15,7 +15,7 @@ export const dnsCheckLineSchema = z.object({
 export const dnsCheckSchema = z.object({ domain: z.string(), checkedAt: z.string(), lines: z.array(dnsCheckLineSchema) });
 
 // What "Send a test to me" did (test-email.ts); here so the page can read it too.
-export const EMAIL_TEST_OUTCOMES = { sent: "sent", queued: "queued", emailOff: "email_off" } as const;
+export const EMAIL_TEST_OUTCOMES = { sent: "sent", queued: "queued", refused: "refused", emailOff: "email_off" } as const;
 export type EmailTestOutcome = (typeof EMAIL_TEST_OUTCOMES)[keyof typeof EMAIL_TEST_OUTCOMES];
 
 export const emailTestResultSchema = z.object({ outcome: z.string(), message: z.string() });

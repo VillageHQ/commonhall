@@ -19,6 +19,7 @@ export const metadata: Metadata = { title: "Digest preview" };
 const FLASHES: Record<string, { text: string; isOk: boolean }> = {
   digesttest: { text: "Test digest sent to you.", isOk: true },
   [TEST_SEND_OUTCOMES.emailOff]: { text: "Mail is not set up, so the test digest was not sent. Set up Mail first.", isOk: false },
+  [TEST_SEND_OUTCOMES.refused]: { text: "Resend refused the test digest, so it isn't tried again. Check your address and the sending domain in Settings, then send another test.", isOk: false },
   [TEST_SEND_OUTCOMES.switchedOff]: { text: "You turned the weekly digest off in your email settings, so no test was sent. Turn it on to get one.", isOk: false },
 };
 

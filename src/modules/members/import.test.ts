@@ -116,4 +116,21 @@ describe("Set up › Import members and Sign-in links, with mail on", () => {
     expect(await database.select().from(emailOutbox)).toHaveLength(0);
     expect((await readWaitingInviteLinks(database, { isMailOn: true })).map(({ email }) => email)).toContain("ada@example.com");
   });
+
+  // An import makes its invites in one moment, so their order fell to random ids. The admin copies the links one
+  // by one down the list: it is A–Z, and copying a link moves no row.
+  it("lists one import's links A–Z, and copying one moves no row", async () => {
+    const people = ["zoe", "mira", "ada", "tomas", "sam"];
+    const csv = ["name,email", ...people.map((name) => `${name},${name}@example.com`)].join("\n");
+    await postImport(importRequest(admin, "basis=ask", csv));
+    const order = async () => (await readWaitingInviteLinks(database, { isMailOn: false })).map(({ email }) => email);
+    const before = await order();
+    expect(before).toEqual([...before].sort());
+
+    for (const email of before) {
+      const [row] = await database.select().from(invite).where(eq(invite.email, email));
+      await postCopyLink(new Request(`${APP_URL}/api/admin/invites/copy-link`, { method: "POST", headers: { "Content-Type": "application/json", Origin: APP_URL, Cookie: admin.cookie }, body: JSON.stringify({ inviteId: row?.id }) }));
+      expect(await order()).toEqual(before);
+    }
+  });
 });

@@ -7,7 +7,7 @@ import { runAfterResponse } from "../observability/after-response.ts";
 import { DEMO_EMAIL_NOTE, isDemoMode } from "../demo/mode.ts";
 import { readEmailTopic } from "./kinds.ts";
 import { isEmailWanted, OUTBOX_STATUSES } from "./outbox.ts";
-import { readResendConfig, sendResendEmail, type ResendConfig } from "./resend.ts";
+import { readResendConfig, ResendRejectedEmailError, sendResendEmail, type ResendConfig } from "./resend.ts";
 import { emailOutbox } from "./schema.ts";
 import { escapeHtml } from "./email-text.ts";
 import { buildUnsubscribeParts, placeTextFooter, UNSUBSCRIBE_URL_MARK } from "./unsubscribe.ts";
@@ -82,7 +82,8 @@ export async function pruneFinishedEmails(database: Database, now = new Date()) 
 async function scheduleRetry(database: Database, email: ClaimedEmail, error: unknown) {
   const lastError = readErrorReason(error).slice(0, MAXIMUM_ERROR_LENGTH);
   logError("email-outbox-try-failed", error);
-  if (email.attempts >= MAXIMUM_SEND_ATTEMPTS) {
+  // A refused email gets the same answer every time, so it is given up at once.
+  if (email.attempts >= MAXIMUM_SEND_ATTEMPTS || error instanceof ResendRejectedEmailError) {
     logError("email-outbox-gave-up", error);
     await finish(database, email, OUTBOX_STATUSES.failed, lastError);
     return OUTBOX_STATUSES.failed;
@@ -187,6 +188,13 @@ export async function sendQueuedEmailNow(database: Database, environment: Enviro
     logError("email-outbox", error);
     return false;
   }
+}
+
+// True when the email was given up (Resend refused it), so a caller doesn't say it will be tried again.
+export async function isEmailGivenUp(database: Database, id: string | null) {
+  if (!id) return false;
+  const [row] = await database.select({ status: emailOutbox.status }).from(emailOutbox).where(eq(emailOutbox.id, id));
+  return row?.status === OUTBOX_STATUSES.failed;
 }
 
 // Sends what was just queued once the response has gone, so email is as quick as before. If
