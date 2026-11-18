@@ -10,9 +10,13 @@ The public landing page (`site/`) and its call form, as one Worker (`commonhall-
 
 ## Deploy
 
+The landing page's live tour is built into `site/tour/` and committed (`pnpm tour:build`; `pnpm tour:check` says
+whether the committed build is current), so a deploy needs no build step: check, then deploy.
+
 Needs a Village Cloudflare API token with Workers Scripts, D1, Workers Routes and DNS rights on commonhall.ai.
 
 ```sh
+pnpm tour:check                                                # the tour in site/ is current
 cd deploy/cloudflare
 export CLOUDFLARE_API_TOKEN=… CLOUDFLARE_ACCOUNT_ID=…
 npx wrangler d1 migrations apply commonhall-signups --remote   # only when migrations/ changed
