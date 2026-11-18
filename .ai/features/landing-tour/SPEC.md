@@ -1,6 +1,6 @@
 ---
 id: landing-tour
-status: specced
+status: in-review
 waits-on: []
 size: half a day
 touches: ["site/", "scripts/", "deploy/cloudflare/"]
