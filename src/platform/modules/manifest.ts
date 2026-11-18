@@ -6,9 +6,13 @@ export const HOME_FEED_MODULE_ID = "feed";
 // Other modules offer "Ask the community" with the ask written for them, without importing asks.
 export const ASKS_MODULE_ID = "asks";
 export const ASK_DRAFT_PARAM = "draft";
+export const ASK_DRAFT_CATEGORY_PARAM = "category";
 
-export function toAskDraftHref(title: string) {
-  return `/asks?${new URLSearchParams({ [ASK_DRAFT_PARAM]: title }).toString()}`;
+// The composer opens filled in; nothing posts until the member sends it. The category is optional.
+export function toAskDraftHref(title: string, extra: { category?: string | null } = {}) {
+  const params = new URLSearchParams({ [ASK_DRAFT_PARAM]: title });
+  if (extra.category) params.set(ASK_DRAFT_CATEGORY_PARAM, extra.category);
+  return `/asks?${params.toString()}`;
 }
 
 export const MODULE_KINDS = { core: "core", toggleable: "toggleable" } as const;

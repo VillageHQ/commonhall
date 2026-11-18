@@ -26,7 +26,20 @@ function isListed(companySlug: string | null): SQL | undefined {
   return and(eq(jobSource.hidden, false), isActiveMember(), companySlug ? eq(jobSource.companySlug, companySlug) : undefined);
 }
 
-export async function readBoardJobs(database: DatabaseOrTransaction, companySlug: string | null): Promise<BoardJob[]> {
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export function readBoardJobs(database: DatabaseOrTransaction, companySlug: string | null): Promise<BoardJob[]> {
+  return selectBoardJobs(database, isListed(companySlug), BOARD_LIMIT);
+}
+
+// One job as the members' board lists it ("Find candidates"), or null when it isn't listed.
+export async function readBoardJob(database: DatabaseOrTransaction, jobId: string): Promise<BoardJob | null> {
+  if (!UUID_PATTERN.test(jobId)) return null;
+  const [job] = await selectBoardJobs(database, and(isListed(null), eq(jobPosting.id, jobId)), 1);
+  return job ?? null;
+}
+
+async function selectBoardJobs(database: DatabaseOrTransaction, where: SQL | undefined, limit: number): Promise<BoardJob[]> {
   const rows = await database
     .select({
       id: jobPosting.id,
@@ -44,9 +57,9 @@ export async function readBoardJobs(database: DatabaseOrTransaction, companySlug
     .from(jobPosting)
     .innerJoin(jobSource, eq(jobSource.id, jobPosting.sourceId))
     .innerJoin(user, eq(user.id, jobSource.memberId))
-    .where(isListed(companySlug))
+    .where(where)
     .orderBy(sql`coalesce(${jobPosting.postedAt}, ${jobPosting.updatedAt}) desc`, desc(jobPosting.id))
-    .limit(BOARD_LIMIT);
+    .limit(limit);
   return rows.map((row) => ({ ...row, postedAt: row.postedAt?.toISOString() ?? null }));
 }
 

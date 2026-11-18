@@ -1,6 +1,6 @@
 ---
 id: find-candidates
-status: specced
+status: in-review
 waits-on: []
 size: half a day
 touches: ["src/modules/job-board/", "src/modules/network/", "src/modules/asks/", "src/shell/"]
@@ -40,6 +40,11 @@ made-up people) and walks the journey with screenshots.
 
 ## Depends on / check-ins
 - tour-new-steps · needs: the results screen fed by made-up data · owner: tour-new-steps.
+
+## As built (18 Nov 2026)
+- The job's link goes in the hiring request's one line, not its details: no asks screen or email shows an ask's details
+  (found by the independent check), so the link would have been invisible there.
+- The button shows only while network search is on. How it works: ./NOTES.md.
 
 ## Open questions
 None.

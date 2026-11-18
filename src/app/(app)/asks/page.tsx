@@ -5,7 +5,7 @@ import { AsksBoard } from "@/modules/asks/components/asks-board";
 import { ASK_BOARD_TABS, ASK_TABS, ASKS_PAGE, ASKS_PAGE_TITLE, ASK_LIMITS, readAskFlash, type AskTab } from "@/modules/asks/contract";
 import { asksManifest } from "@/modules/asks/manifest";
 import { readAsksPage } from "@/modules/asks/reads-board";
-import { parseAskDraft } from "@/modules/asks/rules-board-url";
+import { parseAskDraftParts } from "@/modules/asks/rules-board-url";
 import { readBrandingForPage } from "@/platform/branding/branding";
 import { requireMember } from "@/platform/auth/session";
 import { getDatabase } from "@/platform/database/client";
@@ -37,7 +37,7 @@ export default modulePage(asksManifest, async function AsksPage({ searchParams }
   const database = getDatabase();
   const search = readFirst(params.q)?.replace(/\s+/g, " ").trim().slice(0, ASK_LIMITS.searchLength) || null;
   const tab = readTab(readFirst(params.tab));
-  const draftBody = parseAskDraft(params);
+  const draft = parseAskDraftParts(params);
   const now = new Date();
   const [community, allowance, { posts, counts }] = await Promise.all([
     readBrandingForPage(),
@@ -54,7 +54,7 @@ export default modulePage(asksManifest, async function AsksPage({ searchParams }
       counts={counts}
       allowance={allowance}
       flash={readAskFlash(readFirst(params.m))}
-      draft={draftBody ? { body: draftBody, target: "" } : null}
+      draft={draft}
       now={now}
     />
   );

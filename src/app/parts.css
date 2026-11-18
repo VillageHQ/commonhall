@@ -706,6 +706,9 @@ details.fh-others summary{cursor:pointer;font-weight:600;color:var(--fund-deep)}
 .fh-jobrows .fh-r .fh-who b{white-space:normal;font-size:15.5px;line-height:20px}
 .fh-jobrows .fh-r .fh-who span{white-space:normal}
 .fh-jobrows .fh-r .fh-who span a{color:inherit;text-decoration:underline}
+/* "Find candidates" beside Apply on the company's own jobs (find-candidates). */
+.fh-jobrows .fh-r .fh-end{flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:8px}
+@media (max-width:560px){.fh-jobrows .fh-r:has(.fh-end > :nth-child(2)) .fh-end{grid-column:2 / -1;justify-content:flex-start}}
 .fh-r .fh-who span.fh-errtext,.fh-r .fh-who .fh-errtext{color:var(--ribbon);display:inline;white-space:normal}
 .fh-jobsource + .fh-jobsource{margin-top:18px;padding-top:4px;border-top:1px solid var(--rule)}
 a.fh-tag{text-decoration:none;color:var(--ink)}
