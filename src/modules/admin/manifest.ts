@@ -1,6 +1,7 @@
 import { ShieldCheck } from "lucide-react";
 
 import { API_ROUTES, ROUTES } from "../../platform/http/routes.ts";
+import { ANNOUNCEMENT_API } from "./contract-announcements.ts";
 import { MODULE_KINDS, NAVIGATION_SECTIONS, type CoreManifest } from "../../platform/modules/manifest.ts";
 
 export const adminManifest = {
@@ -13,5 +14,5 @@ export const adminManifest = {
   requires: [],
   navigation: [{ label: "Admin", href: ROUTES.admin, icon: ShieldCheck, section: NAVIGATION_SECTIONS.admin, badge: "admin" }],
   adminTabs: [],
-  paths: { pages: [ROUTES.admin], api: [API_ROUTES.branding, API_ROUTES.dataHome, "/api/admin/members", "/api/admin/reports", API_ROUTES.auditLog, API_ROUTES.moduleState, API_ROUTES.partnerReport, "/api/admin/intro-log", API_ROUTES.adminWeeklyEmail, API_ROUTES.adminEmail, "/api/admin/perks", API_ROUTES.adminGuidedStart] },
+  paths: { pages: [ROUTES.admin], api: [API_ROUTES.branding, API_ROUTES.dataHome, "/api/admin/members", "/api/admin/reports", API_ROUTES.auditLog, API_ROUTES.moduleState, API_ROUTES.partnerReport, "/api/admin/intro-log", API_ROUTES.adminWeeklyEmail, API_ROUTES.adminEmail, "/api/admin/perks", API_ROUTES.adminGuidedStart, ANNOUNCEMENT_API.base] },
 } satisfies CoreManifest;

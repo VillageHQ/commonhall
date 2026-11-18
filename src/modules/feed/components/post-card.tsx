@@ -90,7 +90,7 @@ function PostEditor({ post, onDone }: { post: Post; onDone: () => void }) {
         onChange={(event) => setBody(event.target.value)}
         onKeyDown={submitOnCommandEnter}
       />
-      <PostTypeChips type={type} onChange={setType} />
+      {post.type === POST_TYPES.announcement ? null : <PostTypeChips type={type} onChange={setType} />}
       <LengthCounter length={body.length} maximumLength={FEED_LIMITS.postLength} />
       {post.pin && !viewer.isAdmin ? (
         <p className="type-small text-foreground-soft">Saving changes unpins this post. An admin can pin it again.</p>

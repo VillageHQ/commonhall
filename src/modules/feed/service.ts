@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, count, eq, inArray, isNotNull, notInArray, sql } from "drizzle-orm";
+import { and, asc, count, eq, inArray, isNotNull, notInArray, sql } from "drizzle-orm";
 
 import { user } from "../../platform/database/auth-schema.ts";
 import type { Database, Transaction } from "../../platform/database/client.ts";
@@ -17,6 +17,7 @@ import {
   FEED_ERROR_CODES,
   FEED_LIMITS,
   MODERATION_TARGETS,
+  POST_TYPES,
   type CreateCommentBody,
   type CreatePostBody,
   type EditCommentBody,
@@ -159,10 +160,12 @@ export async function editPost({ database, member }: RequestContext, { postId, t
   await database.transaction(async (transaction) => {
     const target = await lockPost(transaction, postId, member);
     assertAuthor(member, target.authorId);
-    if (target.body === body && target.type === type) return;
+    // The team's announcement stays one, and no other post becomes one.
+    const nextType = target.type === POST_TYPES.announcement || type === POST_TYPES.announcement ? target.type : type;
+    if (target.body === body && target.type === nextType) return;
     await transaction
       .update(post)
-      .set({ type, body, editedAt: new Date(), ...readUnpinFieldsForEdit(member) })
+      .set({ type: nextType, body, editedAt: new Date(), ...readUnpinFieldsForEdit(member) })
       .where(eq(post.id, postId));
   });
   return readRequiredPost(database, member, postId);
@@ -260,6 +263,21 @@ export async function setPostPinned({ database, member }: RequestContext, { post
     });
   });
   logAdminAction(isPinned ? "post_pinned" : "post_unpinned", member.id, postId);
+}
+
+// Admin › Announcements, inside the send's own transaction: the team's post, pinned at once. With the pins full,
+// the oldest pin gives way, so the newest announcement is always on top.
+export async function createAnnouncementPostWithin(transaction: Transaction, authorId: string, body: string) {
+  await transaction.execute(sql`select pg_advisory_xact_lock(${PIN_LOCK_ID})`);
+  const pinned = await transaction.select({ id: post.id }).from(post).where(isNotNull(post.pinnedAt)).orderBy(asc(post.pinnedAt));
+  const overflow = pinned.slice(0, Math.max(0, pinned.length - FEED_LIMITS.pinnedPosts + 1)).map(({ id }) => id);
+  if (overflow.length > 0) await transaction.update(post).set({ pinnedAt: null, pinnedByUserId: null }).where(inArray(post.id, overflow));
+  const [created] = await transaction
+    .insert(post)
+    .values({ authorId, type: POST_TYPES.announcement, body, pinnedAt: new Date(), pinnedByUserId: authorId })
+    .returning({ id: post.id });
+  if (!created) throw postGoneError();
+  return { postId: created.id, unpinnedCount: overflow.length };
 }
 
 export async function setReaction({ database, member }: RequestContext, body: SetReactionBody) {

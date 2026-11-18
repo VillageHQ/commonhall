@@ -10,7 +10,9 @@ export const FEED_LIMITS = {
   pinnedPosts: 3,
 } as const;
 
-export const POST_TYPES = { plain: "plain", ask: "ask", win: "win", offer: "offer" } as const;
+// "announcement" is the team's pinned post from admin › Announcements; members never choose it.
+export const POST_TYPES = { plain: "plain", ask: "ask", win: "win", offer: "offer", announcement: "announcement" } as const;
+const MEMBER_POST_TYPES = [POST_TYPES.plain, POST_TYPES.ask, POST_TYPES.win, POST_TYPES.offer] as const;
 export const REACTIONS = { heart: "heart", thumbsUp: "thumbs_up", idea: "idea", rocket: "rocket" } as const;
 export const MODERATION_TARGETS = { post: "post", comment: "comment" } as const;
 
@@ -25,6 +27,7 @@ export const FEED_ERROR_CODES = {
 const postBodySchema = feedTextSchema("your post", FEED_LIMITS.postLength);
 const commentBodySchema = feedTextSchema("your reply", FEED_LIMITS.commentLength);
 const postTypeSchema = z.enum(POST_TYPES);
+const memberPostTypeSchema = z.enum(MEMBER_POST_TYPES);
 const reactionSchema = z.enum(REACTIONS);
 
 const timestampSchema = z.iso.datetime();
@@ -33,7 +36,7 @@ export const feedCursorSchema = z.object({ createdAt: timestampSchema, id: z.uui
 
 export const feedPageBodySchema = z.object({ cursor: feedCursorSchema.nullable().default(null) });
 export const newPostCountBodySchema = z.object({ since: timestampSchema.nullable() });
-export const createPostBodySchema = z.object({ type: postTypeSchema.default(POST_TYPES.plain), body: postBodySchema });
+export const createPostBodySchema = z.object({ type: memberPostTypeSchema.default(POST_TYPES.plain), body: postBodySchema });
 export const editPostBodySchema = z.object({ postId: z.uuid(), type: postTypeSchema, body: postBodySchema });
 export const postIdBodySchema = z.object({ postId: z.uuid() });
 export const pinPostBodySchema = z.object({ postId: z.uuid(), isPinned: z.boolean() });
@@ -92,6 +95,7 @@ export const newPostCountSchema = z.object({ newPostCount: z.number() });
 export const reactionsResponseSchema = z.object({ reactions: z.array(reactionCountSchema) });
 
 export type PostType = z.infer<typeof postTypeSchema>;
+export type MemberPostType = z.infer<typeof memberPostTypeSchema>;
 export type Reaction = z.infer<typeof reactionSchema>;
 export type ReactionCount = z.infer<typeof reactionCountSchema>;
 export type Post = z.infer<typeof postSchema>;

@@ -10,7 +10,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Chip } from "@/components/ui/chip";
 import { Textarea } from "@/components/ui/textarea";
-import { FEED_LIMITS, POST_TYPES, type PostType } from "@/modules/feed/contract";
+import { FEED_LIMITS, POST_TYPES, type MemberPostType, type PostType } from "@/modules/feed/contract";
 
 import { CHOOSABLE_POST_TYPES, FEED_AVATAR_SIZES, POST_TYPE_DISPLAY } from "./feed-display";
 import { useFeedContext } from "./feed-context";
@@ -34,7 +34,7 @@ export function submitWithoutReload(event: FormEvent<HTMLFormElement>, submit: (
   submit();
 }
 
-type PostTypeChipsProps = { type: PostType; onChange: (type: PostType) => void };
+type PostTypeChipsProps = { type: PostType; onChange: (type: MemberPostType) => void };
 
 export function PostTypeChips({ type, onChange }: PostTypeChipsProps) {
   return (
@@ -74,7 +74,7 @@ type ComposerProps = { inputId: string; onPosted?: () => void };
 export function Composer({ inputId, onPosted }: ComposerProps) {
   const { viewer, announce } = useFeedContext();
   const [body, setBody] = useState("");
-  const [type, setType] = useState<PostType>(POST_TYPES.plain);
+  const [type, setType] = useState<MemberPostType>(POST_TYPES.plain);
   const createPost = useCreatePost();
   // Set at once on Post, before the button re-renders as disabled, so a double click sends one post.
   const isSendingRef = useRef(false);

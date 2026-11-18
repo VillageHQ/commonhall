@@ -64,6 +64,7 @@ export const AUDIT_ACTIONS = {
   settingsSaved: "settings_saved",
   mailSettingsSaved: "mail_settings_saved",
   mailDnsChecked: "mail_dns_checked",
+  announcementSent: "announcement_sent",
 } as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[keyof typeof AUDIT_ACTIONS];

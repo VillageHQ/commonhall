@@ -260,6 +260,13 @@
       "when": 1794447504612,
       "tag": "0037_fh_directory_profile",
       "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1795012797073,
+      "tag": "0038_announcements",
+      "breakpoints": true
     }
   ]
 }
