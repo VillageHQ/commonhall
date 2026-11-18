@@ -9,6 +9,7 @@ Founders show their companies' open jobs. A member links the company's hiring to
 - `service-pull.ts`: `fetchBoard` (15 s, 2 MB cap, Ashby 20 MB, one redirect inside the tool's domain), `pullSource`, and `pullDueSources` (every 5 minutes).
 - `service.ts`: link, add by hand, pull now, hide, remove, the public switch. `reads.ts`: boards, companies, sources; `reads-hiring.ts`: profiles, directory, Today.
 - `rules-widget.ts`: the website widget's script, the frame's script, the frame's HTML and headers, the embed snippets.
+- `rules-candidates.ts`: "Find candidates": who may use it (the company's members, the member who linked it, admins) and the search a job turns into. The page and the link live in `src/shell/find-candidates.ts` and `/search/candidates`.
 - `components/`: the UI.
 
 Rules:

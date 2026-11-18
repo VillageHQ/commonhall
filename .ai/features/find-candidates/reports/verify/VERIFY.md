@@ -21,3 +21,15 @@ Also checked: asks module off → the candidates page still searches and the hir
 
 ## Data changed and restored
 Sam's `member_network.group_joined_at` → null → restored. Sam's `member_profile.company` → Kilnworks → Tallyhealth. `module_state:asks` and `module_state:network` → off → on. I deleted the hiring ask I posted and its 5 `ask_helper` outbox rows. Search usage counters from my runs remain.
+
+## Re-check after 6430c95 (2026-11-18)
+Script: `.ai/tmp/verify/r1.mjs`.
+
+| Item | Result | Evidence |
+|------|--------|----------|
+| A: link in the line | PASS | Composer line: "We're hiring a Founding account executive at Tallyhealth: https://tallyhealth.example.com/careers/tallyhealth-1. Who do you know?". The URL has `category=hire` and there is no Details field (`r-A1-prefilled.png`). Ask count stayed at 10 when the composer opened. After Post, the link shows on the ask page (`r-A2-posted.png`) and the board card (`r-A3-board.png`). DB row: `kind=ask, category=hire`, title includes the link, `detail` NULL. I deleted the ask and its 5 queued emails afterwards. |
+| B: typed role on "???" | PASS | Before typing, the note shows. After typing "Ceramics engineer", the note is gone, the box reads "A hiring request for Ceramics engineer", the empty results show only "Search everywhere" with no "Ask the community" (`r-B1-typed.png`), and the draft is "We're hiring a Ceramics engineer at Kilnworks: https://kilnworks.example.com/careers/kilnworks-1. Who do you know?". |
+| C: phone job rows | PASS | At 390px, "Find candidates" and "Apply" sit under the title and meta. Rows without the button keep Apply on the right. Page width is 390 (`r-C1-phone-board.png`). The desktop rows are unchanged (`r-C2-desktop-board.png`). |
+| Criterion 4 | PASS | Prefilled, nothing posts until Post, and the row has category 'hire' with the job's link. |
+
+Small note (no action needed): the link in the line is plain text, not clickable, on the ask page and the board card.
