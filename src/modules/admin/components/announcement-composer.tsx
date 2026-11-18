@@ -13,12 +13,19 @@ import { Note } from "@/components/ui/note";
 import { SegmentedControl } from "@/components/ui/segmented";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { ANNOUNCEMENT_AUDIENCES, ANNOUNCEMENT_LIMITS, type AnnouncementAudienceKind, type AnnouncementSent } from "@/modules/admin/contract-announcements";
+import {
+  ANNOUNCEMENT_AUDIENCES,
+  ANNOUNCEMENT_LIMITS,
+  isInAudience,
+  type AnnouncementAudience,
+  type AnnouncementAudienceKind,
+  type AnnouncementSent,
+} from "@/modules/admin/contract-announcements";
 import { sendAnnouncementRequest, sendAnnouncementTestRequest } from "@/modules/admin/queries-announcements";
 import { FEED_LIMITS } from "@/modules/feed/contract";
 import { ANNOUNCEMENT_FIELDS, readUnknownFields, renderAnnouncementPost, renderAnnouncementText } from "@/modules/admin/rules-announcement-fields";
 
-export type ComposerMember = { id: string; name: string; company: string | null; cohort: string | null; isWanted: boolean };
+export type ComposerMember = { id: string; name: string; company: string | null; cohort: string | null; communityRole: string | null; isWanted: boolean };
 export type ComposerCohort = { name: string; memberCount: number; wantedCount: number };
 
 type AnnouncementComposerProps = {
@@ -32,11 +39,13 @@ type AnnouncementComposerProps = {
 
 const AUDIENCE_SEGMENTS = [
   { value: ANNOUNCEMENT_AUDIENCES.everyone, label: "Everyone" },
+  { value: ANNOUNCEMENT_AUDIENCES.founders, label: "Founders" },
+  { value: ANNOUNCEMENT_AUDIENCES.experts, label: "Mentors and experts" },
   { value: ANNOUNCEMENT_AUDIENCES.cohort, label: "One cohort" },
 ] as const;
 
-function readCohortKey(cohort: string | null) {
-  return cohort?.trim().toLowerCase() ?? "";
+function readAudience(kind: AnnouncementAudienceKind, cohort: string): AnnouncementAudience {
+  return kind === ANNOUNCEMENT_AUDIENCES.cohort ? { audience: kind, cohort } : { audience: kind };
 }
 
 function describeCount(count: number) {
@@ -62,17 +71,17 @@ export function AnnouncementComposer({ members, cohorts, community, adminId, isE
   const [isConfirming, setIsConfirming] = useState(false);
   const [lastSent, setLastSent] = useState<AnnouncementSent | null>(null);
 
-  const inAudience = members.filter((member) => audienceKind === ANNOUNCEMENT_AUDIENCES.everyone || readCohortKey(member.cohort) === readCohortKey(cohort));
+  const audience = readAudience(audienceKind, cohort);
+  const inAudience = members.filter((member) => isInAudience(member, audience));
   const wantedCount = inAudience.filter(({ isWanted }) => isWanted).length;
   const previewMember = inAudience.find(({ id }) => id === previewId) ?? inAudience[0] ?? null;
   const unknownFields = readUnknownFields(`${subject}\n${body}`);
   const values = { fullName: previewMember?.name ?? null, company: previewMember?.company ?? null, community };
   const preview = renderAnnouncementText({ subject, body }, values, "(their own link to turn these off)");
-  const audienceBody = audienceKind === ANNOUNCEMENT_AUDIENCES.cohort ? { audience: ANNOUNCEMENT_AUDIENCES.cohort, cohort } : { audience: ANNOUNCEMENT_AUDIENCES.everyone };
 
   const test = useMutation({ mutationFn: () => sendAnnouncementTestRequest({ subject, body, memberId: previewMember?.id ?? "" }) });
   const send = useMutation({
-    mutationFn: () => sendAnnouncementRequest({ sendKey, subject, body, ...audienceBody }),
+    mutationFn: () => sendAnnouncementRequest({ sendKey, subject, body, ...audience }),
     onSuccess: (sent) => {
       setLastSent(sent);
       setIsConfirming(false);
@@ -182,6 +191,8 @@ export function AnnouncementComposer({ members, cohorts, community, adminId, isE
             <p className="fh-label">Who gets it</p>
             <SegmentedControl
               label="Who gets it"
+              // Four audiences don't fit a phone's width on one line: they wrap.
+              className="max-w-full flex-wrap"
               segments={AUDIENCE_SEGMENTS}
               value={audienceKind}
               onChange={(value) => {
@@ -211,7 +222,7 @@ export function AnnouncementComposer({ members, cohorts, community, adminId, isE
           <p className="fh-hint" role="status">
             {blockReason ??
               `${describeCount(wantedCount)} will get the email${inAudience.length > wantedCount ? ` (${inAudience.length - wantedCount} turned announcements off)` : ""}.${
-                willPost ? " It's also pinned at the top of the feed." : audienceKind === ANNOUNCEMENT_AUDIENCES.cohort ? " Email only: the feed is shared by everyone." : ""
+                willPost ? " It's also pinned at the top of the feed." : audienceKind !== ANNOUNCEMENT_AUDIENCES.everyone ? " Email only: the feed is shared by everyone." : ""
               }`}
           </p>
 

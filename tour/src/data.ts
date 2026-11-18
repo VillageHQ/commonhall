@@ -339,6 +339,7 @@ export const ANNOUNCEMENT_MEMBERS: ComposerMember[] = [ADMIN, ...DEMO_PEOPLE.fil
   name: member.name,
   company: member.company,
   cohort: member.cohort,
+  communityRole: readCommunityRole(DEMO_COMMUNITY_ROLES[member.key]?.role ?? "") ?? "founder",
   isWanted: member.key !== "kwame.asante",
 }));
 

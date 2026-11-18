@@ -10,8 +10,14 @@ Admin console › **Announcements** (its own sidebar item, Megaphone; on a phone
   case and spacing, doubled braces count as one. A missing name reads "there" in an email and "everyone" in the feed
   post; a missing company reads "your company". Anything else in braces is not a field: the page warns, and it is left
   out. A member never sees a raw `{...}`.
-- **Who gets it:** Everyone, or One cohort (the cohorts members have, matched as a whole value ignoring case, like the
-  directory's filter). The line under it counts who will get the email and how many turned announcements off.
+- **Who gets it:** Everyone, Founders, Mentors and experts, or One cohort. Founders and "mentors and experts" go by
+  the community role (`member_profile.community_role`, from mentors-calls): founders are role `founder` (a member with
+  no profile row counts as one, like the console's member list); mentors and experts are `mentor`, `expert`,
+  `advisor` and `entrepreneur_in_residence` (`EXPERT_ROLES`, the directory's view); the fund team is in neither. A
+  cohort is one members have, matched as a whole value ignoring case, like the directory's filter. One function,
+  `isInAudience` in `contract-announcements.ts`, decides who is in for the page (count, preview) and the send. The
+  line under it counts who will get the email and how many turned announcements off. On a phone the four buttons
+  wrap to two rows.
 - **Preview as:** any member in the audience (the admin first); the email exactly as they get it.
 - **Send a test to me:** the email filled in as the previewed member, to the admin's own address, at once, subject
   `[Test] …` (kind `email_test`, so it arrives even when the admin turned announcements off).
@@ -32,20 +38,17 @@ One transaction (`withAdminTransaction`): the `announcement` row, one outbox ema
 - **Unsubscribe:** the email's own line "Stop announcement emails: <link>" (the outbox puts the member's unsubscribe
   page where `[[unsubscribe-url]]` is) and the one-click `List-Unsubscribe` headers, like every topic email. Members
   also have "Announcements from the team" in Email settings (`/me/email`).
-- **Feed post:** only for Everyone, and only while the feed is on (cohort sends are email only: the feed is shared).
+- **Feed post:** only for Everyone, and only while the feed is on (founders, mentors-and-experts and cohort sends are email only: the feed is shared).
   Type `announcement` (members can't choose it, or turn a post into one), pinned at once and shown with "From the
   team". With three posts pinned, the oldest pin makes room. `createAnnouncementPostWithin` in `feed/service.ts`.
 
 ## Data
 `announcement` (in `admin/schema.ts`): subject and body as written (fields unfilled), audience, cohort, queued count,
-post id, sender id and name, sent time. Migration `0038`.
+post id, sender id and name, sent time. Migration `0038`; `0040` lets the audience be `founders` or `experts`.
 
 ## Not yet
-- **Audiences "Founders" and "Mentors and experts"** need the community role from mentors-calls, not merged when this
-  was built. TODO: after it merges, read its spec on main for the field name, add the audiences to
-  `ANNOUNCEMENT_AUDIENCES` (and the `announcement_audience_known` check), `isInAudience` and the page's segments.
 - Scheduling, open or click tracking, Slack or Discord posting (out of scope in the spec).
 
 ## Tests
-`src/modules/admin/announcements.test.ts` (fields, opt-outs, sent once, cohort, empty audience, too long, admin only,
+`src/modules/admin/announcements.test.ts` (fields, opt-outs, sent once, cohort, founders and mentors-and-experts, empty audience, too long, admin only,
 one-click headers through a fake Resend); `src/shell/navigation*.test.ts` (the menu item).

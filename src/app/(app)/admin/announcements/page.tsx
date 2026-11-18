@@ -19,8 +19,14 @@ import { feedManifest } from "@/modules/feed/manifest";
 
 export const metadata: Metadata = { title: "Announcements" };
 
+const SENT_AUDIENCE_LABELS: Record<string, string> = {
+  [ANNOUNCEMENT_AUDIENCES.everyone]: "Everyone",
+  [ANNOUNCEMENT_AUDIENCES.founders]: "Founders",
+  [ANNOUNCEMENT_AUDIENCES.experts]: "Mentors and experts",
+};
+
 function describeAudience({ audience, cohort }: SentAnnouncement) {
-  return audience === ANNOUNCEMENT_AUDIENCES.cohort ? `Cohort: ${cohort}` : "Everyone";
+  return audience === ANNOUNCEMENT_AUDIENCES.cohort ? `Cohort: ${cohort}` : (SENT_AUDIENCE_LABELS[audience] ?? "Everyone");
 }
 
 function SentList({ sent }: { sent: readonly SentAnnouncement[] }) {
@@ -71,9 +77,9 @@ export default modulePage(adminManifest, async function AdminAnnouncementsPage()
   ]);
   return (
     <>
-      <PageHeader title="Announcements" description={`Tell the whole community, or one cohort, something from the ${branding.name} team. One email each, and a pinned post in the feed.`} />
+      <PageHeader title="Announcements" description={`Tell the whole community, its founders, its mentors and experts, or one cohort something from the ${branding.name} team. One email each, and a pinned post in the feed.`} />
       <AnnouncementComposer
-        members={members.map(({ id, name, company, cohort, isWanted }) => ({ id, name, company, cohort, isWanted }))}
+        members={members.map(({ id, name, company, cohort, communityRole, isWanted }) => ({ id, name, company, cohort, communityRole, isWanted }))}
         cohorts={readCohortChoices(members)}
         community={branding.name}
         adminId={admin.id}

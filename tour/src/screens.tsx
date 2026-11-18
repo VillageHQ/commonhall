@@ -195,14 +195,20 @@ function CandidatesPage() {
 }
 
 // src/app/(app)/admin/announcements/page.tsx
+const SENT_AUDIENCE_LABELS: Record<string, string> = {
+  [ANNOUNCEMENT_AUDIENCES.everyone]: "Everyone",
+  [ANNOUNCEMENT_AUDIENCES.founders]: "Founders",
+  [ANNOUNCEMENT_AUDIENCES.experts]: "Mentors and experts",
+};
+
 function describeAudience({ audience, cohort }: SentAnnouncement) {
-  return audience === ANNOUNCEMENT_AUDIENCES.cohort ? `Cohort: ${cohort}` : "Everyone";
+  return audience === ANNOUNCEMENT_AUDIENCES.cohort ? `Cohort: ${cohort}` : (SENT_AUDIENCE_LABELS[audience] ?? "Everyone");
 }
 
 function AnnouncementsPage() {
   return (
     <>
-      <PageHeader title="Announcements" description={`Tell the whole community, or one cohort, something from the ${COMMUNITY_NAME} team. One email each, and a pinned post in the feed.`} />
+      <PageHeader title="Announcements" description={`Tell the whole community, its founders, its mentors and experts, or one cohort something from the ${COMMUNITY_NAME} team. One email each, and a pinned post in the feed.`} />
       <AnnouncementComposer members={ANNOUNCEMENT_MEMBERS} cohorts={ANNOUNCEMENT_COHORTS} community={COMMUNITY_NAME} adminId={ANNOUNCEMENT_MEMBERS[0]!.id} isEmailOn isFeedOn />
       <section className="mt-8" aria-labelledby="sent-heading">
         <h2 id="sent-heading" className="fh-h2 mb-3">
