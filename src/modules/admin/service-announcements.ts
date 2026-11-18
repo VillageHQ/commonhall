@@ -54,9 +54,9 @@ function readFieldValues(member: Pick<AnnouncementRecipient, "name" | "company">
   return { fullName: member.name, company: member.company, community };
 }
 
-// The feed post is one for everyone, so its fields take the plain words ("Hi there").
+// The feed post is one for everyone, so its fields take the plain words ("Hi everyone", "your company").
 export function renderAnnouncementPost({ subject, body }: Message, community: string) {
-  const values = { fullName: null, company: null, community };
+  const values = { fullName: null, company: null, community, nameFallback: "everyone" };
   return `${toSingleLine(fillAnnouncementFields(subject, values))}\n${fillAnnouncementFields(body, values)}`;
 }
 

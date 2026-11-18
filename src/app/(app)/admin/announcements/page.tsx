@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 
 import { PageHeader } from "@/components/page-header";
-import { requireAdmin } from "@/platform/auth/session";
+import { isAdminMember } from "@/platform/auth/roles";
+import { requireMember } from "@/platform/auth/session";
 import { readBranding } from "@/platform/branding/branding";
 import { getDatabase } from "@/platform/database/client";
 import { readResendConfig } from "@/platform/email/resend";
@@ -57,7 +59,9 @@ function SentList({ sent }: { sent: readonly SentAnnouncement[] }) {
 
 // Admin › Announcements (under Asks & updates): tell the community something by email, and pin it in the feed.
 export default modulePage(adminManifest, async function AdminAnnouncementsPage() {
-  const admin = await requireAdmin();
+  // Only admins: a member gets a real 404, not a redirect that hints the page exists.
+  const admin = await requireMember();
+  if (!isAdminMember(admin)) notFound();
   const database = getDatabase();
   const [members, sent, branding, isFeedOn] = await Promise.all([
     readAnnouncementMembers(database),

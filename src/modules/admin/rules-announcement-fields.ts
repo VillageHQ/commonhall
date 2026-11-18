@@ -7,7 +7,8 @@ export const ANNOUNCEMENT_FIELDS = {
   community: "{community}",
 } as const;
 
-export type AnnouncementFieldValues = { fullName: string | null; company: string | null; community: string };
+// `nameFallback` is the word for a missing name: "there" in a member's email ("Hi there"), "everyone" in the feed.
+export type AnnouncementFieldValues = { fullName: string | null; company: string | null; community: string; nameFallback?: string };
 
 const FIELD_PATTERN = /\{([^{}\n]{0,40})\}/g;
 const FALLBACKS = { name: "there", company: "your company" } as const;
@@ -20,16 +21,16 @@ function readFirstWord(name: string) {
   return name.trim().split(/\s+/)[0] ?? "";
 }
 
-function readValue(key: string, { fullName, company, community }: AnnouncementFieldValues): string | null {
+function readValue(key: string, { fullName, company, community, nameFallback = FALLBACKS.name }: AnnouncementFieldValues): string | null {
   const name = fullName?.trim() || null;
   switch (key) {
     case "first name":
     case "firstname":
-      return (name && readFirstWord(name)) || FALLBACKS.name;
+      return (name && readFirstWord(name)) || nameFallback;
     case "full name":
     case "fullname":
     case "name":
-      return name ?? FALLBACKS.name;
+      return name ?? nameFallback;
     case "company":
       return company?.trim() || FALLBACKS.company;
     case "community":

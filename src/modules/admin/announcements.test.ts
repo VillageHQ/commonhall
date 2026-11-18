@@ -123,7 +123,7 @@ describe("announcements", () => {
     const [pinned] = await database.select().from(post);
     expect(pinned).toMatchObject({ type: POST_TYPES.announcement, authorId: admin.userId });
     expect(pinned?.pinnedAt).not.toBeNull();
-    expect(pinned?.body).toMatch(/^Demo day, there\nHi there at your company,/);
+    expect(pinned?.body).toMatch(/^Demo day, everyone\nHi everyone at your company,/);
 
     const [audit] = await database.select().from(adminAuditEntry).where(eq(adminAuditEntry.action, AUDIT_ACTIONS.announcementSent));
     expect(audit?.detail).toBe("“Demo day, {first name}” to everyone: 4 emails, pinned in the feed");

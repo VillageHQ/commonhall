@@ -1,0 +1,13 @@
+demo-day emails: 21 others: Priya, you could help with this one | Ravi, that’s everything this week | Julia, that’s everything this week | Sam, you could help with these 2 | No answer on your intro to Alex
+with raw {..}: 0
+one-click on all real ones: true
+Demo day is on 4 December, Felix
+Hi Felix,
+
+The Northwind Founders demo day is on 4 December at 5pm. Bring someone from Atelier Bleu if you like.
+
+Reply to Maya with your table size.
+
+Stop announcement emails: http://localhost:9702/unsubscribe?token=OWEzZmU0ZDgtODg5My00MjIwLTgyNzktYzM5MjliNmIxZGQyOmFubm91bmNlbWVudHM.NqR9yCGrhOEbMPAASk9XZ15DKlsQMX3vnRPVIM2Sf6Q
+
+Sent by Northwind Founders via its member portal.
