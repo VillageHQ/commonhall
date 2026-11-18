@@ -36,5 +36,14 @@ the pure rules (`rules-candidates.ts`, `toAskDraftHref`) and only the type of `S
 - **Scroll track:** `main.tsx` sets `--tour-steps` on `#demo-root`; the track is `100vh × (1 + steps × 0.6)` (5.8
   window-heights for eight; it was 4 for five).
 
+- **Centred:** `.demo` has auto side margins, so the stage sits in the middle of the window sideways too.
+- **The announcements copy** follows main's role audiences (Everyone, Founders, Mentors and experts, One cohort):
+  `ANNOUNCEMENT_MEMBERS` carry each demo person's `communityRole`.
+
+## Known limits
+- The app box is `inert` (landing-tour's choice: visitors' clicks and focus stay out), so its text can't be selected.
+- Scrolling gives each step 0.6 of a window height; the Announce step plays about 16 s, so a quick scroller may move on
+  before the Send press.
+
 ## Checking it
-`node .ai/features/landing-tour/reports/check-tour.mjs <out dir>` checks all eight. Proof: `reports/`.
+`node .ai/features/landing-tour/reports/check-tour.mjs <out dir>` checks all eight, and the stage's centre both ways. Proof: `reports/`.

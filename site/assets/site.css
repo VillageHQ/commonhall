@@ -201,7 +201,7 @@ h2 { font: 500 40px/1.12 var(--serif); letter-spacing: -.4px; max-width: 20em; t
    is the app's own markup in a shadow root, scaled to the frame. With JavaScript and motion allowed on a roomy window
    the stage pins in the middle of the window and the scroll picks the step; elsewhere the tour plays by itself, and
    with reduced motion it stays still and the tabs change it. Without JavaScript the still of step 1 shows. */
-.demo { margin-top: 40px; max-width: 1080px; }
+.demo { margin: 40px auto 0; max-width: 1080px; }
 .demo-stage { display: grid; gap: 14px; }
 .demo-bar { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .demo-tabs { display: flex; gap: 6px; flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; padding: 2px; }
