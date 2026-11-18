@@ -434,3 +434,29 @@ export const DEMO_SEARCH_PEOPLE: readonly DemoSearchPerson[] = [
   { slug: "tom-becker-demo", name: "Tom Becker", title: "Partner", company: "Greenline Climate Fund", location: "Berlin", warmth: "knows", via: "ada.okafor", keywords: "seed investor investors climate vc fund" },
   { slug: "jonas-lind-demo", name: "Jonas Lind", title: "Angel investor", company: "Lind Family Office", location: "Stockholm", warmth: "met", via: "ada.okafor", keywords: "seed investor investors angel" },
 ];
+
+// Community roles and booking links for the directory's "Experts and mentors" and "Book a call". The links are at
+// example.com, so they open nothing real. Everyone not listed is a founder.
+export const DEMO_COMMUNITY_ROLES: Readonly<Record<string, { role: string; isIntroducedOnly?: boolean; hasBookingLink?: boolean }>> = {
+  "maya.ortiz": { role: "fund_team" },
+  "julia.weber": { role: "fund_team", hasBookingLink: true },
+  "grace.kim": { role: "mentor", hasBookingLink: true },
+  "oliver.grant": { role: "advisor", hasBookingLink: true },
+  "ines.costa": { role: "expert", hasBookingLink: true, isIntroducedOnly: true },
+  "lena.fischer": { role: "entrepreneur_in_residence", hasBookingLink: true },
+  "marcus.webb": { role: "expert" },
+};
+
+export function toDemoBookingUrl(key: string) {
+  return `https://cal.example.com/${key.replace(".", "-")}`;
+}
+
+// Past "Book a call" clicks, so the admin's Calls page has numbers: [who asked, whom, days ago].
+export const DEMO_CALL_REQUESTS: readonly (readonly [string, string, number])[] = [
+  ["sam.lee", "grace.kim", 2],
+  ["kwame.asante", "grace.kim", 5],
+  ["priya.shah", "oliver.grant", 9],
+  ["amara.diallo", "lena.fischer", 12],
+  ["elena.rossi", "grace.kim", 20],
+  ["diego.alvarez", "oliver.grant", 33],
+];

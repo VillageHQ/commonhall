@@ -49,14 +49,19 @@ describe("the card form", () => {
 
 describe("the directory URL", () => {
   it("round-trips the filters", () => {
-    const filters = { search: "ada lovelace", tag: "fintech", stage: "Seed", sector: "Climate", city: "Lagos", cohort: "Fund II", updatedWithinDays: 30 as const, hiring: true, page: 3 };
+    const filters = { search: "ada lovelace", tag: "fintech", stage: "Seed", sector: "Climate", city: "Lagos", cohort: "Fund II", updatedWithinDays: 30 as const, hiring: true, isExpertsView: true, communityRole: "mentor" as const, page: 3 };
     const queryString = toDirectoryQueryString(filters);
 
     expect(parseDirectoryFilters(Object.fromEntries(new URLSearchParams(queryString)))).toEqual(filters);
   });
 
   it("stays clean with no filters", () => {
-    expect(toDirectoryQueryString({ search: "", tag: "", stage: "", sector: "", city: "", cohort: "", updatedWithinDays: 0, hiring: false, page: 1 })).toBe("");
+    expect(toDirectoryQueryString({ search: "", tag: "", stage: "", sector: "", city: "", cohort: "", updatedWithinDays: 0, hiring: false, isExpertsView: false, communityRole: "", page: 1 })).toBe("");
+  });
+
+  it("drops a role it doesn't know", () => {
+    expect(parseDirectoryFilters({ view: "experts", role: "wizard" })).toMatchObject({ isExpertsView: true, communityRole: "" });
+    expect(parseDirectoryFilters({ view: "experts", role: "fund_team" })).toMatchObject({ communityRole: "" });
   });
 
   it("falls back to page one for a nonsense page", () => {

@@ -7,6 +7,7 @@ Core. Always on. It sits on top of the features it manages, so it may import the
 - `reads-*.ts`: the member list, audit log and community health.
 - Partner report (Commonhall's document): `reads-report-stats.ts` reads it once per period; `report-stats.ts` makes the page's numbers, the CSV and the email text; `service-partner-report.ts` sends it and marks it shared.
 - Intro log: `reads-intro-log.ts`. Admins see who asked whom (the owner's decision), never the note or reason.
+- Calls requested (`/admin/calls`, Home's sheet): `reads-calls.ts` reads every "Book a call" once; `calls.ts` counts per person and week and makes the CSV.
 - `schema.ts`: `content_report`, `member_removal` and `announcement`.
 - Set up › Mail: `reads-mail.ts` reads it (also for Settings), `mail-checks.ts` makes the checklist rows, `service-mail.ts` checks DNS and saves its settings, `components/mail-forms.tsx` the form. DNS lookups (`src/platform/email/dns-check.ts`) take the resolver as an argument: tests never touch DNS.
 - `contract-modules.ts`, `queries-modules.ts`, `components/feature-screen.tsx`: the features screen. `src/shell/module-settings.ts` holds its logic, because it needs the registry.

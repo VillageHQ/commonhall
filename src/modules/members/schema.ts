@@ -4,11 +4,13 @@ import { check, index, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid, 
 import { INVITE_EMAIL_STATUSES } from "./contract-invite-state.ts";
 import { MAXIMUM_AVATAR_BYTES } from "./contract-avatar.ts";
 import { CHOICE_PLACES, MESSAGE_POLICIES } from "./contract-privacy.ts";
+import { BOOKING_VISIBILITIES, COMMUNITY_ROLES, COMMUNITY_ROLE_VALUES } from "./contract-community-roles.ts";
 import { user } from "../../platform/database/auth-schema.ts";
 import { bytea } from "../../platform/database/bytea.ts";
 import { emailOutbox } from "../../platform/email/schema.ts";
 
 const MILLISECOND_PRECISION = 3;
+const communityRoleList = sql.raw(COMMUNITY_ROLE_VALUES.map((role) => `'${role}'`).join(", "));
 
 export const invite = pgTable(
   "invite",
@@ -19,6 +21,8 @@ export const invite = pgTable(
     inviteeName: text("invitee_name"),
     company: text("company"),
     cohort: text("cohort"),
+    // From the CSV's optional "community role" column; copied onto the profile when the invite is accepted.
+    communityRole: text("community_role"),
     tokenHash: text("token_hash").notNull().unique(),
     invitedByUserId: text("invited_by_user_id").references(() => user.id, { onDelete: "set null" }),
     invitedByName: text("invited_by_name").notNull(),
@@ -32,6 +36,7 @@ export const invite = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
+    check("invite_community_role", sql`${table.communityRole} is null or ${table.communityRole} in (${communityRoleList})`),
     uniqueIndex("invite_open_email_unique")
       .on(table.email)
       .where(sql`${table.acceptedAt} is null and ${table.revokedAt} is null`),
@@ -57,10 +62,32 @@ export const memberProfile = pgTable("member_profile", {
   cohort: text("cohort"),
   // Off by default. On, the member's name may appear among the top connectors in the admin's partner report.
   creditInReports: boolean("credit_in_reports").notNull().default(false),
+  // Set by an admin only: founder (the default), mentor, expert, advisor, entrepreneur in residence or fund team.
+  communityRole: text("community_role").notNull().default(COMMUNITY_ROLES.founder),
+  // The member's own booking page (https only), and who sees it: the community, or only people whose intro they accepted.
+  bookingUrl: text("booking_url"),
+  bookingVisibility: text("booking_visibility").notNull().default(BOOKING_VISIBILITIES.community),
   cardStepDoneAt: timestamp("card_step_done_at", { withTimezone: true }),
   onboardingCompletedAt: timestamp("onboarding_completed_at", { withTimezone: true }),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
-});
+}, (table) => [
+  check("member_profile_community_role", sql`${table.communityRole} in (${communityRoleList})`),
+  check("member_profile_booking_visibility", sql`${table.bookingVisibility} in ('${sql.raw(BOOKING_VISIBILITIES.community)}', '${sql.raw(BOOKING_VISIBILITIES.introduced)}')`),
+  check("member_profile_booking_url_https", sql`${table.bookingUrl} is null or ${table.bookingUrl} like 'https://%'`),
+]);
+
+// One "Book a call" click: who asked whom, and when. The admin counts these (no confirmed bookings are synced).
+// A deleted member's rows stay, so past calls still count; their user row is then the "Deleted member" placeholder.
+export const callRequest = pgTable(
+  "call_request",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    requesterId: text("requester_id").references(() => user.id, { onDelete: "set null" }),
+    memberId: text("member_id").references(() => user.id, { onDelete: "set null" }),
+    createdAt: timestamp("created_at", { withTimezone: true, precision: MILLISECOND_PRECISION }).notNull().defaultNow(),
+  },
+  (table) => [index("call_request_created_at_idx").on(table.createdAt), index("call_request_member_id_idx").on(table.memberId)],
+);
 
 export const memberTag = pgTable(
   "member_tag",

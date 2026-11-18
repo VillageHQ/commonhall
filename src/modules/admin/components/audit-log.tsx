@@ -44,6 +44,7 @@ const reportedThing = (detail: string) => REPORT_TARGET_NAMES[detail] ?? "messag
 // Commonhall does.
 const ACTION_LINES: Partial<Record<AuditAction, (facts: ActionFacts) => ActionLine>> = {
   [AUDIT_ACTIONS.rolePromoted]: ({ target }) => ({ words: "Made an admin", target }),
+  [AUDIT_ACTIONS.communityRoleChanged]: ({ target, detail }) => ({ words: `Community role set to ${detail}`, target }),
   [AUDIT_ACTIONS.roleDemoted]: ({ target }) => ({ words: "No longer an admin", target }),
   [AUDIT_ACTIONS.memberRemoved]: ({ target, detail }) => ({ words: detail ? `Removed from the community. ${detail}` : "Removed from the community", target }),
   [AUDIT_ACTIONS.memberUnbanned]: ({ target }) => ({ words: "Let back in", target }),

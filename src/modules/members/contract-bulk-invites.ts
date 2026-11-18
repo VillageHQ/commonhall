@@ -3,6 +3,7 @@ import { z } from "zod";
 import { MAXIMUM_NAME_LENGTH } from "../../platform/auth/member-name.ts";
 import { removeBidiControls, removeNullBytes } from "../../platform/text/safe-text.ts";
 import { createInviteBodySchema } from "./contract-invites.ts";
+import { COMMUNITY_ROLE_LABELS, COMMUNITY_ROLE_VALUES, readCommunityRole, type CommunityRole } from "./contract-community-roles.ts";
 
 // Ported from Commonhall's invite-list and member-CSV readers: the same formats and limits, Community's style.
 export const MAXIMUM_LISTED_INVITES = 500;
@@ -14,7 +15,7 @@ const MAXIMUM_QUOTED_LINE_LENGTH = 80;
 export const BULK_INVITE_FORMATS = { list: "list", csv: "csv" } as const;
 export type BulkInviteFormat = (typeof BULK_INVITE_FORMATS)[keyof typeof BULK_INVITE_FORMATS];
 
-export type BulkPerson = { line: number; email: string; name: string | null; company: string | null; cohort: string | null };
+export type BulkPerson = { line: number; email: string; name: string | null; company: string | null; cohort: string | null; communityRole?: CommunityRole | null };
 export type BulkProblem = { line: number; text: string; why: string };
 export type BulkSkip = { line: number; email: string; why: string };
 export type ParsedBulkInvites = { people: BulkPerson[]; problems: BulkProblem[]; skipped: BulkSkip[] };
@@ -167,10 +168,14 @@ const CSV_HEADERS = {
   email: ["email", "e-mail", "email address", "work email"],
   company: ["company", "organisation", "organization", "startup"],
   cohort: ["cohort", "batch", "class", "fund", "year"],
+  // Optional, never by position: "role" alone often means a job title, so it isn't read as one.
+  communityRole: ["community role", "community_role", "member type", "member_type"],
 } as const;
 
+const KNOWN_ROLES = COMMUNITY_ROLE_VALUES.map((role) => COMMUNITY_ROLE_LABELS[role]).join(", ");
+
 type CsvColumn = keyof typeof CSV_HEADERS;
-const POSITIONAL_COLUMNS: Record<CsvColumn, number> = { name: 0, email: 1, company: 2, cohort: 3 };
+const POSITIONAL_COLUMNS: Partial<Record<CsvColumn, number>> = { name: 0, email: 1, company: 2, cohort: 3 };
 
 function readColumns(header: string[]) {
   const names = header.map((cell) => cell.trim().toLowerCase());
@@ -182,7 +187,8 @@ function readColumns(header: string[]) {
   return columns.email === undefined ? null : columns;
 }
 
-// Columns name, email, company, cohort in any order under a header row; without one, in that order.
+// Columns name, email, company, cohort (and an optional community role) in any order under a header row; without
+// one, name, email, company, cohort in that order.
 export function parseInvitesCsv(text: string): ParsedBulkInvites {
   const collector = new PeopleCollector();
   const { rows, unclosedQuoteLine } = parseCsvRows(text);
@@ -216,12 +222,19 @@ export function parseInvitesCsv(text: string): ParsedBulkInvites {
       collector.reject(line, rawEmail, "This isn't a valid email address.");
       continue;
     }
+    const roleCell = toSafeCell(read("communityRole"));
+    const communityRole = roleCell ? readCommunityRole(roleCell) : null;
+    if (roleCell && !communityRole) {
+      collector.reject(line, roleCell, `This community role isn't one we know. Use one of: ${KNOWN_ROLES}, or leave it empty.`);
+      continue;
+    }
     collector.add({
       line,
       email,
       name: toOptionalCell(read("name"), MAXIMUM_NAME_LENGTH),
       company: toOptionalCell(read("company")),
       cohort: toOptionalCell(read("cohort")),
+      ...(communityRole ? { communityRole } : {}),
     });
   }
   return collector.result;

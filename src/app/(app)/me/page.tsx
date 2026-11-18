@@ -27,6 +27,8 @@ import { LookupQuestionCard } from "@/modules/members/components/lookup-question
 import { OWN_FIELD_KEYS } from "@/modules/members/contract-own-words";
 import { OwnWordsSheet, type OwnField } from "@/modules/members/components/own-words-sheet";
 import { PasswordCard } from "@/modules/members/components/password-card";
+import { BookingSheet } from "@/modules/members/components/booking-sheet";
+import { readOwnBooking } from "@/modules/members/service-booking";
 import { PrivacySheet } from "@/modules/members/components/privacy-sheet";
 import { ProfileHead } from "@/modules/members/components/profile-head";
 import { introsManifest } from "@/modules/intros/manifest";
@@ -97,7 +99,7 @@ export default modulePage(membersManifest, async function MyProfilePage() {
   const profile = await readMemberProfile(database, member.id);
   if (!profile) notFound();
 
-  const [community, lookup, lines, privacy, isIntrosOn, isNetworkOn, isJobBoardOn, memberHasPassword] = await Promise.all([
+  const [community, lookup, lines, privacy, isIntrosOn, isNetworkOn, isJobBoardOn, memberHasPassword, booking] = await Promise.all([
     readBrandingForPage(),
     readLookupState(database, member.id),
     readFilledLines(database, member.id),
@@ -106,6 +108,7 @@ export default modulePage(membersManifest, async function MyProfilePage() {
     isModuleEnabled(database, networkManifest),
     isModuleEnabled(database, jobBoardManifest),
     hasPassword(database, member.id),
+    readOwnBooking(database, member.id),
   ]);
   const [networkState, showsLeaveCard, jobSources, isBoardPublic] = await Promise.all([
     readNetworkState(database, member.id, isNetworkOn),
@@ -162,6 +165,7 @@ export default modulePage(membersManifest, async function MyProfilePage() {
         </div>
         <div className="fh-stack">
           <PrivacySheet communityName={community.name} isHidden={privacy.isHidden} acceptsIntroAsks={isIntrosOn ? privacy.acceptsIntroAsks !== false : null} />
+          <BookingSheet communityName={community.name} bookingUrl={booking.bookingUrl} bookingVisibility={booking.bookingVisibility} />
           <MyNetworkSheet state={networkState} communityName={community.name} />
           <PasswordCard hasPassword={memberHasPassword} isLinkOn={readResendConfig(process.env) !== null} />
           {showsLeaveCard ? <LeaveGroupCard /> : null}

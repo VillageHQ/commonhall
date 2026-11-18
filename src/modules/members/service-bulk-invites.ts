@@ -36,6 +36,7 @@ function toInviteValues(person: BulkPerson, inviter: Inviter, token: string) {
     inviteeName: person.name,
     company: person.company,
     cohort: person.cohort,
+    communityRole: person.communityRole ?? null,
     tokenHash: hashInviteToken(token),
     invitedByUserId: inviter.id,
     invitedByName: inviter.name,

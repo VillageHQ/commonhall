@@ -22,6 +22,7 @@ import { readInvites } from "../modules/members/service-invites.ts";
 import { networkManifest } from "../modules/network/manifest.ts";
 import { readIntroLog, type IntroLogRow } from "../modules/admin/reads-intro-log.ts";
 import { readAsksFigures } from "./admin-asks.ts";
+import { readCalls } from "../modules/admin/reads-calls.ts";
 import { readEnabledIds } from "./enabled-modules.ts";
 
 // The console's Home (Commonhall's /admin): every intro counted since launch, the members, the latest of the intro
@@ -167,7 +168,7 @@ export async function readConsoleHome(database: Database, environment: Environme
   const isIntrosOn = enabledIds.has(introsManifest.id);
   const isNetworkOn = enabledIds.has(networkManifest.id);
   const isAsksOn = enabledIds.has(asksManifest.id);
-  const [log, members, network, lookups, asks, mail] = await Promise.all([
+  const [log, members, network, lookups, asks, mail, calls] = await Promise.all([
     isIntrosOn ? readIntroLog(database) : [],
     readMemberCounts(database, now),
     isNetworkOn ? readNetworkCounts(database, now) : null,
@@ -175,6 +176,7 @@ export async function readConsoleHome(database: Database, environment: Environme
     // The same figures as Asks & digest, from the one read, so the two pages agree.
     isAsksOn ? readAsksFigures(database, now) : null,
     readMail(database, environment),
+    readCalls(database, now),
   ]);
   return {
     isIntrosOn,
@@ -185,6 +187,8 @@ export async function readConsoleHome(database: Database, environment: Environme
     lookups,
     asks,
     mail,
+    // "Book a call" clicks: the same read as the Calls page, so the two agree.
+    calls: { total: calls.total, lastThirtyDays: calls.lastThirtyDays },
   };
 }
 

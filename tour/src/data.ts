@@ -3,7 +3,8 @@ import type { AskAllowance, AskMember } from "@/modules/asks/contract";
 import type { Directory, DirectoryMember } from "@/modules/members/contract-profile";
 import type { NetworkSearchResult } from "@/modules/network/contract";
 import type { ConsoleHome } from "@/shell/console-home";
-import { DEMO_COMMUNITY, DEMO_OUTSIDERS, DEMO_PEOPLE, type DemoPerson } from "@/platform/demo/people";
+import { DEMO_COMMUNITY, DEMO_COMMUNITY_ROLES, DEMO_OUTSIDERS, DEMO_PEOPLE, type DemoPerson } from "@/platform/demo/people";
+import { readCommunityRole } from "@/modules/members/contract-community-roles";
 import { toPictureSlug } from "@/platform/demo/pictures";
 
 // The tour's made-up community: the demo's own people (src/platform/demo/people.ts), their generated portraits and
@@ -168,6 +169,9 @@ function directoryMember(member: DemoPerson): DirectoryMember {
     companyLogoUrl: logoUrl(member.company),
     hiringJobCount: member.key === "ravi.menon" ? 2 : member.key === "amara.diallo" ? 1 : 0,
     tags: [...member.tags],
+    communityRole: readCommunityRole(DEMO_COMMUNITY_ROLES[member.key]?.role ?? "") ?? "founder",
+    // The tour shows no booking link yet (tour-new-steps adds the Book a call step).
+    bookingUrl: null,
   };
 }
 
@@ -222,4 +226,6 @@ export const CONSOLE_HOME: ConsoleHome = {
   lookups: { isConfigured: true, used: 1240, cap: 7500, usedPercent: 17, pace: 2100, search: 610, paths: 540, fillIn: 90, dailyLimit: 20 },
   asks: { posted: 41, open: 3, answered: 29, medianHours: 5, withHelpers: 37, helped: 34, intros: 12, introsMade: 8, updates: 9 },
   mail: { isSet: true, isDemo: false, address: "community@example.com", domain: "example.com", sent: 20, failed: 0 },
+  // "Book a call" clicks (made up), for the console Home's Calls requested sheet.
+  calls: { total: 14, lastThirtyDays: 6 },
 };

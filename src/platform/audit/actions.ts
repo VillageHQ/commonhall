@@ -3,6 +3,8 @@
 export const AUDIT_ACTIONS = {
   rolePromoted: "role_promoted",
   roleDemoted: "role_demoted",
+  // Founder, mentor, expert, advisor, entrepreneur in residence or fund team (members' service-community-role.ts).
+  communityRoleChanged: "community_role_changed",
   memberRemoved: "member_removed",
   memberUnbanned: "member_unbanned",
   emailConfirmed: "email_confirmed",

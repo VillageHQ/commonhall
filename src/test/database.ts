@@ -12,7 +12,7 @@ import { moderationRecord } from "../modules/feed/schema.ts";
 import { instanceSettings } from "../platform/settings/schema.ts";
 import { introOptOut } from "../modules/intros/schema.ts";
 import { askTally } from "../modules/asks/schema.ts";
-import { invite } from "../modules/members/schema.ts";
+import { callRequest, invite } from "../modules/members/schema.ts";
 import { messageReport } from "../modules/messages/schema.ts";
 import { emailOutbox, emailSuppression } from "../platform/email/schema.ts";
 import { jobLease } from "../platform/jobs/schema.ts";
@@ -44,6 +44,8 @@ export async function clearDatabase(database: Database) {
   await database.delete(announcement);
   await database.delete(adminAuditEntry);
   await database.delete(invite);
+  // Its user links are "set null", so deleting users would leave the rows behind.
+  await database.delete(callRequest);
   await database.delete(introOptOut);
   await database.delete(askTally);
   await database.delete(user);

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { ASK_ANSWER_REPORT_TARGET, ASK_REPORT_TARGET } from "../asks/contract.ts";
 import { FEED_REPORT_TARGETS } from "../feed/contract.ts";
 import { MEMBER_ROLES } from "../../platform/auth/roles.ts";
+import { COMMUNITY_ROLE_VALUES } from "../members/contract-community-roles.ts";
 import { AUDIT_ACTIONS } from "../../platform/audit/actions.ts";
 import { VILLAGE_STATUSES, GROUP_DEPARTURE_OUTCOMES } from "../network/contract.ts";
 
@@ -72,6 +73,8 @@ const adminMemberSchema = z.object({
   email: z.string().nullable(),
   avatarUrl: z.string().nullable(),
   isAdmin: z.boolean(),
+  // Founder, mentor, expert, advisor, entrepreneur in residence or fund team.
+  communityRole: z.enum(COMMUNITY_ROLE_VALUES),
   joinedAt: timestampSchema,
   isEmailConfirmed: z.boolean(),
   isRemoved: z.boolean(),

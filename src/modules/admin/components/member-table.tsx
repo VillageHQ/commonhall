@@ -8,6 +8,7 @@ import { ROUTES } from "@/platform/http/routes";
 
 import { formatShortDate, readRoleAndCompany, readWhen, STATUS_PILLS, type ConsoleMember } from "../console-members";
 import { InviteResendButton } from "./invite-resend-button";
+import { COMMUNITY_ROLE_LABELS, COMMUNITY_ROLES } from "@/modules/members/contract-community-roles";
 
 // One row of Commonhall's members table (crop row-member-admin.png): avatar · name and email · role and company ·
 // when · status. A member's row opens their Manage page; an invited person's row has Resend.
@@ -30,6 +31,7 @@ function MemberRow({ member }: { member: ConsoleMember }) {
         <span>
           {member.email}
           {member.isAdmin ? " · admin" : ""}
+          {member.communityRole === COMMUNITY_ROLES.founder ? "" : ` · ${COMMUNITY_ROLE_LABELS[member.communityRole]}`}
         </span>
       </div>
       <div className="fh-c-aud">

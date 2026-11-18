@@ -1,6 +1,6 @@
 ---
 id: mentors-calls
-status: specced
+status: in-review
 waits-on: []
 size: half a day
 touches: ["src/modules/members/", "src/modules/admin/", "src/shell/", "drizzle/"]
@@ -43,6 +43,14 @@ on profiles and directory cards, call-request records, admin counts. Out: confir
 ## Verification contract
 Unit and integration tests for visibility and recording; a separate agent uses a test copy with made-up members:
 sets roles, adds links, books from the directory, checks the admin counts and the hidden-link case.
+
+## Names other parts use
+- The role field: `member_profile.community_role`, values `founder` (default), `mentor`, `expert`, `advisor`,
+  `entrepreneur_in_residence`, `fund_team`; labels and helpers in `src/modules/members/contract-community-roles.ts`
+  (`COMMUNITY_ROLES`, `COMMUNITY_ROLE_LABELS`, `EXPERT_ROLES`).
+- The directory view: `/directory?view=experts` (role filter `&role=mentor` etc.); the button carries
+  `data-testid="book-call"`, an expert card `data-testid="expert-card"`; demo people with roles and links are in
+  `src/platform/demo/people.ts` (`DEMO_COMMUNITY_ROLES`).
 
 ## Depends on / check-ins
 - announcements · needs: this part's role field name and values · owner: mentors-calls · check in: keep the names in this

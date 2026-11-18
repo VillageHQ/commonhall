@@ -15,6 +15,7 @@ import { directoryQuery } from "@/modules/members/queries-directory";
 import { membersManifest } from "@/modules/members/manifest";
 import { JOB_BOARD_PAGES } from "@/modules/job-board/contract";
 import { modulePage } from "@/platform/modules/module-page";
+import { wereIntroducedForBooking } from "@/shell/booking-access";
 import { readDirectoryJobCount, readHiringLookup } from "@/shell/directory-hiring";
 
 export const metadata: Metadata = { title: PAGE_TITLES.members };
@@ -28,11 +29,11 @@ type DirectoryPageProps = { searchParams: Promise<Record<string, string | string
 
 // Commonhall's Directory (member-directory-populated).
 export default modulePage(membersManifest, async function DirectoryPage({ searchParams }: DirectoryPageProps) {
-  await requireMember();
+  const viewer = await requireMember();
   const filters = parseDirectoryFilters(await searchParams);
   const database = getDatabase();
   const [directory, community, jobCount] = await Promise.all([
-    readDirectory(database, filters, new Date(), await readHiringLookup(database)),
+    readDirectory(database, filters, new Date(), await readHiringLookup(database), { id: viewer.id, wereIntroduced: wereIntroducedForBooking }),
     readBrandingForPage(),
     readDirectoryJobCount(database),
   ]);

@@ -75,6 +75,7 @@ const CONSOLE_PATHS: readonly (readonly [string, string])[] = [
   [ROUTES.adminHealth, CONSOLE_KEYS.report],
   [ROUTES.adminIntroLog, CONSOLE_KEYS.introLog],
   [ROUTES.adminMembers, CONSOLE_KEYS.members],
+  [ROUTES.adminCalls, CONSOLE_KEYS.members],
   [ROUTES.adminInvites, CONSOLE_KEYS.invites],
   [ASKS_ADMIN_PAGE, CONSOLE_KEYS.asks],
   [ROUTES.adminWeeklyEmail, CONSOLE_KEYS.asks],

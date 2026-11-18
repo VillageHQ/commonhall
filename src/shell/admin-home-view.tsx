@@ -259,6 +259,27 @@ function AsksSheet({ asks }: { asks: NonNullable<ConsoleHome["asks"]> }) {
   );
 }
 
+function CallsSheet({ calls }: { calls: ConsoleHome["calls"] }) {
+  return (
+    <section className="fh-sheet" data-testid="admin-home-calls">
+      <div className="fh-sheet-head">
+        <h2 className="fh-h3">Calls requested</h2>
+        <TextLink href={ROUTES.adminCalls}>Per person and week</TextLink>
+      </div>
+      <KvTiles
+        className="fh-kv-two"
+        tiles={[
+          { value: formatNumber(calls.total), label: "since launch" },
+          { value: formatNumber(calls.lastThirtyDays), label: "in the last 30 days" },
+        ]}
+      />
+      <p className="fh-small fh-muted" style={{ marginTop: 10 }}>
+        Each “Book a call” on a mentor’s or expert’s profile. The booking itself happens in their calendar.
+      </p>
+    </section>
+  );
+}
+
 function MailSheet({ mail }: { mail: ConsoleHome["mail"] }) {
   const recentState: CheckState = !mail.isSet ? "watch" : mail.failed ? "fail" : mail.sent ? "ok" : "watch";
   return (
@@ -348,6 +369,7 @@ export function AdminHomeView({ communityName, home, items }: AdminHomeViewProps
           {home.network ? <NetworkSheet network={home.network} joined={members.joined} invited={members.invited} isConfigured={home.lookups?.isConfigured ?? false} /> : null}
           {home.lookups ? <LookupsSheet lookups={home.lookups} /> : null}
           {home.asks ? <AsksSheet asks={home.asks} /> : null}
+          <CallsSheet calls={home.calls} />
           <MailSheet mail={home.mail} />
         </div>
       </div>

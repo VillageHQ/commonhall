@@ -13,6 +13,8 @@ import { companyLogoColumn, shownFaceColumns, toShownFaceUrl } from "./reads-pic
 import { FILL_IN_FIELDS } from "./contract-fill-in.ts";
 import { shownFillInColumn } from "./service-fill-in.ts";
 import { isListedMember } from "./service-privacy.ts";
+import { COMMUNITY_ROLES, EXPERT_ROLES, isCommunityRole } from "./contract-community-roles.ts";
+import { readShownBookings, type IntroducedCheck } from "./service-booking.ts";
 
 // Commonhall lists everyone on one page; a large community pages with a quiet "More".
 export const DIRECTORY_PAGE_SIZE = 60;
@@ -179,10 +181,29 @@ export function isListedInDirectory(now = new Date()) {
 
 // How many open jobs a member's company has (and the ones the member linked), from a feature above members (the job board). The directory page and
 // route pass it in while that feature is on; without it the cards show no "Hiring" and the filter is ignored.
+// A member with no profile row is a founder, the default.
+const shownCommunityRole = sql<string>`coalesce(${memberProfile.communityRole}, ${COMMUNITY_ROLES.founder})`;
+
+function matchesRoles(isExpertsView: boolean, communityRole: string) {
+  return and(
+    isExpertsView ? inArray(shownCommunityRole, [...EXPERT_ROLES]) : undefined,
+    communityRole ? eq(shownCommunityRole, communityRole) : undefined,
+  );
+}
+
+// Who looks at the list, so each card carries a booking link only when that member may see it.
+export type DirectoryViewer = { id: string; wereIntroduced: IntroducedCheck };
+
 export type HiringLookup = { jobCountColumn: (company: SQL, memberId: AnyPgColumn) => SQL<number> };
 
-export async function readDirectory(database: Database, filters: Partial<DirectoryFilters>, now = new Date(), hiring: HiringLookup | null = null): Promise<Directory> {
-  const { search, tag, stage, sector, city, cohort, updatedWithinDays, hiring: onlyHiring, page } = { ...EMPTY_DIRECTORY_FILTERS, ...filters };
+export async function readDirectory(
+  database: Database,
+  filters: Partial<DirectoryFilters>,
+  now = new Date(),
+  hiring: HiringLookup | null = null,
+  viewer: DirectoryViewer | null = null,
+): Promise<Directory> {
+  const { search, tag, stage, sector, city, cohort, updatedWithinDays, hiring: onlyHiring, isExpertsView, communityRole, page } = { ...EMPTY_DIRECTORY_FILTERS, ...filters };
   const hiringJobCount = hiring ? hiring.jobCountColumn(shownCompany, user.id) : sql<number>`0`.mapWith(Number);
   const conditions = and(
     isListedInDirectory(now),
@@ -194,6 +215,7 @@ export async function readDirectory(database: Database, filters: Partial<Directo
     matchesValue(memberProfile.cohort, cohort),
     isUpdatedWithin(updatedWithinDays, now),
     hiring && onlyHiring ? sql`${hiringJobCount} > 0` : undefined,
+    matchesRoles(isExpertsView, communityRole),
   );
   // The shown role, company and city may come from filled-in lines, so the count joins them too.
   const [counted] = await database
@@ -225,6 +247,9 @@ export async function readDirectory(database: Database, filters: Partial<Directo
       filledFaceUrl: filledFace.line.value,
       companyLogoUrl: companyLogoColumn(user.id),
       hiringJobCount,
+      communityRole: shownCommunityRole,
+      bookingUrl: memberProfile.bookingUrl,
+      bookingVisibility: memberProfile.bookingVisibility,
     })
     .from(user)
     .leftJoin(memberProfile, eq(memberProfile.userId, user.id))
@@ -238,16 +263,20 @@ export async function readDirectory(database: Database, filters: Partial<Directo
     .limit(DIRECTORY_PAGE_SIZE)
     .offset((currentPage - 1) * DIRECTORY_PAGE_SIZE);
 
-  const [tagsByMember, popularTags, memberCount, filterOptions] = await Promise.all([
+  const bookings = rows.map(({ id, bookingUrl, bookingVisibility }) => ({ ownerId: id, bookingUrl, bookingVisibility: bookingVisibility ?? "" }));
+  const [tagsByMember, popularTags, memberCount, filterOptions, shownBookings] = await Promise.all([
     readTagsByMember(database, rows.map(({ id }) => id)),
     readPopularTags(database),
     readListedMemberCount(database, now),
     readFilterOptions(database),
+    viewer ? readShownBookings(database, viewer.id, bookings, viewer.wereIntroduced) : new Map<string, string>(),
   ]);
 
   return {
-    members: rows.map(({ avatarUpdatedAt, filledFaceUrl, freshAt: freshDate, ...member }) => ({
+    members: rows.map(({ avatarUpdatedAt, filledFaceUrl, freshAt: freshDate, bookingUrl: _storedUrl, bookingVisibility: _visibility, communityRole: role, ...member }) => ({
       ...member,
+      communityRole: isCommunityRole(role) ? role : COMMUNITY_ROLES.founder,
+      bookingUrl: shownBookings.get(member.id) ?? null,
       freshAt: freshDate.toISOString(),
       avatarUrl: toShownFaceUrl(member.id, avatarUpdatedAt, filledFaceUrl),
       tags: tagsByMember.get(member.id) ?? [],

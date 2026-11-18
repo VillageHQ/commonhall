@@ -612,6 +612,8 @@ a.fh-chip{text-decoration:none}
 .fh-modrows .fh-r .fh-who b a{color:inherit}
 .fh-askkv{grid-template-columns:repeat(2,minmax(0,1fr))!important}
 .fh-askkv b{font-size:21px;line-height:26px}
+/* Two figures side by side at every width (Calls requested). */
+.fh-kv-two{grid-template-columns:repeat(2,minmax(0,1fr))!important}
 .fh-gsteps{list-style:none;margin:0 0 18px;padding:0;border-top:1px solid var(--rule)}
 .fh-gsteps li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:baseline;padding:9px 0;border-bottom:1px solid var(--rule);font-size:14px}
 .fh-gsteps .fh-k{color:var(--graphite);font-size:13px;min-width:64px}
