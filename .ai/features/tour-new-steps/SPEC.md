@@ -1,6 +1,6 @@
 ---
 id: tour-new-steps
-status: specced
+status: in-review
 waits-on: [landing-tour, announcements, mentors-calls, find-candidates]
 size: 2 hours
 touches: ["site/", "scripts/"]

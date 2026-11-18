@@ -3,13 +3,14 @@
 Approved page: [CHARTER.md](CHARTER.md). What it does: [SPEC.md](SPEC.md). The code map: `tour/AGENTS.md`.
 
 ## What the visitor sees (`#demo` on commonhall.ai)
-Five tabs (Search · Ask for an intro · Ask everyone · Directory · Intros, counted), a
+Eight tabs (Search · Ask for an intro · Ask everyone · Directory · Book a call · Find candidates · Announce · Intros
+and calls; the last four: `.ai/features/tour-new-steps/NOTES.md`), a
 Pause / Play button, the app's own screens in a frame, and one caption under it. The screens are real DOM: the app's
 React components and its CSS (`src/app/globals.css` + `parts.css`, so Newsreader, IBM Plex Sans, paper and ink), fed
 with the demo's made-up people (`src/platform/demo/people.ts`, portraits and logos from `public/demo`). A fake pointer
 types into the real fields and clicks the real links.
 
-- **Scroll mode** (motion allowed, window at least 1000 × 700): `#demo-root` gets `is-scroll` (4 window-heights tall);
+- **Scroll mode** (motion allowed, window at least 1000 × 700): `#demo-root` gets `is-scroll` (`1 + steps × 0.6` window-heights tall, from `--tour-steps`);
   `.demo-stage` is `position: sticky` with `top` set by script to `(window height − stage height) / 2`, so it pins in the
   middle (measured off by 0 px at 1280 × 800). Progress through the track picks the step; each step plays once when
   reached, and only while the frame is in view: at page load step 1 waits (`isWaitingForView`) until the visitor
@@ -28,7 +29,8 @@ types into the real fields and clicks the real links.
 
 ## How it is put together
 - **Shadow root.** `div#tour-screen` holds `<template shadowrootmode="open">` with `<link href="tour/tour.css">` and
-  `div.tour-app[inert] > div.tour-mount`. The app's CSS cannot leak into the page or the page's into the app. `inert`
+  `div.tour-app[inert] > div.tour-mount`; the script wraps the mount in `div.tour-scroll`, the box that scrolls (with the
+  pointer inside it), so the app's fixed phone tab bar stays at the bottom of `.tour-app`. The app's CSS cannot leak into the page or the page's into the app. `inert`
   keeps visitors' clicks, focus and screen readers out of the scripted screen; the captions say what it shows.
 - **Scaling.** From a 700 px wide frame up, the app is laid out at 1200 px (its desktop layout with the sidebar) and
   scaled down with `transform: scale()`; below, it is laid out at the frame's width (phone layout, scale 1).

@@ -44,10 +44,16 @@ function setUpTour() {
   const app = shadow.querySelector<HTMLElement>(".tour-app");
   const mount = shadow.querySelector<HTMLElement>(".tour-mount");
   if (!app || !mount) return;
+  // The screen scrolls inside its own box, not the app's: the app's fixed parts (the phone tab bar) belong to the app's
+  // box, and a box that scrolls carries them along with its content.
+  const scroller = document.createElement("div");
+  scroller.className = "tour-scroll";
+  app.insertBefore(scroller, mount);
+  scroller.append(mount);
   const pointer = document.createElement("div");
   pointer.className = "tour-pointer";
   pointer.setAttribute("aria-hidden", "true");
-  app.append(pointer);
+  scroller.append(pointer);
 
   const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
   const state = { step: 0, scale: 1, isPaused: false, isAutoAdvance: true, isInView: false, mode: "timer" as "timer" | "scroll" | "still", holdScrollUntil: 0, run: 0, isRunning: false, isUserPaused: false, isWaitingForView: false };
@@ -102,7 +108,7 @@ function setUpTour() {
   function open(href: string) {
     seedTourData(client);
     flushSync(() => setTourAddress(href));
-    app!.scrollTop = 0;
+    scroller.scrollTop = 0;
   }
 
   function waitForPlay() {
@@ -122,7 +128,7 @@ function setUpTour() {
     player?.cancel();
     state.isRunning = false;
     pointer.classList.remove("is-on");
-    player = new Player({ root: app!, pointer, readScale: () => state.scale, isPaused: () => state.isPaused, waitForPlay });
+    player = new Player({ root: scroller, pointer, readScale: () => state.scale, isPaused: () => state.isPaused, waitForPlay });
     return player;
   }
 
@@ -222,6 +228,8 @@ function setUpTour() {
     state.mode = mode;
     root!.classList.toggle("is-scroll", mode === "scroll");
     root!.classList.toggle("is-still", mode === "still");
+    // The scroll track grows with the steps (site.css reads it).
+    root!.style.setProperty("--tour-steps", String(TOUR_STEPS.length));
     placeStage();
     layout();
     if (!changed) return;
