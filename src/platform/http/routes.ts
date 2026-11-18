@@ -52,6 +52,7 @@ export const ROUTES = {
   // The guided start: a new admin's four steps (look, Village, their card, invites), one screen each.
   adminStart: "/admin/start",
   adminMembers: "/admin/members",
+  adminCalls: "/admin/calls",
   adminReports: "/admin/reports",
   adminAuditLog: "/admin/audit",
   adminHealth: "/admin/health",

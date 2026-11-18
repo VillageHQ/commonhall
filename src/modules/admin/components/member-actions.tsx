@@ -25,6 +25,7 @@ import {
   unbanMemberRequest,
 } from "@/modules/admin/queries-members";
 import { ReclaimAction } from "./reclaim-action";
+import { CommunityRoleAction } from "./community-role-action";
 
 export const VILLAGE_STATUS_DETAILS: Record<VillageStatus, { label: string; tone: "neutral" | "accent" | "sage" | "gold"; meaning: string }> = {
   [VILLAGE_STATUSES.notShared]: { label: "Not shared", tone: "neutral", meaning: "They haven't agreed to share their network." },
@@ -336,6 +337,7 @@ export function MemberActions(context: MemberActionContext) {
   return (
     <div className="grid gap-4">
       {member.isRemoved ? null : <RoleActions {...context} />}
+      {member.isRemoved ? null : <CommunityRoleAction {...context} />}
       {member.isRemoved ? null : <EmailActions {...context} />}
       {!member.isErased && (isNetworkOn || member.isInVillageGroup || member.hasStaleVillageMembership) ? <VillageActions {...context} /> : null}
       {member.isRemoved ? null : <LinkedinActions {...context} />}

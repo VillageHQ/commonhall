@@ -277,6 +277,9 @@ export function ImportMembersForm({ communityBasis, communityTermsDate, today, i
           Only email is required. Company and cohort fill in the profile; members can change them. Cohort powers the partner report’s breakdown and “You already know” in
           search.
         </p>
+        <p className="fh-small fh-muted" style={{ marginTop: 6 }}>
+          Optional: a “community role” column (Founder, Mentor, Expert, Advisor, Entrepreneur in residence or Fund team). Empty means Founder; only admins can change it later.
+        </p>
       </section>
       )}
     </div>

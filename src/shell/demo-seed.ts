@@ -13,7 +13,8 @@ import { introsManifest } from "@/modules/intros/manifest";
 import { PUBLIC_BOARD_SETTING, toCompanySlug } from "@/modules/job-board/contract";
 import { jobBoardManifest } from "@/modules/job-board/manifest";
 import { jobPosting, jobSource } from "@/modules/job-board/schema";
-import { invite, memberFillIn, memberLookup, memberNetwork, memberProfile, memberTag } from "@/modules/members/schema";
+import { callRequest, invite, memberFillIn, memberLookup, memberNetwork, memberProfile, memberTag } from "@/modules/members/schema";
+import { BOOKING_VISIBILITIES, readCommunityRole } from "@/modules/members/contract-community-roles";
 import { FILL_IN_BASES, LOOKUP_STATUSES } from "@/modules/members/contract-fill-in";
 import { saveFillInSettings } from "@/modules/members/service-fill-in";
 import { toFilledProfile } from "@/modules/network/rules-fill-in";
@@ -26,7 +27,7 @@ import { user } from "@/platform/database/auth-schema";
 import type { Transaction } from "@/platform/database/client";
 import { communityBranding } from "@/platform/branding/schema";
 import { DEMO_JOB_SOURCES, toDemoCareersUrl, toDemoJobUrl } from "@/platform/demo/jobs";
-import { DEMO_COMMUNITY, DEMO_COMMUNITY_LOGO_URL, DEMO_DATA_HOME, DEMO_INVITEES, DEMO_OUTSIDERS, DEMO_PEOPLE, toDemoEmail, toDemoSlug, type DemoPerson } from "@/platform/demo/people";
+import { DEMO_COMMUNITY, DEMO_COMMUNITY_LOGO_URL, DEMO_DATA_HOME, DEMO_INVITEES, DEMO_OUTSIDERS, DEMO_PEOPLE, DEMO_COMMUNITY_ROLES, DEMO_CALL_REQUESTS, toDemoBookingUrl, toDemoEmail, toDemoSlug, type DemoPerson } from "@/platform/demo/people";
 import { DEMO_VILLAGE_GROUP, DEMO_VILLAGE_KEYS, toDemoProfile } from "@/platform/demo/village-answers";
 import { toDemoDomain, toDemoLogoUrl } from "@/platform/demo/pictures";
 import type { Environment } from "@/platform/environment";
@@ -71,6 +72,24 @@ function outsider(slug: string) {
   return found;
 }
 
+function readDemoBooking(key: string) {
+  const demoRole = DEMO_COMMUNITY_ROLES[key];
+  if (!demoRole) return {};
+  const communityRole = readCommunityRole(demoRole.role) ?? undefined;
+  if (!demoRole.hasBookingLink) return { communityRole };
+  return {
+    communityRole,
+    bookingUrl: toDemoBookingUrl(key),
+    bookingVisibility: demoRole.isIntroducedOnly ? BOOKING_VISIBILITIES.introduced : BOOKING_VISIBILITIES.community,
+  };
+}
+
+async function seedCallRequests(transaction: Transaction, ids: Ids, ago: ReturnType<typeof makeClock>) {
+  await transaction.insert(callRequest).values(
+    DEMO_CALL_REQUESTS.map(([requester, member, daysAgo]) => ({ requesterId: ids.get(requester) ?? null, memberId: ids.get(member) ?? null, createdAt: ago(daysAgo, 3) })),
+  );
+}
+
 async function seedMembers(transaction: Transaction, ago: ReturnType<typeof makeClock>) {
   const ids = new Map<string, string>();
   for (const demoPerson of DEMO_PEOPLE) {
@@ -99,6 +118,7 @@ async function seedMembers(transaction: Transaction, ago: ReturnType<typeof make
       sector: demoPerson.sector,
       cohort: demoPerson.cohort,
       creditInReports: demoPerson.creditInReports ?? false,
+      ...readDemoBooking(demoPerson.key),
       cardStepDoneAt: joinedAt,
       onboardingCompletedAt: joinedAt,
       updatedAt: ago(Math.min(demoPerson.joinedDaysAgo, 12)),
@@ -657,5 +677,6 @@ export async function seedDemo(transaction: Transaction, environment: Environmen
   await seedMessages(transaction, ids, ago);
   await seedJobs(transaction, ids, ago, now);
   await seedFeed(transaction, ids, ago);
+  await seedCallRequests(transaction, ids, ago);
   return { members: DEMO_PEOPLE.length, invites: DEMO_INVITEES.length, intros: CURRENT_INTROS.length + HISTORY_PAIRS.length, asks: ASKS.length };
 }

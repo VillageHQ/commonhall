@@ -3,6 +3,7 @@ import { z } from "zod";
 import { nameSchema } from "../../platform/auth/member-name.ts";
 import { removeNullBytes } from "../../platform/text/safe-text.ts";
 import { parseExternalUrl } from "./rules-external-url.ts";
+import { COMMUNITY_ROLE_VALUES } from "./contract-community-roles.ts";
 
 // The directory's "Updated" filter (Commonhall's "fresh as of"): own words saved within this many days.
 export const UPDATED_WITHIN_DAYS = [30, 90, 365] as const;
@@ -105,6 +106,10 @@ export const directoryFiltersSchema = z.object({
   updatedWithinDays: z.union([z.literal(0), ...UPDATED_WITHIN_DAYS.map((days) => z.literal(days))]).default(0),
   // Only members whose company has open jobs. Ignored while the job board is off.
   hiring: z.boolean().default(false),
+  // "Experts and mentors": only mentors, experts, advisors and entrepreneurs in residence.
+  isExpertsView: z.boolean().default(false),
+  // One community role, or "" for any.
+  communityRole: z.union([z.literal(""), z.enum(COMMUNITY_ROLE_VALUES)]).default(""),
   page: z.number().int().min(1).default(1),
 });
 
@@ -130,6 +135,9 @@ export const directoryMemberSchema = z.object({
   // Open jobs at the member's company; 0 while the job board is off.
   hiringJobCount: z.number(),
   tags: z.array(z.string()),
+  communityRole: z.enum(COMMUNITY_ROLE_VALUES),
+  // The member's booking link, only when the viewer may see it ("Book a call").
+  bookingUrl: z.string().nullable(),
 });
 
 export type DirectoryMember = z.infer<typeof directoryMemberSchema>;

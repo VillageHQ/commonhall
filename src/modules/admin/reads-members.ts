@@ -24,6 +24,7 @@ import {
   type MemberPage,
 } from "./contract.ts";
 import { MEMBER_ROLES } from "../../platform/auth/roles.ts";
+import { COMMUNITY_ROLES, isCommunityRole } from "../members/contract-community-roles.ts";
 
 function matchesMemberSearch(search: string) {
   if (!search) return undefined;
@@ -82,11 +83,13 @@ function selectMembers(database: Database) {
       sharingConsentedAt: memberNetwork.sharingConsentedAt,
       linkedinSlug: memberNetwork.linkedinSlug,
       linkedinConfirmedSlug: memberNetwork.linkedinConfirmedSlug,
+      communityRole: memberProfile.communityRole,
     })
     .from(user)
     .leftJoin(memberNetwork, eq(memberNetwork.userId, user.id))
     .leftJoin(memberAvatar, eq(memberAvatar.userId, user.id))
     .leftJoin(memberRemoval, eq(memberRemoval.userId, user.id))
+    .leftJoin(memberProfile, eq(memberProfile.userId, user.id))
     .leftJoin(invite, and(eq(invite.acceptedUserId, user.id), isNull(invite.revokedAt)));
 }
 
@@ -97,6 +100,10 @@ function readRemovalChoice({ keepsContent }: MemberRow) {
   return keepsContent ? CONTENT_CHOICES.keep : CONTENT_CHOICES.delete;
 }
 
+function readKnownCommunityRole(role: string | null) {
+  return role && isCommunityRole(role) ? role : COMMUNITY_ROLES.founder;
+}
+
 function toAdminMember(row: MemberRow) {
   const isReclaimed = isReclaimedEmail(row.email);
   return {
@@ -105,6 +112,7 @@ function toAdminMember(row: MemberRow) {
     email: isReclaimed ? null : row.email,
     avatarUrl: toShownFaceUrl(row.id, row.avatarUpdatedAt, row.filledFace),
     isAdmin: row.role === MEMBER_ROLES.admin,
+    communityRole: readKnownCommunityRole(row.communityRole),
     joinedAt: row.createdAt.toISOString(),
     isEmailConfirmed: row.emailVerified,
     isRemoved: isBanActive(row),
@@ -171,6 +179,7 @@ export async function readConsoleMembers(database: Database, now = new Date()): 
         groupJoinedAt: memberNetwork.groupJoinedAt,
         pendingVillageEmail: memberNetwork.pendingVillageEmail,
         erasedAt: memberRemoval.erasedAt,
+        communityRole: memberProfile.communityRole,
       })
       .from(user)
       .leftJoin(memberProfile, eq(memberProfile.userId, user.id))
@@ -194,6 +203,7 @@ export async function readConsoleMembers(database: Database, now = new Date()): 
       email: isReclaimedEmail(row.email) ? null : row.email,
       avatarUrl: toShownFaceUrl(row.id, row.avatarUpdatedAt, row.filledFace),
       isAdmin: row.role === MEMBER_ROLES.admin,
+      communityRole: readKnownCommunityRole(row.communityRole),
       title: row.title,
       company: row.company,
       companyLogoUrl: row.companyLogoUrl,
@@ -211,6 +221,7 @@ export async function readConsoleMembers(database: Database, now = new Date()): 
     email: row.email,
     avatarUrl: null,
     isAdmin: false,
+    communityRole: COMMUNITY_ROLES.founder,
     title: null,
     // Commonhall shows "No profile yet" until they sign in; the company still matches a search.
     company: null,

@@ -9,6 +9,7 @@ function person(overrides: Partial<ConsoleMember>): ConsoleMember {
     name: "Ada Okafor",
     email: "ada@example.test",
     avatarUrl: null,
+    communityRole: "founder",
     isAdmin: false,
     title: "Founder",
     company: "Gridwise",

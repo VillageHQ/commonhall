@@ -14,6 +14,7 @@ import { isActiveMember } from "../../platform/auth/member-status.ts";
 import { parseExternalUrl } from "./rules-external-url.ts";
 import { normalizeTag, type ProfileBody } from "./contract-profile.ts";
 import { readShownCard } from "./rules-fill-in.ts";
+import { COMMUNITY_ROLES, isCommunityRole } from "./contract-community-roles.ts";
 import { readShownFillIn } from "./service-fill-in.ts";
 import { filledFaceColumn, toAvatarUrl, toShownFaceUrl } from "./reads-pictures.ts";
 
@@ -118,6 +119,7 @@ export async function readMemberProfile(database: Database, memberId: string) {
       stage: memberProfile.stage,
       sector: memberProfile.sector,
       cohort: memberProfile.cohort,
+      communityRole: memberProfile.communityRole,
       bio: memberProfile.bio,
       canHelpWith: memberProfile.canHelpWith,
       needs: memberProfile.needs,
@@ -139,10 +141,11 @@ export async function readMemberProfile(database: Database, memberId: string) {
     readShownFillIn(database, memberId),
   ]);
 
-  const { avatarUpdatedAt, website, linkedinConfirmedSlug, profileUpdatedAt, ...fields } = row;
+  const { avatarUpdatedAt, website, linkedinConfirmedSlug, profileUpdatedAt, communityRole, ...fields } = row;
   const avatarUrl = toAvatarUrl(memberId, avatarUpdatedAt);
   return {
     ...fields,
+    communityRole: communityRole && isCommunityRole(communityRole) ? communityRole : COMMUNITY_ROLES.founder,
     isLinkedinConfirmed: fields.linkedinSlug !== null && linkedinConfirmedSlug === fields.linkedinSlug,
     website: website ? parseExternalUrl(website) : null,
     avatarUrl,

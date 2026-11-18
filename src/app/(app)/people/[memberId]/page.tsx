@@ -35,6 +35,10 @@ import { AdminMemberPanel } from "@/modules/members/components/admin-member-pane
 import { membersManifest } from "@/modules/members/manifest";
 import { modulePage } from "@/platform/modules/module-page";
 import { isModuleEnabled } from "@/platform/modules/enablement";
+import { BookCallButton } from "@/modules/members/components/book-call-button";
+import { COMMUNITY_ROLE_LABELS, COMMUNITY_ROLES } from "@/modules/members/contract-community-roles";
+import { readShownBooking } from "@/modules/members/service-booking";
+import { wereIntroducedForBooking } from "@/shell/booking-access";
 import { CompanyJobsCard } from "@/modules/job-board/components/shared/company-jobs-card";
 import { jobBoardManifest } from "@/modules/job-board/manifest";
 import { readCompanyJobs } from "@/modules/job-board/reads-hiring";
@@ -92,6 +96,9 @@ export default modulePage(membersManifest, async function MemberProfilePage({ pa
   const first = readFirstWord(profile.name);
   const { shown } = profile;
   const chips = [profile.stage, profile.sector, profile.cohort].filter((chip): chip is string => Boolean(chip));
+  const roleChip = profile.communityRole === COMMUNITY_ROLES.founder ? null : COMMUNITY_ROLE_LABELS[profile.communityRole];
+  // Never on your own profile, and only when this viewer may see the link.
+  const bookingUrl = isOwnProfile ? null : await readShownBooking(database, viewer.id, profile.id, wereIntroducedForBooking);
   const ownWords = [
     { key: "working_on", label: "Working on now", value: profile.bio, isSerif: true },
     { key: "can_help_with", label: "Can help with", value: profile.canHelpWith, isSerif: false },
@@ -112,8 +119,9 @@ export default modulePage(membersManifest, async function MemberProfilePage({ pa
         hasCompany={Boolean(shown.company)}
         roleLine={toRoleLine(shown)}
       >
-        {chips.length > 0 ? (
+        {chips.length > 0 || roleChip ? (
           <Tags className="mt-2">
+            {roleChip ? <Tag tone="accent">{roleChip}</Tag> : null}
             {chips.map((chip) => (
               <Tag key={chip}>{chip}</Tag>
             ))}
@@ -144,6 +152,7 @@ export default modulePage(membersManifest, async function MemberProfilePage({ pa
                 </span>
               )
             ) : null}
+            {bookingUrl ? <BookCallButton memberId={profile.id} memberName={profile.name} bookingUrl={bookingUrl} variant={showsAsk && acceptsAsks ? "secondary" : "primary"} /> : null}
             <MemberConversationSlot memberId={profile.id} label="Message" accessibleName={`Message ${profile.name}`} variant="secondary" size="sm" showsIcon />
           </div>
         )}

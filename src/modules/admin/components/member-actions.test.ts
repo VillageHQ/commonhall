@@ -17,6 +17,7 @@ const MEMBER: AdminMember = {
   name: "Jonas Lindqvist",
   email: "jonas@example.test",
   avatarUrl: null,
+  communityRole: "founder",
   isAdmin: false,
   joinedAt: "2026-11-05T10:00:00.000Z",
   isEmailConfirmed: true,

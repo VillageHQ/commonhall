@@ -40,6 +40,7 @@ function makeMember(overrides: Partial<AdminMember> = {}): AdminMember {
     name: "Mo Member",
     email: "mo@example.test",
     avatarUrl: null,
+    communityRole: "founder",
     isAdmin: false,
     joinedAt: TIMESTAMP,
     isEmailConfirmed: true,

@@ -35,6 +35,7 @@ import { createInviteToken, hashInviteToken, isInviteTokenShape } from "./servic
 import { signEmailedInvite } from "./service-invite-emailed.ts";
 import { queueInviteUsedNotice } from "./service-invite-notice.ts";
 import type { Environment } from "../../platform/environment.ts";
+import { isCommunityRole } from "./contract-community-roles.ts";
 
 const CONFLICT_STATUS = 409;
 const INVITE_PAGE_SIZE = 10;
@@ -402,7 +403,7 @@ export async function acceptInvite(database: Database, token: string, { account 
         .update(invite)
         .set({ acceptedAt: now })
         .where(and(eq(invite.tokenHash, tokenHash), OPEN_INVITE, gt(invite.expiresAt, now)))
-        .returning({ id: invite.id, email: invite.email, inviteeName: invite.inviteeName, company: invite.company, cohort: invite.cohort, emailOutboxId: invite.emailOutboxId });
+        .returning({ id: invite.id, email: invite.email, inviteeName: invite.inviteeName, company: invite.company, cohort: invite.cohort, communityRole: invite.communityRole, emailOutboxId: invite.emailOutboxId });
       if (!claimed) return null;
       // Accepted from the copied link: a still-queued invite email would only carry a used link.
       await cancelInviteEmail(transaction, claimed);
@@ -423,7 +424,8 @@ export async function acceptInvite(database: Database, token: string, { account 
           password: passwordHash,
         });
       }
-      await transaction.insert(memberProfile).values({ userId, company: claimed.company, cohort: claimed.cohort });
+      const communityRole = claimed.communityRole && isCommunityRole(claimed.communityRole) ? claimed.communityRole : undefined;
+      await transaction.insert(memberProfile).values({ userId, company: claimed.company, cohort: claimed.cohort, communityRole });
       await transaction.update(invite).set({ acceptedUserId: userId }).where(eq(invite.id, claimed.id));
       const name = account?.name ?? readStartingName(claimed);
       const noticeEmailId = isFromEmail && notice ? await queueInviteUsedNotice(transaction, notice.environment, notice.branding, { id: userId, email: claimed.email, name }) : null;

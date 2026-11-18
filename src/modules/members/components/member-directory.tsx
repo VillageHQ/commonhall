@@ -21,6 +21,8 @@ import { ROUTES } from "@/platform/http/routes";
 import { formatDayMonth } from "@/platform/text/format-date";
 
 import { directoryQuery } from "@/modules/members/queries-directory";
+import { COMMUNITY_ROLE_LABELS, COMMUNITY_ROLES, EXPERT_ROLES } from "@/modules/members/contract-community-roles";
+import { BookCallButton } from "@/modules/members/components/book-call-button";
 
 // Commonhall's directory (member-directory-populated): one search box, five selects, the count, then two columns of
 // ruled rows. A row is one link to the profile: photo, serif name, logo + "Role, Company · City", the "working on"
@@ -44,10 +46,10 @@ function scheduleSearch(search: string, filters: DirectoryFilters) {
   }, SEARCH_DEBOUNCE_MS);
 }
 
-function clearFilters(setSearchDraft: (search: string) => void) {
+function clearFilters(setSearchDraft: (search: string) => void, isExpertsView: boolean) {
   clearTimeout(pendingSearch);
   setSearchDraft("");
-  applyFilters(EMPTY_DIRECTORY_FILTERS);
+  applyFilters({ ...EMPTY_DIRECTORY_FILTERS, isExpertsView });
   document.getElementById(SEARCH_INPUT_ID)?.focus();
 }
 
@@ -62,11 +64,17 @@ function readHiringLabel(jobCount: number) {
   return `Hiring · ${jobCount} open ${jobCount === 1 ? "job" : "jobs"}`;
 }
 
+// A founder's card shows no role: founders are most of the community. Every other role is named.
+function readRoleChip(member: DirectoryMember) {
+  return member.communityRole === COMMUNITY_ROLES.founder ? null : COMMUNITY_ROLE_LABELS[member.communityRole];
+}
+
 export function MemberRow({ member }: { member: DirectoryMember }) {
   const { id, name, title, company, location, companyLogoUrl, bio, avatarUrl, freshAt } = member;
   const hiringLabel = readHiringLabel(member.hiringJobCount);
   const roleLine = toRoleLine({ title, company, location });
   const chips = [member.stage, member.sector, member.cohort].filter((chip): chip is string => Boolean(chip));
+  const roleChip = readRoleChip(member);
   return (
     <Link href={`${ROUTES.people}/${id}`} className="fh-mcard">
       <Avatar stableId={id} name={name} imageUrl={avatarUrl} sizePx={MEMBER_AVATAR_SIZE_PX} />
@@ -79,6 +87,7 @@ export function MemberRow({ member }: { member: DirectoryMember }) {
       </div>
       {bio ? <p className="fh-wo wrap-anywhere">{bio}</p> : null}
       <div className="fh-meta">
+        {roleChip ? <Tag tone="accent">{roleChip}</Tag> : null}
         {chips.map((chip) => (
           <Tag key={chip}>{chip}</Tag>
         ))}
@@ -89,7 +98,41 @@ export function MemberRow({ member }: { member: DirectoryMember }) {
   );
 }
 
+// "Experts and mentors": the role, what they can help with, and "Book a call" where the viewer may see the link.
+// The card isn't one link here, since it holds a second action: the name opens the profile.
+export function ExpertRow({ member }: { member: DirectoryMember }) {
+  const { id, name, title, company, location, companyLogoUrl, avatarUrl, canHelpWith, bookingUrl } = member;
+  const roleLine = toRoleLine({ title, company, location });
+  return (
+    <div className="fh-mcard" data-testid="expert-card">
+      <Avatar stableId={id} name={name} imageUrl={avatarUrl} sizePx={MEMBER_AVATAR_SIZE_PX} />
+      <div className="fh-who min-w-0">
+        <b>
+          <Link href={`${ROUTES.people}/${id}`}>{name}</Link>
+        </b>
+        <span className="wrap-anywhere">
+          {company ? <CompanyLogo url={companyLogoUrl} className="fh-colog mt-0" /> : null}
+          {roleLine || " "}
+        </span>
+      </div>
+      {canHelpWith ? (
+        <p className="fh-wo wrap-anywhere">
+          <span className="fh-muted">Can help with: </span>
+          {canHelpWith}
+        </p>
+      ) : null}
+      <div className="fh-meta">
+        <Tag tone="accent">{COMMUNITY_ROLE_LABELS[member.communityRole]}</Tag>
+        {bookingUrl ? <BookCallButton memberId={id} memberName={name} bookingUrl={bookingUrl} /> : null}
+      </div>
+    </div>
+  );
+}
+
 function DirectoryEmpty({ filters, onClear }: { filters: DirectoryFilters; onClear: () => void }) {
+  if (filters.isExpertsView && !hasDirectoryFilters(filters)) {
+    return <EmptyState title="No experts or mentors yet" description="An admin marks members as mentors, experts, advisors or entrepreneurs in residence, and they show here." />;
+  }
   if (!hasDirectoryFilters(filters)) {
     return <EmptyState title="No members in the directory yet" description="Members show here once they accept their invite." />;
   }
@@ -113,11 +156,28 @@ const FILTER_LABELS: Record<FilterKey, { label: string; any: string }> = {
 
 const FILTER_KEYS = Object.keys(FILTER_LABELS) as FilterKey[];
 
+function readExpertRole(value: string): DirectoryFilters["communityRole"] {
+  return EXPERT_ROLES.find((role) => role === value) ?? "";
+}
+
 const UPDATED_LABELS: Record<number, string> = { 0: "Updated: any time", 30: "Updated: last 30 days", 90: "Updated: last 90 days", 365: "Updated: last 12 months" };
 
 function DirectoryFilterMenus({ filters, options }: { filters: DirectoryFilters; options: Directory["filterOptions"] }) {
   return (
     <div role="group" aria-label="Narrow the list" className="fh-filters">
+      {filters.isExpertsView ? (
+        <label className="fh-filt">
+          <span className="fh-sr">Role</span>
+          <Select value={filters.communityRole} onChange={(event) => applyFilters({ ...filters, communityRole: readExpertRole(event.target.value), page: 1 })}>
+            <option value="">Any role</option>
+            {EXPERT_ROLES.map((role) => (
+              <option key={role} value={role}>
+                {COMMUNITY_ROLE_LABELS[role]}
+              </option>
+            ))}
+          </Select>
+        </label>
+      ) : null}
       {FILTER_KEYS.map((key) => {
         const chosen = options[key].find((value) => value.toLowerCase() === filters[key].toLowerCase()) ?? filters[key];
         const values = chosen && !options[key].includes(chosen) ? [chosen, ...options[key]] : options[key];
@@ -196,15 +256,36 @@ function DirectoryResults({ filters, onClear, isStale }: DirectoryResultsProps) 
               {readCountLine(matchCount, isFiltered)}
             </p>
             <div className="fh-cards">
-              {members.map((member) => (
-                <MemberRow key={member.id} member={member} />
-              ))}
+              {members.map((member) => (filters.isExpertsView ? <ExpertRow key={member.id} member={member} /> : <MemberRow key={member.id} member={member} />))}
             </div>
           </>
         )}
       </div>
       <MoreLinks page={page} pageCount={pageCount} filters={filters} />
     </>
+  );
+}
+
+// Everyone, or the people founders most want to talk to. The role filter belongs to the second view only.
+const DIRECTORY_VIEWS = [
+  { isExperts: false, label: "Everyone" },
+  { isExperts: true, label: "Experts and mentors" },
+] as const;
+
+function DirectoryViewSwitch({ filters }: { filters: DirectoryFilters }) {
+  return (
+    <div className="fh-seg mb-3" role="group" aria-label="Who to list">
+      {DIRECTORY_VIEWS.map(({ isExperts, label }) => (
+        <button
+          key={label}
+          type="button"
+          aria-pressed={filters.isExpertsView === isExperts}
+          onClick={() => applyFilters({ ...filters, isExpertsView: isExperts, communityRole: "", page: 1 })}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
   );
 }
 
@@ -218,6 +299,7 @@ export function MemberDirectory() {
 
   return (
     <>
+      <DirectoryViewSwitch filters={filters} />
       <div role="search">
         <SearchBox
           id={SEARCH_INPUT_ID}
@@ -233,7 +315,7 @@ export function MemberDirectory() {
         />
       </div>
       <QueryBoundary loadingMessage="Gathering everyone…">
-        <DirectoryResults filters={deferredFilters} onClear={() => clearFilters(setSearchDraft)} isStale={queryString !== deferredQueryString} />
+        <DirectoryResults filters={deferredFilters} onClear={() => clearFilters(setSearchDraft, filters.isExpertsView)} isStale={queryString !== deferredQueryString} />
       </QueryBoundary>
     </>
   );

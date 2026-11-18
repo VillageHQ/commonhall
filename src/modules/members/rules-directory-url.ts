@@ -1,3 +1,4 @@
+import { isCommunityRole } from "./contract-community-roles.ts";
 import { directoryFiltersSchema, UPDATED_WITHIN_DAYS, type DirectoryFilters } from "./contract-profile.ts";
 
 const SEARCH_PARAM = "q";
@@ -11,8 +12,11 @@ const UPDATED_PARAM = "fresh";
 const OLD_UPDATED_PARAM = "updated";
 const HIRING_PARAM = "hiring";
 const PAGE_PARAM = "page";
+const VIEW_PARAM = "view";
+const ROLE_PARAM = "role";
+export const EXPERTS_VIEW = "experts";
 
-export const EMPTY_DIRECTORY_FILTERS: DirectoryFilters = { search: "", tag: "", stage: "", sector: "", city: "", cohort: "", updatedWithinDays: 0, hiring: false, page: 1 };
+export const EMPTY_DIRECTORY_FILTERS: DirectoryFilters = { search: "", tag: "", stage: "", sector: "", city: "", cohort: "", updatedWithinDays: 0, hiring: false, isExpertsView: false, communityRole: "", page: 1 };
 
 type SearchParamValue = string | string[] | undefined;
 
@@ -29,6 +33,10 @@ export function readUpdatedWithinDays(value: string | undefined) {
   return UPDATED_WITHIN_DAYS.find((days) => String(days) === value) ?? 0;
 }
 
+function readKnownRole(value: string | undefined) {
+  return value && isCommunityRole(value) ? value : "";
+}
+
 export function parseDirectoryFilters(params: Record<string, SearchParamValue>): DirectoryFilters {
   const filters = directoryFiltersSchema.safeParse({
     search: readFirstValue(params[SEARCH_PARAM]),
@@ -39,17 +47,22 @@ export function parseDirectoryFilters(params: Record<string, SearchParamValue>):
     cohort: readFirstValue(params[COHORT_PARAM]),
     updatedWithinDays: readUpdatedWithinDays(readFirstValue(params[UPDATED_PARAM]) ?? readFirstValue(params[OLD_UPDATED_PARAM])),
     hiring: readFirstValue(params[HIRING_PARAM]) === "1",
+    isExpertsView: readFirstValue(params[VIEW_PARAM]) === EXPERTS_VIEW,
+    communityRole: readKnownRole(readFirstValue(params[ROLE_PARAM])),
     page: readPage(readFirstValue(params[PAGE_PARAM])),
   });
   return filters.success ? filters.data : EMPTY_DIRECTORY_FILTERS;
 }
 
-export function hasDirectoryFilters({ search, tag, stage, sector, city, cohort, updatedWithinDays, hiring }: DirectoryFilters) {
-  return Boolean(search || tag || stage || sector || city || cohort || updatedWithinDays || hiring);
+// The view (everyone, or experts and mentors) is not a filter: "Clear" keeps it.
+export function hasDirectoryFilters({ search, tag, stage, sector, city, cohort, updatedWithinDays, hiring, communityRole }: DirectoryFilters) {
+  return Boolean(search || tag || stage || sector || city || cohort || updatedWithinDays || hiring || communityRole);
 }
 
-export function toDirectoryQueryString({ search, tag, stage, sector, city, cohort, updatedWithinDays, hiring, page }: DirectoryFilters) {
+export function toDirectoryQueryString({ search, tag, stage, sector, city, cohort, updatedWithinDays, hiring, isExpertsView, communityRole, page }: DirectoryFilters) {
   const params = new URLSearchParams();
+  if (isExpertsView) params.set(VIEW_PARAM, EXPERTS_VIEW);
+  if (communityRole) params.set(ROLE_PARAM, communityRole);
   if (search) params.set(SEARCH_PARAM, search);
   if (tag) params.set(TAG_PARAM, tag);
   if (stage) params.set(STAGE_PARAM, stage);

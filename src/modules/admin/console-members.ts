@@ -1,6 +1,8 @@
 // The console's Members table (Commonhall's /admin/members): one list of everyone, members and the people invited
 // who haven't signed in yet, with Commonhall's filters, statuses and search. Pure, so the page and tests share it.
 
+import type { CommunityRole } from "../members/contract-community-roles.ts";
+
 export const CONSOLE_MEMBER_FILTERS = {
   all: "all",
   invited: "invited",
@@ -46,6 +48,7 @@ export type ConsoleMember = {
   email: string | null;
   avatarUrl: string | null;
   isAdmin: boolean;
+  communityRole: CommunityRole;
   title: string | null;
   company: string | null;
   companyLogoUrl: string | null;
