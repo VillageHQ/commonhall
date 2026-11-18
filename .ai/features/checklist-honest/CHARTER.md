@@ -1,6 +1,6 @@
 # Charter: the console checklist says only what is true
 
-Approved direction: Absi's brief for the Commonhall onboarding topic (17 Nov 2026), and the small calls on the
+Approved direction: The owner's brief for the Commonhall onboarding topic (17 Nov 2026), and the small calls on the
 onboarding design page ("Your look counts as done only with a logo; after adding people without email it says
 '6 added, no email sent yet'"). Found on the LOI demo walkthrough.
 

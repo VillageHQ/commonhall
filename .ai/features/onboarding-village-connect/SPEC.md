@@ -4,7 +4,7 @@ status: building
 ---
 # Connect Village: 3 links and 2 paste boxes
 
-Approved by Absi on 17 Nov 2026 (decision page "Commonhall: the organizer's first-run setup", question 3: test the
+Approved by the owner on 17 Nov 2026 (decision page "Commonhall: the organizer's first-run setup", question 3: test the
 keys as soon as both are pasted).
 
 ## What it does

@@ -9,7 +9,7 @@ The bundle frame at _0bri2ghwgsut3._.js:95 is readAskAllowance (src/shell/ask-he
 Migrations applied.
 Demo mode: filled the empty database with the made-up community.
 (node:65400) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
-    at Client.query (C:\Users\absi\.autobuild\worktrees\community__fix-host-findings\node_modules\.pnpm\pg@8.23.1\node_modules\pg\lib\client.js:780:7)
+    at Client.query (C:\Users\<user>\.autobuild\worktrees\community__fix-host-findings\node_modules\.pnpm\pg@8.23.1\node_modules\pg\lib\client.js:780:7)
     at _0vctiltuwa6gf._.js:480:5648
     at h.queryWithCache (_0vctiltuwa6gf._.js:486:21682)
     at _0vctiltuwa6gf._.js:480:5607

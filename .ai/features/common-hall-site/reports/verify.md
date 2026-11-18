@@ -1,6 +1,6 @@
 # Independent verification: Commonhall landing page (site/)
 
-Verifier: independent agent, 2026-11-13. Branch `absi-agent/common-hall-site` at `31f6fa4`. The `site/` folder was served
+Verifier: independent agent, 2026-11-13. Branch `common-hall-site` at `31f6fa4`. The `site/` folder was served
 by a local Node static server on 127.0.0.1 and driven with playwright-core 1.63 + Chromium at 390 x 844, 360 x 780 and
 1280 x 800. Scripts and every screenshot: `C:/ai/code/.workspace/verify/common-hall-site/` (outside the repo; below,
 `V/` = that folder). Nothing was pointed at a real account; the form's endpoint stayed empty.

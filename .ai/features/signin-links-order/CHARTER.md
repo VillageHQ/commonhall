@@ -1,6 +1,6 @@
 # Charter: Sign-in links in an order the admin can follow
 
-Approved direction: Absi's brief for the Commonhall onboarding topic (17 Nov 2026): "Crashes and small bugs first."
+Approved direction: The owner's brief for the Commonhall onboarding topic (17 Nov 2026): "Crashes and small bugs first."
 Reported on the LOI demo: the rows re-ordered after each Copy, so copying several in a row grabbed the wrong person.
 
 - **Found:** the re-order did not reproduce on a test copy (copies and reloads keep the order). But an import makes

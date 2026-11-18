@@ -1,6 +1,6 @@
 # Charter: fix the network page error and the LinkedIn note (approved 2026-11-16)
 
-Approved by Absi on the decision page "Community real test: finish Village and a small fix" (page GN5_M-XaUs2spTJ_WaErfw):
+Approved by the owner on the decision page "Community real test: finish Village and a small fix" (page GN5_M-XaUs2spTJ_WaErfw):
 "Qareen fixes both in one pull request and merges it after checks".
 
 ## Direction
@@ -8,7 +8,7 @@ Approved by Absi on the decision page "Community real test: finish Village and a
   the browser reports React error #419 on every load, although the page then works. Found in the real-service test on
   Fly, 2026-11-15. (2) The README's setup guide does not say that the admin must save a LinkedIn link before the
   "Sync network" button shows.
-- Out: anything else on the page; the Village link clash (a separate question to Absi).
+- Out: anything else on the page; the Village link clash (a separate question to the owner).
 
 ## Deciding facts
 - Likely cause: the network status query runs during the server render, where its browser-style fetch cannot reach

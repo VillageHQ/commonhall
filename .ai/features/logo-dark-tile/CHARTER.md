@@ -1,6 +1,6 @@
 # Charter: an uploaded logo on the dark tile showed as an empty black square
 
-Approved direction: Absi's brief for the Commonhall onboarding topic (17 Nov 2026): "Crashes and small bugs first
+Approved direction: The owner's brief for the Commonhall onboarding topic (17 Nov 2026): "Crashes and small bugs first
 (they need no design)." The look stays as designed; only the broken inset changes.
 
 - **Cause:** `LOGO_BACKDROP_CLASSES.dark` used `p-[10%]`. A percentage padding resolves against the parent's width

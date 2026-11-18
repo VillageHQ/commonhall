@@ -1,6 +1,6 @@
 # Charter: accounts, invites and privacy fixes (`fix-accounts-privacy`)
 
-Approved by the orchestrator's brief on 2026-11-12 (Absi chose to continue on Community and fix the parity audit's
+Approved by the orchestrator's brief on 2026-11-12 (the owner chose to continue on Community and fix the parity audit's
 list). Brief: `C:/ai/code/.workspace/scratch/founderhall-vs-community/build/fixes/brief-fix-accounts-privacy.md`.
 Evidence: the parity audit of 2026-11-12 (`parity-2026-11-12/`, rows named below).
 

@@ -4,8 +4,8 @@ status: building
 ---
 # Claude sets up an instance: the guide and one command
 
-From Absi's brief (17 Nov 2026): Claude sets up an instance faster than a person clicking through, and onboards the
-organizer with the least friction. The design page listed it as a small call; Absi did not object.
+From the owner's brief (17 Nov 2026): Claude sets up an instance faster than a person clicking through, and onboards the
+organizer with the least friction. The design page listed it as a small call; the owner did not object.
 
 ## What it does
 - `docs/SETUP-WITH-CLAUDE.md`: install → one command → the short script Claude follows with the organizer (what to

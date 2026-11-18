@@ -1,6 +1,6 @@
 # Commonhall landing page, version 2: CHARTER (approved)
 
-Approved by Absi on 2026-11-14 in Telegram topic 75190, on decision page wuWS4ksp23ZjVtSHgVuOqQ, with three answers:
+Approved by the owner on 2026-11-14 in Telegram topic 75190, on decision page wuWS4ksp23ZjVtSHgVuOqQ, with three answers:
 logo **03** (the floor plan with a door gap); prices **Community free / Enterprise $10,000 a year, 7,500 credits a month,
 up to 500 members, a quote above**; and, on the look, his own words instead of navy or bone:
 

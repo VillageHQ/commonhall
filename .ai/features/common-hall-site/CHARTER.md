@@ -1,11 +1,11 @@
 # Commonhall landing page: CHARTER (approved)
 
-Approved by Absi on 2026-11-13 in Telegram topic 75190: the business-builder run's decision pages (results page
+Approved by the owner on 2026-11-13 in Telegram topic 75190: the business-builder run's decision pages (results page
 zsE7Q9KCgSwToo4BwkCMKw → round 2 kTUInA6etnEmePYStpavlA → round 3 1OEH9jei7X0B91MCPIYyFQ, each replaced by the next and
 settled in chat) and the build question on page 1X6JCFUhFm7m44-4CNjUuw ("Qareen builds it by PR"). Per the
 business-builder rules the kickoff and these picks are the approved page for this stage; no new alignment page.
 
-## Direction (Absi's words)
+## Direction (the owner's words)
 "Ok I love this." on the blueprint page (design v13, "The plans are public", simplified); name **Commonhall**; "make the
 main button 'Schedule call' and 'GitHub' with the GitHub logo"; "add icons on Asks, Intros… in the hero section, and make
 that section a bit more interactive, like founders from different companies moving between rooms." Earlier: bold yet

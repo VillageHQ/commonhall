@@ -1,7 +1,7 @@
 # Charter: Commonhall transplant, area 1 — Today and Asks & updates
 
 Approved scope: the orchestrator's brief for round 3, area 1 (the owner approved the transplant plan; this page
-restates it for this build). Slug `fh-today-asks`, branch `absi-agent/fh-today-asks`.
+restates it for this build). Slug `fh-today-asks`, branch `fh-today-asks`.
 
 ## Direction
 Community's engine, Commonhall's screens copied exactly: structure, sections in order, parts, words, look and steps.

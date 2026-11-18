@@ -11,7 +11,7 @@ overflow, anchors, text contrast 4.5:1) and the form test `.ai/features/common-h
 `themechange` event so the canvas re-reads `--ink-rgb`. Cards, tooltips and the dialog are ink on paper in both themes.
 
 ## Hover field (the canvas behind the first screen, class `hero-field`): plan-view doors
-Since 2026-11-15 (Absi's pick A of four prototypes) the field is a 72 px grid of doors drawn as on a floor plan: a wall
+Since 2026-11-15 (the owner's pick A of four prototypes) the field is a 72 px grid of doors drawn as on a floor plan: a wall
 run with a 28 px opening and jamb ticks, the leaf closed across the opening, in one of four orientations. Moving the
 pointer (mouse or touch) starts a circular wave at the pointer (560 px/s, a new wave every 110 ms and 36 px of travel,
 up to 8 at once, each ends at 560 px wide). A door whose centre the wavefront passes swings its leaf open 90 degrees in
