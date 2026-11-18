@@ -31,7 +31,7 @@ const ASK_BUTTON = ".fh-result .fh-btn-row a";
 export const TOUR_STEPS: readonly TourStep[] = [
   {
     id: "search",
-    label: "Search the network",
+    label: "Search",
     caption: "Type who you need. See the faces in reach and the member who can introduce you.",
     start: "/search",
     still: RESULTS,
@@ -67,7 +67,7 @@ export const TOUR_STEPS: readonly TourStep[] = [
   },
   {
     id: "community",
-    label: "Ask the community",
+    label: "Ask everyone",
     caption: "Or ask everyone. The members most likely to help hear about it, and it goes in the weekly email.",
     start: "/asks",
     still: "/asks",
@@ -86,7 +86,7 @@ export const TOUR_STEPS: readonly TourStep[] = [
   },
   {
     id: "directory",
-    label: "Browse the directory",
+    label: "Directory",
     caption: "Every founder in one place. Filter by stage, sector, city and cohort.",
     start: "/directory",
     still: `/directory?sector=${DIRECTORY_SECTOR}`,
@@ -102,7 +102,7 @@ export const TOUR_STEPS: readonly TourStep[] = [
   },
   {
     id: "admin",
-    label: "Every intro, counted",
+    label: "Intros, counted",
     caption: "The fund's home: every intro asked, made and declined, and how members found them.",
     start: "/admin",
     still: "/admin",

@@ -50,7 +50,7 @@ function setUpTour() {
   app.append(pointer);
 
   const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-  const state = { step: 0, scale: 1, isPaused: false, isAutoAdvance: true, isInView: false, mode: "timer" as "timer" | "scroll" | "still", holdScrollUntil: 0, run: 0, isRunning: false };
+  const state = { step: 0, scale: 1, isPaused: false, isAutoAdvance: true, isInView: false, mode: "timer" as "timer" | "scroll" | "still", holdScrollUntil: 0, run: 0, isRunning: false, isUserPaused: false, isWaitingForView: false };
   let player: Player | null = null;
   let resumers: (() => void)[] = [];
 
@@ -143,8 +143,17 @@ function setUpTour() {
     const step = TOUR_STEPS[index];
     if (!step) return;
     const hands = makeHands(newPlayer());
+    // Out of sight (scroll mode starts at page load): set the step up and play it once the visitor arrives.
+    if (state.mode === "scroll" && !state.isInView) {
+      open(step.start);
+      markStep(index);
+      state.isWaitingForView = true;
+      return;
+    }
+    state.isWaitingForView = false;
     const run = ++state.run;
     state.isRunning = true;
+    setPlaying(true);
     open(step.start);
     markStep(index);
     try {
@@ -160,7 +169,8 @@ function setUpTour() {
     hands.hide();
     if (state.mode === "timer" && state.isAutoAdvance && !state.isPaused) {
       void playStep((index + 1) % TOUR_STEPS.length);
-    } else if (state.mode === "timer") {
+    } else {
+      // Played out: the button offers to play it again (scroll mode) or to carry on (timer mode).
       setPlaying(false);
     }
   }
@@ -183,17 +193,16 @@ function setUpTour() {
 
   toggle?.addEventListener("click", () => {
     if (!state.isPaused) {
+      state.isUserPaused = true;
       setPlaying(false);
       return;
     }
+    state.isUserPaused = false;
     setPlaying(true);
-    // Play after the tour stopped (a step played out after a tab click): carry on with auto-advance from there.
-    if (state.mode === "timer" && !isRunning()) {
-      state.isAutoAdvance = true;
-      void playStep((state.step + 1) % TOUR_STEPS.length);
-    } else if (state.mode === "timer") {
-      state.isAutoAdvance = true;
-    }
+    if (state.mode === "timer") state.isAutoAdvance = true;
+    if (isRunning()) return;
+    // Play after a step played out: the timer carries on with the next step; the scroll mode plays this one again.
+    void playStep(state.mode === "timer" ? (state.step + 1) % TOUR_STEPS.length : state.step);
   });
 
   function isRunning() {
@@ -221,12 +230,12 @@ function setUpTour() {
       setPlaying(false);
       void showStill(state.step);
     } else if (mode === "scroll") {
-      setPlaying(true);
+      setPlaying(!state.isUserPaused);
       syncScroll(true);
     } else {
-      setPlaying(true);
+      setPlaying(!state.isUserPaused);
       state.isAutoAdvance = true;
-      if (state.isInView) void playStep(state.step);
+      if (state.isInView && !state.isUserPaused) void playStep(state.step);
       else void showStill(state.step);
     }
   }
@@ -253,7 +262,9 @@ function setUpTour() {
     if (state.mode !== "scroll" || performance.now() < state.holdScrollUntil) return;
     const index = Math.min(TOUR_STEPS.length - 1, Math.floor(readProgress() * TOUR_STEPS.length));
     if (index === state.step && !force) return;
-    void playStep(index);
+    // Paused by the visitor: the scroll still moves between steps, as stills.
+    if (state.isUserPaused) void showStill(index);
+    else void playStep(index);
   }
 
   function scrollToStep(index: number) {
@@ -270,14 +281,13 @@ function setUpTour() {
       void showStill(index);
       return;
     }
+    state.isUserPaused = false;
     if (state.mode === "scroll") {
       scrollToStep(index);
-      setPlaying(true);
       void playStep(index);
       return;
     }
     state.isAutoAdvance = false;
-    setPlaying(true);
     void playStep(index);
   }
 
@@ -300,10 +310,17 @@ function setUpTour() {
       if (isInView === state.isInView) return;
       state.isInView = isInView;
       if (state.mode === "timer") {
-        if (isInView && !state.isPaused) {
+        if (isInView && !state.isUserPaused) {
           if (!isRunning()) void playStep(state.step);
         } else if (!isInView) {
           newPlayer();
+        }
+      } else if (state.mode === "scroll") {
+        if (isInView && state.isWaitingForView && !state.isUserPaused) void playStep(state.step);
+        else if (!isInView && isRunning()) {
+          // Left mid-step: it plays again from the start when the visitor comes back.
+          newPlayer();
+          state.isWaitingForView = true;
         }
       }
     },
@@ -333,6 +350,7 @@ function setUpTour() {
     root.classList.remove("is-scroll", "is-still");
     layout();
     setPlaying(true);
+    if (state.isInView) void playStep(0);
   }
 }
 

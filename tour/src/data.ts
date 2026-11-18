@@ -219,7 +219,7 @@ export const CONSOLE_HOME: ConsoleHome = {
   latest: [],
   members: { joined: FOUNDERS.length + 2, invited: 2, withProfile: FOUNDERS.length, waiting: [] },
   network: { connected: 15, sharing: 13, noAsks: 1, syncing: 1 },
-  lookups: null,
+  lookups: { isConfigured: true, used: 1240, cap: 7500, usedPercent: 17, pace: 2100, search: 610, paths: 540, fillIn: 90, dailyLimit: 20 },
   asks: { posted: 41, open: 3, answered: 29, medianHours: 5, withHelpers: 37, helped: 34, intros: 12, introsMade: 8, updates: 9 },
   mail: { isSet: true, isDemo: false, address: "community@example.com", domain: "example.com", sent: 20, failed: 0 },
 };

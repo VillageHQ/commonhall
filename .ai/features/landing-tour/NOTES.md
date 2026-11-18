@@ -3,7 +3,7 @@
 Approved page: [CHARTER.md](CHARTER.md). What it does: [SPEC.md](SPEC.md). The code map: `tour/AGENTS.md`.
 
 ## What the visitor sees (`#demo` on commonhall.ai)
-Five tabs (Search the network · Ask for an intro · Ask the community · Browse the directory · Every intro, counted), a
+Five tabs (Search · Ask for an intro · Ask everyone · Directory · Intros, counted), a
 Pause / Play button, the app's own screens in a frame, and one caption under it. The screens are real DOM: the app's
 React components and its CSS (`src/app/globals.css` + `parts.css`, so Newsreader, IBM Plex Sans, paper and ink), fed
 with the demo's made-up people (`src/platform/demo/people.ts`, portraits and logos from `public/demo`). A fake pointer
@@ -12,7 +12,9 @@ types into the real fields and clicks the real links.
 - **Scroll mode** (motion allowed, window at least 1000 × 700): `#demo-root` gets `is-scroll` (4 window-heights tall);
   `.demo-stage` is `position: sticky` with `top` set by script to `(window height − stage height) / 2`, so it pins in the
   middle (measured off by 0 px at 1280 × 800). Progress through the track picks the step; each step plays once when
-  reached. A tab click scrolls to the middle of that step's band (and holds the scroll sync for 0.9 s).
+  reached, and only while the frame is in view: at page load step 1 waits (`isWaitingForView`) until the visitor
+  arrives, and a step left mid-run plays again on return. When a step has played out the button says Play (plays it
+  again). A tab click scrolls to the middle of that step's band (and holds the scroll sync for 0.9 s).
 - **Timer mode** (phones, short windows): plays step after step, looping, while the frame is at least 35% in view
   (IntersectionObserver); it stops when scrolled away. A tab click plays that step and stops the auto-advance; the
   button then says Play, which carries on from the next step.
@@ -20,6 +22,8 @@ types into the real fields and clicks the real links.
   changes it.
 - **No JavaScript:** the build wrote a still of step 1 into the page as a declarative shadow root, so the real search
   screen with its results shows; the tabs and button are hidden.
+- **Pause** is the visitor's: a resize or a mode change keeps it; while paused, scrolling to another step shows its
+  still. A tab click plays again.
 - **Theme:** follows the page (`html[data-theme]`, watched by a MutationObserver) by putting `.dark` on `.tour-app`.
 
 ## How it is put together
@@ -31,9 +35,12 @@ types into the real fields and clicks the real links.
 - **The CSS** (`tour/build.mjs`, `scopeToBox`): Tailwind runs on `tour/src/tour.css` (which imports `globals.css`; base
   `src/`, plus `tour/src`). Then `:root`, `html`, `body` → `.tour-app`; every `@media` on a width → `@container` (the
   box is `container-type: size`), so the app picks its layout from the box, not the window; `vh`/`vw` → `cqh`/`cqw`;
-  `@property` rules move to `page.css` (they only register at the page level). The app's accent CSS
-  (`renderAccentCss`, normally written by `src/app/layout.tsx`) is appended. `position: fixed` parts (the phone tab bar)
-  stay inside the box because the box has layout containment and a transform.
+  `@property` rules move to `page.css` (they only register at the page level). `.tour-app` sets `min-height: 0` (the
+  app's `body` rule asks for `100dvh`, which a box with no container above measures on the window) and
+  `contain: layout paint style`, so the app's `position: fixed` tab bar stays inside the frame, also at scale 1 and
+  without JavaScript. The app's accent CSS
+  (`renderAccentCss`, normally written by `src/app/layout.tsx`) is appended.
+
 - **Fonts.** `page.css` declares the app's own variable fonts (from `src/app/_fonts`) as "Tour Plex Sans" and "Tour
   Newsreader" at the page level (a font declared in a shadow root is ignored); `.tour-app` points `--font-plex-sans` and
   `--font-newsreader` at them.

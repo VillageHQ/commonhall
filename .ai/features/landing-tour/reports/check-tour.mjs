@@ -71,6 +71,13 @@ for (const theme of ["light", "dark"]) {
   const tag = `1280-${theme}`;
   watch(page, tag);
   await page.goto(`${ORIGIN}?theme=${theme}`, { waitUntil: "networkidle" });
+  if (theme === "light") {
+    // Step 1 waits for the visitor: after 12 s at the top of the page it has not played yet.
+    await sleep(12000);
+    const early = await page.evaluate(() => ({ field: document.getElementById("tour-screen").shadowRoot.querySelector("#q")?.value ?? null, pointer: document.getElementById("tour-screen").shadowRoot.querySelector(".tour-pointer").classList.contains("is-on") }));
+    results.push(`${tag} before arriving: search field "${early.field}", pointer ${early.pointer ? "shown" : "hidden"}`);
+    if (early.field || early.pointer) problems.push(`${tag}: step 1 played before the visitor reached the tour`);
+  }
   const isScroll = await page.evaluate(() => document.getElementById("demo-root").classList.contains("is-scroll"));
   results.push(`${tag}: scroll mode ${isScroll}`);
   const top = await page.evaluate(() => document.getElementById("demo-root").getBoundingClientRect().top + window.scrollY);
@@ -118,6 +125,14 @@ for (const theme of ["light", "dark"]) {
   const tag = `390-${theme}`;
   watch(page, tag);
   await page.goto(`${ORIGIN}?theme=${theme}`, { waitUntil: "networkidle" });
+  // The app's phone tab bar stays inside the tour's frame (at the top of the page the frame is far below).
+  const bar = await page.evaluate(() => {
+    const host = document.getElementById("tour-screen").getBoundingClientRect();
+    const tabs = document.getElementById("tour-screen").shadowRoot.querySelector(".fh-tabbar")?.getBoundingClientRect();
+    return tabs ? { inside: tabs.top >= host.top - 1 && tabs.bottom <= host.bottom + 1, top: Math.round(tabs.top), hostTop: Math.round(host.top) } : null;
+  });
+  results.push(`${tag} the app's tab bar: ${bar ? (bar.inside ? "inside the frame" : `outside the frame (top ${bar.top}, frame top ${bar.hostTop})`) : "none"}`);
+  if (bar && !bar.inside) problems.push(`${tag}: the app's tab bar sits outside the tour's frame`);
   await page.locator("#demo").scrollIntoViewIfNeeded();
   await page.evaluate(() => document.querySelector(".demo-stage").scrollIntoView({ block: "center" }));
   const seen = new Set();

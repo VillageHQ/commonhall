@@ -13,8 +13,13 @@
   display: block;
   width: 100%;
   height: 100%;
+  /* The app's body rule (min-height: 100dvh) lands here; the box keeps the size the tour gives it. */
+  min-height: 0;
+  max-height: none;
   overflow: hidden;
   container-type: size;
+  /* The app's fixed parts (the phone tab bar) stay inside the box, also at scale 1 and without JavaScript. */
+  contain: layout paint style;
   transform-origin: 0 0;
   background: var(--background);
   color: var(--foreground);
