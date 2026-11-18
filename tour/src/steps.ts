@@ -1,4 +1,4 @@
-import { ASK_BODY, DIRECTORY_SECTOR, INTRO_ASK_PAGE, INTRO_NOTE, SEARCH_QUERY } from "./data";
+import { ANNOUNCEMENT_BODY, ANNOUNCEMENT_SUBJECT, ASK_BODY, CANDIDATES_PAGE, DIRECTORY_SECTOR, EXPERTS_VIEW_HREF, INTRO_ASK_PAGE, INTRO_NOTE, SEARCH_QUERY } from "./data";
 import type { Player } from "./player";
 
 // The tour's steps, in order. Each is one tab on the landing page. How to add one: tour/AGENTS.md and
@@ -101,9 +101,66 @@ export const TOUR_STEPS: readonly TourStep[] = [
     },
   },
   {
+    id: "book-call",
+    label: "Book a call",
+    caption: "Mentors, experts and advisors in one view. Book a call on their own calendar, in one click.",
+    start: "/directory",
+    still: EXPERTS_VIEW_HREF,
+    async play(hands) {
+      await hands.wait(500);
+      // The switch rewrites the window's address in the app, so the tour presses it and moves its own address.
+      await hands.tap(".fh-seg button[aria-pressed='false']");
+      await hands.go(EXPERTS_VIEW_HREF);
+      await hands.wait(900);
+      await hands.point("[data-testid='expert-card'] .fh-who");
+      await hands.wait(1200);
+      // A real click opens the booking page in a new tab and counts the call: the tour only presses.
+      await hands.tap("[data-testid='expert-card'] [data-testid='book-call']");
+      await hands.wait(1800);
+    },
+  },
+  {
+    id: "candidates",
+    label: "Find candidates",
+    caption: "Hiring? Find candidates for a job in the network around you, or ask the community for them.",
+    start: "/jobs",
+    still: CANDIDATES_PAGE,
+    async play(hands) {
+      await hands.wait(500);
+      await hands.click("a[href^='/search/candidates']");
+      await hands.wait(900);
+      await hands.point(".fh-result .fh-pathtext");
+      await hands.wait(1400);
+      await hands.point("[data-slot='hiring-request'] a");
+      await hands.wait(1800);
+    },
+  },
+  {
+    id: "announcement",
+    label: "Announce",
+    caption: "The team writes once. Every member gets their own email, and it is pinned in the feed.",
+    start: "/admin/announcements",
+    still: "/admin/announcements",
+    async settle(hands) {
+      await hands.fill("#a-subject", ANNOUNCEMENT_SUBJECT);
+      await hands.fill("#a-body", ANNOUNCEMENT_BODY);
+    },
+    async play(hands) {
+      await hands.wait(400);
+      await hands.type("#a-subject", ANNOUNCEMENT_SUBJECT);
+      await hands.wait(300);
+      await hands.type("#a-body", ANNOUNCEMENT_BODY);
+      await hands.wait(400);
+      await hands.point(".fh-mail");
+      await hands.wait(1600);
+      await hands.tap("form[aria-label='New announcement'] button[type='submit']");
+      await hands.wait(1800);
+    },
+  },
+  {
     id: "admin",
-    label: "Intros, counted",
-    caption: "The fund's home: every intro asked, made and declined, and how members found them.",
+    label: "Intros and calls",
+    caption: "The fund's home: every intro asked, made and declined, and every call booked with a mentor.",
     start: "/admin",
     still: "/admin",
     async play(hands) {
@@ -111,7 +168,9 @@ export const TOUR_STEPS: readonly TourStep[] = [
       await hands.point("[data-testid='admin-home-intros']");
       await hands.wait(1400);
       await hands.point("#h-ledger");
-      await hands.wait(2200);
+      await hands.wait(1600);
+      await hands.point("[data-testid='admin-home-calls']");
+      await hands.wait(2000);
     },
   },
 ];

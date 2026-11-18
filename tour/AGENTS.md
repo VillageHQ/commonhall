@@ -9,7 +9,7 @@ of step 1 into `site/index.html` between the tour markers; commit both. `pnpm to
   tour's box (`:root`/`html`/`body` → `.tour-app`, window-width `@media` → `@container`, `vh` → `cqh`), the app's
   accent CSS, fonts and `@property` rules in `page.css` (they only work at the page level), only the pictures shown.
 - `src/steps.ts`: the steps. `src/screens.tsx`: the pages by address (`/search`, `/search/ask`, `/asks`,
-  `/directory`, `/admin`) around the app's real components, and the seeded query cache. `src/data.ts`: the made-up
+  `/directory`, `/jobs`, `/search/candidates`, `/admin/announcements`, `/admin`) around the app's real components, and the seeded query cache. `src/data.ts`: the made-up
   data (from `src/platform/demo/`). `src/player.ts`: point, click, tap, type, submit, fill, wait. `src/main.tsx`: the
   page controller (modes, tabs, Pause/Play, scaling, theme).
 - `src/shims/`: stand-ins for `next/link`, `next/navigation` (an in-memory address), `next/image`, `server-only`,

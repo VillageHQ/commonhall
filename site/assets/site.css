@@ -201,11 +201,13 @@ h2 { font: 500 40px/1.12 var(--serif); letter-spacing: -.4px; max-width: 20em; t
    is the app's own markup in a shadow root, scaled to the frame. With JavaScript and motion allowed on a roomy window
    the stage pins in the middle of the window and the scroll picks the step; elsewhere the tour plays by itself, and
    with reduced motion it stays still and the tabs change it. Without JavaScript the still of step 1 shows. */
-.demo { margin-top: 40px; max-width: 1080px; }
+.demo { margin: 40px auto 0; max-width: 1080px; }
 .demo-stage { display: grid; gap: 14px; }
 .demo-bar { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .demo-tabs { display: flex; gap: 6px; flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; padding: 2px; }
 .demo-tabs::-webkit-scrollbar { display: none; }
+/* On a wide window every tab shows: they wrap to a second row instead of scrolling out of view. */
+@media (min-width: 761px) { .demo-tabs { flex-wrap: wrap; overflow-x: visible; } }
 .demo-tab { display: flex; align-items: center; gap: 10px; height: 42px; padding: 0 14px; border: 1px solid var(--line); border-radius: 8px; background: transparent; color: var(--muted); font: 500 15px/1 var(--sans); white-space: nowrap; flex: none; cursor: pointer; transition: color .15s, background-color .15s, border-color .15s; }
 .demo-tab .n { width: 22px; height: 22px; border-radius: 50%; border: 1.2px solid currentColor; display: inline-flex; align-items: center; justify-content: center; font: 600 11.5px/1 var(--mono); flex: none; }
 .demo-tab:hover { color: var(--ink); border-color: var(--ink); }
@@ -218,7 +220,8 @@ h2 { font: 500 40px/1.12 var(--serif); letter-spacing: -.4px; max-width: 20em; t
 .tour-screen { display: block; height: clamp(420px, calc(100vh - 230px), 640px); overflow: hidden; }
 .tour-caption { font-size: 15px; color: var(--muted); line-height: 1.45; min-height: 2.9em; }
 .demo-note { margin-top: 16px; }
-html.js .demo.is-scroll { height: calc(100vh * 4); }
+/* Each step gets about 0.6 window-heights of scroll: 5.8 for eight steps. */
+html.js .demo.is-scroll { height: calc(100vh * (1 + var(--tour-steps, 5) * .6)); }
 html.js .demo.is-scroll .demo-stage { position: sticky; }
 .demo.is-still .tour-toggle { display: none; }
 html:not(.js) .demo-bar { display: none; }

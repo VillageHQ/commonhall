@@ -1,6 +1,6 @@
 // Usage: node .ai/features/landing-tour/reports/check-tour.mjs [out dir]
 // Serves site/ and checks the live tour in Chromium (playwright-core, local or the global npm install):
-// - 1280 x 800, light and dark: the scroll picks each step (screenshot each), the pinned stage's centre vs the window's,
+// - 1280 x 800, light and dark: the scroll picks each step (screenshot each), the pinned stage's centre vs the window's (up and down, and sideways),
 //   Pause stops the pointer, a tab click jumps there.
 // - 390 x 844: the tour plays on a timer (screenshots), no sideways overflow.
 // - reduced motion: nothing moves; a tab click changes the still.
@@ -93,6 +93,8 @@ for (const theme of ["light", "dark"]) {
     results.push(`${tag} step ${step + 1}: tab ${on + 1} on; stage centre ${Math.round(centre)} vs window ${400} (off by ${Math.round(Math.abs(centre - 400))} px); screen: ${await readScreenText(page)}`);
     if (on !== step) problems.push(`${tag}: scrolled to step ${step + 1} but tab ${on + 1} is on`);
     if (Math.abs(centre - 400) > 40) problems.push(`${tag}: the pinned stage is ${Math.round(Math.abs(centre - 400))} px off the window's centre`);
+    const across = box.x + box.width / 2;
+    if (Math.abs(across - 640) > 4) problems.push(`${tag}: the stage is ${Math.round(Math.abs(across - 640))} px off the window's centre, sideways`);
     await shot(page, `tour-${tag}-step${step + 1}`);
   }
   if (theme === "light") {

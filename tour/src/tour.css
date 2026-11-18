@@ -29,6 +29,13 @@
   -webkit-font-smoothing: antialiased;
 }
 
+/* The screen's scrolling box (main.tsx puts it around the mount), so the app's box itself never scrolls. */
+.tour-scroll {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+}
+
 .tour-mount {
   min-height: 100%;
 }

@@ -3,8 +3,16 @@ import type { AskAllowance, AskMember } from "@/modules/asks/contract";
 import type { Directory, DirectoryMember } from "@/modules/members/contract-profile";
 import type { NetworkSearchResult } from "@/modules/network/contract";
 import type { ConsoleHome } from "@/shell/console-home";
-import { DEMO_COMMUNITY, DEMO_COMMUNITY_ROLES, DEMO_OUTSIDERS, DEMO_PEOPLE, type DemoPerson } from "@/platform/demo/people";
-import { readCommunityRole } from "@/modules/members/contract-community-roles";
+import type { ComposerCohort, ComposerMember } from "@/modules/admin/components/announcement-composer";
+import type { SentAnnouncement } from "@/modules/admin/reads-announcements";
+import { ANNOUNCEMENT_AUDIENCES } from "@/modules/admin/contract-announcements";
+import { ASK_CATEGORIES } from "@/modules/asks/contract";
+import type { BoardCompany, BoardJob } from "@/modules/job-board/contract";
+import { buildCandidateQuery, draftHiringAsk, readRole } from "@/modules/job-board/rules-candidates";
+import { DEMO_JOB_SOURCES } from "@/platform/demo/jobs";
+import { DEMO_COMMUNITY, DEMO_COMMUNITY_ROLES, DEMO_OUTSIDERS, DEMO_PEOPLE, toDemoBookingUrl, type DemoPerson } from "@/platform/demo/people";
+import { toAskDraftHref } from "@/platform/modules/manifest";
+import { isExpertRole, readCommunityRole } from "@/modules/members/contract-community-roles";
 import { toPictureSlug } from "@/platform/demo/pictures";
 
 // The tour's made-up community: the demo's own people (src/platform/demo/people.ts), their generated portraits and
@@ -170,8 +178,7 @@ function directoryMember(member: DemoPerson): DirectoryMember {
     hiringJobCount: member.key === "ravi.menon" ? 2 : member.key === "amara.diallo" ? 1 : 0,
     tags: [...member.tags],
     communityRole: readCommunityRole(DEMO_COMMUNITY_ROLES[member.key]?.role ?? "") ?? "founder",
-    // The tour shows no booking link yet (tour-new-steps adds the Book a call step).
-    bookingUrl: null,
+    bookingUrl: readBookingUrl(member.key),
   };
 }
 
@@ -183,8 +190,24 @@ function uniqueSorted(values: readonly string[]) {
 
 export const DIRECTORY_SECTOR = "Fintech";
 
-export function readDirectory(sector: string): Directory {
-  const members = FOUNDERS.filter((member) => !sector || member.sector === sector).map(directoryMember);
+// The link Sam Lee may see: the member's own, unless they keep it for people they were introduced to (Ines Costa).
+function readBookingUrl(key: string) {
+  const booking = DEMO_COMMUNITY_ROLES[key];
+  return booking?.hasBookingLink && !booking.isIntroducedOnly ? toDemoBookingUrl(key) : null;
+}
+
+// "Experts and mentors" (?view=experts): the mentor the tour books first, then the members with a link, then the rest.
+export const EXPERTS_VIEW_HREF = "/directory?view=experts";
+export const BOOKED_MEMBER = person("grace.kim");
+
+function readExperts() {
+  const rank = (member: DemoPerson) => (member.key === BOOKED_MEMBER.key ? 0 : readBookingUrl(member.key) ? 1 : 2);
+  return DEMO_PEOPLE.filter(({ key }) => isExpertRole(DEMO_COMMUNITY_ROLES[key]?.role)).sort((first, second) => rank(first) - rank(second));
+}
+
+export function readDirectory(sector: string, isExpertsView = false): Directory {
+  const listed = isExpertsView ? readExperts() : FOUNDERS.filter((member) => !sector || member.sector === sector);
+  const members = listed.map(directoryMember);
   return {
     members,
     matchCount: members.length,
@@ -229,3 +252,111 @@ export const CONSOLE_HOME: ConsoleHome = {
   // "Book a call" clicks (made up), for the console Home's Calls requested sheet.
   calls: { total: 14, lastThirtyDays: 6 },
 };
+
+// ---------- Jobs and Find candidates ----------
+
+// The demo's job board (src/platform/demo/jobs.ts): each job at its founder's company, linked by that founder.
+export const BOARD_JOBS: BoardJob[] = DEMO_JOB_SOURCES.flatMap((source, sourceIndex) => {
+  const founder = person(source.founder);
+  return source.jobs.map((job, index) => ({
+    id: `00000000-0000-4000-8000-0000000b${String(sourceIndex).padStart(2, "0")}${String(index).padStart(2, "0")}`,
+    title: job.title,
+    location: job.location,
+    department: job.department,
+    url: `https://jobs.example.com/${source.slug}/${index + 1}`,
+    postedAt: new Date(TOUR_NOW.getTime() - job.postedDaysAgo * 86_400_000).toISOString(),
+    company: founder.company,
+    companySlug: source.slug,
+    companyLogoUrl: logoUrl(founder.company),
+    memberId: idOf(founder.key),
+    memberName: founder.name,
+  }));
+}).sort((first, second) => (second.postedAt ?? "").localeCompare(first.postedAt ?? ""));
+
+export const BOARD_COMPANIES: BoardCompany[] = DEMO_JOB_SOURCES.map((source) => ({ slug: source.slug, name: person(source.founder).company, jobCount: source.jobs.length }));
+
+function findCandidateJob() {
+  const found = BOARD_JOBS.find(({ companySlug, department }) => companySlug === "tallyhealth" && department === "Sales");
+  if (!found) throw new Error("No Tallyhealth sales job in the demo's jobs");
+  return found;
+}
+
+// Sam Lee's founding account executive in Boston: the job the tour finds candidates for.
+export const CANDIDATE_JOB = findCandidateJob();
+export const CANDIDATE_ROLE = readRole(CANDIDATE_JOB.title);
+export const CANDIDATE_QUERY = buildCandidateQuery(CANDIDATE_JOB) ?? CANDIDATE_JOB.title;
+// The address "Find candidates" lands on: the app's first visit redirects to add the job's search, so the tour's link
+// goes there at once.
+export function toCandidatesHref(jobId: string) {
+  return `/search/candidates?${new URLSearchParams({ job: jobId, q: CANDIDATE_QUERY, scope: "network" }).toString()}`;
+}
+export const CANDIDATES_PAGE = toCandidatesHref(CANDIDATE_JOB.id);
+export const HIRING_ASK_HREF = toAskDraftHref(draftHiringAsk(CANDIDATE_JOB), { category: ASK_CATEGORIES.hire });
+
+// Made-up account executives in Boston (portraits in public/demo/faces that no other demo person uses).
+function candidate(name: string, title: string, company: string, paths: ReturnType<typeof pathThrough>[]) {
+  return {
+    fullName: name,
+    headline: `${title} at ${company}`,
+    linkedinSlug: `${toPictureSlug(name)}-demo`,
+    isMember: false,
+    memberId: null,
+    imageUrl: faceUrl(name),
+    title,
+    company,
+    companyLogoUrl: logoUrl(company),
+    city: "Boston",
+    direct: null,
+    paths,
+  };
+}
+
+export const CANDIDATE_RESULT: NetworkSearchResult = {
+  query: CANDIDATE_QUERY,
+  scope: "network",
+  people: [
+    candidate("Grace Ito", "Senior Account Executive", "Halcyon Health", [pathThrough("ada.okafor", "Close")]),
+    candidate("Leo Martins", "Account Executive, Hospitals", "Countwise", [pathThrough("priya.shah", "Knows"), pathThrough("ravi.menon", "Met")]),
+    candidate("Jonas Weber", "Head of Sales, East Coast", "Stackwise", [pathThrough("marcus.webb", "Knows")]),
+  ],
+  members: [],
+  discardedOffNetworkResults: false,
+  dailyLookupsLeft: 17,
+  includesOwnNetwork: true,
+  isCached: false,
+  isProfilesOnly: false,
+  pathsUnavailable: false,
+};
+
+// ---------- Announcements ----------
+
+export const ANNOUNCEMENT_SUBJECT = "Demo day is on 4 December";
+export const ANNOUNCEMENT_BODY = "Hi {first name},\n\nDemo day is on 4 December in Amsterdam. Every founder gets five minutes on stage. Save the date.";
+
+// Everyone the page lists, the admin first (the preview starts on them). One member turned announcements off.
+export const ANNOUNCEMENT_MEMBERS: ComposerMember[] = [ADMIN, ...DEMO_PEOPLE.filter(({ key }) => key !== ADMIN.key)].map((member) => ({
+  id: idOf(member.key),
+  name: member.name,
+  company: member.company,
+  cohort: member.cohort,
+  communityRole: readCommunityRole(DEMO_COMMUNITY_ROLES[member.key]?.role ?? "") ?? "founder",
+  isWanted: member.key !== "kwame.asante",
+}));
+
+export const ANNOUNCEMENT_COHORTS: ComposerCohort[] = uniqueSorted(ANNOUNCEMENT_MEMBERS.map(({ cohort }) => cohort ?? "").filter(Boolean)).map((name) => {
+  const inCohort = ANNOUNCEMENT_MEMBERS.filter(({ cohort }) => cohort === name);
+  return { name, memberCount: inCohort.length, wantedCount: inCohort.filter(({ isWanted }) => isWanted).length };
+});
+
+export const SENT_ANNOUNCEMENTS: SentAnnouncement[] = [
+  {
+    id: "00000000-0000-4000-8000-0000000c0001",
+    subject: "Office hours with the partners, every Friday",
+    audience: ANNOUNCEMENT_AUDIENCES.everyone,
+    cohort: null,
+    queuedCount: ANNOUNCEMENT_MEMBERS.filter(({ isWanted }) => isWanted).length,
+    isPosted: true,
+    sentByName: ADMIN.name,
+    sentAt: new Date(TOUR_NOW.getTime() - 9 * 86_400_000),
+  },
+];
