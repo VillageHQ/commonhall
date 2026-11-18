@@ -4,7 +4,7 @@ status: building
 ---
 # The guided start for a new organizer
 
-Approved by Absi on 17 Nov 2026 (decision page question 1: "4 guided steps").
+Approved by the owner on 17 Nov 2026 (decision page question 1: "4 guided steps").
 
 ## What it does
 - **Signed in at once:** creating the admin on /setup signs the organizer in and opens the guided start (today they

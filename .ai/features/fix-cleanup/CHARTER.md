@@ -1,6 +1,6 @@
 # Charter: fix build, the small leftovers (`fix-cleanup`)
 
-Approved scope: Absi approved one cleanup build for the small leftovers from the checks (decision page
+Approved scope: The owner approved one cleanup build for the small leftovers from the checks (decision page
 LVzU4aenwkVczhRlC-QLXQ, 2026-11-12). Open items come from `.ai/bugs.md` and the orchestrator's brief. One pull request;
 the orchestrator merges it. Commonhall is the reference where it has the behaviour. The website is never published.
 

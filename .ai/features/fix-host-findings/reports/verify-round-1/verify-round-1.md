@@ -1,6 +1,6 @@
 # fix-host-findings: independent check, round 1
 
-Checked: 2026-11-12, branch `absi-agent/fix-host-findings` at `9d1c4cb`. I used the production build in `.next` (`next start -p 3123`), throwaway Postgres `community-fhf-pg`, and a fresh database per run (verify1, verify2, verify3). The app ran in demo mode with mail and Village faked. All people are made up, at example.com. I ran one server and one browser at a time, and stopped each one at the end.
+Checked: 2026-11-12, branch `fix-host-findings` at `9d1c4cb`. I used the production build in `.next` (`next start -p 3123`), throwaway Postgres `community-fhf-pg`, and a fresh database per run (verify1, verify2, verify3). The app ran in demo mode with mail and Village faked. All people are made up, at example.com. I ran one server and one browser at a time, and stopped each one at the end.
 
 ## Results
 

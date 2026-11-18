@@ -1,6 +1,6 @@
 # Charter: pages crash behind an https tunnel (self-call over https)
 
-Approved direction: Absi's brief for the Commonhall onboarding topic (17 Nov 2026): "Crashes and small bugs first
+Approved direction: The owner's brief for the Commonhall onboarding topic (17 Nov 2026): "Crashes and small bugs first
 (they need no design)." No look changes, so no alignment page beyond that brief.
 
 - **Goal:** /admin/integrations, /perks and the visitor /jobs page stop answering 500 on a server bound to 127.0.0.1

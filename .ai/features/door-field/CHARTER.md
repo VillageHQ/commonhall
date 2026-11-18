@@ -1,6 +1,6 @@
 # Hero door field: CHARTER (approved)
 
-Approved by Absi on 2026-11-15 in Telegram topic 75190 on decision page PqL30bOyL1nJ8v6YO07YDA: "Which door field goes
+Approved by the owner on 2026-11-15 in Telegram topic 75190 on decision page PqL30bOyL1nJ8v6YO07YDA: "Which door field goes
 behind the hero? → A · Plan-view door arcs". His words earlier the same day: "Make the background like these
 architecture doors: when hovered they trigger a domino effect of doors getting opened with a circle-like effect. Make
 the background also a bit more subtle so that the hero section is more visible."

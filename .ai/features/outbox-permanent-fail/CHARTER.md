@@ -1,6 +1,6 @@
 # Charter: an email Resend refuses is given up at once
 
-Approved direction: Absi's brief for the Commonhall onboarding topic (17 Nov 2026): "Crashes and small bugs first
+Approved direction: The owner's brief for the Commonhall onboarding topic (17 Nov 2026): "Crashes and small bugs first
 (they need no design)." Found on the LOI demo: Resend answered 422 for example.com addresses and the rows stayed
 "pending" through 6 tries over about 4 hours.
 

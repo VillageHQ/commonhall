@@ -1,7 +1,7 @@
 # Independent check: fix-cleanup (commit 88941db)
 
 Production build (`next start`), DEMO_MODE, database `verify1` on `cleanup-test-pg`. Port **3141**, not 3131:
-3131 was already taken by an unrelated process (`absi-brain` bun server, PID 62280), which I left alone.
+3131 was already taken by an unrelated process (a local bun server, PID 62280), which I left alone.
 Browser: Playwright, Maya in one context and Omar/Sam in a second one.
 
 | Item | Result | What I saw | Screenshots |
@@ -35,7 +35,7 @@ new intro Maya→Sam (declined); 3 made-up feed posts by Sam; `fill_in_basis` se
 ## Cleanup
 - Browser closed (both contexts).
 - Server stopped: my `next start -p 3141` (PID 66776) was killed and port 3141 no longer answers. The first background shell hit its 10-minute limit, but its node child kept running. I tried a restart, which failed with EADDRINUSE, so I kept using the first server.
-- Port 3131 (unrelated absi-brain process) not touched. `cleanup-test-pg` still running.
+- Port 3131 (unrelated local process) not touched. `cleanup-test-pg` still running.
 - `A-join-omar.jpg` shows a 404: I first tried the wrong path `/join?token=…`. The real path is `/invite?token=…`. This is not a bug.
 
 ## Round 2 (commit a70edf3, same setup, port 3141)

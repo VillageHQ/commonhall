@@ -1,6 +1,6 @@
 # Charter: a careers link with no job board leads to jobs by hand
 
-Approved direction: Absi's brief for the Commonhall onboarding topic (17 Nov 2026): "Crashes and small bugs first."
+Approved direction: The owner's brief for the Commonhall onboarding topic (17 Nov 2026): "Crashes and small bugs first."
 Found on the LOI demo: "Another tool, or none" + a careers link answered "We couldn't find a job board… or add your
 jobs by hand", with no way to add jobs by hand from there.
 

@@ -1,6 +1,6 @@
 # Charter: search needs your own Village, plus three search fixes (approved 2026-11-17)
 
-Approved by Absi on the decision page "Real Village search: results and two choices" (page 9EHlu-7qTE6U-vVyq8t5oQ):
+Approved by the owner on the decision page "Real Village search: results and two choices" (page 9EHlu-7qTE6U-vVyq8t5oQ):
 - "How should members without their own Village get search?" → **Each member must connect Village** (works today, fewer searchers).
 - "Should Qareen fix the three small findings in one pull request?" → **Qareen fixes them and merges after checks**.
 
