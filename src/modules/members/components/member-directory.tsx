@@ -195,19 +195,22 @@ function DirectoryFilterMenus({ filters, options }: { filters: DirectoryFilters;
           </label>
         );
       })}
-      <label className="fh-filt">
-        <span className="fh-sr">Fresh as of</span>
-        <Select
-          value={filters.updatedWithinDays}
-          onChange={(event) => applyFilters({ ...filters, updatedWithinDays: readUpdatedWithinDays(event.target.value), page: 1 })}
-        >
-          {[0, ...UPDATED_WITHIN_DAYS].map((days) => (
-            <option key={days} value={days}>
-              {UPDATED_LABELS[days]}
-            </option>
-          ))}
-        </Select>
-      </label>
+      {/* Experts' cards show no "fresh as of", and the role filter takes its place in the row. */}
+      {filters.isExpertsView ? null : (
+        <label className="fh-filt">
+          <span className="fh-sr">Fresh as of</span>
+          <Select
+            value={filters.updatedWithinDays}
+            onChange={(event) => applyFilters({ ...filters, updatedWithinDays: readUpdatedWithinDays(event.target.value), page: 1 })}
+          >
+            {[0, ...UPDATED_WITHIN_DAYS].map((days) => (
+              <option key={days} value={days}>
+                {UPDATED_LABELS[days]}
+              </option>
+            ))}
+          </Select>
+        </label>
+      )}
     </div>
   );
 }
@@ -280,7 +283,7 @@ function DirectoryViewSwitch({ filters }: { filters: DirectoryFilters }) {
           key={label}
           type="button"
           aria-pressed={filters.isExpertsView === isExperts}
-          onClick={() => applyFilters({ ...filters, isExpertsView: isExperts, communityRole: "", page: 1 })}
+          onClick={() => applyFilters({ ...filters, isExpertsView: isExperts, communityRole: "", updatedWithinDays: 0, page: 1 })}
         >
           {label}
         </button>

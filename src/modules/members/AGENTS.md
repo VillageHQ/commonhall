@@ -11,12 +11,13 @@ Core. Always on. Others build on it; it never imports them.
 - `service-blocks.ts`, `contract-blocks.ts`: blocks. Whoever calls `setMemberBlocked` passes the effects that run in the same transaction.
 - `service-report-credit.ts`: the "credit me in reports" switch, off by default.
 - Pages `/directory`, `/people/<id>`, `/me`, `/me/data`, `/me/email`: `.ai/features/fh-directory-profile/NOTES.md`.
-- `slots.tsx`: `MemberConversationSlot`, filled by messages. The shell passes the directory its `HiringLookup`.
-- `service-linkedin.ts`: claiming a LinkedIn profile, and whether a member's email is trusted.
-- `*-fill-in.ts`: the fill-in's data: the admin's basis, each member's yes or no (`member_lookup`), the lines (`member_fill_in`). Network calls Village and saves here.
+- `slots.tsx`: `MemberConversationSlot`, filled by messages. The shell passes `HiringLookup`.
+- `service-linkedin.ts`: LinkedIn claims, and whether a member's email is trusted.
+- `*-fill-in.ts`: the fill-in's data: the admin's basis, each member's answer (`member_lookup`), the lines (`member_fill_in`). Network saves here.
 - `service-onboarding.ts`: onboarding state; `src/shell/onboarding.ts` runs the two welcome steps.
-- `contract-privacy.ts`, `service-privacy.ts`: `member_privacy`: hide me, who can message me, accept intro asks (null = never answered, treated as yes). `isListedMember` keeps hidden members out of every directory list.
-- `service-erasure.ts`: the real delete's part here. The `user` row stays as a "Deleted member" placeholder with `deleted-<id>@reclaimed.invalid`; `member_removal.erased_at` marks it. `src/shell/account-deletion.ts` runs the whole delete.
+- `contract-privacy.ts`, `service-privacy.ts`: `member_privacy`: hide me, who can message me, accept intro asks (null = never answered = yes). `isListedMember` keeps hidden members out of lists.
+- `service-erasure.ts`: the real delete's part. The `user` row stays as a "Deleted member" placeholder; `member_removal.erased_at` marks it. `shell/account-deletion.ts` runs it all.
+- `*community-role*.ts`, `service-booking.ts`: roles, booking links, Book a call: `.ai/features/mentors-calls/NOTES.md`.
 - `contract-*.ts`: Zod schemas and constants, loaded outside Next too: relative imports, no `server-only`.
 - `queries-*.ts`: client requests. `components/`: the UI.
 

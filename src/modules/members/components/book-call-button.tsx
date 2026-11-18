@@ -1,6 +1,7 @@
 "use client";
 
 import { CalendarPlus } from "lucide-react";
+import { useRef, type MouseEvent } from "react";
 
 import { buttonVariants } from "@/components/ui/button";
 import { CALL_REQUEST_API_ROUTE } from "@/modules/members/contract-community-roles";
@@ -9,6 +10,9 @@ const EXTERNAL_LINK_RELATIONSHIP = "noopener noreferrer nofollow";
 
 // "Book a call": a plain link to the member's booking page, in a new tab. The click is recorded first, once, with a
 // request that outlives the page (the admin counts calls requested); the tab opens either way.
+// A double-click is one request for a call: a second click on the same button within this time opens nothing more.
+const REPEAT_CLICK_MS = 1500;
+
 export function recordCallClick(memberId: string) {
   void fetch(CALL_REQUEST_API_ROUTE, {
     method: "POST",
@@ -21,6 +25,16 @@ export function recordCallClick(memberId: string) {
 type BookCallButtonProps = { memberId: string; memberName: string; bookingUrl: string; variant?: "primary" | "secondary"; size?: "sm" };
 
 export function BookCallButton({ memberId, memberName, bookingUrl, variant = "secondary", size = "sm" }: BookCallButtonProps) {
+  const lastClickAt = useRef(0);
+  function handleClick(event: MouseEvent<HTMLAnchorElement>) {
+    const now = Date.now();
+    if (now - lastClickAt.current < REPEAT_CLICK_MS) {
+      event.preventDefault();
+      return;
+    }
+    lastClickAt.current = now;
+    recordCallClick(memberId);
+  }
   return (
     <a
       href={bookingUrl}
@@ -28,7 +42,7 @@ export function BookCallButton({ memberId, memberName, bookingUrl, variant = "se
       rel={EXTERNAL_LINK_RELATIONSHIP}
       className={buttonVariants({ variant, size })}
       data-testid="book-call"
-      onClick={() => recordCallClick(memberId)}
+      onClick={handleClick}
     >
       <CalendarPlus aria-hidden="true" className="fh-i fh-xs" strokeWidth={1.5} />
       Book a call

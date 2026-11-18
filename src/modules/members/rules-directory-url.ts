@@ -1,4 +1,4 @@
-import { isCommunityRole } from "./contract-community-roles.ts";
+import { EXPERT_ROLES } from "./contract-community-roles.ts";
 import { directoryFiltersSchema, UPDATED_WITHIN_DAYS, type DirectoryFilters } from "./contract-profile.ts";
 
 const SEARCH_PARAM = "q";
@@ -33,8 +33,9 @@ export function readUpdatedWithinDays(value: string | undefined) {
   return UPDATED_WITHIN_DAYS.find((days) => String(days) === value) ?? 0;
 }
 
+// The role filter belongs to "Experts and mentors": only its four roles are read; anything else is no filter.
 function readKnownRole(value: string | undefined) {
-  return value && isCommunityRole(value) ? value : "";
+  return EXPERT_ROLES.find((role) => role === value) ?? "";
 }
 
 export function parseDirectoryFilters(params: Record<string, SearchParamValue>): DirectoryFilters {

@@ -61,6 +61,7 @@ describe("the directory URL", () => {
 
   it("drops a role it doesn't know", () => {
     expect(parseDirectoryFilters({ view: "experts", role: "wizard" })).toMatchObject({ isExpertsView: true, communityRole: "" });
+    expect(parseDirectoryFilters({ view: "experts", role: "fund_team" })).toMatchObject({ communityRole: "" });
   });
 
   it("falls back to page one for a nonsense page", () => {
