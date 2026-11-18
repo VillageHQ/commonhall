@@ -194,7 +194,7 @@
   // The price line follows the member count: Enterprise up to 500 members, a quote above.
   function readPlanPrice(members) {
     if (members > ENTERPRISE_UP_TO_MEMBERS) return "above 500 members, Village quotes a plan with you";
-    return "$10,000 a year, 7,500 credits a month";
+    return "$50k+ a year, 7,500 credits a month";
   }
 
   function setUpSignup() {

@@ -1,0 +1,18 @@
+// commonhall.ai: the landing page (site/) and the call form receiver (worker.js), in Village's Cloudflare account.
+// Deploy from this folder: CLOUDFLARE_API_TOKEN=… CLOUDFLARE_ACCOUNT_ID=… npx wrangler deploy (see README.md).
+{
+  "name": "commonhall-site",
+  "main": "worker.js",
+  "compatibility_date": "2026-11-01",
+  "assets": { "directory": "../../site", "binding": "ASSETS", "run_worker_first": true },
+  "routes": [
+    { "pattern": "commonhall.ai", "custom_domain": true },
+    { "pattern": "www.commonhall.ai", "custom_domain": true }
+  ],
+  "d1_databases": [
+    { "binding": "DB", "database_name": "commonhall-signups", "database_id": "22b5079c-7e87-4622-9731-0939a505b8f8", "migrations_dir": "migrations" }
+  ],
+  "send_email": [{ "name": "EMAIL", "remote": true }],
+  "vars": { "SIGNUP_TO": "support@commonhall.ai", "SIGNUP_FROM": "noreply@commonhall.ai" },
+  "observability": { "enabled": true }
+}
