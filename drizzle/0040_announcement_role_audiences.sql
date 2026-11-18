@@ -1,0 +1,2 @@
+ALTER TABLE "announcement" DROP CONSTRAINT "announcement_audience_known";--> statement-breakpoint
+ALTER TABLE "announcement" ADD CONSTRAINT "announcement_audience_known" CHECK ("announcement"."audience" in ('everyone', 'founders', 'experts', 'cohort'));

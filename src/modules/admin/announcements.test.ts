@@ -7,6 +7,8 @@ import { POST as postFeed } from "@/app/api/feed/posts/route";
 import { fillAnnouncementFields, readUnknownFields } from "@/modules/admin/rules-announcement-fields";
 import { announcement } from "@/modules/admin/schema";
 import { POST_TYPES } from "@/modules/feed/contract";
+import { COMMUNITY_ROLES } from "@/modules/members/contract-community-roles";
+import { memberProfile } from "@/modules/members/schema";
 import { post } from "@/modules/feed/schema";
 import { AUDIT_ACTIONS } from "@/platform/audit/actions";
 import { adminAuditEntry } from "@/platform/audit/schema";
@@ -142,6 +144,23 @@ describe("announcements", () => {
     expect(await response.json()).toMatchObject({ queued: 2, isPosted: false });
     expect((await readQueued()).map(({ memberId }) => memberId).sort()).toEqual([amara, ben].sort());
     expect(await database.select().from(post)).toHaveLength(0);
+  });
+
+  it("sends to founders or to mentors and experts by community role, email only", async () => {
+    await database.update(memberProfile).set({ communityRole: COMMUNITY_ROLES.mentor }).where(eq(memberProfile.userId, amara));
+    await database.update(memberProfile).set({ communityRole: COMMUNITY_ROLES.entrepreneurInResidence }).where(eq(memberProfile.userId, quiet));
+    const experts = await call(postSend, admin, { ...MESSAGE, audience: "experts", sendKey: crypto.randomUUID() });
+    // Quiet Quinn is in residence but turned announcements off.
+    expect(await experts.json()).toMatchObject({ queued: 1, isPosted: false });
+    expect((await readQueued()).map(({ memberId }) => memberId)).toEqual([amara]);
+
+    const founders = await call(postSend, admin, { ...MESSAGE, audience: "founders", sendKey: crypto.randomUUID() });
+    // Everyone else: a member with no role set reads as a founder, like the console's member list.
+    expect(await founders.json()).toMatchObject({ queued: 3, isPosted: false });
+    expect((await readQueued()).map(({ memberId }) => memberId).sort()).toEqual([amara, admin.userId, member.userId, ben].sort());
+    expect(await database.select().from(post)).toHaveLength(0);
+    const audits = await database.select().from(adminAuditEntry).where(eq(adminAuditEntry.action, AUDIT_ACTIONS.announcementSent));
+    expect(audits.map(({ detail }) => detail).sort()).toEqual(["“Demo day, {first name}” to founders: 3 emails", "“Demo day, {first name}” to mentors and experts: 1 email"]);
   });
 
   it("refuses an audience with nobody to send to, and says why", async () => {

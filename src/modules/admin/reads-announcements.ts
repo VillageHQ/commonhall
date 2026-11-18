@@ -9,7 +9,7 @@ import { user } from "../../platform/database/auth-schema.ts";
 import type { DatabaseOrTransaction } from "../../platform/database/client.ts";
 import { EMAIL_TOPICS } from "../../platform/email/kinds.ts";
 import { emailOptOut, emailSuppression } from "../../platform/email/schema.ts";
-import { ANNOUNCEMENT_AUDIENCES, type AnnouncementAudience } from "./contract-announcements.ts";
+import { readCohortKey } from "./contract-announcements.ts";
 import { announcement } from "./schema.ts";
 
 export type AnnouncementRecipient = {
@@ -18,13 +18,10 @@ export type AnnouncementRecipient = {
   email: string;
   company: string | null;
   cohort: string | null;
+  communityRole: string | null;
   // False when the member turned announcements off, or their address bounced or complained before.
   isWanted: boolean;
 };
-
-function readCohortKey(cohort: string | null) {
-  return cohort?.trim().toLowerCase() ?? "";
-}
 
 // Every member who can hear from the team: not removed, not banned, not a deleted account.
 export async function readAnnouncementMembers(connection: DatabaseOrTransaction): Promise<AnnouncementRecipient[]> {
@@ -35,6 +32,7 @@ export async function readAnnouncementMembers(connection: DatabaseOrTransaction)
       email: user.email,
       company: memberProfile.company,
       cohort: memberProfile.cohort,
+      communityRole: memberProfile.communityRole,
       optedOut: sql<boolean>`exists (select 1 from ${emailOptOut} where ${emailOptOut.memberId} = ${user.id} and ${emailOptOut.topic} = ${EMAIL_TOPICS.announcements})`,
       suppressed: sql<boolean>`exists (select 1 from ${emailSuppression} where ${emailSuppression.email} = lower(${user.email}))`,
     })
@@ -43,12 +41,6 @@ export async function readAnnouncementMembers(connection: DatabaseOrTransaction)
     .where(and(isActiveMember(), notLike(user.email, `%@${RECLAIMED_EMAIL_DOMAIN}`)))
     .orderBy(asc(user.name), asc(user.id));
   return rows.map(({ optedOut, suppressed, ...row }) => ({ ...row, isWanted: !optedOut && !suppressed }));
-}
-
-// A cohort matches as a whole value, ignoring case and spaces at the ends, like the directory's filter.
-export function isInAudience(recipient: Pick<AnnouncementRecipient, "cohort">, audience: AnnouncementAudience) {
-  if (audience.audience === ANNOUNCEMENT_AUDIENCES.everyone) return true;
-  return readCohortKey(recipient.cohort) === readCohortKey(audience.cohort);
 }
 
 export type CohortChoice = { name: string; memberCount: number; wantedCount: number };
