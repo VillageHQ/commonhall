@@ -50,6 +50,6 @@ made-up members (example.com, the fake mail server) and reads every email and th
 None.
 
 ## Status (18 Nov 2026)
-Built: everyone and one-cohort audiences, compose, preview, test, send by email + pinned feed post, history, audit.
-Waiting: the "founders" and "mentors and experts" audiences, until mentors-calls merges (see NOTES.md, "Not yet").
+Built: everyone, founders, mentors-and-experts (by community role) and one-cohort audiences, compose, preview, test,
+send by email + pinned feed post (everyone only), history, audit.
 How it works: ./NOTES.md

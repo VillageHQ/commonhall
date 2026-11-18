@@ -26,12 +26,14 @@ import { recordFailedAttempt } from "../../platform/rate-limit/attempt-rate-limi
 import {
   ANNOUNCEMENT_AUDIENCES,
   ANNOUNCEMENT_ERROR_CODES,
+  describeAnnouncementAudience,
+  isInAudience,
   type AnnouncementAudience,
   type AnnouncementSendBody,
   type AnnouncementSent,
   type AnnouncementTestBody,
 } from "./contract-announcements.ts";
-import { isInAudience, readAnnouncementMembers, type AnnouncementRecipient } from "./reads-announcements.ts";
+import { readAnnouncementMembers, type AnnouncementRecipient } from "./reads-announcements.ts";
 import { renderAnnouncementPost, renderAnnouncementText, type AnnouncementFieldValues } from "./rules-announcement-fields.ts";
 import { announcement } from "./schema.ts";
 
@@ -53,10 +55,6 @@ export function renderAnnouncementEmail(message: Message, values: AnnouncementFi
 
 function readFieldValues(member: Pick<AnnouncementRecipient, "name" | "company">, community: string): AnnouncementFieldValues {
   return { fullName: member.name, company: member.company, community };
-}
-
-function describeAudience(audience: AnnouncementAudience) {
-  return audience.audience === ANNOUNCEMENT_AUDIENCES.cohort ? `the ${audience.cohort} cohort` : "everyone";
 }
 
 function emailOffError() {
@@ -81,7 +79,8 @@ function tooLongForFeedError(overBy: number) {
 }
 
 function emptyAudienceError(audience: AnnouncementAudience, memberCount: number) {
-  const who = describeAudience(audience);
+  const isRole = audience.audience === ANNOUNCEMENT_AUDIENCES.founders || audience.audience === ANNOUNCEMENT_AUDIENCES.experts;
+  const who = isRole ? `the ${describeAnnouncementAudience(audience)} audience` : describeAnnouncementAudience(audience);
   const message =
     memberCount === 0
       ? `Nobody is in ${who} yet, so there is no one to send this to. Pick another audience.`
@@ -147,7 +146,7 @@ export async function sendAnnouncement({ database, environment, member }: Reques
     const emails = queued === 1 ? "1 email" : `${queued} emails`;
     await recordAdminAction(transaction, member.id, {
       action: AUDIT_ACTIONS.announcementSent,
-      detail: `“${clipLine(subject, AUDIT_SUBJECT_LENGTH)}” to ${describeAudience(audience)}: ${emails}${posted ? ", pinned in the feed" : ""}`,
+      detail: `“${clipLine(subject, AUDIT_SUBJECT_LENGTH)}” to ${describeAnnouncementAudience(audience)}: ${emails}${posted ? ", pinned in the feed" : ""}`,
     });
     return { id: created.id, queued, isPosted: posted !== null, isRepeat: false };
   });

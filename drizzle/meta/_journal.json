@@ -274,6 +274,13 @@
       "when": 1795018321328,
       "tag": "0039_mentors_calls",
       "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1795019766101,
+      "tag": "0040_announcement_role_audiences",
+      "breakpoints": true
     }
   ]
 }

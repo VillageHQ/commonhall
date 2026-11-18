@@ -60,6 +60,6 @@ export const announcement = pgTable(
   },
   (table) => [
     index("announcement_sent_at_idx").on(desc(table.sentAt)),
-    check("announcement_audience_known", sql`${table.audience} in ('${sql.raw(ANNOUNCEMENT_AUDIENCES.everyone)}', '${sql.raw(ANNOUNCEMENT_AUDIENCES.cohort)}')`),
+    check("announcement_audience_known", sql`${table.audience} in (${sql.raw(Object.values(ANNOUNCEMENT_AUDIENCES).map((audience) => `'${audience}'`).join(", "))})`),
   ],
 );
