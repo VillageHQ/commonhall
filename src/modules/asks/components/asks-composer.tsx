@@ -11,7 +11,9 @@ import { RequestFailure, postRequest } from "@/platform/http/post-request";
 import { ASK_API_ROUTES, ASK_ERROR_CODES, ASK_KINDS, ASK_LIMITS, ASKS_PAGE, createdAskSchema, describeAllowance, toAskPage, type AskAllowance, type AskKind } from "../contract";
 import { ICON } from "./post-parts";
 
-type ComposerProps = { communityName: string; allowance: AskAllowance; draft?: { body: string; target: string } | null };
+import type { AskDraftParts } from "../rules-board-url";
+
+type ComposerProps = { communityName: string; allowance: AskAllowance; draft?: AskDraftParts | null };
 
 // Commonhall's composer (crop composer-ask.png): Ask | Update, one line and Post, "Who are you trying to reach?"
 // folded away, then the week's allowance as pips. A post goes to its own page with the flash.
@@ -36,6 +38,8 @@ export function AsksComposer({ communityName, allowance, draft = null }: Compose
           kind,
           targetText: isUpdate ? null : String(form.get("target") ?? ""),
           targetCompany: isUpdate ? null : String(form.get("company") ?? ""),
+          // A prefilled hiring request ("Find candidates") carries its category.
+          ...(draft?.category && !isUpdate ? { category: draft.category } : {}),
         },
         createdAskSchema,
       );
