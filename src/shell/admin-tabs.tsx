@@ -8,6 +8,7 @@ import { CONSOLE_KEYS, readConsoleKey } from "@/shell/navigation-rules";
 import type { AdminTabFacts } from "@/shell/admin-badges";
 import { ROUTES } from "@/platform/http/routes";
 import { ASKS_ADMIN_PAGE } from "@/modules/asks/contract";
+import { ANNOUNCEMENT_PAGE } from "@/modules/admin/contract-announcements";
 
 // The console's own menu is the sidebar (and the phone tabs). Community has pages Commonhall's menu has no item for;
 // each lights a console item. Set up's pages are reached from its list (/admin/setup), as in Commonhall; the Asks
@@ -18,6 +19,7 @@ const TABS_BY_ITEM: Partial<Record<string, AdminTab[]>> = {
   [CONSOLE_KEYS.asks]: [
     { label: "Asks", href: ASKS_ADMIN_PAGE },
     { label: "Weekly email", href: ROUTES.adminWeeklyEmail },
+    { label: "Announcements", href: ANNOUNCEMENT_PAGE },
   ],
 };
 

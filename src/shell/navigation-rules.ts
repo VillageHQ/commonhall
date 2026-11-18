@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import { ANNOUNCEMENT_PAGE } from "@/modules/admin/contract-announcements";
 import { ASKS_ADMIN_PAGE, describeNewOffers } from "@/modules/asks/contract";
 import { JOB_BOARD_PAGES } from "@/modules/job-board/contract";
 import { describeUnreadMessages } from "@/modules/messages/contract";
@@ -77,6 +78,7 @@ const CONSOLE_PATHS: readonly (readonly [string, string])[] = [
   [ASKS_ADMIN_PAGE, CONSOLE_KEYS.asks],
   [ROUTES.adminWeeklyEmail, CONSOLE_KEYS.asks],
   [ROUTES.adminDigest, CONSOLE_KEYS.asks],
+  [ANNOUNCEMENT_PAGE, CONSOLE_KEYS.asks],
   [JOB_BOARD_PAGES.admin, CONSOLE_KEYS.jobs],
 ];
 

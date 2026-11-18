@@ -1,4 +1,4 @@
-import { CircleQuestionMark, HandHelping, Heart, Lightbulb, Rocket, ThumbsUp, Trophy, type LucideIcon } from "lucide-react";
+import { CircleQuestionMark, HandHelping, Heart, Lightbulb, Megaphone, Rocket, ThumbsUp, Trophy, type LucideIcon } from "lucide-react";
 
 import { POST_TYPES, REACTIONS, type Reaction } from "@/modules/feed/contract";
 
@@ -6,6 +6,7 @@ export const POST_TYPE_DISPLAY = {
   [POST_TYPES.ask]: { label: "Ask", icon: CircleQuestionMark, tone: "accent" },
   [POST_TYPES.win]: { label: "Win", icon: Trophy, tone: "gold" },
   [POST_TYPES.offer]: { label: "Offer", icon: HandHelping, tone: "sage" },
+  [POST_TYPES.announcement]: { label: "From the team", icon: Megaphone, tone: "accent" },
 } as const;
 
 export const CHOOSABLE_POST_TYPES = [POST_TYPES.ask, POST_TYPES.win, POST_TYPES.offer] as const;

@@ -90,6 +90,7 @@ const ACTION_LINES: Partial<Record<AuditAction, (facts: ActionFacts) => ActionLi
   [AUDIT_ACTIONS.monthlyCapChanged]: ({ detail }) => ({ words: `Changed settings: ${detail} lookups a month (limit)` }),
   [AUDIT_ACTIONS.connectNudgeSent]: ({ detail }) => ({ words: "Nudged members to connect their network", target: detail }),
   [AUDIT_ACTIONS.partnerReportSent]: ({ detail }) => ({ words: "Sent the partner report", target: detail }),
+  [AUDIT_ACTIONS.announcementSent]: ({ detail }) => ({ words: "Sent an announcement", target: detail }),
   [AUDIT_ACTIONS.partnerReportMarkedShared]: () => ({ words: "Marked the partner report as shared" }),
   [AUDIT_ACTIONS.accountDeleted]: ({ detail }) => ({ words: readAccountDeletedWords(detail) }),
   [AUDIT_ACTIONS.introAsksAnswered]: ({ detail }) => ({ words: detail === "yes" ? "Takes intro asks" : "Asked not to get intro asks" }),
