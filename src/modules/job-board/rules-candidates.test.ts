@@ -29,8 +29,13 @@ describe("the search a job turns into", () => {
   });
 
   it("drafts the hiring request from the title and company", () => {
-    expect(draftHiringAsk({ title: "Product Designer", company: "Kilnworks" })).toBe("We're hiring a Product Designer at Kilnworks. Who do you know?");
-    expect(draftHiringAsk({ title: "???", company: "Kilnworks" })).toBe("We're hiring at Kilnworks. Who do you know?");
+    expect(draftHiringAsk({ title: "Product Designer", company: "Kilnworks", url: "https://jobs.example.com/1" })).toBe(
+      "We're hiring a Product Designer at Kilnworks: https://jobs.example.com/1. Who do you know?",
+    );
+    expect(draftHiringAsk({ title: "???", company: "Kilnworks", url: "" })).toBe("We're hiring at Kilnworks. Who do you know?");
+    expect(draftHiringAsk({ title: "???", company: "Kilnworks", url: "javascript:alert(1)", role: "Kiln engineer" })).toBe(
+      "We're hiring a Kiln engineer at Kilnworks. Who do you know?",
+    );
   });
 });
 

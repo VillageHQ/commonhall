@@ -38,9 +38,8 @@ export function AsksComposer({ communityName, allowance, draft = null }: Compose
           kind,
           targetText: isUpdate ? null : String(form.get("target") ?? ""),
           targetCompany: isUpdate ? null : String(form.get("company") ?? ""),
-          // A prefilled hiring request ("Find candidates") carries its category and the job's link.
+          // A prefilled hiring request ("Find candidates") carries its category.
           ...(draft?.category && !isUpdate ? { category: draft.category } : {}),
-          ...(draft?.detail ? { detail: String(form.get("detail") ?? "").trim() || null } : {}),
         },
         createdAskSchema,
       );
@@ -90,14 +89,6 @@ export function AsksComposer({ communityName, allowance, draft = null }: Compose
           Post
         </Button>
       </div>
-      {draft?.detail ? (
-        <div style={{ marginTop: 10 }}>
-          <label className="fh-label fh-small" htmlFor="p-detail">
-            Details
-          </label>
-          <Input id="p-detail" name="detail" maxLength={ASK_LIMITS.detailLength} defaultValue={draft.detail} />
-        </div>
-      ) : null}
       {error?.field === "body" ? (
         <p className="fh-hint fh-err" role="alert">
           {error.text}

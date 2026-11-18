@@ -7,13 +7,11 @@ export const HOME_FEED_MODULE_ID = "feed";
 export const ASKS_MODULE_ID = "asks";
 export const ASK_DRAFT_PARAM = "draft";
 export const ASK_DRAFT_CATEGORY_PARAM = "category";
-export const ASK_DRAFT_DETAIL_PARAM = "detail";
 
-// The composer opens filled in; nothing posts until the member sends it. A category or detail is optional.
-export function toAskDraftHref(title: string, extra: { category?: string | null; detail?: string | null } = {}) {
+// The composer opens filled in; nothing posts until the member sends it. The category is optional.
+export function toAskDraftHref(title: string, extra: { category?: string | null } = {}) {
   const params = new URLSearchParams({ [ASK_DRAFT_PARAM]: title });
   if (extra.category) params.set(ASK_DRAFT_CATEGORY_PARAM, extra.category);
-  if (extra.detail) params.set(ASK_DRAFT_DETAIL_PARAM, extra.detail);
   return `/asks?${params.toString()}`;
 }
 

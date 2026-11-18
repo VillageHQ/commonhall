@@ -43,7 +43,7 @@ export type FindCandidatesPage = {
 };
 
 // The page behind the button. Null (a 404) for a job that isn't listed, or a member outside its company.
-export async function readFindCandidatesPage(database: Database, member: SessionMember, jobId: string): Promise<FindCandidatesPage | null> {
+export async function readFindCandidatesPage(database: Database, member: SessionMember, jobId: string, typedWords: string | null): Promise<FindCandidatesPage | null> {
   if (!(await isModuleEnabled(database, jobBoardManifest))) return null;
   const job = await readBoardJob(database, jobId);
   if (!job) return null;
@@ -53,10 +53,7 @@ export async function readFindCandidatesPage(database: Database, member: Session
     job: { id: job.id, title: job.title, company: job.company, location: job.location, url: job.url },
     role: readRole(job.title),
     query: buildCandidateQuery(job),
-    hiringAskHref: canAskCommunity ? toAskDraftHref(draftHiringAsk(job), { category: ASK_CATEGORIES.hire, detail: toJobLinkLine(job.url) }) : null,
+    hiringAskHref: canAskCommunity ? toAskDraftHref(draftHiringAsk({ ...job, role: typedWords ?? "" }), { category: ASK_CATEGORIES.hire }) : null,
   };
 }
 
-function toJobLinkLine(url: string) {
-  return /^https?:\/\//i.test(url) ? `The job: ${url}` : null;
-}

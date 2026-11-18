@@ -32,13 +32,13 @@ function readFirst(value: string | string[] | undefined) {
   return (Array.isArray(value) ? value[0] : value) ?? null;
 }
 
-function HiringRequest({ page, communityName, digestDay }: { page: FindCandidatesPage; communityName: string; digestDay: string }) {
+function HiringRequest({ page, typedRole, communityName, digestDay }: { page: FindCandidatesPage; typedRole: string | null; communityName: string; digestDay: string }) {
   if (!page.hiringAskHref) return null;
   return (
     <div className="fh-sheet mt-4" data-slot="hiring-request">
       <h2 className="fh-h3">Or ask {communityName} for candidates</h2>
       <p className="fh-small" style={{ marginTop: 6 }}>
-        A hiring request for {page.role ?? "this job"}, with the job’s link. It goes to Asks &amp; updates and into {digestDay}’s digest. You
+        A hiring request for {page.role ?? typedRole ?? "this job"}, with the job’s link. It goes to Asks &amp; updates and into {digestDay}’s digest. You
         read it before it posts.
       </p>
       <div className="fh-btn-row" style={{ marginTop: 12 }}>
@@ -57,7 +57,8 @@ export default modulePage(networkManifest, async function FindCandidatesPage({ s
   const database = getDatabase();
   const params = await searchParams;
   const jobId = readFirst(params[FIND_CANDIDATES_JOB_PARAM]) ?? "";
-  const page = await readFindCandidatesPage(database, member, jobId);
+  const typed = readFirst(params[SEARCH_PROMPT_PARAM])?.trim() || null;
+  const page = await readFindCandidatesPage(database, member, jobId, typed);
   if (!page) notFound();
   // The first visit runs the job's search; a title with no words waits for the founder to type the role.
   if (readFirst(params[SEARCH_PROMPT_PARAM]) === null && page.query) {
@@ -85,7 +86,8 @@ export default modulePage(networkManifest, async function FindCandidatesPage({ s
       isVillageOn={keys !== null}
       defaultScope={settings.searchScope === SEARCH_SCOPES.everyone ? SEARCH_WHERE.global : SEARCH_WHERE.network}
       canAskIntro={canAskIntro}
-      canAskCommunity={page.hiringAskHref !== null}
+      // The hiring request box stands in for search's own "Ask the community".
+      canAskCommunity={false}
       digestDay={digestDay}
       heading={page.role ? `Find candidates for ${page.role}` : "Find candidates"}
       searchPath={ROUTES.findCandidates}
@@ -93,14 +95,14 @@ export default modulePage(networkManifest, async function FindCandidatesPage({ s
       intro={
         <>
           {where ? <p className="fh-lede">{where}</p> : null}
-          {page.query ? null : (
+          {page.query || typed ? null : (
             <Note icon={UserSearch} className="mt-4" data-slot="type-the-role">
               <b>Type the role you’re hiring for.</b> This job’s title has no words to search for, so nothing was searched yet.
             </Note>
           )}
         </>
       }
-      beforeResults={<HiringRequest page={page} communityName={branding.name} digestDay={digestDay} />}
+      beforeResults={<HiringRequest page={page} typedRole={typed} communityName={branding.name} digestDay={digestDay} />}
     />
   );
 });

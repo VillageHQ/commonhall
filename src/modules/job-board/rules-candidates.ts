@@ -40,8 +40,11 @@ export function mayFindCandidates(viewer: CandidateViewer, job: { companySlug: s
   return viewer.companySlug !== null && viewer.companySlug === job.companySlug;
 }
 
-// The hiring request's one line, cut to the ask's title length by the asks page.
-export function draftHiringAsk({ title, company }: { title: string; company: string }) {
-  const role = readRole(title);
-  return role ? `We're hiring a ${role} at ${tidy(company)}. Who do you know?` : `We're hiring at ${tidy(company)}. Who do you know?`;
+// The hiring request's one line, with the job's link in it (an ask shows only its line), cut to the ask's title
+// length by the asks page. `role` is the typed role when the job's own title has no words.
+export function draftHiringAsk({ title, company, url, role: typedRole = "" }: { title: string; company: string; url: string; role?: string }) {
+  const role = readRole(title) ?? readRole(typedRole);
+  const hiring = role ? `We're hiring a ${role} at ${tidy(company)}` : `We're hiring at ${tidy(company)}`;
+  const link = /^https?:\/\/\S+$/i.test(url.trim()) ? `: ${url.trim()}` : "";
+  return `${hiring}${link}. Who do you know?`;
 }

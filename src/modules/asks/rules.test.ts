@@ -125,17 +125,16 @@ describe("the words", () => {
 });
 
 describe("a prefilled ask from another screen", () => {
-  it("carries a hiring request's category and the job's link", () => {
-    expect(parseAskDraftParts({ draft: "We're hiring a Designer", category: "hire", detail: "The job: https://jobs.example.com/1" })).toEqual({
-      body: "We're hiring a Designer",
+  it("carries a hiring request's category", () => {
+    expect(parseAskDraftParts({ draft: "We're hiring a Designer: https://jobs.example.com/1", category: "hire" })).toEqual({
+      body: "We're hiring a Designer: https://jobs.example.com/1",
       target: "",
       category: ASK_CATEGORIES.hire,
-      detail: "The job: https://jobs.example.com/1",
     });
   });
 
   it("drops an unknown category and opens nothing without a line", () => {
     expect(parseAskDraftParts({ draft: "Who knows a CFO?", category: "spam" })?.category).toBeNull();
-    expect(parseAskDraftParts({ category: "hire", detail: "x" })).toBeNull();
+    expect(parseAskDraftParts({ category: "hire" })).toBeNull();
   });
 });
