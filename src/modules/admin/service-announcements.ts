@@ -79,7 +79,8 @@ function tooLongForFeedError(overBy: number) {
 }
 
 function emptyAudienceError(audience: AnnouncementAudience, memberCount: number) {
-  const who = describeAnnouncementAudience(audience);
+  const isRole = audience.audience === ANNOUNCEMENT_AUDIENCES.founders || audience.audience === ANNOUNCEMENT_AUDIENCES.experts;
+  const who = isRole ? `the ${describeAnnouncementAudience(audience)} audience` : describeAnnouncementAudience(audience);
   const message =
     memberCount === 0
       ? `Nobody is in ${who} yet, so there is no one to send this to. Pick another audience.`
