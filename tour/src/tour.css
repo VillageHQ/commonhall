@@ -1,0 +1,81 @@
+/* The tour's styles: the app's own (globals.css pulls in parts.css and Tailwind), then the tour's box and pointer.
+   The build (tour/build.mjs) scopes the app's page-level rules to .tour-app and turns its window-width rules into
+   rules on the box's width. */
+@import "../../src/app/globals.css";
+@source "./";
+
+.tour-app {
+  /* The fonts come from page.css, declared at the page level under these names. */
+  --font-plex-sans: "Tour Plex Sans";
+  --font-newsreader: "Tour Newsreader";
+  --font-plex-mono: "JetBrains Mono";
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  /* The app's body rule (min-height: 100dvh) lands here; the box keeps the size the tour gives it. */
+  min-height: 0;
+  max-height: none;
+  overflow: hidden;
+  container-type: size;
+  /* The app's fixed parts (the phone tab bar) stay inside the box, also at scale 1 and without JavaScript. */
+  contain: layout paint style;
+  transform-origin: 0 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+.tour-mount {
+  min-height: 100%;
+}
+
+/* The fake pointer: an arrow that glides to its target; a ring shows each press. */
+.tour-pointer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 60;
+  width: 22px;
+  height: 22px;
+  margin: -2px 0 0 -3px;
+  opacity: 0;
+  pointer-events: none;
+  transition-property: transform, opacity;
+  transition-timing-function: cubic-bezier(0.3, 0.7, 0.2, 1);
+  background: center / contain no-repeat
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 22'%3E%3Cpath d='M3 2l15 8.2-6.6 1.6-3.3 6.2z' fill='%23111110' stroke='%23fafaf7' stroke-width='1.4' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+
+.tour-pointer.is-on {
+  opacity: 1;
+}
+
+.tour-pointer::after {
+  content: "";
+  position: absolute;
+  top: -9px;
+  left: -8px;
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  opacity: 0;
+  transform: scale(0.4);
+  transition: opacity 0.25s, transform 0.25s;
+}
+
+.tour-pointer.is-down::after {
+  opacity: 0.55;
+  transform: scale(1);
+  transition-duration: 0.08s;
+}
+
+/* The field being typed into shows its focus ring, as a real one would. */
+.tour-typing {
+  outline: 2px solid var(--ring);
+  outline-offset: 1px;
+}

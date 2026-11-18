@@ -1,10 +1,11 @@
 # Commonhall by Village: landing page
 
 The public page for the app in this repo, under the name Commonhall by Village. One page in a light and a dark theme
-(paper and ink): a first screen with a blueprint house and eight made-up members, the ten rooms with their status, five real
-screens of the demo on tabs that advance as the page scrolls, a comparison, pricing, a data section and two ways in (a "Schedule a call" form and the self-host install). Plain HTML,
-CSS and JavaScript, no framework, no script library, no build step. It loads nothing from third parties: the fonts are
-files in this folder.
+(paper and ink): a first screen with a blueprint house and eight made-up members, every feature in four groups, a live tour
+of the app (its own screens, playing by themselves), a comparison, pricing, a data section and two ways in (a "Schedule a call" form and the self-host install). Plain HTML,
+CSS and JavaScript, no framework, no script library. One part is built: the live tour (`tour/`), which `pnpm tour:build`
+bundles from the app's own components into `tour/` here and writes into `index.html`; the built files are committed, so
+the folder deploys as it is. It loads nothing from third parties: the fonts are files in this folder.
 
 ## Preview
 
@@ -18,8 +19,8 @@ straight from disk the page runs, but the browser blocks the font preload there 
 
 ## Host it
 
-Point any static host at this repo with **root directory `site`**. There's no build command, and the publish
-directory is `site` itself.
+Point any static host at this repo with **root directory `site`**. There's no build command (the tour is built and
+committed), and the publish directory is `site` itself.
 
 ## Before you publish
 
@@ -40,10 +41,11 @@ directory is `site` itself.
 
 ## Keeping it in step with the app
 
-- Every product claim must be true of the app on `main`. Today: Perks is Partly, the admin home counts intros only
-  (hires and deals are "coming"), Chat posts to Slack and Discord, there is no mentor network.
+- The feature groups list everything, planned features too, with no status tags (the owner's call, 18 November 2026).
+  The comparison table keeps its honest ticks: every ✓ there must be true of the app on `main`.
+- The tour shows the app as it is: after a change to a screen it shows, run `pnpm tour:build` and commit `site/`
+  (`pnpm tour:check` and `src/test/site-tour.test.ts` fail on a stale build). How to add a step: `tour/AGENTS.md`.
 - The comparison (the tick table and the long table under "Read the details") comes from the research file read on 14 November 2026; re-read the four products before changing a cell. The tick table says ✓ only where the long table says Yes, Partly where it names a part, a dash where nothing was found.
-- The screenshots are of the demo (made-up people and companies); the demo banner is cropped off.
 - The install line matches the root `README.md` exactly; the guide link goes to `docs/self-host-vps.md`.
 
 ## How it is built
@@ -52,18 +54,23 @@ directory is `site` itself.
 - `assets/site.css` holds every style. `assets/boot.js` runs in the head and sets the theme (`?theme=`, then the saved
   choice, then the system) before paint. `assets/site.js` holds every behaviour. How it works:
   `.ai/features/common-hall-v2/NOTES.md`.
+- `tour/` is built (see above): `tour.js` runs the tour, `tour.css` is the app's CSS for the tour's shadow root,
+  `page.css` holds its fonts. How it works: `.ai/features/landing-tour/NOTES.md`.
 - Without JavaScript the page still reads: faces sit in their rooms, doors are drawn open, one example card shows, the
-  theme follows the system, and the form's place says it needs JavaScript. Reduced motion does the same with script on.
+  tour shows a still of its first step, the theme follows the system, and the form's place says it needs JavaScript.
+  Reduced motion does the same with script on, and the tour's tabs change its still.
 
 ## How it stays out of the app
 
-- `eslint.config.mjs` ignores `site/**`.
+- `eslint.config.mjs` ignores `site/**` (the tour's sources in `tour/` are linted and type-checked with the app).
 - `@source not "../../site"` in `src/app/globals.css` stops Tailwind from scanning this folder.
 - `tsc` and Vitest only look at TypeScript files and `src/`. Vercel and DigitalOcean build from the repo root with
   `next build`, which never reads this folder.
 
 ## Check it
 
+`node .ai/features/landing-tour/reports/check-tour.mjs` checks the tour: each step at 1280 px (scroll-driven, centred)
+and 390 px (on a timer) in both themes, Pause, tab clicks, reduced motion and no JavaScript.
 `node .ai/features/one-site/reports/check-site.mjs` (needs `playwright-core`) serves this folder, opens it at 320, 390
 and 1280 px in both themes, moves the pointer, scrolls, and fails on outside requests, console errors, horizontal
 overflow, a missing anchor or text under 4.5:1 contrast. It saves full-page shots under
@@ -76,6 +83,8 @@ overflow, a missing anchor or text under 4.5:1 contrast. It saves full-page shot
   files in `assets/fonts/`.
 - The eight portraits in `assets/faces/` are the app's made-up demo people (generated, no real person), credited in
   `public/demo/CREDITS.md`.
-- The screenshots in `assets/screens/` are of the app's demo (five are on the page; the member-home crop stays for later).
+- The screenshots in `assets/screens/` are of the app's demo; the live tour replaced them on the page.
+- The tour's fonts (`tour/fonts/`: IBM Plex Sans and Newsreader, variable, OFL) are the app's own (`src/app/_fonts`); its
+  faces and logos are the demo's made-up people and companies (`public/demo`, credited in `public/demo/CREDITS.md`).
 - The GitHub mark in the GitHub card is GitHub's logo, used to link to the repository.
 - `assets/og.png` (1200 × 630) is rendered from the page's own first screen; `assets/favicon.svg` is the logo mark.
