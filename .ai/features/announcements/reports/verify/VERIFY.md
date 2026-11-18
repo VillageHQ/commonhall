@@ -107,3 +107,37 @@ The limit is checked on the unfilled text only. Good: the transaction rolls back
 Opted out of announcements: ada, julia (one-click), sam, maya (/me/email). Sam's profile: company cleared, cohort
 "FUND III". Announcements sent by the verifier: "Fund III dinner…" (Fund III, 7), "Office hours…" (everyone, 16, pinned),
 "Fund I breakfast…" (fund i, 3).
+
+## Re-check after repair 1
+
+Head f02412b, same test copy, real clicks (script `.ai/tmp/verify/r1.mjs`).
+
+| Item | Result |
+|------|--------|
+| P1 Reach the page from the console (desktop and phone) | PASS |
+| P3 Too long for the feed post: blocked with a reason, 422, nothing queued | PASS |
+| P2 `{{first name}}` and braces over 40 characters | PASS |
+| P4 Sent note under the button, no "Already sent" after a double click, test line clears | PASS |
+
+- **P1.** Desktop: the /admin sidebar now reads Home · Partner report · Intro log · Members · Invites · Asks & digest ·
+  **Announcements** (megaphone) · Job board · Set up. Clicking it opens /admin/announcements and the item is
+  highlighted (`r1-1-desktop-nav.png`). Phone 390 px: /admin has an "Announcements" link near the bottom of the page,
+  above "Sign out". Tapping it opens /admin/announcements, and the bottom bar lights Home (`r1-5-phone-admin.jpg`,
+  `r1-6-phone-page.jpg`). Note: on a phone the link is easy to miss, because it sits at the foot of a long page and is
+  not in the bottom bar. It is reachable, though, so this passes.
+- **P3.** Everyone, subject "Long one for {community}", a 2790-character message of "News for {community}.": the page
+  says "With the fields filled in, this is too long for the feed post by 700 characters. Shorten the message." and the
+  send button is disabled (`r1-2-too-long.jpg`). The API answers 422 `announcement_too_long` with the same text. No
+  500, no announcement row, 0 outbox rows. Switching the same text to One cohort (no feed post) allows it again
+  ("3 members will get the email"), which is correct.
+- **P2.** Subject "Fund I breakfast round two, {{first name}}" → "Fund I breakfast round two, Felix/Marcus/Ravi".
+  "Hi {{first name}}," → "Hi Felix,". `{{{company}}}` → "Atelier Bleu". The 58-character brace text gets the warning
+  "Not a field we know: {this is an unknown field … forty chars}. It will be left out." and is dropped from the preview,
+  the test email and all 3 delivered emails (`r1-3-braces-preview.jpg`). Still shown raw, as expected, because it is not
+  a closed field: an unclosed "{first name." stays as typed.
+- **P4.** Clicking Send, then double-clicking "Yes, send": the note under the button reads "Sent. 3 emails are on the
+  way. It's in the list below." Nothing says "Already sent". There is one announcement row and 3 emails, one per
+  member. The "Test sent to maya.ortiz@example.com, filled in as Felix Moreau." line was gone after the send
+  (`r1-4-sent-note.jpg`).
+
+Newly broken: nothing found.

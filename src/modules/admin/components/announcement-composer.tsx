@@ -170,7 +170,7 @@ export function AnnouncementComposer({ members, cohorts, community, adminId, isE
               }}
             />
           </Field>
-          <div role="group" aria-label="Add a fill-in field" className="fh-chips mt-2">
+          <div role="group" aria-label="Add a fill-in field" className="mt-2 flex flex-wrap gap-2">
             {Object.values(ANNOUNCEMENT_FIELDS).map((field) => (
               <Chip key={field} type="button" isPressed={false} onClick={() => insertField(field)}>
                 {field}
