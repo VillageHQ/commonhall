@@ -63,12 +63,22 @@ export function CompanyTags({ basePath, companies }: { basePath: string; compani
 
 // Commonhall's job row (jobRow(), crop rows-jobs.png): the logo, the serif title, "Company · place · team · posted
 // 10 Nov" (+ "· via Name" for members), and Apply.
-export function JobList({ jobs, memberHref }: { jobs: readonly ListedJob[]; memberHref?: (memberId: string) => string }) {
+// "Find candidates" shows on a job when `findCandidatesHref` gives it a link (its company's members and admins).
+export function JobList({
+  jobs,
+  memberHref,
+  findCandidatesHref,
+}: {
+  jobs: readonly ListedJob[];
+  memberHref?: (memberId: string) => string;
+  findCandidatesHref?: (job: Pick<BoardJob, "id" | "companySlug" | "memberId">) => string | null;
+}) {
   return (
     <div className="fh-rows fh-jobrows mt-3.5">
       {jobs.map((job) => {
         const bits = [job.company, job.location, job.department].filter(Boolean).join(" · ");
         const when = job.postedAt ? ` · posted ${formatDay(job.postedAt)}` : "";
+        const candidatesHref = findCandidatesHref && job.memberId ? findCandidatesHref({ id: job.id, companySlug: job.companySlug, memberId: job.memberId }) : null;
         return (
           <div key={job.id} className="fh-r">
             <span className="fh-jl">
@@ -88,6 +98,13 @@ export function JobList({ jobs, memberHref }: { jobs: readonly ListedJob[]; memb
               </span>
             </div>
             <div className="fh-end">
+              {candidatesHref ? (
+                <Button asChild variant="secondary" size="sm">
+                  <Link href={candidatesHref}>
+                    Find candidates<span className="sr-only">{` for ${job.title} at ${job.company}`}</span>
+                  </Link>
+                </Button>
+              ) : null}
               {job.url ? (
                 <Button asChild variant="secondary" size="sm">
                   <a href={job.url} target="_blank" rel="noopener noreferrer">

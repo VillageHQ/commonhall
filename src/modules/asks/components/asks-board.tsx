@@ -9,6 +9,7 @@ import { Stepper } from "@/components/ui/stepper";
 
 import { ASK_BOARD_TABS, ASK_TABS, ASKS_PAGE, type AskAllowance, type AskTab } from "../contract";
 import type { AskTabCounts, BoardPost } from "../reads-board";
+import type { AskDraftParts } from "../rules-board-url";
 import { AsksComposer } from "./asks-composer";
 import { AskConsent, PostCard } from "./post-parts";
 
@@ -29,7 +30,7 @@ type AsksBoardProps = {
   counts: AskTabCounts;
   allowance: AskAllowance;
   flash: string | null;
-  draft: { body: string; target: string } | null;
+  draft: AskDraftParts | null;
   now: Date;
 };
 

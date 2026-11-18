@@ -23,6 +23,7 @@ Better Auth, Vitest, pnpm. Village is optional (network search, intro paths and 
   `pnpm lint && pnpm typecheck && pnpm test && pnpm build`. Fake Village, Resend and chat servers, no keys.
 - Architecture tests: `pnpm test src/test/architecture`.
 - Migrations: `pnpm db:generate` after a schema change; the app migrates on boot (or `pnpm db:migrate`).
+- Landing page tour: `pnpm tour:build` after changing a screen the tour shows, and commit `site/` (`src/test/site-tour.test.ts` fails on a stale build).
 
 ## Regressions worth guarding
 - Module boundaries and 404-when-off (`src/test/architecture/`).
@@ -50,11 +51,13 @@ Better Auth, Vitest, pnpm. Village is optional (network search, intro paths and 
   `.ai/features/fh-followup/NOTES.md` (emailed invite link confirms, job board on by default, "copied" words),
   `.ai/features/fix-accounts-privacy/NOTES.md`, `.ai/features/fix-feed-digest-site/NOTES.md`,
   `.ai/features/fix-intros-reports/NOTES.md`, `.ai/features/fix-host-findings/NOTES.md`,
-  `.ai/features/fix-cleanup/NOTES.md`, `.ai/features/common-hall-site/NOTES.md` (superseded), `.ai/features/common-hall-v2/NOTES.md` (the landing page: themes, hover field, faces, dialog), `.ai/features/landing-v3/NOTES.md` (the landing page round 3: the rooms list, the scroll demo, the comparison cards), `.ai/features/app-kit/NOTES.md` (the app on the Commonhall look: where the colours, fonts and icon live),
+  `.ai/features/fix-cleanup/NOTES.md`, `.ai/features/common-hall-site/NOTES.md` (superseded), `.ai/features/common-hall-v2/NOTES.md` (the landing page: themes, hover field, faces, dialog), `.ai/features/landing-v3/NOTES.md` (the landing page round 3: the rooms list, the scroll demo, the comparison cards), `.ai/features/landing-tour/NOTES.md` (the landing page's live tour: `tour/`, `pnpm tour:build`, how to add a step; the feature groups), `.ai/features/app-kit/NOTES.md` (the app on the Commonhall look: where the colours, fonts and icon live),
   `.ai/features/onboarding-settings-fold/NOTES.md` (Set up pages: essentials in view, the rest under Advanced),
   `.ai/features/onboarding-village-connect/NOTES.md`, `.ai/features/onboarding-guided-start/NOTES.md`,
   `.ai/features/mentors-calls/NOTES.md` (community roles, booking links, Book a call, calls counted),
+  `.ai/features/find-candidates/NOTES.md` (Find candidates on a job: the button, the search, the hiring request),
   `.ai/features/fix-installer/NOTES.md` (install.sh: build failures, swap, first install, DNS), `.ai/features/onboarding-claude-setup/NOTES.md` (setup:instance), `.ai/features/fix-network-page/NOTES.md`, `.ai/features/self-call-http/NOTES.md` (rewrites behind an https tunnel).
+- `tour/AGENTS.md` (the landing page's live tour, built into `site/tour/`).
 - No notes: `.do/`, `.github/`, `deploy/` (`deploy/cloudflare/README.md` runs commonhall.ai), `docs/` (guides), `drizzle/` (generated), `site/` (own README), `public/` (demo pictures),
   `vercel.json` (the daily Vercel Cron Job). Every deploy setup runs the job runner;
   `src/test/deploy-setups.test.ts` guards it.

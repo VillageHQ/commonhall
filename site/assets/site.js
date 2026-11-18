@@ -929,109 +929,7 @@
     refresh();
   }
 
-  /* ---------- the demo: five screens on tabs; the stage pins and the tabs advance as the page scrolls ---------- */
-  function setUpDemo() {
-    const demo = document.getElementById("demo-root");
-    if (!demo) return;
-    const tabs = Array.from(demo.querySelectorAll(".demo-tab"));
-    const panels = Array.from(demo.querySelectorAll(".demo-panel"));
-    const stage = demo.querySelector(".demo-stage");
-    if (!tabs.length || tabs.length !== panels.length || !stage) return;
-    const count = tabs.length;
-    let current = 0;
-    let scrollMode = false;
-    let scrollPending = false;
-    let holdUntil = 0; // after a tap, the scroll-sync waits for the smooth scroll to land
-
-    function show(index, focusTab) {
-      index = Math.max(0, Math.min(count - 1, index));
-      if (index !== current) {
-        tabs.forEach((tab, i) => {
-          const on = i === index;
-          tab.classList.toggle("is-on", on);
-          tab.setAttribute("aria-selected", on ? "true" : "false");
-          tab.tabIndex = on ? 0 : -1;
-        });
-        panels.forEach((panel, i) => {
-          panel.classList.toggle("is-on", i === index);
-          panel.setAttribute("aria-hidden", i === index ? "false" : "true");
-        });
-        current = index;
-      }
-      // focus first (with no scroll of its own), then centre the row: a focus after a smooth row scroll cancels it
-      if (focusTab) { try { tabs[index].focus({ preventScroll: true }); } catch (e) { tabs[index].focus(); } }
-      centreTab(index);
-    }
-    // on a phone the tabs are a row that scrolls: keep the active one in view
-    function centreTab(index) {
-      const row = tabs[index].parentElement;
-      if (row.scrollWidth <= row.clientWidth + 2) return;
-      const left = tabs[index].offsetLeft - (row.clientWidth - tabs[index].offsetWidth) / 2;
-      if (row.scrollTo) row.scrollTo({ left, behavior: motionOn() ? "smooth" : "instant" }); else row.scrollLeft = left;
-    }
-
-    // where step i sits in the track: the stage pins at `top`, and the track above it is split into equal steps
-    function stepTop(index) {
-      const rect = demo.getBoundingClientRect();
-      const trackTop = rect.top + window.scrollY;
-      const travel = demo.offsetHeight - stage.offsetHeight;
-      return trackTop + (travel * (index + 0.5)) / count;
-    }
-    function fromScroll() {
-      scrollPending = false;
-      if (!scrollMode || performance.now() < holdUntil) return;
-      const rect = demo.getBoundingClientRect();
-      const stuckTop = parseFloat(getComputedStyle(stage).top) || 0;
-      const travel = demo.offsetHeight - stage.offsetHeight;
-      if (travel <= 0) return;
-      const progress = (stuckTop - rect.top) / travel; // 0 when the stage first pins, 1 when it lets go
-      show(Math.floor(Math.max(0, Math.min(0.999, progress)) * count));
-    }
-    function onScroll() {
-      if (scrollPending) return;
-      scrollPending = true;
-      requestAnimationFrame(fromScroll);
-    }
-
-    tabs.forEach((tab, i) => {
-      tab.addEventListener("click", () => {
-        show(i);
-        if (scrollMode) {
-          holdUntil = performance.now() + 900;
-          window.scrollTo({ top: stepTop(i) - (parseFloat(getComputedStyle(stage).top) || 0), behavior: "smooth" });
-        }
-      });
-      tab.addEventListener("keydown", (event) => {
-        const next = event.key === "ArrowRight" || event.key === "ArrowDown" ? i + 1
-          : event.key === "ArrowLeft" || event.key === "ArrowUp" ? i - 1
-          : event.key === "Home" ? 0 : event.key === "End" ? count - 1 : null;
-        if (next === null) return;
-        event.preventDefault();
-        const target = (next + count) % count;
-        show(target, true);
-        if (scrollMode) {
-          holdUntil = performance.now() + 900;
-          window.scrollTo({ top: stepTop(target) - (parseFloat(getComputedStyle(stage).top) || 0), behavior: "smooth" });
-        }
-      });
-    });
-
-    function sync() {
-      // pin only when the whole stage (tabs, picture, caption) fits under the pin line, with a little room
-      const stuckTop = parseFloat(getComputedStyle(stage).top) || 0;
-      const want = motionOn() && window.innerHeight >= stage.offsetHeight + stuckTop + 32;
-      centreTab(current);
-      if (want === scrollMode) return;
-      scrollMode = want;
-      demo.classList.toggle("is-scroll", want);
-      if (want) { window.addEventListener("scroll", onScroll, { passive: true }); fromScroll(); }
-      else window.removeEventListener("scroll", onScroll);
-    }
-    if (reduceQuery && reduceQuery.addEventListener) reduceQuery.addEventListener("change", sync);
-    window.addEventListener("resize", sync);
-    panels.forEach((panel, i) => panel.setAttribute("aria-hidden", i === 0 ? "false" : "true"));
-    sync();
-  }
+  /* The demo section is the live tour: tour/tour.js (built from tour/src by pnpm tour:build) runs it. */
 
   function init() {
     setUpTheme();
@@ -1040,7 +938,6 @@
     setUpSignup();
     setUpPlan();
     setUpField();
-    setUpDemo();
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
   else init();
