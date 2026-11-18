@@ -1,6 +1,6 @@
 ---
 id: site-signup
-status: idea
+status: shipped
 waits-on: []
 size:
 touches: ["site/"]
@@ -27,3 +27,10 @@ A sign-up form for the managed plan with its confirmation email, limits, export 
 The form and the price table are on the page (the owner reversed "no prices, no form"). The form posts only to the
 address in `data-endpoint` on `#signup-form`; it is empty, so nothing is sent yet. Still open: the server that takes
 the sign-ups, the confirmation email, limits, the CSV export and the headers.
+
+## Update 2026-11-18 (commonhall-ai-live)
+The page is live on https://commonhall.ai as a Cloudflare Worker in Village's account (`deploy/cloudflare/`). The form
+posts to `/api/signup`: the Worker checks the fields, keeps the request in the D1 table `signups` and emails it to
+support@commonhall.ai (reply-to the visitor). A filled robot field is answered like a success and kept nowhere; one
+visitor (an IP hash) may send 5 an hour. Headers: nosniff, frame-ancestors 'none', referrer policy. Export: one
+wrangler command. Still open: the reply email to the visitor.

@@ -23,17 +23,16 @@ directory is `site` itself.
 
 ## Before you publish
 
-- Set `og:image` in `index.html` to an absolute URL, and add `og:url`. Social networks ignore relative image paths,
-  and the page has no public address yet.
-- The sign-up form ("Schedule a call") sends nothing until `data-endpoint` on `#signup-form` is set to a server that
-  takes the JSON (`name`, `email`, `community`, `members`, `plan` = `"managed"`, `website` as a robot trap) and
-  answers 201 `{ ok, emailSent, next }` or 400 `{ errors: { field: message } }`. Empty, the page says nothing was
-  sent. **The Content Security Policy blocks every request the page makes (`default-src 'none'`)**, so when you set
-  the endpoint, add `connect-src` for its origin to the CSP meta in `index.html`, or the form shows "We could not
-  reach the server".
+- The page is live at https://commonhall.ai (a Cloudflare Worker in Village's account; deploy and read the requests
+  with `deploy/cloudflare/README.md`). `og:image`, `og:url` and the canonical link point there.
+- The form ("Schedule a call") posts to `/api/signup` on the same site (`data-endpoint`; the CSP allows
+  `connect-src 'self'`). The Worker takes the JSON (`name`, `email`, `community`, `members`, `plan` = `"managed"`,
+  `website` as a robot trap), keeps it and emails support@commonhall.ai, and answers 201 `{ ok, emailSent }`,
+  400 `{ errors: { field: message } }` or `{ error }`. With `data-endpoint` empty (another static host), the page says
+  nothing was sent.
 - "Schedule call" leads to that form. No calendar is linked: Village answers by email with a time.
-- The prices are Village's offer: Community free (self-host); Enterprise $10,000 a year, 7,500 Village credits a
-  month, up to 500 members, a quote above. Confirm them with Village before publishing.
+- The prices are Village's offer: Community free (self-host); Enterprise $50k+ a year, 7,500 Village credits a
+  month, up to 500 members, a quote above.
 - The page says "ask us about EU hosting" for the managed plan until Village confirms where it can host.
 - The GitHub links, the install line and the set-up prompt point at `VillageHQ/commonhall`. Change them if the
   repository is renamed.

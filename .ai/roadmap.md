@@ -82,7 +82,7 @@ Each open item gets these yes/no checks; code adds the points (change a number t
 - [ ] The two welcome questions — parity — [spec](features/welcome-questions/SPEC.md)
 - [ ] Invites when email is off: mailto and "Copy all links" — parity — [spec](features/invite-fallbacks/SPEC.md)
 - [ ] Hosting and data settings: region and data-protection contact (built; the agreement link is still open) — parity — [spec](features/hosting-data-settings/SPEC.md)
-- [ ] Managed-plan sign-up on the website — parity — [spec](features/site-signup/SPEC.md)
+- [x] Managed-plan sign-up on the website — parity — [spec](features/site-signup/SPEC.md) (live on commonhall.ai, 2026-11-18, [commonhall-ai-live](features/commonhall-ai-live/NOTES.md); the reply email to the visitor is still open)
 - [x] 2026-11-17 — Rename the product and the repository to Commonhall (VillageHQ/commonhall, package, image, app, landing page, docs, memory) — commonhall-rename
 - [ ] Landing page: named customers and references once there are real ones
 - [ ] SOC 2 and SSO (then the landing page may say so)
@@ -128,11 +128,11 @@ reason, or the owner's later brief where it says so) · **open** = not on main y
 - **done** · One-page marketing site — `site/`, "Commonhall by Village" (PR #23), now "Commonhall by Village" ([common-hall-site](features/common-hall-site/SPEC.md))
 - **dropped** · Animated phone replay — GSAP is not open source (merge plan revision 8). Motion came back on the Commonhall page (2026-11-13) as the page's own script, no library — [common-hall-site](features/common-hall-site/SPEC.md)
 - **dropped** · Pricing table — the owner's one-site brief (no prices on the page) overrides the merge plan, which kept pricing
-- **open** · Sign-up form — [site-signup](features/site-signup/SPEC.md)
+- **done 2026-11-18** · Sign-up form — [site-signup](features/site-signup/SPEC.md)
 - **open** · Confirmation email — [site-signup](features/site-signup/SPEC.md)
-- **open** · Anti-abuse — [site-signup](features/site-signup/SPEC.md)
-- **open** · CSV export of sign-ups — [site-signup](features/site-signup/SPEC.md)
-- **open** · Security headers — a self-only CSP in `site/index.html` (Community); no nosniff or frame-ancestors, which need a server: [site-signup](features/site-signup/SPEC.md)
+- **done 2026-11-18** (robot field + 5 an hour per visitor) · Anti-abuse — [site-signup](features/site-signup/SPEC.md)
+- **partly 2026-11-18** (one wrangler command, `deploy/cloudflare/README.md`) · CSV export of sign-ups — [site-signup](features/site-signup/SPEC.md)
+- **done 2026-11-18** (nosniff, frame-ancestors, referrer policy in `site/_headers`) · Security headers — a self-only CSP in `site/index.html` (Community); no nosniff or frame-ancestors, which need a server: [site-signup](features/site-signup/SPEC.md)
 - **dropped** · Health check — `site/` is static with no server; the app has `/api/health` (Community)
 
 ### Setup, install and first-run admin

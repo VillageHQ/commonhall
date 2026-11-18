@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <title>Commonhall by Village: open-source founder community portal</title>
 <meta name="description" content="Everything your founder community needs to grow and succeed. An open-source portal under your own name: warm intros, member directory, asks, jobs and perks. Village runs it, or you do.">
 <meta name="color-scheme" content="light dark">
@@ -12,11 +12,13 @@
 <meta property="og:site_name" content="Commonhall by Village">
 <meta property="og:title" content="Everything your founder community needs to grow and succeed">
 <meta property="og:description" content="An open-source founder community portal under your own name. Village runs it, or you do.">
-<meta property="og:image" content="assets/og.png">
+<meta property="og:url" content="https://commonhall.ai/">
+<meta property="og:image" content="https://commonhall.ai/assets/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Commonhall by Village: open-source founder community portal, beside a floor plan of the portal's ten rooms with member portraits.">
 <meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://commonhall.ai/">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="preload" href="assets/fonts/newsreader-latin-500-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/ibm-plex-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
@@ -176,7 +178,7 @@
           <tr><th scope="row">Admin dashboard</th><td class="us y">✓</td><td class="pt">Partly</td><td class="n">—</td><td class="pt">Partly</td><td class="n">—</td></tr>
           <tr><th scope="row">Your own domain</th><td class="us y">✓</td><td class="pt">Partly</td><td class="n">—</td><td class="n">—</td><td class="n">—</td></tr>
           <tr><th scope="row">Open source</th><td class="us y">✓</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n">—</td></tr>
-          <tr class="price"><th scope="row">Price</th><td class="us">Free / $10,000 a year</td><td>$2,520 to $9,100 a year</td><td>$19 a month per user</td><td>Not public</td><td>Free</td></tr>
+          <tr class="price"><th scope="row">Price</th><td class="us">Free / $50k+ a year</td><td>$2,520 to $9,100 a year</td><td>$19 a month per user</td><td>Not public</td><td>Free</td></tr>
         </tbody>
       </table>
     </div>
@@ -204,7 +206,7 @@
             <tr><th scope="row">Asks and answers board</th><td class="us y">Yes <span class="sm">(posts to Slack and Discord)</span></td><td>Intro target lists</td><td>Earlier product only</td><td class="n">—</td><td>Forum channels, by hand</td></tr>
             <tr><th scope="row">Under your own name and domain</th><td class="us y">Yes, the whole portal</td><td>Job board only</td><td class="n">—</td><td class="n">—</td><td>No</td></tr>
             <tr><th scope="row">Open source, self-host</th><td class="us y">Yes, AGPL</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n">—</td></tr>
-            <tr><th scope="row">Public price</th><td class="us y">Free / $10,000 a year</td><td>$2,520 to $9,100 a year</td><td>$19 a month per user <span class="sm">(email product)</span></td><td>Not public</td><td>Free</td></tr>
+            <tr><th scope="row">Public price</th><td class="us y">Free / $50k+ a year</td><td>$2,520 to $9,100 a year</td><td>$19 a month per user <span class="sm">(email product)</span></td><td>Not public</td><td>Free</td></tr>
           </tbody>
         </table>
       </div>
@@ -235,7 +237,7 @@
       </article>
       <article class="plan-card feature" aria-labelledby="p-enterprise">
         <p class="pc-k">Enterprise</p>
-        <h3 id="p-enterprise"><span class="price">$10,000</span> <span class="per">a year</span></h3>
+        <h3 id="p-enterprise"><span class="price">$50k+</span> <span class="per">a year</span></h3>
         <ul>
           <li>Village hosts and runs it under your domain.</li>
           <li>7,500 credits a month. Up to 500 members.</li>
@@ -272,9 +274,9 @@
     <div class="doors-grid">
       <div class="door-card" id="door-managed">
         <h3>Schedule a call</h3>
-        <p class="fine">Village runs it: <span data-plan-price>$10,000 a year, 7,500 credits a month</span></p>
+        <p class="fine">Village runs it: <span data-plan-price>$50k+ a year, 7,500 credits a month</span></p>
         <noscript><p class="fine">The form needs JavaScript. You can still <a class="strong-link" href="#door-self">run it on your own server</a>.</p></noscript>
-        <form class="signup-form" id="signup-form" data-endpoint="" novalidate hidden>
+        <form class="signup-form" id="signup-form" data-endpoint="/api/signup" novalidate hidden>
           <div class="f2">
             <div class="field"><label for="f-name">Name</label><input id="f-name" name="name" autocomplete="name" placeholder="Sam Ortiz" required maxlength="120"><p class="field-error" id="e-name">Add your name so we know who to answer.</p></div>
             <div class="field"><label for="f-fund">Fund or community</label><input id="f-fund" name="community" autocomplete="organization" placeholder="Fieldstone Ventures" required maxlength="160"><p class="field-error" id="e-fund">Add the fund or community the portal is for.</p></div>
