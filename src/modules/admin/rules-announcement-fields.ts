@@ -10,7 +10,8 @@ export const ANNOUNCEMENT_FIELDS = {
 // `nameFallback` is the word for a missing name: "there" in a member's email ("Hi there"), "everyone" in the feed.
 export type AnnouncementFieldValues = { fullName: string | null; company: string | null; community: string; nameFallback?: string };
 
-const FIELD_PATTERN = /\{([^{}\n]{0,40})\}/g;
+// Doubled braces ("{{first name}}") count as one field, so no brace is left behind.
+const FIELD_PATTERN = /\{+([^{}\n]*)\}+/g;
 const FALLBACKS = { name: "there", company: "your company" } as const;
 
 function readKey(inside: string) {
@@ -58,4 +59,11 @@ export function readUnknownFields(text: string) {
 export function renderAnnouncementText({ subject, body }: { subject: string; body: string }, values: AnnouncementFieldValues, stopUrl: string) {
   const text = [fillAnnouncementFields(body, values), "", `Stop announcement emails: ${stopUrl}`, "", `Sent by ${values.community} via its member portal.`].join("\n");
   return { subject: fillAnnouncementFields(subject, values).replace(/\s+/g, " ").trim(), text };
+}
+
+// The team's feed post is one for everyone, so its name fields read "everyone" ("Hi everyone"), and the subject is its
+// heading line.
+export function renderAnnouncementPost({ subject, body }: { subject: string; body: string }, community: string) {
+  const values = { fullName: null, company: null, community, nameFallback: "everyone" };
+  return `${fillAnnouncementFields(subject, values).replace(/\s+/g, " ").trim()}\n${fillAnnouncementFields(body, values)}`;
 }

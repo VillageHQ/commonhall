@@ -32,6 +32,7 @@ export const CONSOLE_KEYS = {
   members: "members",
   invites: "invites",
   asks: "asks-digest",
+  announcements: "announcements",
   jobs: "job-board",
   setup: "setup",
 } as const;
@@ -78,7 +79,7 @@ const CONSOLE_PATHS: readonly (readonly [string, string])[] = [
   [ASKS_ADMIN_PAGE, CONSOLE_KEYS.asks],
   [ROUTES.adminWeeklyEmail, CONSOLE_KEYS.asks],
   [ROUTES.adminDigest, CONSOLE_KEYS.asks],
-  [ANNOUNCEMENT_PAGE, CONSOLE_KEYS.asks],
+  [ANNOUNCEMENT_PAGE, CONSOLE_KEYS.announcements],
   [JOB_BOARD_PAGES.admin, CONSOLE_KEYS.jobs],
 ];
 
@@ -91,8 +92,9 @@ export function readConsoleKey(pathname: string) {
 }
 
 // The console's phone tabs: Home · Intros · Asks · Members · Set up. The Partner report lives under Intros;
-// Invites and the Job board under Members.
+// Invites and the Job board under Members; Announcements under Home.
 const CONSOLE_TAB_OF: Partial<Record<string, string>> = {
+  [CONSOLE_KEYS.announcements]: CONSOLE_KEYS.home,
   [CONSOLE_KEYS.report]: CONSOLE_KEYS.introLog,
   [CONSOLE_KEYS.invites]: CONSOLE_KEYS.members,
   [CONSOLE_KEYS.jobs]: CONSOLE_KEYS.members,

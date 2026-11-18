@@ -24,6 +24,7 @@ export const ANNOUNCEMENT_ERROR_CODES = {
   emptyAudience: "announcement_empty_audience",
   tooFast: "announcement_too_fast",
   memberGone: "announcement_member_gone",
+  tooLong: "announcement_too_long",
 } as const;
 
 const audienceSchema = z.discriminatedUnion("audience", [

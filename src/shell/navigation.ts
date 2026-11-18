@@ -1,8 +1,9 @@
 import "server-only";
 
-import { ArrowLeftRight, BookUser, Building2, CalendarCheck, FileChartColumn, Gift, Hand, Inbox, LayoutDashboard, Newspaper, Search, Settings2, UserRound, UserRoundPlus, Users, type LucideIcon } from "lucide-react";
+import { ArrowLeftRight, BookUser, Building2, CalendarCheck, FileChartColumn, Gift, Hand, Inbox, LayoutDashboard, Megaphone, Newspaper, Search, Settings2, UserRound, UserRoundPlus, Users, type LucideIcon } from "lucide-react";
 import { createElement } from "react";
 
+import { ANNOUNCEMENT_PAGE } from "@/modules/admin/contract-announcements";
 import { ASKS_ADMIN_PAGE } from "@/modules/asks/contract";
 import { JOB_BOARD_PAGES } from "@/modules/job-board/contract";
 import { MODULES } from "@/modules/registry";
@@ -45,6 +46,7 @@ const CONSOLE_MENU: readonly MenuEntry[] = [
   { key: CONSOLE_KEYS.members, label: "Members", tabLabel: "Members", icon: Users, href: ROUTES.adminMembers },
   { key: CONSOLE_KEYS.invites, label: "Invites", icon: UserRoundPlus, href: ROUTES.adminInvites },
   { key: CONSOLE_KEYS.asks, label: "Asks & digest", tabLabel: "Asks", icon: Hand, moduleId: "asks", href: ASKS_ADMIN_PAGE },
+  { key: CONSOLE_KEYS.announcements, label: "Announcements", icon: Megaphone, href: ANNOUNCEMENT_PAGE },
   { key: CONSOLE_KEYS.jobs, label: "Job board", icon: Building2, moduleId: "job-board", href: JOB_BOARD_PAGES.admin },
   { key: CONSOLE_KEYS.setup, label: "Set up", tabLabel: "Set up", icon: Settings2, href: ROUTES.adminSettings, badge: NAVIGATION_BADGES.admin },
 ];

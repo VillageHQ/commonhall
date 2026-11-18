@@ -15,7 +15,8 @@ import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { ANNOUNCEMENT_AUDIENCES, ANNOUNCEMENT_LIMITS, type AnnouncementAudienceKind, type AnnouncementSent } from "@/modules/admin/contract-announcements";
 import { sendAnnouncementRequest, sendAnnouncementTestRequest } from "@/modules/admin/queries-announcements";
-import { ANNOUNCEMENT_FIELDS, readUnknownFields, renderAnnouncementText } from "@/modules/admin/rules-announcement-fields";
+import { FEED_LIMITS } from "@/modules/feed/contract";
+import { ANNOUNCEMENT_FIELDS, readUnknownFields, renderAnnouncementPost, renderAnnouncementText } from "@/modules/admin/rules-announcement-fields";
 
 export type ComposerMember = { id: string; name: string; company: string | null; cohort: string | null; isWanted: boolean };
 export type ComposerCohort = { name: string; memberCount: number; wantedCount: number };
@@ -42,10 +43,9 @@ function describeCount(count: number) {
   return count === 1 ? "1 member" : `${count} members`;
 }
 
-function readSentMessage({ queued, isPosted, isRepeat }: AnnouncementSent) {
+function readSentMessage({ queued, isPosted }: AnnouncementSent) {
   const emails = queued === 1 ? "1 email is" : `${queued} emails are`;
-  const sent = `${isRepeat ? "Already sent: " : "Sent. "}${emails} on the way${isPosted ? ", and it's pinned at the top of the feed" : ""}.`;
-  return sent;
+  return `Sent. ${emails} on the way${isPosted ? ", and it's pinned at the top of the feed" : ""}. It's in the list below.`;
 }
 
 // Admin › Announcements: subject and message with fill-in fields, who gets it, the email as one member will see it,
@@ -70,6 +70,7 @@ export function AnnouncementComposer({ members, cohorts, community, adminId, isE
   const preview = renderAnnouncementText({ subject, body }, values, "(their own link to turn these off)");
   const audienceBody = audienceKind === ANNOUNCEMENT_AUDIENCES.cohort ? { audience: ANNOUNCEMENT_AUDIENCES.cohort, cohort } : { audience: ANNOUNCEMENT_AUDIENCES.everyone };
 
+  const test = useMutation({ mutationFn: () => sendAnnouncementTestRequest({ subject, body, memberId: previewMember?.id ?? "" }) });
   const send = useMutation({
     mutationFn: () => sendAnnouncementRequest({ sendKey, subject, body, ...audienceBody }),
     onSuccess: (sent) => {
@@ -78,11 +79,11 @@ export function AnnouncementComposer({ members, cohorts, community, adminId, isE
       setSubject("");
       setBody("");
       setSendKey(crypto.randomUUID());
+      test.reset();
       router.refresh();
     },
     onError: () => setIsConfirming(false),
   });
-  const test = useMutation({ mutationFn: () => sendAnnouncementTestRequest({ subject, body, memberId: previewMember?.id ?? "" }) });
 
   const isWritten = subject.trim().length > 0 && body.trim().length > 0;
   const emptyReason =
@@ -94,6 +95,8 @@ export function AnnouncementComposer({ members, cohorts, community, adminId, isE
         ? "Everyone in this audience turned announcement emails off, so it can't be sent."
         : null;
   const willPost = isFeedOn && audienceKind === ANNOUNCEMENT_AUDIENCES.everyone;
+  const feedOverBy = willPost ? renderAnnouncementPost({ subject, body }, community).length - FEED_LIMITS.postLength : 0;
+  const blockReason = emptyReason ?? (feedOverBy > 0 ? `With the fields filled in, this is too long for the feed post by ${feedOverBy} characters. Shorten the message.` : null);
 
   function insertField(field: string) {
     const area = bodyRef.current;
@@ -115,11 +118,6 @@ export function AnnouncementComposer({ members, cohorts, community, adminId, isE
 
   return (
     <>
-      {lastSent ? (
-        <Note kind="ok" role="status" className="mb-4">
-          {readSentMessage(lastSent)}
-        </Note>
-      ) : null}
       {!isEmailOn ? (
         <Note kind="needs" className="mb-4">
           Email is off on this site, so announcements can&apos;t be sent yet. Set up email first (Set up › Mail).
@@ -211,7 +209,7 @@ export function AnnouncementComposer({ members, cohorts, community, adminId, isE
             </Field>
           ) : null}
           <p className="fh-hint" role="status">
-            {emptyReason ??
+            {blockReason ??
               `${describeCount(wantedCount)} will get the email${inAudience.length > wantedCount ? ` (${inAudience.length - wantedCount} turned announcements off)` : ""}.${
                 willPost ? " It's also pinned at the top of the feed." : audienceKind === ANNOUNCEMENT_AUDIENCES.cohort ? " Email only: the feed is shared by everyone." : ""
               }`}
@@ -228,7 +226,7 @@ export function AnnouncementComposer({ members, cohorts, community, adminId, isE
             </Note>
           ) : null}
           <div className="fh-btn-row mt-3.5">
-            <Button type="submit" disabled={!isEmailOn || !isWritten || emptyReason !== null || send.isPending}>
+            <Button type="submit" disabled={!isEmailOn || !isWritten || blockReason !== null || send.isPending}>
               <Send aria-hidden="true" strokeWidth={1.5} />
               {send.isPending ? "Sending…" : isConfirming ? `Yes, send to ${describeCount(wantedCount)}` : `Send to ${describeCount(wantedCount)}`}
             </Button>
@@ -238,6 +236,11 @@ export function AnnouncementComposer({ members, cohorts, community, adminId, isE
               </Button>
             ) : null}
           </div>
+          {lastSent ? (
+            <Note kind="ok" role="status" className="mt-3.5">
+              {readSentMessage(lastSent)}
+            </Note>
+          ) : null}
         </form>
 
         <section className="fh-c5" aria-label="Preview">

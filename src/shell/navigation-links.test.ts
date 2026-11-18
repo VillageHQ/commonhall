@@ -208,8 +208,8 @@ describe("the console's Community-only pages", () => {
     expect(readAdminTabs(CONSOLE_KEYS.setup, FACTS)).toEqual([]);
   });
 
-  it("keeps the weekly email and announcements beside Asks & digest", () => {
-    expect(readAdminTabs(CONSOLE_KEYS.asks, FACTS).map(({ label }) => label)).toEqual(["Asks", "Weekly email", "Announcements"]);
+  it("keeps the weekly email beside Asks & digest", () => {
+    expect(readAdminTabs(CONSOLE_KEYS.asks, FACTS).map(({ label }) => label)).toEqual(["Asks", "Weekly email"]);
   });
 
   it("adds nothing to pages with their own menu item", () => {

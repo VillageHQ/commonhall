@@ -53,6 +53,7 @@ describe("fill-in fields", () => {
     const empty = { fullName: "  ", company: null, community: "Northwind Founders" };
     expect(fillAnnouncementFields("Hi {first name}, how is {company}? {full name}{nickname}", empty)).toBe("Hi there, how is your company? there");
     expect(readUnknownFields("Hi {first name} {nickname} {Nickname}")).toEqual(["{nickname}", "{Nickname}"]);
+    expect(fillAnnouncementFields("Hi {{first name}}, {a field name that is longer than forty characters}!", values)).toBe("Hi Amara, !");
   });
 });
 
@@ -152,6 +153,14 @@ describe("announcements", () => {
     expect((await allOff.json()).message).toContain("turned announcement emails off");
     expect(await readQueued()).toHaveLength(0);
     expect(await database.select().from(announcement)).toHaveLength(0);
+  });
+
+  it("refuses a message the fields make too long for the feed post, before anything is queued", async () => {
+    const body = `${"{community} ".repeat(230)}`.trim();
+    const response = await call(postSend, admin, { subject: "Long", body, audience: "everyone", sendKey: crypto.randomUUID() });
+    expect(response.status).toBe(UNPROCESSABLE_STATUS);
+    expect((await response.json()).message).toContain("too long for the feed post");
+    expect(await readQueued()).toHaveLength(0);
   });
 
   it("sends the test to the admin only, filled in as the chosen member", async () => {

@@ -2,6 +2,7 @@ import "server-only";
 
 import { eq } from "drizzle-orm";
 
+import { FEED_LIMITS } from "../feed/contract.ts";
 import { feedManifest } from "../feed/manifest.ts";
 import { createAnnouncementPostWithin } from "../feed/service.ts";
 import { AUDIT_ACTIONS } from "../../platform/audit/actions.ts";
@@ -10,7 +11,7 @@ import { recordAdminAction } from "../../platform/audit/record.ts";
 import { readBranding } from "../../platform/branding/branding.ts";
 import { user } from "../../platform/database/auth-schema.ts";
 import type { DatabaseOrTransaction } from "../../platform/database/client.ts";
-import { clipLine, renderPlainTextHtml, toSingleLine } from "../../platform/email/email-text.ts";
+import { clipLine, renderPlainTextHtml } from "../../platform/email/email-text.ts";
 import { EMAIL_KINDS } from "../../platform/email/kinds.ts";
 import { queueEmail } from "../../platform/email/outbox.ts";
 import { sendQueuedEmailNow } from "../../platform/email/outbox-sender.ts";
@@ -31,7 +32,7 @@ import {
   type AnnouncementTestBody,
 } from "./contract-announcements.ts";
 import { isInAudience, readAnnouncementMembers, type AnnouncementRecipient } from "./reads-announcements.ts";
-import { fillAnnouncementFields, renderAnnouncementText, type AnnouncementFieldValues } from "./rules-announcement-fields.ts";
+import { renderAnnouncementPost, renderAnnouncementText, type AnnouncementFieldValues } from "./rules-announcement-fields.ts";
 import { announcement } from "./schema.ts";
 
 const NOT_FOUND_STATUS = 404;
@@ -54,12 +55,6 @@ function readFieldValues(member: Pick<AnnouncementRecipient, "name" | "company">
   return { fullName: member.name, company: member.company, community };
 }
 
-// The feed post is one for everyone, so its fields take the plain words ("Hi everyone", "your company").
-export function renderAnnouncementPost({ subject, body }: Message, community: string) {
-  const values = { fullName: null, company: null, community, nameFallback: "everyone" };
-  return `${toSingleLine(fillAnnouncementFields(subject, values))}\n${fillAnnouncementFields(body, values)}`;
-}
-
 function describeAudience(audience: AnnouncementAudience) {
   return audience.audience === ANNOUNCEMENT_AUDIENCES.cohort ? `the ${audience.cohort} cohort` : "everyone";
 }
@@ -74,6 +69,15 @@ async function readEarlierSend(connection: DatabaseOrTransaction, sendKey: strin
     .from(announcement)
     .where(eq(announcement.sendKey, sendKey));
   return earlier ? { id: earlier.id, queued: earlier.queued, isPosted: earlier.postId !== null, isRepeat: true } : null;
+}
+
+// The fields make the feed post longer than the message typed ({community} becomes the community's name).
+function tooLongForFeedError(overBy: number) {
+  return new RequestError(
+    UNPROCESSABLE_STATUS,
+    ANNOUNCEMENT_ERROR_CODES.tooLong,
+    `With the fields filled in, this is too long for the feed post by ${overBy.toLocaleString("en-US")} characters. Shorten the message, then send it.`,
+  );
 }
 
 function emptyAudienceError(audience: AnnouncementAudience, memberCount: number) {
@@ -136,7 +140,9 @@ export async function sendAnnouncement({ database, environment, member }: Reques
     }
 
     const shouldPost = isFeedOn && audience.audience === ANNOUNCEMENT_AUDIENCES.everyone;
-    const posted = shouldPost ? await createAnnouncementPostWithin(transaction, member.id, renderAnnouncementPost({ subject, body: message }, community)) : null;
+    const postBody = renderAnnouncementPost({ subject, body: message }, community);
+    if (shouldPost && postBody.length > FEED_LIMITS.postLength) throw tooLongForFeedError(postBody.length - FEED_LIMITS.postLength);
+    const posted = shouldPost ? await createAnnouncementPostWithin(transaction, member.id, postBody) : null;
     await transaction.update(announcement).set({ queuedCount: queued, postId: posted?.postId ?? null }).where(eq(announcement.id, created.id));
     const emails = queued === 1 ? "1 email" : `${queued} emails`;
     await recordAdminAction(transaction, member.id, {
