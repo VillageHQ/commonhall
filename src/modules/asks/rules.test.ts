@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { ASK_CATEGORIES, ASK_KINDS, ASK_LIMITS, ASK_STATES, composeAskReportBody, composeOfferMessage, describeNewOffers } from "./contract";
-import { ASK_VIEWS, parseAskBoardFilters, readBoardTab, toAskBoardQueryString } from "./rules-board-url";
+import { ASK_VIEWS, parseAskBoardFilters, parseAskDraftParts, readBoardTab, toAskBoardQueryString } from "./rules-board-url";
 import { canRenewAsk, readAskState, readExpiresAt } from "./rules-state";
 import { describeAge, describeTimeLeft } from "./rules-time";
 
@@ -121,5 +121,21 @@ describe("the words", () => {
   it("uses correct grammar in the badge", () => {
     expect(describeNewOffers(1)).toBe("1 new offer of help");
     expect(describeNewOffers(2)).toBe("2 new offers of help");
+  });
+});
+
+describe("a prefilled ask from another screen", () => {
+  it("carries a hiring request's category and the job's link", () => {
+    expect(parseAskDraftParts({ draft: "We're hiring a Designer", category: "hire", detail: "The job: https://jobs.example.com/1" })).toEqual({
+      body: "We're hiring a Designer",
+      target: "",
+      category: ASK_CATEGORIES.hire,
+      detail: "The job: https://jobs.example.com/1",
+    });
+  });
+
+  it("drops an unknown category and opens nothing without a line", () => {
+    expect(parseAskDraftParts({ draft: "Who knows a CFO?", category: "spam" })?.category).toBeNull();
+    expect(parseAskDraftParts({ category: "hire", detail: "x" })).toBeNull();
   });
 });

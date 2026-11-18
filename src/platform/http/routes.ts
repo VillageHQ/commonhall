@@ -46,6 +46,8 @@ export const ROUTES = {
   introAsk: "/intros/new",
   // The one-step ask from a search result (Commonhall keeps Search lit for it).
   searchAsk: "/search/ask",
+  // "Find candidates" on a job: network search built from the job (src/shell/find-candidates.ts).
+  findCandidates: "/search/candidates",
   myNetwork: "/me/network",
   admin: "/admin",
   adminSetup: "/admin/setup",

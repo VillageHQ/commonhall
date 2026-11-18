@@ -32,8 +32,8 @@ const SCOPE_SEGMENTS = [
 const QUERY_FIELD = "q";
 
 
-export function toSearchHref(query: string, scope: SearchWhere) {
-  return `${ROUTES.network}?${new URLSearchParams({ [SEARCH_PROMPT_PARAM]: query, [SEARCH_SCOPE_PARAM]: scope }).toString()}`;
+export function toSearchHref(query: string, scope: SearchWhere, path: string = ROUTES.network, keepParams: Record<string, string> = {}) {
+  return `${path}?${new URLSearchParams({ ...keepParams, [SEARCH_PROMPT_PARAM]: query, [SEARCH_SCOPE_PARAM]: scope }).toString()}`;
 }
 
 function readScope(value: string | null, fallback: SearchWhere): SearchWhere {
@@ -66,7 +66,7 @@ function ConnectPrompt({ communityName }: { communityName: string }) {
 // Commonhall's search (village/views.mjs searchPage): the question as the title, the field, In our network |
 // Everywhere, example searches, the strip line, then the results.
 export function SearchScreen(props: SearchScreenProps) {
-  const { communityName, sharingMemberCount, isConnected, isVillageOn, defaultScope } = props;
+  const { communityName, sharingMemberCount, isConnected, isVillageOn, defaultScope, heading, intro, beforeResults, searchPath, keepParams } = props;
   const canSearchNetworks = isVillageOn && isConnected;
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -81,16 +81,17 @@ export function SearchScreen(props: SearchScreenProps) {
     if (!prompt) return;
     const active: ActiveSearch = { prompt, scope: where, startedAtMs: Date.now(), wasSeen: false };
     queryClient.setQueryData(activeSearchQuery.queryKey, active);
-    router.push(toSearchHref(prompt, where));
+    router.push(toSearchHref(prompt, where, searchPath, keepParams));
   };
 
   return (
     <>
       <div className="fh-pagehead">
         <h1 className="fh-h1">
-          <label htmlFor={QUERY_FIELD}>Who are you trying to reach?</label>
+          <label htmlFor={QUERY_FIELD}>{heading ?? "Who are you trying to reach?"}</label>
         </h1>
       </div>
+      {intro}
       <SearchForm key={`${query}|${scope}`} query={query} scope={scope} canChooseScope={canSearchNetworks} onSearch={search} />
       {canSearchNetworks ? <StripWords sharingMemberCount={sharingMemberCount} /> : null}
       <div id="results">
@@ -100,6 +101,7 @@ export function SearchScreen(props: SearchScreenProps) {
             {communityName} hasn’t switched on network search yet, so this searches member profiles only.
           </Note>
         )}
+        {beforeResults}
         {query && isInBrowser ? (
           <QueryBoundary
             key={`${query}-${scope}`}

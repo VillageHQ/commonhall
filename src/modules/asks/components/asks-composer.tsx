@@ -11,7 +11,9 @@ import { RequestFailure, postRequest } from "@/platform/http/post-request";
 import { ASK_API_ROUTES, ASK_ERROR_CODES, ASK_KINDS, ASK_LIMITS, ASKS_PAGE, createdAskSchema, describeAllowance, toAskPage, type AskAllowance, type AskKind } from "../contract";
 import { ICON } from "./post-parts";
 
-type ComposerProps = { communityName: string; allowance: AskAllowance; draft?: { body: string; target: string } | null };
+import type { AskDraftParts } from "../rules-board-url";
+
+type ComposerProps = { communityName: string; allowance: AskAllowance; draft?: AskDraftParts | null };
 
 // Commonhall's composer (crop composer-ask.png): Ask | Update, one line and Post, "Who are you trying to reach?"
 // folded away, then the week's allowance as pips. A post goes to its own page with the flash.
@@ -36,6 +38,9 @@ export function AsksComposer({ communityName, allowance, draft = null }: Compose
           kind,
           targetText: isUpdate ? null : String(form.get("target") ?? ""),
           targetCompany: isUpdate ? null : String(form.get("company") ?? ""),
+          // A prefilled hiring request ("Find candidates") carries its category and the job's link.
+          ...(draft?.category && !isUpdate ? { category: draft.category } : {}),
+          ...(draft?.detail ? { detail: String(form.get("detail") ?? "").trim() || null } : {}),
         },
         createdAskSchema,
       );
@@ -85,6 +90,14 @@ export function AsksComposer({ communityName, allowance, draft = null }: Compose
           Post
         </Button>
       </div>
+      {draft?.detail ? (
+        <div style={{ marginTop: 10 }}>
+          <label className="fh-label fh-small" htmlFor="p-detail">
+            Details
+          </label>
+          <Input id="p-detail" name="detail" maxLength={ASK_LIMITS.detailLength} defaultValue={draft.detail} />
+        </div>
+      ) : null}
       {error?.field === "body" ? (
         <p className="fh-hint fh-err" role="alert">
           {error.text}

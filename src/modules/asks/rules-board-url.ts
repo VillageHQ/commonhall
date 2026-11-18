@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { ASK_BOARD_TABS, ASK_CATEGORIES, ASK_KINDS, ASK_LIMITS, type AskBoardTab, type AskCategory, type AskKind } from "./contract.ts";
-import { ASK_DRAFT_PARAM } from "../../platform/modules/manifest.ts";
+import { ASK_DRAFT_CATEGORY_PARAM, ASK_DRAFT_DETAIL_PARAM, ASK_DRAFT_PARAM } from "../../platform/modules/manifest.ts";
 
 const VIEW_PARAM = "view";
 const CATEGORY_PARAM = "category";
@@ -60,4 +60,14 @@ export function toAskBoardQueryString({ view, category, kind, search = null }: A
 export function parseAskDraft(params: Record<string, SearchParamValue>) {
   const draft = readFirstValue(params[ASK_DRAFT_PARAM])?.replace(/\s+/g, " ").trim() ?? "";
   return draft ? draft.slice(0, ASK_LIMITS.titleLength) : null;
+}
+
+export type AskDraftParts = { body: string; target: string; category: AskCategory | null; detail: string | null };
+
+// The whole prefilled ask: the line, and a category and details when the link carries them ("Find candidates").
+export function parseAskDraftParts(params: Record<string, SearchParamValue>): AskDraftParts | null {
+  const body = parseAskDraft(params);
+  if (!body) return null;
+  const detail = readFirstValue(params[ASK_DRAFT_DETAIL_PARAM])?.trim().slice(0, ASK_LIMITS.detailLength) || null;
+  return { body, target: "", category: categorySchema.parse(readFirstValue(params[ASK_DRAFT_CATEGORY_PARAM])), detail };
 }
