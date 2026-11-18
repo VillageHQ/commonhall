@@ -64,13 +64,13 @@ describe("the navigation", () => {
   it("lists Commonhall's console menu for admins", () => {
     const labels = selectNavigationItems(NAVIGATION_SECTIONS.admin, true).map(({ label }) => label);
 
-    expect(labels).toEqual(["Home", "Partner report", "Intro log", "Members", "Invites", "Asks & digest", "Job board", "Set up"]);
+    expect(labels).toEqual(["Home", "Partner report", "Intro log", "Members", "Invites", "Asks & digest", "Announcements", "Job board", "Set up"]);
   });
 
   it("hides a console item whose module is off", () => {
     const labels = selectNavigationItems(NAVIGATION_SECTIONS.admin, true, new Set(["members", "admin", "intros"])).map(({ label }) => label);
 
-    expect(labels).toEqual(["Home", "Partner report", "Intro log", "Members", "Invites", "Set up"]);
+    expect(labels).toEqual(["Home", "Partner report", "Intro log", "Members", "Invites", "Announcements", "Set up"]);
   });
 
   describe("which item a page lights", () => {
@@ -104,6 +104,7 @@ describe("the navigation", () => {
       [ROUTES.adminIntroLog, CONSOLE_KEYS.introLog, CONSOLE_KEYS.introLog],
       [ROUTES.adminInvites, CONSOLE_KEYS.invites, CONSOLE_KEYS.members],
       ["/admin/jobs", CONSOLE_KEYS.jobs, CONSOLE_KEYS.members],
+      ["/admin/announcements", CONSOLE_KEYS.announcements, CONSOLE_KEYS.home],
       [ROUTES.adminWeeklyEmail, CONSOLE_KEYS.asks, CONSOLE_KEYS.asks],
       [ROUTES.adminVillage, CONSOLE_KEYS.setup, CONSOLE_KEYS.setup],
       [ROUTES.adminMail, CONSOLE_KEYS.setup, CONSOLE_KEYS.setup],

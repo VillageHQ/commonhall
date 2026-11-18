@@ -264,8 +264,15 @@
     {
       "idx": 38,
       "version": "7",
-      "when": 1795012442168,
-      "tag": "0038_powerful_gideon",
+      "when": 1795012797073,
+      "tag": "0038_announcements",
+      "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "7",
+      "when": 1795018321328,
+      "tag": "0039_mentors_calls",
       "breakpoints": true
     }
   ]

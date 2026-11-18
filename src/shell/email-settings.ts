@@ -37,6 +37,12 @@ export async function readEmailSettingRows(database: Database, memberId: string)
       description: `Every ${WEEKDAYS[schedule.weekday]} at ${hour}:00 (${schedule.timeZone}): asks you could help with, intros waiting for your yes, lines on your profile to check. Answer from your inbox. Not sent when there’s nothing to answer.`,
       isOn: isOn(EMAIL_TOPICS.weekly),
     },
+    {
+      topic: EMAIL_TOPICS.announcements,
+      title: "Announcements from the team",
+      description: "News from the people who run this community: events, perks, demo days. Only when they send one.",
+      isOn: isOn(EMAIL_TOPICS.announcements),
+    },
   ];
   if (enabledIds.has(asksManifest.id)) {
     rows.push({

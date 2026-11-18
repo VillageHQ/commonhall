@@ -8,10 +8,11 @@ Core. Always on. It sits on top of the features it manages, so it may import the
 - Partner report (Commonhall's document): `reads-report-stats.ts` reads it once per period; `report-stats.ts` makes the page's numbers, the CSV and the email text; `service-partner-report.ts` sends it and marks it shared.
 - Intro log: `reads-intro-log.ts`. Admins see who asked whom (the owner's decision), never the note or reason.
 - Calls requested (`/admin/calls`, Home's sheet): `reads-calls.ts` reads every "Book a call" once; `calls.ts` counts per person and week and makes the CSV.
-- `schema.ts`: `content_report` and `member_removal`.
-- Set up › Mail: `reads-mail.ts` reads it once (also Settings' mail checklist), `mail-checks.ts` makes the checklist rows, `service-mail.ts` runs Check DNS now and saves the DNS settings, `components/mail-forms.tsx` holds the buttons and the form. The DNS lookups (`src/platform/email/dns-check.ts`) take the resolver as an argument, so tests never touch real DNS.
+- `schema.ts`: `content_report`, `member_removal` and `announcement`.
+- Set up › Mail: `reads-mail.ts` reads it (also for Settings), `mail-checks.ts` makes the checklist rows, `service-mail.ts` checks DNS and saves its settings, `components/mail-forms.tsx` the form. DNS lookups (`src/platform/email/dns-check.ts`) take the resolver as an argument: tests never touch DNS.
 - `contract-modules.ts`, `queries-modules.ts`, `components/feature-screen.tsx`: the features screen. `src/shell/module-settings.ts` holds its logic, because it needs the registry.
 - `*-email.ts`: removing an address from the do-not-send list. The sending log shows subjects and addresses, never a body.
+- `*-announcement*.ts`: announcements (`.ai/features/announcements/NOTES.md`).
 - `queries-*.ts`: client requests. `components/`: the UI.
 
 Rules:

@@ -5,7 +5,6 @@ CREATE TABLE "call_request" (
 	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-ALTER TABLE "community_branding" ALTER COLUMN "accent_color" SET DEFAULT '#111110';--> statement-breakpoint
 ALTER TABLE "invite" ADD COLUMN "community_role" text;--> statement-breakpoint
 ALTER TABLE "member_profile" ADD COLUMN "community_role" text DEFAULT 'founder' NOT NULL;--> statement-breakpoint
 ALTER TABLE "member_profile" ADD COLUMN "booking_url" text;--> statement-breakpoint

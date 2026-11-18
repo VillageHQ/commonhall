@@ -1,8 +1,10 @@
 import { desc, sql } from "drizzle-orm";
-import { check, index, pgTable, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
+import { check, index, integer, pgTable, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
 
 import { REPORT_TARGETS } from "./contract.ts";
 import { FEED_LIMITS } from "../feed/contract.ts";
+import { post } from "../feed/schema.ts";
+import { ANNOUNCEMENT_AUDIENCES } from "./contract-announcements.ts";
 import { user } from "../../platform/database/auth-schema.ts";
 
 const MILLISECOND_PRECISION = 3;
@@ -37,5 +39,27 @@ export const contentReport = pgTable(
       sql`${table.targetType} in ('${sql.raw(REPORT_TARGETS.post)}', '${sql.raw(REPORT_TARGETS.comment)}', '${sql.raw(REPORT_TARGETS.introNote)}', '${sql.raw(REPORT_TARGETS.ask)}', '${sql.raw(REPORT_TARGETS.askAnswer)}')`,
     ),
     check("content_report_body_length", sql`char_length(${table.body}) between 1 and ${sql.raw(String(FEED_LIMITS.postLength))}`),
+  ],
+);
+
+// Admin › Announcements: one row per send. The send key makes a second click find the first send.
+export const announcement = pgTable(
+  "announcement",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    sendKey: uuid("send_key").notNull().unique(),
+    subject: text("subject").notNull(),
+    body: text("body").notNull(),
+    audience: text("audience").notNull(),
+    cohort: text("cohort"),
+    queuedCount: integer("queued_count").notNull(),
+    postId: uuid("post_id").references(() => post.id, { onDelete: "set null" }),
+    sentByUserId: text("sent_by_user_id").references(() => user.id, { onDelete: "set null" }),
+    sentByName: text("sent_by_name").notNull(),
+    sentAt: adminTimestamp("sent_at").notNull().defaultNow(),
+  },
+  (table) => [
+    index("announcement_sent_at_idx").on(desc(table.sentAt)),
+    check("announcement_audience_known", sql`${table.audience} in ('${sql.raw(ANNOUNCEMENT_AUDIENCES.everyone)}', '${sql.raw(ANNOUNCEMENT_AUDIENCES.cohort)}')`),
   ],
 );

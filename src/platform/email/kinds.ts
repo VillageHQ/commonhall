@@ -9,6 +9,8 @@ export const EMAIL_TOPICS = {
   messages: "messages",
   network: "network",
   asks: "asks",
+  // The fund team's announcements to the community (admin › Announcements).
+  announcements: "announcements",
 } as const;
 
 export type EmailTopic = (typeof EMAIL_TOPICS)[keyof typeof EMAIL_TOPICS];
@@ -38,6 +40,7 @@ export const EMAIL_KINDS = {
   emailTest: "email_test",
   introThread: "intro_thread",
   replyNotice: "reply_notice",
+  announcement: "announcement",
 } as const;
 
 export type EmailKind = (typeof EMAIL_KINDS)[keyof typeof EMAIL_KINDS];
@@ -73,6 +76,8 @@ const TOPIC_BY_KIND: Record<EmailKind, EmailTopic | null> = {
   [EMAIL_KINDS.introThread]: null,
   // The one plain answer to an emailed reply: why it didn't land, or the next step after a YES.
   [EMAIL_KINDS.replyNotice]: null,
+  // One email per member when an admin sends an announcement; its own switch and one-click unsubscribe.
+  [EMAIL_KINDS.announcement]: EMAIL_TOPICS.announcements,
 };
 
 export const EMAIL_TOPIC_LABELS: Record<EmailTopic, { title: string; description: string }> = {
@@ -82,6 +87,7 @@ export const EMAIL_TOPIC_LABELS: Record<EmailTopic, { title: string; description
   [EMAIL_TOPICS.messages]: { title: "Direct messages", description: "When someone messages you. At most one email per conversation every 15 minutes." },
   [EMAIL_TOPICS.network]: { title: "Network reminders", description: "An admin's reminder to connect your network. At most one every 30 days." },
   [EMAIL_TOPICS.asks]: { title: "Asks you could help with", description: "When someone posts an ask you may be able to help with. One email per ask." },
+  [EMAIL_TOPICS.announcements]: { title: "Announcements", description: "News from the team that runs this community: events, perks, demo days." },
 };
 
 const TOPIC_VALUES: readonly string[] = Object.values(EMAIL_TOPICS);
