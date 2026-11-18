@@ -23,13 +23,13 @@ describe("the website's sign-up form", () => {
   });
 
   it("names the Enterprise plan up to 500 members", () => {
-    expect(typeMembers("120")).toBe("$10,000 a year, 7,500 credits a month");
-    expect(typeMembers("500")).toBe("$10,000 a year, 7,500 credits a month");
+    expect(typeMembers("120")).toBe("$50k+ a year, 7,500 credits a month");
+    expect(typeMembers("500")).toBe("$50k+ a year, 7,500 credits a month");
   });
 
   it("offers a quote above 500 members, never the 500-member price", () => {
     const price = typeMembers("5000");
-    expect(price).not.toContain("$10,000");
+    expect(price).not.toContain("$50k+");
     expect(price).toBe("above 500 members, Village quotes a plan with you");
   });
 });
