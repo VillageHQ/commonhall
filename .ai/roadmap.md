@@ -81,6 +81,28 @@ Each open item gets these yes/no checks; code adds the points (change a number t
 - [ ] A removed member sees "You have been banned from this application. Please contact support"
 - [ ] Text slips: the "Invite someone" link on Admin → Members goes nowhere; "sam's network"; "help with investor"; two different member counts in the welcome steps; "Continue to the feed" with the feed off; a double footer; "Logistics's jobs" — the "Invite someone" link works since PR #32 (checked in the running app on 2026-11-10: it opens the "Invite someone" form; [proof](features/admin-firstrun/reports/invite-button-1280.png))
 
+## Round 5 (proposed 19 Nov 2026): AI across the portfolio, mentors, events, mobile, voice
+From the owner's ask on 19 Nov 2026 and two research reports (market and tech options). Waves are the proposed order;
+the owner picks the first wave on the decision page. Goal matching stays an idea ([spec](features/goal-matching/SPEC.md)).
+### Wave 1 (start first, built side by side)
+- [ ] Portfolio AI library: share skills, agents, prompts and MCP setups across the portfolio — ai-library — size M — [spec](features/ai-library/SPEC.md)
+- [ ] Mentors portal: mentor home, requests, call limits, and "was the call useful?" — mentors-portal — size M — [spec](features/mentors-portal/SPEC.md)
+- [ ] Events and schedules: fund events with RSVP, calendar feeds and reminders — events-schedules — size M — [spec](features/events-schedules/SPEC.md)
+- [ ] Mobile: install Commonhall on the phone, with push notifications — mobile-app — size S — [spec](features/mobile-app/SPEC.md)
+### Wave 2
+- [ ] Portfolio MCP server: use Commonhall from a founder's Claude or ChatGPT — portfolio-mcp — size S — [spec](features/portfolio-mcp/SPEC.md)
+- [ ] "Ask the portfolio": an AI that answers from the portfolio's shared playbooks — ask-the-portfolio — size M — [spec](features/ask-the-portfolio/SPEC.md)
+- [ ] AI stack census: which AI tools portfolio companies tried, kept or dropped — ai-stack-census — size S — [spec](features/ai-stack-census/SPEC.md)
+- [ ] Voice sessions: scheduled live audio rooms, recorded and summarized — voice-sessions — size L — [spec](features/voice-sessions/SPEC.md)
+### Wave 3
+- [ ] AI vendor trust exchange: security reviews of AI vendors done once, reused by all — ai-vendor-trust — size M — [spec](features/ai-vendor-trust/SPEC.md)
+- [ ] AI credits and procurement desk — ai-credits-desk — size S — [spec](features/ai-credits-desk/SPEC.md)
+- [ ] AI governance kit and adoption scorecard — ai-governance-kit — size S — [spec](features/ai-governance-kit/SPEC.md)
+- [ ] AI incident and failure log — ai-failure-log — size S — [spec](features/ai-failure-log/SPEC.md)
+- [ ] Store app (iOS and Android) for funds that ask — store-app — size L — [spec](features/store-app/SPEC.md)
+### Open bugs to fix along the way
+- [ ] `/search/ask` answers 500 when the member's Village link waits for approval; an ask's details are saved but never shown; links in an ask's line are not clickable; the landing page's Schedule call buttons print white on white; commonhall.ai answers unknown paths with an empty 404 — see `.ai/bugs.md`
+
 ## Later (someday / deferred)
 - [ ] Admin console: member-view switch, mail page lists, Village test connection, the mail setup step (the home and the asks page are built) — parity — [spec](features/admin-console/SPEC.md)
 - [ ] Search and Village fallbacks: member-profile search, search cache, city filter, Village cancel on disconnect — parity — [spec](features/search-without-village/SPEC.md)
