@@ -13,6 +13,7 @@ import { introsManifest } from "@/modules/intros/manifest";
 import { PUBLIC_BOARD_SETTING, toCompanySlug } from "@/modules/job-board/contract";
 import { jobBoardManifest } from "@/modules/job-board/manifest";
 import { jobPosting, jobSource } from "@/modules/job-board/schema";
+import { libraryManifest } from "@/modules/library/manifest";
 import { callRequest, invite, memberFillIn, memberLookup, memberNetwork, memberProfile, memberTag } from "@/modules/members/schema";
 import { BOOKING_VISIBILITIES, readCommunityRole } from "@/modules/members/contract-community-roles";
 import { FILL_IN_BASES, LOOKUP_STATUSES } from "@/modules/members/contract-fill-in";
@@ -36,6 +37,8 @@ import { saveSettings } from "@/platform/settings/store";
 import { toDataHomeSettings } from "@/platform/settings/data-home";
 import { INSTANCE_SETTING_KEYS } from "@/platform/settings/schema";
 import { saveVillageKeys } from "@/platform/village/settings";
+
+import { seedLibrary } from "./demo-library";
 
 // Fills an empty database with the demo community. Runs inside the caller's transaction: at start on an empty
 // database, and every night after the reset empties it. Every date is relative to `now`, so the demo always looks
@@ -660,7 +663,7 @@ async function seedSettings(transaction: Transaction, environment: Environment, 
   });
   await saveVillageKeys(transaction, DEMO_VILLAGE_KEYS, environment);
   // The features a fund buys it for are on, with made-up jobs, perks and feed posts; Slack/Discord stay off.
-  for (const manifest of [networkManifest, introsManifest, asksManifest, messagesManifest, jobBoardManifest, perksManifest, feedManifest]) {
+  for (const manifest of [networkManifest, introsManifest, asksManifest, messagesManifest, jobBoardManifest, perksManifest, feedManifest, libraryManifest]) {
     await saveModuleState(transaction, manifest, true);
   }
   await saveModuleState(transaction, chatManifest, false);
@@ -677,6 +680,7 @@ export async function seedDemo(transaction: Transaction, environment: Environmen
   await seedMessages(transaction, ids, ago);
   await seedJobs(transaction, ids, ago, now);
   await seedFeed(transaction, ids, ago);
+  await seedLibrary(transaction, ids, ago);
   await seedCallRequests(transaction, ids, ago);
   return { members: DEMO_PEOPLE.length, invites: DEMO_INVITEES.length, intros: CURRENT_INTROS.length + HISTORY_PAIRS.length, asks: ASKS.length };
 }

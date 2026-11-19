@@ -72,11 +72,13 @@ type TodayPageProps = {
   now: Date;
   // Where "Ask for an intro" goes today (see GUIDED_ASK_PAGE).
   askIntroHref: string;
+  // "New in the library", while the library is on and has something new for this member.
+  libraryCard?: ReactNode;
 };
 
 // Commonhall's Today (todayPage): what needs you in the main column (asks on your paths, intros waiting for your
 // yes, lines to check), your own asks and the community's boards in the right rail.
-export function TodayPage({ today, memberName, communityName, digestDay, dateLabel, allowance, perksCommunityName, openJobCount, nextSteps, lookupQuestion, installCard = null, flash, now, askIntroHref }: TodayPageProps) {
+export function TodayPage({ today, memberName, communityName, digestDay, dateLabel, allowance, perksCommunityName, openJobCount, nextSteps, lookupQuestion, installCard = null, flash, now, askIntroHref, libraryCard = null }: TodayPageProps) {
   const first = firstWord(memberName);
   const help = today.helpableAsks;
   const forYou = today.introsForYou ?? [];
@@ -277,6 +279,7 @@ export function TodayPage({ today, memberName, communityName, digestDay, dateLab
               </p>
             </section>
           ) : null}
+          {libraryCard}
           {today.newMembers.length > 0 ? (
             <div style={{ marginTop: 16 }}>
               <NewThisWeekCard newMembers={today.newMembers} />

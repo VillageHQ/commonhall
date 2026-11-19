@@ -85,7 +85,7 @@ Each open item gets these yes/no checks; code adds the points (change a number t
 From the owner's ask on 19 Nov 2026 and two research reports (market and tech options). Waves are the proposed order;
 the owner picks the first wave on the decision page. Goal matching stays an idea ([spec](features/goal-matching/SPEC.md)).
 ### Wave 1 (start first, built side by side)
-- [ ] Portfolio AI library: share skills, agents, prompts and MCP setups across the portfolio — ai-library — size M — [spec](features/ai-library/SPEC.md)
+- [ ] Portfolio AI library: share skills, agents, prompts and MCP setups across the portfolio — ai-library — size M — open pull request — [spec](features/ai-library/SPEC.md)
 - [ ] Mentors portal: mentor home, requests, call limits, and "was the call useful?" — mentors-portal — size M — [spec](features/mentors-portal/SPEC.md)
 - [ ] Events and schedules: fund events with RSVP, calendar feeds and reminders — events-schedules — size M — [spec](features/events-schedules/SPEC.md)
 - [ ] Mobile: install Commonhall on the phone, with push notifications — mobile-app — size S — [spec](features/mobile-app/SPEC.md)

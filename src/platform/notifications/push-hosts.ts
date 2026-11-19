@@ -30,5 +30,5 @@ export function isAllowedPushEndpoint(endpoint: string, environment: Environment
   }
   const testOrigin = environment.PUSH_TEST_ORIGIN?.trim();
   if (testOrigin && url.origin === testOrigin) return true;
-  return url.protocol === "https:" && url.port === "" && url.username === "" && PUSH_SERVICE_HOSTS.some((allowed) => matchesHost(url.hostname, allowed));
+  return url.protocol === "https:" && url.port === "" && url.username === "" && url.password === "" && PUSH_SERVICE_HOSTS.some((allowed) => matchesHost(url.hostname, allowed));
 }

@@ -26,6 +26,7 @@ import { readFirstName } from "@/platform/design/avatar-identity";
 import { formatDateAndTimeUtc, formatLongDate } from "@/platform/text/format-date";
 
 import { asksManifest } from "@/modules/asks/manifest";
+import { libraryManifest } from "@/modules/library/manifest";
 import { feedManifest } from "@/modules/feed/manifest";
 import { introsManifest } from "@/modules/intros/manifest";
 import { messagesManifest } from "@/modules/messages/manifest";
@@ -63,6 +64,11 @@ const TARGET_DISPLAY: Record<ReportTarget, { label: string; scope: string; delet
     scope: "This is the answer as it was when reported, with the title of the ask it was under.",
     deleteLabel: "Remove this answer",
   },
+  [REPORT_TARGETS.libraryItem]: {
+    label: "Library item",
+    scope: "This is the item's title and pitch as they were when reported. Open the library to see its files.",
+    deleteLabel: "Remove this item",
+  },
 };
 
 const DELETION_NOTES: Partial<Record<ReportTarget, string>> = {
@@ -70,6 +76,7 @@ const DELETION_NOTES: Partial<Record<ReportTarget, string>> = {
   [REPORT_TARGETS.comment]: "It's gone for everyone. A copy stays in the audit log. Its author isn't told.",
   [REPORT_TARGETS.ask]: "It's gone for everyone, along with its offers. A copy stays in the audit log. Its author isn't told.",
   [REPORT_TARGETS.askAnswer]: "It's gone for everyone. A copy stays in the audit log. Its author isn't told.",
+  [REPORT_TARGETS.libraryItem]: "It's gone for everyone, with its files, upvotes and reviews. Its title stays in the audit log. Its author isn't told.",
 };
 
 const TARGET_FEATURES: Record<ReportTarget, { id: string; label: string }> = {
@@ -79,6 +86,7 @@ const TARGET_FEATURES: Record<ReportTarget, { id: string; label: string }> = {
   [REPORT_TARGETS.introNote]: introsManifest,
   [REPORT_TARGETS.ask]: asksManifest,
   [REPORT_TARGETS.askAnswer]: asksManifest,
+  [REPORT_TARGETS.libraryItem]: libraryManifest,
 };
 
 const RESOLUTION_LABELS: Record<ReportResolution, string> = {
