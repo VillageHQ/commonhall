@@ -4,6 +4,9 @@ import { redirect } from "next/navigation";
 import { asksManifest } from "@/modules/asks/manifest";
 import { ASKS_PAGE, readAskFlash } from "@/modules/asks/contract";
 import { jobBoardManifest } from "@/modules/job-board/manifest";
+import { LibraryTodayCard } from "@/modules/library/components/shared/library-today-card";
+import { libraryManifest } from "@/modules/library/manifest";
+import { readLibraryViewer, readNewLibraryItems } from "@/modules/library/reads";
 import { readBoardJobs } from "@/modules/job-board/reads";
 import { describeEmailConfirmation } from "@/modules/members/contract-email-confirmation-copy";
 import { ONBOARDING_STEPS } from "@/modules/members/contract-profile";
@@ -44,7 +47,7 @@ export default modulePage(membersManifest, async function TodayRoute({ searchPar
   const now = new Date();
   const enabledIds = await readEnabledIds(database);
   const isNetworkOn = enabledIds.has(networkManifest.id);
-  const [community, networkProgress, profile, today, lookupState, perksUrl, jobs, allowance, schedule, query] = await Promise.all([
+  const [community, networkProgress, profile, today, lookupState, perksUrl, jobs, allowance, schedule, query, libraryItems] = await Promise.all([
     readBrandingForPage(),
     isNetworkOn ? readNetworkProgress(database, member) : null,
     readMemberProfile(database, member.id),
@@ -55,6 +58,7 @@ export default modulePage(membersManifest, async function TodayRoute({ searchPar
     enabledIds.has(asksManifest.id) ? readAskAllowance(database, member.id, now) : null,
     readWeeklySchedule(database),
     searchParams,
+    enabledIds.has(libraryManifest.id) ? readLibraryViewer(database, member).then((viewer) => readNewLibraryItems(database, viewer, now)) : [],
   ]);
 
   const nextSteps = selectNextSteps({
@@ -80,6 +84,7 @@ export default modulePage(membersManifest, async function TodayRoute({ searchPar
       lookupQuestion={lookupState?.needsAnswer ? <LookupQuestionCard communityName={community.name} /> : null}
       flash={readAskFlash(flashKey)}
       askIntroHref={isNetworkOn ? ROUTES.network : `${ASKS_PAGE}#compose`}
+      libraryCard={libraryItems.length > 0 ? <LibraryTodayCard items={libraryItems} /> : null}
       now={now}
     />
   );

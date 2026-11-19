@@ -25,6 +25,7 @@ const REPORT_TARGET_NAMES: Record<string, string> = {
   [REPORT_TARGETS.introNote]: "intro note",
   [REPORT_TARGETS.ask]: "ask",
   [REPORT_TARGETS.askAnswer]: "answer on an ask",
+  [REPORT_TARGETS.libraryItem]: "library item",
 };
 
 const GROUP_DEPARTURE_WORDS: Record<string, string> = {
@@ -92,6 +93,9 @@ const ACTION_LINES: Partial<Record<AuditAction, (facts: ActionFacts) => ActionLi
   [AUDIT_ACTIONS.connectNudgeSent]: ({ detail }) => ({ words: "Nudged members to connect their network", target: detail }),
   [AUDIT_ACTIONS.partnerReportSent]: ({ detail }) => ({ words: "Sent the partner report", target: detail }),
   [AUDIT_ACTIONS.announcementSent]: ({ detail }) => ({ words: "Sent an announcement", target: detail }),
+  [AUDIT_ACTIONS.libraryItemFeatured]: ({ target, detail }) => ({ words: `Featured a library item by ${target ?? "a member"}`, target: quoted(detail) }),
+  [AUDIT_ACTIONS.libraryItemUnfeatured]: ({ target, detail }) => ({ words: `Stopped featuring a library item by ${target ?? "a member"}`, target: quoted(detail) }),
+  [AUDIT_ACTIONS.libraryItemRemoved]: ({ target, detail }) => ({ words: `Removed a library item by ${target ?? "a member"}`, target: quoted(detail) }),
   [AUDIT_ACTIONS.partnerReportMarkedShared]: () => ({ words: "Marked the partner report as shared" }),
   [AUDIT_ACTIONS.accountDeleted]: ({ detail }) => ({ words: readAccountDeletedWords(detail) }),
   [AUDIT_ACTIONS.introAsksAnswered]: ({ detail }) => ({ words: detail === "yes" ? "Takes intro asks" : "Asked not to get intro asks" }),

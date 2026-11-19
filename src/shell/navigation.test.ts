@@ -49,6 +49,7 @@ describe("the navigation", () => {
       "Intros",
       "Inbox",
       "Perks",
+      "Library",
       "My profile",
     ]);
   });
