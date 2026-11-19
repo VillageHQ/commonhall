@@ -7,6 +7,7 @@ import { sendAvailableAlert } from "@/shell/voice-alerts";
 // The room is open once this commits; a failed alert must not look like a failed tap, or a retry would open a second.
 export const POST = voiceRoutes.member("voice-available", emptyBodySchema, async (context) => {
   const room = await startAvailableRoom(context);
+  if (!room.isNew) return Response.json({ roomId: room.roomId });
   try {
     await sendAvailableAlert(context.database, context.environment, { roomId: room.roomId, hostId: context.member.id, hostName: room.hostName, title: room.title });
   } catch (error) {

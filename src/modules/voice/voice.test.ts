@@ -6,6 +6,7 @@ import { POST as postCreate } from "@/app/api/voice/create/route";
 import { POST as postEnd } from "@/app/api/voice/end/route";
 import { POST as postHand } from "@/app/api/voice/hand/route";
 import { POST as postJoin } from "@/app/api/voice/join/route";
+import { POST as postRemind } from "@/app/api/voice/remind/route";
 import { POST as postLeave } from "@/app/api/voice/leave/route";
 import { POST as postRole } from "@/app/api/voice/role/route";
 import { POST as postRooms } from "@/app/api/voice/rooms/route";
@@ -97,6 +98,21 @@ describe("voice rooms", () => {
 
     const strangerRooms = (await (await call(postRooms, stranger.cookie, {})).json()) as { live: unknown[] };
     expect(strangerRooms.live).toEqual([]);
+
+    // A reminder on an invite-only scheduled room would carry its title to someone off the list.
+    const later = new Date(Date.now() + 60 * 60_000).toISOString();
+    const scheduled = await call(postCreate, host.cookie, { title: "Board prep", access: "invite", scheduledFor: later, inviteeIds: [invited.userId] });
+    const scheduledId = ((await scheduled.json()) as { roomId: string }).roomId;
+    expect((await call(postRemind, stranger.cookie, { roomId: scheduledId, isOn: true })).status).toBe(404);
+    expect((await call(postRemind, invited.cookie, { roomId: scheduledId, isOn: true })).status).toBe(200);
+  });
+
+  it("opens one room when Start the room is tapped twice", async () => {
+    const host = await createSignedInMember(database);
+    const body = { title: "Hiring a first designer", access: "open", scheduledFor: null, inviteeIds: [] };
+    const answers = await Promise.all([call(postCreate, host.cookie, body), call(postCreate, host.cookie, body)]);
+    const [first, second] = (await Promise.all(answers.map((answer) => answer.json()))) as { roomId: string }[];
+    expect(first?.roomId).toBe(second?.roomId);
   });
 
   it("runs the stage: raise hand, invite up, co-host, move down, and pushes each change live", async () => {
@@ -178,12 +194,15 @@ describe("voice rooms", () => {
     expect((await call(postJoin, listener.cookie, { roomId })).status).toBe(409);
   });
 
-  it("refuses a 4th 'I'm available' in a day with a plain message", async () => {
+  it("refuses a 4th 'I'm available' in a day with a plain message, and a double tap opens one room", async () => {
     const member = await createSignedInMember(database);
     for (let tap = 0; tap < VOICE_LIMITS.broadcastsPerDay; tap += 1) {
-      const response = await call(postAvailable, member.cookie, {});
-      expect(response.status).toBe(200);
-      expect((await join(member, ((await response.json()) as { roomId: string }).roomId)).role).toBe(ROOM_ROLES.host);
+      const [first, second] = await Promise.all([call(postAvailable, member.cookie, {}), call(postAvailable, member.cookie, {})]);
+      expect([first.status, second.status]).toEqual([200, 200]);
+      const { roomId } = (await first.json()) as { roomId: string };
+      expect(((await second.json()) as { roomId: string }).roomId).toBe(roomId);
+      expect((await join(member, roomId)).role).toBe(ROOM_ROLES.host);
+      await call(postEnd, member.cookie, { roomId });
     }
 
     const fourth = await call(postAvailable, member.cookie, {});

@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, asc, count, eq, gte, inArray, isNotNull, isNull, lte, sql } from "drizzle-orm";
+import { and, asc, count, eq, gte, inArray, isNotNull, isNull, lte, sql, type SQL } from "drizzle-orm";
 
 import { isAdminMember } from "@/platform/auth/roles";
 import { isActiveMember } from "@/platform/auth/member-status";
@@ -51,6 +51,10 @@ function notFound() {
 
 function notModerator() {
   return new RequestError(FORBIDDEN_STATUS, VOICE_ERROR_CODES.notModerator, VOICE_MESSAGES.notModerator);
+}
+
+function notHost() {
+  return new RequestError(FORBIDDEN_STATUS, VOICE_ERROR_CODES.notModerator, VOICE_MESSAGES.notHost);
 }
 
 function ended() {
@@ -136,9 +140,30 @@ async function insertRoom(transaction: Transaction, hostId: string, values: { ti
   return room.id;
 }
 
+// A second tap within a few seconds finds the room the first one made, instead of opening another.
+const REPEAT_WINDOW_MS = 10_000;
+
+async function lockMember(transaction: Transaction, memberId: string) {
+  const [me] = await transaction.select({ name: user.name }).from(user).where(eq(user.id, memberId)).for("no key update");
+  if (!me) throw notFound();
+  return me;
+}
+
+async function findRecentRoom(transaction: Transaction, memberId: string, where: SQL | undefined, now: Date) {
+  const [room] = await transaction
+    .select({ id: voiceRoom.id })
+    .from(voiceRoom)
+    .where(and(eq(voiceRoom.createdById, memberId), gte(voiceRoom.createdAt, new Date(now.getTime() - REPEAT_WINDOW_MS)), where))
+    .limit(1);
+  return room?.id ?? null;
+}
+
 export async function createRoom({ database, member }: RequestContext, body: CreateRoomBody, now = new Date()) {
   const scheduledAt = readSchedule(body.scheduledFor, now);
   return database.transaction(async (transaction) => {
+    await lockMember(transaction, member.id);
+    const repeat = await findRecentRoom(transaction, member.id, and(eq(voiceRoom.title, body.title), eq(voiceRoom.isBroadcast, false)), now);
+    if (repeat) return { roomId: repeat };
     const roomId = await insertRoom(transaction, member.id, { title: body.title, access: body.access, scheduledAt, isBroadcast: false }, now);
     const invitees = (await readActiveIds(transaction, body.inviteeIds, now)).filter((id) => id !== member.id);
     if (invitees.length > 0) {
@@ -160,25 +185,31 @@ export async function countBroadcastsToday(connection: DatabaseOrTransaction, me
 }
 
 // "I'm available to talk": an open room with the member as host, counted against 3 a day (the last 24 hours). The
-// member's row lock makes two taps at once count each other. The caller sends the alert after this commits.
+// member's row lock makes two taps at once count each other; while their last one is still live, a tap returns it
+// (isNew false, so no second alert). The caller sends the alert after this commits.
 export async function startAvailableRoom({ database, member }: RequestContext, now = new Date()) {
   return database.transaction(async (transaction) => {
-    const [me] = await transaction.select({ name: user.name }).from(user).where(eq(user.id, member.id)).for("no key update");
-    if (!me) throw notFound();
+    const me = await lockMember(transaction, member.id);
+    const [open] = await transaction
+      .select({ id: voiceRoom.id, title: voiceRoom.title })
+      .from(voiceRoom)
+      .where(and(eq(voiceRoom.hostId, member.id), eq(voiceRoom.isBroadcast, true), eq(voiceRoom.status, ROOM_STATUSES.live)))
+      .limit(1);
+    if (open) return { roomId: open.id, title: open.title, hostName: me.name, isNew: false };
     if ((await countBroadcastsToday(transaction, member.id, now)) >= VOICE_LIMITS.broadcastsPerDay) {
       throw new RequestError(TOO_MANY_STATUS, VOICE_ERROR_CODES.broadcastLimit, VOICE_MESSAGES.broadcastLimit);
     }
     const title = `${firstName(me.name)} is available to talk`;
     const roomId = await insertRoom(transaction, member.id, { title, access: ROOM_ACCESS.open, scheduledAt: null, isBroadcast: true }, now);
     await transaction.insert(voiceBroadcast).values({ memberId: member.id, roomId, createdAt: now });
-    return { roomId, title, hostName: me.name };
+    return { roomId, title, hostName: me.name, isNew: true };
   });
 }
 
 export async function startScheduledRoom({ database, member }: RequestContext, roomId: string, now = new Date()) {
   await database.transaction(async (transaction) => {
     const room = await lockRoom(transaction, roomId);
-    if (room.hostId !== member.id) throw notModerator();
+    if (room.hostId !== member.id) throw notHost();
     if (room.status === ROOM_STATUSES.ended) throw ended();
     if (room.status === ROOM_STATUSES.live) return;
     await transaction.update(voiceRoom).set({ status: ROOM_STATUSES.live, startedAt: now }).where(eq(voiceRoom.id, roomId));
@@ -260,7 +291,7 @@ export async function changeRole(context: RequestContext, { roomId, memberId, ac
     const target = memberId === member.id ? actor : await readSeat(transaction, roomId, memberId);
     if (!target) throw new RequestError(UNPROCESSABLE_STATUS, VOICE_ERROR_CODES.badTarget, VOICE_MESSAGES.badTarget);
     const nextRole = readNextRole(actor.role, memberId === member.id, target.role, action);
-    if (nextRole === null) throw notModerator();
+    if (nextRole === null) throw actor.role === ROOM_ROLES.cohost ? notHost() : notModerator();
     await transaction
       .update(voiceRoomMember)
       .set({ role: nextRole, handRaisedAt: null })
@@ -323,13 +354,15 @@ export async function endRoom(context: RequestContext, roomId: string, now = new
   const { database, environment, member } = context;
   const [room] = await database.select({ hostId: voiceRoom.hostId, status: voiceRoom.status }).from(voiceRoom).where(eq(voiceRoom.id, roomId));
   if (!room) throw notFound();
-  if (room.hostId !== member.id && !isAdminMember(member)) throw notModerator();
+  if (room.hostId !== member.id && !isAdminMember(member)) throw notHost();
   await closeRoom(database, await readVoiceConfig(database, environment), roomId, now);
 }
 
+// Only for a room the member may see: an invite-only room's reminder would carry its title to someone off the list.
 export async function setReminder({ database, member }: RequestContext, { roomId, isOn }: RemindBody) {
-  const [room] = await database.select({ status: voiceRoom.status }).from(voiceRoom).where(eq(voiceRoom.id, roomId));
+  const [room] = await database.select({ status: voiceRoom.status, access: voiceRoom.access }).from(voiceRoom).where(eq(voiceRoom.id, roomId));
   if (!room || room.status !== ROOM_STATUSES.scheduled) throw notFound();
+  if (room.access === ROOM_ACCESS.invite && !(await readSeat(database, roomId, member.id))?.isInvited) throw notFound();
   if (isOn) await database.insert(voiceRoomReminder).values({ roomId, memberId: member.id }).onConflictDoNothing();
   else await database.delete(voiceRoomReminder).where(and(eq(voiceRoomReminder.roomId, roomId), eq(voiceRoomReminder.memberId, member.id)));
 }

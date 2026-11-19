@@ -35,7 +35,7 @@ const ROLE_ORDER: Record<RoomRole, number> = { host: 0, cohost: 1, speaker: 2, l
 const REACTION_MS = 2400;
 const CHAT_KEEP = 100;
 
-const PHASES = { connecting: "connecting", live: "live", ended: "ended", left: "left", failed: "failed" } as const;
+const PHASES = { connecting: "connecting", live: "live", ended: "ended", left: "left", elsewhere: "elsewhere", failed: "failed" } as const;
 type Phase = (typeof PHASES)[keyof typeof PHASES];
 
 type Person = { id: string; name: string; role: RoomRole; isHandRaised: boolean; faceUrl: string | null; isSpeaking: boolean; isMuted: boolean; isMe: boolean };
@@ -100,8 +100,10 @@ function PersonTile({ person, reaction, isSelected, onSelect, size }: { person: 
           </span>
         ) : null}
       </span>
-      <span className="vr-person-name">{person.isMe ? `${person.name} (you)` : person.name}</span>
-      {ROLE_WORDS[person.role] ? <span className="vr-person-role">{ROLE_WORDS[person.role]}</span> : null}
+      <span className="vr-person-name">{person.name}</span>
+      {ROLE_WORDS[person.role] || person.isMe ? (
+        <span className="vr-person-role">{[ROLE_WORDS[person.role], person.isMe ? "You" : ""].filter(Boolean).join(" · ")}</span>
+      ) : null}
     </>
   );
   if (!onSelect) return <div className="vr-person" data-testid="room-person" data-role={person.role}>{body}</div>;
@@ -184,7 +186,13 @@ export function LiveRoom({ roomId, title, isInviteOnly }: LiveRoomProps) {
       })
       .on(RoomEvent.Disconnected, (reason) => {
         if (isCancelled) return;
-        setPhase(reason === DisconnectReason.ROOM_DELETED ? PHASES.ended : PHASES.left);
+        if (reason === DisconnectReason.ROOM_DELETED) {
+          setPhase(PHASES.ended);
+          // The page head says "Live" until the server renders it again.
+          router.refresh();
+        }
+        else if (reason === DisconnectReason.DUPLICATE_IDENTITY) setPhase(PHASES.elsewhere);
+        else setPhase(PHASES.left);
       });
 
     voiceRequests
@@ -211,7 +219,7 @@ export function LiveRoom({ roomId, title, isInviteOnly }: LiveRoomProps) {
       void room.disconnect();
       roomRef.current = null;
     };
-  }, [roomId, refresh, showReaction, addChat]);
+  }, [roomId, refresh, showReaction, addChat, router]);
 
   const me = people.find(({ isMe }) => isMe) ?? null;
   const myRole = me?.role ?? ROOM_ROLES.listener;
@@ -267,9 +275,13 @@ export function LiveRoom({ roomId, title, isInviteOnly }: LiveRoomProps) {
     setDraft("");
   }
 
-  if (phase === PHASES.ended || phase === PHASES.left || phase === PHASES.failed) {
-    const words =
-      phase === PHASES.ended ? "This room has ended." : phase === PHASES.left ? "You left the room." : (failure ?? "We couldn't connect to the room.");
+  if (phase === PHASES.ended || phase === PHASES.left || phase === PHASES.elsewhere || phase === PHASES.failed) {
+    const CLOSED_WORDS: Record<string, string> = {
+      [PHASES.ended]: "This room has ended.",
+      [PHASES.left]: "You left the room.",
+      [PHASES.elsewhere]: "You joined this room in another tab or on another device, so it continues there.",
+    };
+    const words = CLOSED_WORDS[phase] ?? failure ?? "We couldn't connect to the room.";
     return (
       <div className="vr-room" data-testid="room-closed">
         <FlashNote kind={phase === PHASES.failed ? FLASH_KINDS.needs : FLASH_KINDS.ok}>{words}</FlashNote>
@@ -310,6 +322,7 @@ export function LiveRoom({ roomId, title, isInviteOnly }: LiveRoomProps) {
       ) : null}
 
       <h2 className="vr-section-label">On stage</h2>
+      {stage.length === 0 && phase === PHASES.live ? <p className="fh-small fh-muted mt-2">Nobody is on stage right now. The room ends in 2 minutes unless someone comes back.</p> : null}
       <div className="vr-grid" data-stage="true" data-testid="stage">
         {stage.map((person) => (
           <PersonTile key={person.id} person={person} reaction={reactions[person.id] ?? null} isSelected={selectedId === person.id} onSelect={selectFor(person)} size={64} />

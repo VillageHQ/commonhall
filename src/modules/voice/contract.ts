@@ -95,6 +95,7 @@ export const VOICE_MESSAGES = {
   notInvited: "This room is invite only, and you're not on the list.",
   ended: "This room has ended.",
   notModerator: "Only the host or a co-host can do that.",
+  notHost: "Only the host can do that.",
   notConfigured: "Voice rooms aren't set up on this server yet. An admin sets them up in Set up › Rooms.",
   broadcastLimit: `You've said you're available ${VOICE_LIMITS.broadcastsPerDay} times today. Try again tomorrow, or start a room instead.`,
   notLive: "This room hasn't started yet.",

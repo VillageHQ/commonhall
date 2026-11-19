@@ -18,7 +18,8 @@ type RoomPageProps = { params: Promise<{ roomId: string }> };
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 // One room: live (the stage, the audience, the controls), coming up (Remind me / Start now), or ended. An invite-only
-// room someone isn't on the list for is not found.
+// room someone isn't on the list for is not found. A live room names its host on the stage, live, since a co-host can
+// take over.
 export default modulePage(voiceManifest, async function RoomPage({ params }: RoomPageProps) {
   const member = await requireMember();
   const { roomId } = await params;
@@ -29,7 +30,7 @@ export default modulePage(voiceManifest, async function RoomPage({ params }: Roo
   const eyebrow = `${room.status === ROOM_STATUSES.live ? "Live" : room.status === ROOM_STATUSES.scheduled ? "Coming up" : "Ended"} · ${isInviteOnly ? "Invite only" : "Open to the community"} · Never recorded`;
   return (
     <>
-      <PageHeader back={{ href: VOICE_PAGE, label: "Rooms" }} eyebrow={eyebrow} title={room.title} description={`Hosted by ${room.hostName}`} />
+      <PageHeader back={{ href: VOICE_PAGE, label: "Rooms" }} eyebrow={eyebrow} title={room.title} description={room.status === ROOM_STATUSES.live ? undefined : `Hosted by ${room.hostName}`} />
       {room.status === ROOM_STATUSES.live ? <LiveRoom roomId={room.id} title={room.title} isInviteOnly={isInviteOnly} /> : null}
       {room.status === ROOM_STATUSES.scheduled ? (
         <ScheduledRoom roomId={room.id} scheduledFor={room.scheduledFor} isHost={room.hostId === member.id} hasReminder={room.hasReminder} />
