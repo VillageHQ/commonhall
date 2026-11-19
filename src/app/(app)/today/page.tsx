@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
+import { InstallCard } from "@/components/alerts/install-card";
 import { asksManifest } from "@/modules/asks/manifest";
 import { ASKS_PAGE, readAskFlash } from "@/modules/asks/contract";
 import { jobBoardManifest } from "@/modules/job-board/manifest";
@@ -81,6 +82,7 @@ export default modulePage(membersManifest, async function TodayRoute({ searchPar
       perksCommunityName={perksUrl || (enabledIds.has(perksManifest.id) && isDemoMode(process.env)) ? community.name : null}
       openJobCount={jobs ? jobs.length : null}
       nextSteps={nextSteps}
+      installCard={<InstallCard communityName={community.name} alertsHref={ROUTES.alerts} />}
       lookupQuestion={lookupState?.needsAnswer ? <LookupQuestionCard communityName={community.name} /> : null}
       flash={readAskFlash(flashKey)}
       askIntroHref={isNetworkOn ? ROUTES.network : `${ASKS_PAGE}#compose`}

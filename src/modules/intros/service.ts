@@ -2,6 +2,7 @@ import "server-only";
 
 import { and, count, eq, gt, gte, inArray, isNotNull, isNull, lte, or } from "drizzle-orm";
 
+import { alertIntro, INTRO_ALERTS } from "./alerts.ts";
 import { introRequest } from "./schema.ts";
 import { isAwaitingTarget, isConsentTokenLive, readLiveConsentHash } from "./reads-consent.ts";
 import { isTargetOptedOut } from "./opt-out.ts";
@@ -237,7 +238,10 @@ export async function createIntroRequest(context: RequestContext, body: CreateIn
     throw new RequestError(CONFLICT_STATUS, INTRO_ERROR_CODES.duplicate, "You already have an open intro request with this person for this intro.");
   }
 
-  if (branding) sendQueuedEmailsSoon(database, context.environment);
+  if (branding) {
+    sendQueuedEmailsSoon(database, context.environment);
+    alertIntro(database, context.environment, created.id, INTRO_ALERTS.asked);
+  }
   return readRequiredIntro(context, created.id);
 }
 
@@ -310,6 +314,7 @@ export async function transitionIntro(context: RequestContext, body: IntroTransi
   const current = await readRequiredIntro(context, body.introId);
   if (applied) {
     if (branding) sendQueuedEmailsSoon(database, environment);
+    if (body.action === INTRO_ACTIONS.decline) alertIntro(database, environment, body.introId, INTRO_ALERTS.closed);
     return { ...current, consentIssue: issued?.consentIssue ?? null };
   }
   const landedState = actor === INTRO_ROLES.requester ? REQUESTER_STATES[nextState] : nextState;

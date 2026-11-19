@@ -59,6 +59,8 @@ export const nextConfig = {
     },
     { source: "/perks", headers: [{ key: "Content-Security-Policy", value: PERKS_CONTENT_SECURITY_POLICY }] },
     { source: "/admin/perks", headers: [{ key: "Content-Security-Policy", value: PERKS_CONTENT_SECURITY_POLICY }] },
+    // The service worker (alerts, the offline page): always checked for a new version.
+    { source: "/sw.js", headers: [{ key: "Cache-Control", value: "no-cache" }, { key: "Service-Worker-Allowed", value: "/" }] },
     { source: "/invite", headers: SECRET_LINK_HEADERS },
     { source: "/auth", headers: SECRET_LINK_HEADERS },
     { source: "/join/:token", headers: SECRET_LINK_HEADERS },

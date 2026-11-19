@@ -27,6 +27,8 @@ export const INSTANCE_SETTING_KEYS = {
   villageAlertedDownAt: "village_alerted_down_at",
   villageAlertedKeysRejectedAt: "village_alerted_keys_rejected_at",
   jobsTickSecret: "jobs_tick_secret",
+  // This server's own Web Push (VAPID) key pair, made the first time an alert needs it (platform/notifications/vapid.ts).
+  vapidKeys: "vapid_keys",
   monthlyCreditCap: "monthly_credit_cap",
   fillInBasis: "fill_in_basis",
   fillInTermsDate: "fill_in_terms_date",

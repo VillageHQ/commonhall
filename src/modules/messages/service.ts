@@ -16,6 +16,7 @@ import { enforceMessagingLimit, MESSAGING_KINDS } from "./limits.ts";
 import { queueMessageEmail } from "./email.ts";
 import { readEmailBranding, type EmailBranding } from "../../platform/email/outbox.ts";
 import { sendQueuedEmailsSoon } from "../../platform/email/outbox-sender.ts";
+import { alertNewMessage } from "./alerts.ts";
 import type { Environment } from "../../platform/environment.ts";
 
 const FORBIDDEN_STATUS = 403;
@@ -141,7 +142,7 @@ async function insertMessage(transaction: Transaction, { environment, branding, 
   // Checked under the lock: a send that began just before its sender was removed or deleted must not land after.
   if (!(await isMemberActive(transaction, memberId))) throw conversationGoneError();
   const racedMessageId = await readOwnMessageIdByKey(transaction, { conversationId, clientKey }, memberId);
-  if (racedMessageId) return { messageId: racedMessageId, isEmailQueued: false };
+  if (racedMessageId) return { messageId: racedMessageId, isEmailQueued: false, alertTo: null };
 
   const peerId = readPeerId(target, memberId);
   const { isBlockedByMe, isBlockedByPeer } = await readBlockDirections(transaction, memberId, peerId);
@@ -166,7 +167,7 @@ async function insertMessage(transaction: Transaction, { environment, branding, 
     .returning({ id: directMessage.id });
   if (!created) throw conversationGoneError();
   const queuedEmailId = isBlockedByPeer ? null : await queueMessageEmail(transaction, environment, branding, { conversationId, senderId: memberId, recipientId: peerId });
-  return { messageId: created.id, isEmailQueued: queuedEmailId !== null };
+  return { messageId: created.id, isEmailQueued: queuedEmailId !== null, alertTo: isBlockedByPeer ? null : peerId };
 }
 
 async function readRequiredMessage(database: Database, viewerId: string, messageId: string) {
@@ -182,8 +183,9 @@ export async function sendMessage({ database, environment, member }: RequestCont
 
   await enforceMessagingLimit(database, member.id, MESSAGING_KINDS.send);
   const sender = { environment, branding: await readEmailBranding(database, environment), memberId: member.id, mayMessage, isViaEmail };
-  const { messageId, isEmailQueued } = await database.transaction((transaction) => insertMessage(transaction, sender, body));
+  const { messageId, isEmailQueued, alertTo } = await database.transaction((transaction) => insertMessage(transaction, sender, body));
   if (isEmailQueued) sendQueuedEmailsSoon(database, environment);
+  if (alertTo) alertNewMessage(database, environment, { conversationId: body.conversationId, senderId: member.id, recipientId: alertTo });
   return readRequiredMessage(database, member.id, messageId);
 }
 

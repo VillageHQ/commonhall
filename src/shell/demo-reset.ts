@@ -17,9 +17,10 @@ import { seedDemo } from "./demo-seed";
 const MINUTE_MS = 60_000;
 const RESET_HOUR_UTC = 4;
 // Kept through a reset: the migrations record, the job leases (the reset runs under one), and two settings whose
-// change would sign everyone out or break the self-tick.
+// change would sign everyone out or break the self-tick, and the alert keys (a new pair would orphan every browser's
+// subscription).
 const KEPT_TABLES = ["__drizzle_migrations", "job_lease"];
-const KEPT_SETTINGS = [INSTANCE_SETTING_KEYS.authSecret, INSTANCE_SETTING_KEYS.jobsTickSecret];
+const KEPT_SETTINGS = [INSTANCE_SETTING_KEYS.authSecret, INSTANCE_SETTING_KEYS.jobsTickSecret, INSTANCE_SETTING_KEYS.vapidKeys];
 
 export const DEMO_RESET_JOB_NAME = "demo-reset";
 

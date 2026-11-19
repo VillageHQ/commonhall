@@ -96,7 +96,7 @@ export function PrivacySheet({ communityName, isHidden, acceptsIntroAsks }: Priv
         </div>
       </form>
       <p className="fh-small fh-muted mt-2.5">
-        {toPossessive(communityName)} admins can’t read your messages in the portal. <Link href={ROUTES.emailSettings}>Email settings</Link> ·{" "}
+        {toPossessive(communityName)} admins can’t read your messages in the portal. <Link href={ROUTES.emailSettings}>Email settings</Link> · <Link href={ROUTES.alerts}>Alerts</Link> ·{" "}
         <Link href={ROUTES.yourData}>Your data</Link>
       </p>
     </section>

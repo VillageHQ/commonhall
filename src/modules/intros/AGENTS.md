@@ -12,6 +12,8 @@ Screens, words and emails are Commonhall's: read `.ai/features/fh-intros/NOTES.m
 - `reads*.ts`: boards, counts, details; `reads-links.ts` and `reads-consent.ts`: what `/i/<token>` shows.
 - `email-copy.ts`: every email's words (checked against Commonhall in `email-copy.test.ts`). `email.ts`: member emails
   through the outbox, in the move's transaction. `email-target.ts`: the person's emails and the introduction.
+- `alerts.ts`: phone and browser alerts beside the emails (an ask, a no, the person's yes) through `notify()`; never the
+  note, a reason or whose no it was (`.ai/features/notifications/NOTES.md`).
 - `answer-links.ts`: email links that answer without signing in (hash only). `target-reminder.ts`,
   `quiet-intro-emails.ts`, `outcome-email.ts`: timed emails.
 - `components/`: `intros-list`, `intro-page`, `intro-decision`, `public-intro`; words in `intro-words.ts`.
