@@ -21,6 +21,7 @@ export const MEMBER_KEYS = {
   jobs: "jobs",
   intros: "intros",
   inbox: "inbox",
+  rooms: "rooms",
   perks: "perks",
   me: "me",
 } as const;

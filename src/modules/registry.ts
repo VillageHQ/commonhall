@@ -12,6 +12,7 @@ import { membersManifest } from "./members/manifest";
 import { messagesModule } from "./messages/integration";
 import { networkModule } from "./network/integration";
 import { perksModule } from "./perks/integration";
+import { voiceModule } from "./voice/integration";
 
 // A module adds one line here. The navigation keeps its own order in `shell/navigation.ts`.
 export const MODULES: readonly ModuleIntegration[] = [
@@ -24,5 +25,6 @@ export const MODULES: readonly ModuleIntegration[] = [
   jobBoardModule,
   perksModule,
   chatModule,
+  voiceModule,
   { manifest: adminManifest },
 ];

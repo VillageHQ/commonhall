@@ -48,6 +48,7 @@ describe("the navigation", () => {
       "Jobs",
       "Intros",
       "Inbox",
+      "Rooms",
       "Perks",
       "My profile",
     ]);

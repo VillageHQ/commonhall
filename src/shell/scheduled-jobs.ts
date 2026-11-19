@@ -8,6 +8,7 @@ import { readEnabledIds } from "./enabled-modules";
 import { CHAT_POSTS_JOB_NAME, runChatPosts, WEEKLY_EMAIL_JOB_NAME } from "./chat-posts";
 import { runWeeklyEmails } from "./weekly-email";
 import { DEMO_RESET_JOB } from "./demo-reset";
+import { runVoiceReminders } from "./voice-alerts";
 import { isDemoMode } from "@/platform/demo/mode";
 
 const MINUTE_MS = 60_000;
@@ -17,6 +18,8 @@ const SHELL_JOBS: readonly ScheduledJob[] = [
   { name: WEEKLY_EMAIL_JOB_NAME, intervalMs: 5 * MINUTE_MS, leaseMs: 10 * MINUTE_MS, run: (database, environment) => runWeeklyEmails(database, environment) },
   // After the weekly email, so the weekly line follows its run in the same tick. It checks the chat module itself.
   { name: CHAT_POSTS_JOB_NAME, intervalMs: MINUTE_MS, run: (database, environment) => runChatPosts(database, environment) },
+  // Rooms' "Remind me", through notify(). It checks the voice module itself.
+  { name: "voice-reminders", intervalMs: MINUTE_MS, run: (database, environment) => runVoiceReminders(database, environment) },
 ];
 
 // The platform's and the shell's jobs always run. A module's jobs run only while the module is on.
