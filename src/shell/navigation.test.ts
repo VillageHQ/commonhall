@@ -50,6 +50,7 @@ describe("the navigation", () => {
       "Inbox",
       "Rooms",
       "Perks",
+      "Library",
       "My profile",
     ]);
   });

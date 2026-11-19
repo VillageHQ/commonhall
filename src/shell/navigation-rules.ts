@@ -23,6 +23,7 @@ export const MEMBER_KEYS = {
   inbox: "inbox",
   rooms: "rooms",
   perks: "perks",
+  library: "library",
   me: "me",
 } as const;
 

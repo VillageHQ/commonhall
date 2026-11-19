@@ -1,6 +1,6 @@
 import "server-only";
 
-import { ArrowLeftRight, AudioLines, BookUser, Building2, CalendarCheck, FileChartColumn, Gift, Hand, Inbox, LayoutDashboard, Megaphone, Newspaper, Search, Settings2, UserRound, UserRoundPlus, Users, type LucideIcon } from "lucide-react";
+import { ArrowLeftRight, AudioLines, BookUser, Building2, CalendarCheck, FileChartColumn, Gift, Hand, Inbox, LayoutDashboard, LibraryBig, Megaphone, Newspaper, Search, Settings2, UserRound, UserRoundPlus, Users, type LucideIcon } from "lucide-react";
 import { createElement } from "react";
 
 import { ANNOUNCEMENT_PAGE } from "@/modules/admin/contract-announcements";
@@ -21,7 +21,7 @@ type MenuEntry = Omit<ShellNavigationItem, "icon" | "href"> & {
 };
 
 // Commonhall's member menu, in its order: Today · Asks & updates · Search · Directory · Jobs · Intros · Inbox ·
-// [Rooms] · [Perks] · My profile. Six of them are phone tabs, and Community's Feed while it's on.
+// [Rooms] · [Perks] · [Library] · My profile. Six of them are phone tabs, and Community's Feed while it's on.
 const MEMBER_MENU: readonly MenuEntry[] = [
   { key: MEMBER_KEYS.today, label: "Today", tabLabel: "Today", icon: CalendarCheck, href: ROUTES.today },
   { key: MEMBER_KEYS.asks, label: "Asks & updates", tabLabel: "Asks", icon: Hand, moduleId: "asks", badge: NAVIGATION_BADGES.asks },
@@ -35,6 +35,8 @@ const MEMBER_MENU: readonly MenuEntry[] = [
   { key: MEMBER_KEYS.inbox, label: "Inbox", tabLabel: "Inbox", icon: Inbox, moduleId: "messages", badge: NAVIGATION_BADGES.messages },
   { key: MEMBER_KEYS.rooms, label: "Rooms", icon: AudioLines, moduleId: "voice" },
   { key: MEMBER_KEYS.perks, label: "Perks", icon: Gift, moduleId: "perks" },
+  // The portfolio AI library (round 5), while it's on; no phone tab, like Jobs and Perks.
+  { key: MEMBER_KEYS.library, label: "Library", icon: LibraryBig, moduleId: "library" },
   { key: MEMBER_KEYS.me, label: "My profile", icon: UserRound, href: ROUTES.editCard },
 ];
 

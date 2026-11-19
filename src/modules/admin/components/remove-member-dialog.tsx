@@ -5,6 +5,7 @@ import { useRef, useState, type ReactNode, type RefObject } from "react";
 
 import { CONTENT_CHOICES, type ContentChoice } from "@/modules/admin/contract";
 import { asksManifest } from "@/modules/asks/manifest";
+import { libraryManifest } from "@/modules/library/manifest";
 import { departureResponseSchema } from "@/modules/network/contract";
 import { readFirstName } from "@/platform/design/avatar-identity";
 import { API_ROUTES } from "@/platform/http/routes";
@@ -16,6 +17,8 @@ import { ConfirmDialog } from "./confirm-dialog";
 const CONTENT_FIELD_NAME = "removal-content-choice";
 
 const ASKS_NOTE = "Their asks leave the board either way. Keeping brings them back if you unban them. Deleting removes them and their offers for good.";
+
+const LIBRARY_NOTE = "Their library items go the same way: kept, they stay in the library; deleted, they go with their upvotes and reviews.";
 
 const CONTENT_OPTIONS: { value: ContentChoice; label: string; hint: string }[] = [
   {
@@ -61,6 +64,7 @@ export function RemoveMemberDialog({ member, trigger, returnFocusRef, fallbackFo
   const [contentChoice, setContentChoice] = useState<ContentChoice>(CONTENT_CHOICES.keep);
   const keepRadioRef = useRef<HTMLInputElement>(null);
   const areAsksOn = useIsModuleEnabled(asksManifest.id);
+  const isLibraryOn = useIsModuleEnabled(libraryManifest.id);
   const { id, name, isAdmin, isInVillageGroup } = member;
 
   return (
@@ -107,6 +111,7 @@ export function RemoveMemberDialog({ member, trigger, returnFocusRef, fallbackFo
         ))}
       </fieldset>
       {areAsksOn ? <p className="type-small">{ASKS_NOTE}</p> : null}
+      {isLibraryOn ? <p className="type-small">{LIBRARY_NOTE}</p> : null}
       <VillageConsequence name={name} isInVillageGroup={isInVillageGroup} />
     </ConfirmDialog>
   );

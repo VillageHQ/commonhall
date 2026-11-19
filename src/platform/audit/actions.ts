@@ -69,6 +69,10 @@ export const AUDIT_ACTIONS = {
   announcementSent: "announcement_sent",
   // Set up › Rooms (voice's service-settings.ts).
   voiceSettingsSaved: "voice_settings_saved",
+  // The library: an admin features, unfeatures or removes a shared item (library's service.ts).
+  libraryItemFeatured: "library_item_featured",
+  libraryItemUnfeatured: "library_item_unfeatured",
+  libraryItemRemoved: "library_item_removed",
 } as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[keyof typeof AUDIT_ACTIONS];

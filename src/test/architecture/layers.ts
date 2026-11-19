@@ -25,7 +25,8 @@ const ALLOWED_MODULE_IMPORTS: Readonly<Record<string, readonly string[]>> = {
   chat: [],
   perks: [],
   voice: ["members"],
-  admin: ["members", "messages", "feed", "network", "intros", "asks"],
+  library: ["members"],
+  admin: ["members", "messages", "feed", "network", "intros", "asks", "library"],
 };
 
 const LAYER_PREFIXES: readonly (readonly [string, Layer])[] = [
