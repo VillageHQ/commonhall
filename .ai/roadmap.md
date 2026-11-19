@@ -88,7 +88,7 @@ the owner picks the first wave on the decision page. Goal matching stays an idea
 - [ ] Portfolio AI library: share skills, agents, prompts and MCP setups across the portfolio — ai-library — size M — open pull request — [spec](features/ai-library/SPEC.md)
 - [ ] Mentors portal: mentor home, requests, call limits, and "was the call useful?" — mentors-portal — size M — [spec](features/mentors-portal/SPEC.md)
 - [ ] Events and schedules: fund events with RSVP, calendar feeds and reminders — events-schedules — size M — [spec](features/events-schedules/SPEC.md)
-- [ ] Mobile: install Commonhall on the phone, with push notifications — mobile-app — size S — [spec](features/mobile-app/SPEC.md)
+- [x] The Commonhall store app (iOS and Android): join a community, sign in by a 6-digit code, the portal in the app, native alerts, voice rooms that play with the screen locked (store builds wait for the publishing accounts) — mobile-app — size L — [spec](features/mobile-app/SPEC.md) · [notes](features/mobile-app/NOTES.md)
 - [x] Alerts on the phone and the installable web app: notify(), Settings › Alerts, quiet hours, mutes, the install card — notifications — size S — [spec](features/notifications/SPEC.md) · [notes](features/notifications/NOTES.md) · [PR #93](https://github.com/VillageHQ/commonhall/pull/93)
 ### Wave 2
 - [ ] Portfolio MCP server: use Commonhall from a founder's Claude or ChatGPT — portfolio-mcp — size S — [spec](features/portfolio-mcp/SPEC.md)

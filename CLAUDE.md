@@ -58,10 +58,12 @@ Better Auth, Vitest, pnpm. Village is optional (network search, intro paths and 
   `.ai/features/mentors-calls/NOTES.md` (community roles, booking links, Book a call, calls counted),
   `.ai/features/find-candidates/NOTES.md` (Find candidates on a job: the button, the search, the hiring request),
   `.ai/features/notifications/NOTES.md` (alerts: notify(), devices, quiet hours, the manifest and service worker),
+  `.ai/features/mobile-app/NOTES.md` (the store app in `mobile/`: the web view bridge, the 6-digit sign-in code, Expo alerts, native voice rooms),
   `.ai/features/voice-sessions/NOTES.md` (Rooms: voice rooms on LiveKit, roles, the token API, ports; never recorded),
   `.ai/features/ai-library/NOTES.md` (the portfolio AI library: visibility, the secret scan, votes, the leaderboard),
   `.ai/features/fix-installer/NOTES.md` (install.sh: build failures, swap, first install, DNS), `.ai/features/onboarding-claude-setup/NOTES.md` (setup:instance), `.ai/features/fix-network-page/NOTES.md`, `.ai/features/self-call-http/NOTES.md` (rewrites behind an https tunnel).
 - `tour/AGENTS.md` (the landing page's live tour, built into `site/tour/`).
+- `mobile/AGENTS.md` (the Expo store app: its own npm project, outside the root's lint, typecheck, tests and build).
 - No notes: `.do/`, `.github/`, `deploy/` (`deploy/cloudflare/README.md` runs commonhall.ai), `docs/` (guides), `drizzle/` (generated), `site/` (own README), `public/` (demo pictures),
   `vercel.json` (the daily Vercel Cron Job). Every deploy setup runs the job runner;
   `src/test/deploy-setups.test.ts` guards it.

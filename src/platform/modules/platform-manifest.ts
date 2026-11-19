@@ -16,6 +16,6 @@ export const PLATFORM_MANIFEST = {
   needsVillage: false,
   paths: {
     pages: [ROUTES.signIn, ROUTES.signInLink, ROUTES.signUp, ROUTES.forgotPassword, ROUTES.resetPassword, ROUTES.recoverAdmin, ROUTES.setup, ROUTES.unsubscribe, ROUTES.weeklyAnswer, ROUTES.parts, ROUTES.notHere],
-    api: [AUTH_BASE_PATH, "/api/health", API_ROUTES.setup, API_ROUTES.recoverAdmin, API_ROUTES.signInLink, API_ROUTES.demoSignIn, API_ROUTES.brandingLogo, API_ROUTES.jobsTick, "/api/email", NOTIFICATION_API_ROUTES.base],
+    api: [AUTH_BASE_PATH, "/api/health", API_ROUTES.setup, API_ROUTES.recoverAdmin, API_ROUTES.signInLink, API_ROUTES.signInCode, API_ROUTES.demoSignIn, API_ROUTES.brandingLogo, API_ROUTES.jobsTick, "/api/email", NOTIFICATION_API_ROUTES.base],
   },
 } satisfies CoreManifest;

@@ -8,7 +8,7 @@ import { createServer, type IncomingMessage } from "node:http";
 export const EXPO_PATH = "/--/api/v2/push/send";
 
 type RecordedPush = { path: string; headers: IncomingMessage["headers"]; bytes: number };
-type ExpoMessage = { to: string; title: string; body: string; data: { url: string; kind: string } };
+type ExpoMessage = { to: string; title: string; body: string; data: { url: string; kind: string; origin?: string } };
 
 async function readBody(request: IncomingMessage) {
   const chunks: Buffer[] = [];

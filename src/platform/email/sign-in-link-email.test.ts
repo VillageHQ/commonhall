@@ -4,9 +4,9 @@ import { renderSignInLinkEmail } from "./sign-in-link-email";
 
 const LINK = "https://community.example/auth?token=abc";
 
-// Commonhall's email, word for word (fh-reference copy/emails/email-signin-link.md).
+// Commonhall's email (fh-reference copy/emails/email-signin-link.md), plus the 6-digit code for the phone app.
 describe("the sign-in link email", () => {
-  const email = renderSignInLinkEmail({ link: LINK, communityName: "Northwind Founders" });
+  const email = renderSignInLinkEmail({ link: LINK, code: "048213", communityName: "Northwind Founders" });
 
   it("has Commonhall's subject", () => {
     expect(email.subject).toBe("Your sign-in link for Northwind Founders");
@@ -20,7 +20,9 @@ describe("the sign-in link email", () => {
         "Open this link to sign in to Northwind Founders:",
         LINK,
         "",
-        "It works once, for the next 15 minutes. If you did not ask for it, ignore this email.",
+        "Or type this code where you asked for the link: 048213",
+        "",
+        "They work once, for the next 15 minutes. If you did not ask for them, ignore this email.",
         "",
         "Sent by Northwind Founders via its member portal.",
       ].join("\n"),
@@ -34,6 +36,6 @@ describe("the sign-in link email", () => {
   });
 
   it("escapes a community name that looks like HTML", () => {
-    expect(renderSignInLinkEmail({ link: LINK, communityName: "<b>Fund</b>" }).html).not.toContain("<b>Fund");
+    expect(renderSignInLinkEmail({ link: LINK, code: "048213", communityName: "<b>Fund</b>" }).html).not.toContain("<b>Fund");
   });
 });

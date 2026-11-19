@@ -16,6 +16,7 @@ import { runAfterResponse } from "../observability/after-response.ts";
 import { recordFailedAttempt } from "../rate-limit/attempt-rate-limit.ts";
 import { isBanActive } from "./member-status.ts";
 import { isReclaimedEmail } from "./reclaimed-email.ts";
+import { createSignInCode } from "./sign-in-code.ts";
 
 export { SIGN_IN_LINK_LIFETIME_SECONDS };
 
@@ -65,12 +66,13 @@ async function sendSignInLink(database: Database, environment: Environment, { em
   if ((await countLiveLinks(database, normalizedEmail)) > MAXIMUM_LIVE_LINKS_PER_EMAIL) return;
 
   const { name: communityName } = await readBranding(database);
+  const code = await createSignInCode(database, environment, recipient.email, SIGN_IN_LINK_LIFETIME_SECONDS);
   const queuedId = await queueEmail(database, environment, {
     kind: EMAIL_KINDS.signInLink,
     to: recipient.email,
     memberId: recipient.id,
     expiresAt: readLinkEmailExpiry(SIGN_IN_LINK_LIFETIME_SECONDS),
-    ...renderSignInLinkEmail({ link: toSignInLinkUrl(environment, token), communityName }),
+    ...renderSignInLinkEmail({ link: toSignInLinkUrl(environment, token), code, communityName }),
   });
   await sendQueuedEmailNow(database, environment, queuedId);
 }

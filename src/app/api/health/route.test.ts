@@ -20,11 +20,11 @@ describe("GET /api/health", () => {
   });
 
   describe("with a reachable, migrated database", () => {
-    it("responds 200 with the status only", async () => {
+    it("responds 200 with the status and the app's name", async () => {
       const response = await requestHealth();
 
       expect(response.status).toBe(200);
-      expect(await response.json()).toEqual({ status: "ok" });
+      expect(await response.json()).toEqual({ status: "ok", app: "commonhall" });
     });
   });
 
@@ -36,7 +36,7 @@ describe("GET /api/health", () => {
       const response = await requestHealth();
 
       expect(response.status).toBe(503);
-      expect(await response.json()).toEqual({ status: "unavailable" });
+      expect(await response.json()).toEqual({ status: "unavailable", app: "commonhall" });
 
       await disposable.destroy();
     });
@@ -51,7 +51,7 @@ describe("GET /api/health", () => {
       const body = await response.text();
 
       expect(response.status).toBe(503);
-      expect(JSON.parse(body)).toEqual({ status: "unavailable" });
+      expect(JSON.parse(body)).toEqual({ status: "unavailable", app: "commonhall" });
     });
   });
 

@@ -45,8 +45,8 @@ Without either, Rooms shows "not set up yet" and the buttons are off.
 
 ## The token API (for the phone app)
 All routes are `POST`, JSON, same-origin with the member's session cookie (the route kit checks origin and session;
-the phone app needs the same session as the web app, and must send an `Origin` the server trusts, i.e. `APP_URL`;
-if the store app can't, part mobile-app adds its own sign-in for these routes). Errors answer `{ code, message }`.
+the store app calls them from inside the portal page, with its cookie and origin, so they stay as they are; see
+`.ai/features/mobile-app/NOTES.md`). In the app the room page hands the room to the app's native player. Errors answer `{ code, message }`.
 
 | Route | Body | Answer |
 |---|---|---|

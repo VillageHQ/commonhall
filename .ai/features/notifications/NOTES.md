@@ -63,8 +63,9 @@ Alerts never carry a message's words, an intro's note or reason, or whose no it 
 ## For the parts that build on this
 - voice-sessions: call `notify()` (or `notifySoon`) with `voice_room` / `voice_broadcast` and `fromUserId`; mutes
   and quiet hours apply by themselves; add the kinds to `KIND_FEATURES` once the feature exists.
-- mobile-app: `POST /api/notifications/devices` with `{ type: "expo", token: "ExponentPushToken[...]" }`. The route
-  kit checks the session and the request's origin like every member route; the app has to send both.
+- mobile-app (built): the app registers `{ type: "expo", token }` through the portal page (its cookie and origin), and
+  each Expo message carries `data: { url, kind, origin }` (`origin` = the server's address, so a phone with several
+  communities opens the right one). See `.ai/features/mobile-app/NOTES.md`.
 
 ## Known limits
 - Headless Chrome can't subscribe to Web Push (no push service there); a fresh Chrome profile can take ~30 s on its

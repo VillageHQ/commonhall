@@ -10,6 +10,7 @@ import { authClient } from "@/platform/auth/auth-client";
 import type { CommunityLogo } from "@/platform/branding/branding";
 import { ROUTES } from "@/platform/http/routes";
 
+import { SignInCodeForm } from "./sign-in-code-form";
 import { SignInForm } from "./sign-in-form";
 
 const TOO_MANY_MESSAGE = "Too many tries. Wait a minute and try again.";
@@ -64,6 +65,7 @@ export function SignInScreen({ community, hosting, isLinkOn, returnPath, notice,
         <p className="fh-lede">
           If {state.sentTo} is a member of {community.name}, a sign-in link is on its way. It works once, for 15 minutes.
         </p>
+        <SignInCodeForm email={state.sentTo} returnPath={returnPath} />
         <p className="fh-small mt-4">
           <a href={ROUTES.signIn}>Use a different email</a>
         </p>

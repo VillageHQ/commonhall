@@ -9,7 +9,8 @@ How it works today, the token API and the ports: `.ai/features/voice-sessions/NO
 - `service-settings.ts`: which LiveKit: the server's env (`LIVEKIT_URL`, `LIVEKIT_API_KEY`, `LIVEKIT_API_SECRET`,
   `LIVEKIT_API_URL`) or keys an admin saved (sealed secret).
 - `service.ts`: create, join (the token), hands, roles, leave, end, reminders, invites, the minute upkeep.
-- `reads.ts`: the Rooms list, one room, people to invite. `components/`: the UI.
+- `reads.ts`: the Rooms list, one room, people to invite. `components/`: the UI. In the phone app the room page
+  hands the room to the app's own player (`readNativeApp()`); the app uses the same API through the page.
 - Alerts ("I'm available", reminders) are sent from `src/shell/voice-alerts.ts` through notify().
 
 Rules:
