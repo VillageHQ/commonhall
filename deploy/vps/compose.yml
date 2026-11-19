@@ -36,6 +36,9 @@ services:
       CLIENT_IP_HEADER: x-real-ip
       # The app calls its own jobs endpoint every minute: email retries and expiring old intro asks.
       JOBS_SELF_TICK: "true"
+      # Voice rooms: browsers reach LiveKit through Caddy on the same domain (/rtc); the app talks to it inside docker.
+      LIVEKIT_URL: wss://${COMMUNITY_DOMAIN}
+      LIVEKIT_API_URL: http://livekit:7880
     expose:
       - "3000"
     healthcheck:
@@ -50,11 +53,35 @@ services:
       start_period: 60s
     logging: *logging
 
+  # Voice rooms (LiveKit, Apache 2.0) on the same server. Its keys are in .env, made by the installer. Never records:
+  # no egress service is configured. Media uses TCP 7881 and UDP 50000-50100, which the firewall must allow.
+  livekit:
+    image: livekit/livekit-server:v1.13
+    restart: unless-stopped
+    environment:
+      LIVEKIT_KEYS: "${LIVEKIT_API_KEY:?Set LIVEKIT_API_KEY in .env (re-run the installer)}: ${LIVEKIT_API_SECRET:?Set LIVEKIT_API_SECRET in .env (re-run the installer)}"
+      LIVEKIT_CONFIG: |
+        port: 7880
+        rtc:
+          tcp_port: 7881
+          port_range_start: 50000
+          port_range_end: 50100
+          use_external_ip: true
+        logging:
+          level: warn
+    expose:
+      - "7880"
+    ports:
+      - "${COMMUNITY_BIND_ADDRESS:+${COMMUNITY_BIND_ADDRESS}:}7881:7881"
+      - "${COMMUNITY_BIND_ADDRESS:+${COMMUNITY_BIND_ADDRESS}:}50000-50100:50000-50100/udp"
+    logging: *logging
+
   caddy:
     image: caddy:2-alpine
     restart: unless-stopped
     depends_on:
       - app
+      - livekit
     environment:
       COMMUNITY_DOMAIN: ${COMMUNITY_DOMAIN:?Set COMMUNITY_DOMAIN in .env}
       CADDY_GLOBAL_OPTIONS: ${CADDY_GLOBAL_OPTIONS:-}

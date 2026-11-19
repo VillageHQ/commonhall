@@ -610,12 +610,17 @@ open_firewall() {
   step "Allowing web traffic"
   if ! command -v ufw >/dev/null 2>&1 || ! ufw status 2>/dev/null | grep -q '^Status: active'; then
     say "This server's firewall (ufw) isn't on, so there's nothing to change. We left it off."
-    say "Some hosting companies have their own firewall in their dashboard. If yours does, allow ports 80 and 443."
+    say "Some hosting companies have their own firewall in their dashboard. If yours does, allow ports 80 and 443,"
+    say "and for voice rooms TCP 7881 and UDP 50000-50100."
     return 0
   fi
   ufw allow 80/tcp >>"$log_file" 2>&1
   ufw allow 443/tcp >>"$log_file" 2>&1
-  say "Your firewall now allows ports 80 and 443. We didn't touch your other rules, so SSH works as before."
+  # Voice rooms (LiveKit): its media connection.
+  ufw allow 7881/tcp >>"$log_file" 2>&1
+  ufw allow 50000:50100/udp >>"$log_file" 2>&1
+  say "Your firewall now allows ports 80 and 443, and 7881 (TCP) and 50000-50100 (UDP) for voice rooms."
+  say "We didn't touch your other rules, so SSH works as before."
 }
 
 download_source() {
@@ -643,10 +648,23 @@ new_secret() {
   openssl rand -hex 32
 }
 
+# Keys for voice rooms (LiveKit), made here and never shown. An install from before voice rooms gets them on upgrade.
+voice_key_lines() {
+  say "LIVEKIT_API_KEY=API$(openssl rand -hex 6)"
+  say "LIVEKIT_API_SECRET=$(new_secret)"
+}
+
+add_missing_voice_keys() {
+  [ -n "$(read_setting LIVEKIT_API_SECRET)" ] && return 0
+  voice_key_lines >>"$ENV_FILE"
+  say "Created the keys for voice rooms in $ENV_FILE."
+}
+
 write_settings() {
   if [ -n "$is_upgrade" ]; then
     chmod 600 "$ENV_FILE"
     say "Keeping your existing settings and secrets in $ENV_FILE."
+    add_missing_voice_keys
     return 0
   fi
   if docker volume inspect "$POSTGRES_VOLUME" >/dev/null 2>&1; then
@@ -658,13 +676,14 @@ We stopped so we don't damage your data. Put the file back from your own copy, t
   local draft
   draft="$(mktemp "$INSTALL_DIRECTORY/.env.XXXXXX")"
   {
-    say "# Your community's private settings. Keep them secret. Re-running the installer never changes this file."
+    say "# Your community's private settings. Keep them secret. Re-running the installer only adds settings that are missing."
     say "COMMUNITY_DOMAIN=$domain"
     say "APP_URL=$app_url"
     if [ -n "${COMMUNITY_BIND_ADDRESS:-}" ]; then say "COMMUNITY_BIND_ADDRESS=$COMMUNITY_BIND_ADDRESS"; fi
     say "POSTGRES_PASSWORD=$(new_secret)"
     say "SETUP_TOKEN=$(new_secret)"
     say "BETTER_AUTH_SECRET=$(new_secret)"
+    voice_key_lines
     if [ -n "${COMMUNITY_IMAGE:-}" ]; then say "COMMUNITY_IMAGE=$COMMUNITY_IMAGE"; fi
     if is_test_mode; then
       say "CADDY_GLOBAL_OPTIONS=local_certs"
@@ -854,7 +873,7 @@ It keeps trying by itself, so this may fix itself within a few minutes.
 
 Check these:
   1. $domain points at this server.
-  2. Your hosting company's firewall allows ports 80 and 443.
+  2. Your hosting company's firewall allows ports 80 and 443 (and TCP 7881, UDP 50000-50100 for voice rooms).
   3. On Cloudflare, the record is set to \"DNS only\" (the grey cloud).
 
 See what's happening: sudo community logs caddy

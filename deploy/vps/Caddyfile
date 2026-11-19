@@ -6,8 +6,15 @@
 }
 
 {$COMMUNITY_DOMAIN} {
-	reverse_proxy app:3000 {
-		# Caddy leaves a client-sent X-Real-IP alone unless told otherwise, and rate limits trust this header.
-		header_up X-Real-IP {remote_host}
+	# Voice rooms: LiveKit's signal connection (a WebSocket) on the same domain and certificate. Its admin API stays
+	# inside docker.
+	handle /rtc* {
+		reverse_proxy livekit:7880
+	}
+	handle {
+		reverse_proxy app:3000 {
+			# Caddy leaves a client-sent X-Real-IP alone unless told otherwise, and rate limits trust this header.
+			header_up X-Real-IP {remote_host}
+		}
 	}
 }
