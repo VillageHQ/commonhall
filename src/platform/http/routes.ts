@@ -107,6 +107,7 @@ export const API_ROUTES = {
   resendWebhook: "/api/email/resend-webhook",
   recoverAdmin: "/api/recover-admin",
   signInLink: "/api/sign-in-link",
+  signInCode: "/api/sign-in-code",
   demoSignIn: "/api/demo/sign-in",
   profilePassword: "/api/profile/password",
   branding: "/api/admin/branding",

@@ -7,12 +7,13 @@ import { DisconnectReason, Room, RoomEvent, Track, type Participant, type Remote
 import { Hand, MessageSquare, Mic, MicOff, Smile } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
 
 import { FlashNote, FLASH_KINDS } from "@/components/flash";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { readNativeApp, subscribeToNativeApp } from "@/platform/native-app/bridge";
 
 import {
   isModerator,
@@ -116,7 +117,41 @@ function PersonTile({ person, reaction, isSelected, onSelect, size }: { person: 
 
 type LiveRoomProps = { roomId: string; title: string; isInviteOnly: boolean };
 
-export function LiveRoom({ roomId, title, isInviteOnly }: LiveRoomProps) {
+const SERVER_SNAPSHOT = "unknown";
+
+function readWhere() {
+  return readNativeApp() ? "app" : "browser";
+}
+
+// In the phone app the room plays in the app's own player (it keeps going with the screen locked); in a browser it
+// plays here. Nothing connects until the page knows which (the server can't tell).
+export function LiveRoom(props: LiveRoomProps) {
+  const where = useSyncExternalStore(subscribeToNativeApp, readWhere, () => SERVER_SNAPSHOT);
+  if (where === SERVER_SNAPSHOT) return <p className="fh-small fh-muted">Joining {props.title}…</p>;
+  if (where === "app") return <AppRoomHandoff roomId={props.roomId} title={props.title} />;
+  return <BrowserRoom {...props} />;
+}
+
+function AppRoomHandoff({ roomId, title }: { roomId: string; title: string }) {
+  useEffect(() => {
+    readNativeApp()?.openRoom(roomId, title);
+  }, [roomId, title]);
+  return (
+    <div className="vr-room" data-testid="room-in-app">
+      <p className="fh-small fh-muted">This room plays in the app&rsquo;s player, so it keeps going when you lock the screen.</p>
+      <div className="fh-btn-row mt-4">
+        <Button variant="ink" onClick={() => readNativeApp()?.openRoom(roomId, title)}>
+          Open the room
+        </Button>
+        <Button asChild variant="secondary">
+          <Link href={VOICE_PAGE}>Back to Rooms</Link>
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function BrowserRoom({ roomId, title, isInviteOnly }: LiveRoomProps) {
   const router = useRouter();
   const roomRef = useRef<Room | null>(null);
   const audioRef = useRef<HTMLDivElement>(null);

@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-The root map for agents in this repo. The root `AGENTS.md` is not tracked: `next dev` writes its own there, so `.gitignore` keeps it out, and this file holds the map instead.
+The root map for agents in this repo. The root `AGENTS.md` is untracked (`next dev` writes its own); this file is the map.
 
 ## Project memory (`.ai/`)
 - `.ai/roadmap.md` — the backlog; each item links its spec (lines without a spec link have none yet).
@@ -15,7 +15,7 @@ The root map for agents in this repo. The root `AGENTS.md` is not tracked: `next
 ## What this repo is
 An open-source community app for a venture fund and its founders (AGPL-3.0): Today home, the weekly email, double
 opt-in intros, the asks board, the partner report, and switchable modules. Next.js, TypeScript, Postgres + Drizzle,
-Better Auth, Vitest, pnpm. Village is optional (network search, intro paths and profile fill-in; intros from profiles work without it).
+Better Auth, Vitest, pnpm. Village is optional (network search, intro paths, profile fill-in; profile intros work without it).
 
 ## How to run / test
 - Run: `cp .env.example .env`, `docker compose up -d --wait`, `pnpm install`, `pnpm dev`; set `SETUP_TOKEN`, open `/setup`.
@@ -23,7 +23,7 @@ Better Auth, Vitest, pnpm. Village is optional (network search, intro paths and 
   `pnpm lint && pnpm typecheck && pnpm test && pnpm build`. Fake Village, Resend and chat servers, no keys.
 - Architecture tests: `pnpm test src/test/architecture`.
 - Migrations: `pnpm db:generate` after a schema change; the app migrates on boot (or `pnpm db:migrate`).
-- Landing page tour: `pnpm tour:build` after changing a screen the tour shows, and commit `site/` (`src/test/site-tour.test.ts` fails on a stale build).
+- Landing page tour: after changing a screen it shows, `pnpm tour:build` and commit `site/` (`src/test/site-tour.test.ts` checks).
 
 ## Regressions worth guarding
 - Module boundaries and 404-when-off (`src/test/architecture/`).
@@ -58,10 +58,12 @@ Better Auth, Vitest, pnpm. Village is optional (network search, intro paths and 
   `.ai/features/mentors-calls/NOTES.md` (community roles, booking links, Book a call, calls counted),
   `.ai/features/find-candidates/NOTES.md` (Find candidates on a job: the button, the search, the hiring request),
   `.ai/features/notifications/NOTES.md` (alerts: notify(), devices, quiet hours, the manifest and service worker),
+  `.ai/features/mobile-app/NOTES.md` (store app: bridge, code, alerts, rooms),
   `.ai/features/voice-sessions/NOTES.md` (Rooms: voice rooms on LiveKit, roles, the token API, ports, the "I'm available" and reminder alerts, the button in chat too; never recorded),
   `.ai/features/ai-library/NOTES.md` (the portfolio AI library: visibility, the secret scan, votes, the leaderboard),
   `.ai/features/fix-installer/NOTES.md` (install.sh: build failures, swap, first install, DNS), `.ai/features/onboarding-claude-setup/NOTES.md` (setup:instance), `.ai/features/fix-network-page/NOTES.md`, `.ai/features/self-call-http/NOTES.md` (rewrites behind an https tunnel).
 - `tour/AGENTS.md` (the landing page's live tour, built into `site/tour/`).
+- `mobile/AGENTS.md` (the store app, its own npm project).
 - No notes: `.do/`, `.github/`, `deploy/` (`deploy/cloudflare/README.md` runs commonhall.ai), `docs/` (guides), `drizzle/` (generated), `site/` (own README), `public/` (demo pictures),
   `vercel.json` (the daily Vercel Cron Job). Every deploy setup runs the job runner;
   `src/test/deploy-setups.test.ts` guards it.

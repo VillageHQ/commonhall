@@ -1,6 +1,7 @@
 import webPush from "web-push";
 
 import type { Environment } from "../environment.ts";
+import { resolveAppUrl } from "../http/app-url.ts";
 import { logError } from "../observability/route-logging.ts";
 import { isAllowedPushEndpoint } from "./push-hosts.ts";
 import { readVapidSubject, type VapidKeys } from "./vapid.ts";
@@ -47,13 +48,15 @@ export async function sendWebPush(device: WebPushDevice, payload: AlertPayload, 
 
 type ExpoTicket = { status?: string; details?: { error?: string } };
 
-// Expo answers each message with a ticket; DeviceNotRegistered means the app was removed from that phone.
+// Expo answers each message with a ticket; DeviceNotRegistered means the app was removed from that phone. `origin`
+// tells the app which of its communities sent the alert, so a tap opens the page there.
 export async function sendExpoPush(tokens: string[], payload: AlertPayload, environment: Environment): Promise<DeliveryResult[]> {
   if (tokens.length === 0) return [];
+  const origin = resolveAppUrl(environment);
   const response = await fetch(environment.EXPO_PUSH_URL?.trim() || EXPO_PUSH_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json", Accept: "application/json" },
-    body: JSON.stringify(tokens.map((to) => ({ to, title: payload.title, body: payload.body, data: { url: payload.url, kind: payload.kind }, sound: "default" }))),
+    body: JSON.stringify(tokens.map((to) => ({ to, title: payload.title, body: payload.body, data: { url: payload.url, kind: payload.kind, origin }, sound: "default" }))),
     signal: AbortSignal.timeout(SEND_TIMEOUT_MS),
   });
   if (!response.ok) return tokens.map(() => DELIVERY_RESULTS.failed);

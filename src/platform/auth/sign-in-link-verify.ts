@@ -7,6 +7,7 @@ import { and, eq, gt } from "drizzle-orm";
 import { account, user, verification } from "../database/auth-schema.ts";
 import type { Database } from "../database/client.ts";
 import { isBanActive } from "./member-status.ts";
+import { forgetSignInCode } from "./sign-in-code.ts";
 import { SIGN_IN_LINK_IDENTIFIER_PREFIX } from "./sign-in-link.ts";
 import type { getAuth } from "./auth.ts";
 
@@ -62,7 +63,7 @@ async function readLinkMember(database: Database, token: string) {
     .select({ id: account.id })
     .from(account)
     .where(and(eq(account.userId, member.id), eq(account.providerId, CREDENTIAL_PROVIDER_ID)));
-  return { isPasswordAtRisk: !member.emailVerified && Boolean(password) };
+  return { email: member.email, isPasswordAtRisk: !member.emailVerified && Boolean(password) };
 }
 
 export async function verifySignInLink(database: Database, auth: Auth, request: Request, token: string): Promise<SignInLinkResult> {
@@ -72,5 +73,7 @@ export async function verifySignInLink(database: Database, auth: Auth, request: 
   const response = await auth.api.magicLinkVerify({ query: { token }, headers: request.headers, asResponse: true });
   const setCookies = response.headers.getSetCookie();
   if (response.status !== SUCCESS_STATUS || setCookies.length === 0) return { isSignedIn: false };
+  // The email's code signs in the same way, so it goes with the link.
+  await forgetSignInCode(database, member.email);
   return { isSignedIn: true, setCookies, isPasswordRemoved: member.isPasswordAtRisk };
 }

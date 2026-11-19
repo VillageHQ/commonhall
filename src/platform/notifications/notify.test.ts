@@ -134,9 +134,9 @@ describe("notify()", () => {
     }
 
     expect(await send([member])).toMatchObject({ sent: 1, removed: 1 });
-    expect(push.state.expoMessages.map(({ to, data }) => ({ to, url: data.url }))).toEqual([
-      { to: "ExponentPushToken[workingToken123]", url: "/inbox/1" },
-      { to: "ExponentPushToken[GoneToken12345]", url: "/inbox/1" },
+    expect(push.state.expoMessages.map(({ to, data }) => ({ to, url: data.url, origin: data.origin }))).toEqual([
+      { to: "ExponentPushToken[workingToken123]", url: "/inbox/1", origin: "http://localhost:3000" },
+      { to: "ExponentPushToken[GoneToken12345]", url: "/inbox/1", origin: "http://localhost:3000" },
     ]);
     expect(await deviceCount(member)).toBe(1);
   });

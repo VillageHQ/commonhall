@@ -1,7 +1,7 @@
 # Voice (Rooms)
 
-Live voice rooms like Clubhouse and X Spaces, on LiveKit (Apache 2.0) on the same host. Toggleable, off by default.
-How it works today, the token API and the ports: `.ai/features/voice-sessions/NOTES.md`.
+Live voice rooms like Clubhouse, on LiveKit (Apache 2.0), same host. Toggleable, off by default.
+How it works, the token API, the ports: `.ai/features/voice-sessions/NOTES.md`.
 
 - `contract.ts`: paths, roles, limits, words, Zod bodies, data-message topics. Client-safe.
 - `schema.ts`: `voice_room`, `voice_room_member` (role, hand, invite list), `voice_room_reminder`, `voice_broadcast`.
@@ -10,7 +10,8 @@ How it works today, the token API and the ports: `.ai/features/voice-sessions/NO
   `LIVEKIT_API_URL`) or keys an admin saved (sealed secret).
 - `service.ts`: create, join (the token), hands, roles, leave, end, reminders, invites, the minute upkeep.
 - `reads.ts`: the Rooms list, one room, people to invite, the "I'm available" count. `components/`: the UI;
-  `available-to-talk.tsx` is the button in chat, placed by `src/shell/chat-available.tsx`.
+  `available-to-talk.tsx` is the button in chat, placed by `src/shell/chat-available.tsx`; the phone app
+  plays rooms natively (`readNativeApp()`).
 - Alerts ("I'm available", reminders) are sent from `src/shell/voice-alerts.ts` through notify().
 
 Rules:
