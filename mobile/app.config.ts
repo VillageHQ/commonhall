@@ -1,12 +1,15 @@
 import type { ExpoConfig } from "expo/config";
 
 // The Commonhall store app. One app for every fund: the member picks their community on first open.
-// EAS_PROJECT_ID comes from `eas init` on the account that publishes the app (not chosen yet; nothing is uploaded).
-const projectId = process.env.EAS_PROJECT_ID;
+// Commonhall's own build is published from the Expo account "tinyring" (Apple team TA6D5Y2M2U), TestFlight internal only.
+// A fund publishing its own copy sets EAS_PROJECT_ID (from `eas init` on its account) and EAS_OWNER instead.
+const projectId = process.env.EAS_PROJECT_ID ?? "963d0817-45b0-4ad9-93fd-7c22efba9c60";
+const owner = process.env.EAS_PROJECT_ID ? process.env.EAS_OWNER : "tinyring";
 
 const config: ExpoConfig = {
   name: "Commonhall",
   slug: "commonhall",
+  ...(owner ? { owner } : {}),
   scheme: "commonhall",
   version: "1.0.0",
   orientation: "portrait",
@@ -46,7 +49,7 @@ const config: ExpoConfig = {
     // Only the web preview (scripts/web-preview.mjs) serves the app under a path.
     baseUrl: process.env.EXPO_BASE_URL || undefined,
   },
-  extra: projectId ? { eas: { projectId } } : {},
+  extra: { eas: { projectId } },
 };
 
 export default config;
