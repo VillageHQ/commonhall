@@ -20,6 +20,7 @@ src/
                 The feed is a toggle too, on where no admin chose.
     job-board/  Toggle, on by default. Founders' open jobs from their hiring tools, a public
                 board and a website widget.
+    voice/      Toggle, off by default. Live voice rooms (Rooms) on LiveKit; never recorded.
     admin/      Core. Roster, reports, audit view, health, the features screen.
   platform/     Infrastructure with no product opinion: auth, audit, branding, database,
                 design, email, http, observability, rate-limit, secrets, settings, text, village.
@@ -43,7 +44,7 @@ app -> shell -> modules -> components -> platform
 Inside `modules`:
 
 ```text
-members <- messages, feed, network, intros, asks, job-board
+members <- messages, feed, network, intros, asks, job-board, voice
 all     <- admin
 ```
 
