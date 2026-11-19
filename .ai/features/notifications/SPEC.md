@@ -1,6 +1,6 @@
 ---
 id: notifications
-status: specced
+status: built
 waits-on: []
 size: half a day
 touches: ["src/platform/notifications/", "src/app/", "public/", "src/shell/", "drizzle/"]

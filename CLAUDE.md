@@ -57,6 +57,7 @@ Better Auth, Vitest, pnpm. Village is optional (network search, intro paths and 
   `.ai/features/onboarding-village-connect/NOTES.md`, `.ai/features/onboarding-guided-start/NOTES.md`,
   `.ai/features/mentors-calls/NOTES.md` (community roles, booking links, Book a call, calls counted),
   `.ai/features/find-candidates/NOTES.md` (Find candidates on a job: the button, the search, the hiring request),
+  `.ai/features/notifications/NOTES.md` (alerts: notify(), devices, quiet hours, the manifest and service worker),
   `.ai/features/fix-installer/NOTES.md` (install.sh: build failures, swap, first install, DNS), `.ai/features/onboarding-claude-setup/NOTES.md` (setup:instance), `.ai/features/fix-network-page/NOTES.md`, `.ai/features/self-call-http/NOTES.md` (rewrites behind an https tunnel).
 - `tour/AGENTS.md` (the landing page's live tour, built into `site/tour/`).
 - No notes: `.do/`, `.github/`, `deploy/` (`deploy/cloudflare/README.md` runs commonhall.ai), `docs/` (guides), `drizzle/` (generated), `site/` (own README), `public/` (demo pictures),

@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 
+import { NOTIFICATION_API_ROUTES } from "../notifications/contract.ts";
+
 const DEFAULT_DESCRIPTION = "A private community for your network, powered by Village.";
 
 type MetadataBranding = { name: string; descriptor: string; logo: { url: string } | null };
@@ -18,6 +20,7 @@ export const PAGE_TITLES = {
   members: "Directory",
   editCard: "My profile",
   emailSettings: "Email",
+  alerts: "Alerts",
   yourData: "Your data",
   profile: "Member",
   welcome: "Welcome",
@@ -57,6 +60,8 @@ export function toRootMetadata({ name, descriptor, logo }: MetadataBranding): Me
   return {
     title: { default: name, template: `%s · ${name}` },
     description: descriptor || DEFAULT_DESCRIPTION,
-    icons: logo ? { icon: logo.url } : undefined,
+    // The installed app on iPhone: its home-screen icon and name (the manifest, src/app/manifest.ts, covers the rest).
+    icons: { ...(logo ? { icon: logo.url } : {}), apple: `${NOTIFICATION_API_ROUTES.icon}?size=192` },
+    appleWebApp: { capable: true, title: name, statusBarStyle: "default" },
   };
 }

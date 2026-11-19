@@ -66,6 +66,8 @@ type TodayPageProps = {
   openJobCount: number | null;
   nextSteps: readonly NextStep[];
   lookupQuestion: ReactNode;
+  // "Add <fund> to your home screen" (src/components/alerts/install-card.tsx), above everything in the main column.
+  installCard?: ReactNode;
   flash: string | null;
   now: Date;
   // Where "Ask for an intro" goes today (see GUIDED_ASK_PAGE).
@@ -74,7 +76,7 @@ type TodayPageProps = {
 
 // Commonhall's Today (todayPage): what needs you in the main column (asks on your paths, intros waiting for your
 // yes, lines to check), your own asks and the community's boards in the right rail.
-export function TodayPage({ today, memberName, communityName, digestDay, dateLabel, allowance, perksCommunityName, openJobCount, nextSteps, lookupQuestion, flash, now, askIntroHref }: TodayPageProps) {
+export function TodayPage({ today, memberName, communityName, digestDay, dateLabel, allowance, perksCommunityName, openJobCount, nextSteps, lookupQuestion, installCard = null, flash, now, askIntroHref }: TodayPageProps) {
   const first = firstWord(memberName);
   const help = today.helpableAsks;
   const forYou = today.introsForYou ?? [];
@@ -122,6 +124,7 @@ export function TodayPage({ today, memberName, communityName, digestDay, dateLab
       />
       <div className="fh-today">
         <div>
+          {installCard}
           {lookupQuestion}
           {help.length ? (
             <section className="fh-tsec">

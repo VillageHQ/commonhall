@@ -40,6 +40,8 @@ export const ROUTES = {
   editCard: "/me",
   yourData: "/me/data",
   emailSettings: "/me/email",
+  // Settings › Alerts: what alerts this member, quiet hours, muted broadcasters, this device (platform/notifications).
+  alerts: "/me/alerts",
   // Search (Commonhall's "/search"; the old "/network" redirects here), the guided ask, the intro ask page and My network.
   network: "/search",
   guidedAsk: "/ask",

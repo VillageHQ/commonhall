@@ -22,6 +22,7 @@ import { CLOSES_CONSENT, readIntroDeadline } from "./reads.ts";
 import { hashTargetSlug, isTargetOptedOut } from "./opt-out.ts";
 import { readConsentParticipants, isConsentTokenLive, readLinkedIntro, readLiveConsentHash, readSettledAnswer } from "./reads-consent.ts";
 import { readMemberConsentHash } from "./reads-target-member.ts";
+import { alertIntro, INTRO_ALERTS } from "./alerts.ts";
 import { introConsentLink, introOptOut, introRequest } from "./schema.ts";
 
 const FORBIDDEN_STATUS = 403;
@@ -165,6 +166,7 @@ async function tryJoiningByEmail(database: Database, environment: Environment, i
 }
 
 async function tellEveryoneAboutYes(database: Database, environment: Environment, intro: IntroFacts) {
+  alertIntro(database, environment, intro.id, INTRO_ALERTS.targetAgreed);
   const { requesterName } = await readConsentParticipants(database, intro.requesterId);
   const joined = await tryJoiningByEmail(database, environment, intro, requesterName);
   // Joined by email: the connector is copied on the introduction itself, or else told by the app's notice.
@@ -181,6 +183,7 @@ async function tellEveryoneAboutYes(database: Database, environment: Environment
 async function tellEveryoneAboutNo(database: Database, environment: Environment, intros: readonly IntroFacts[]) {
   await Promise.all(
     intros.map(async (intro) => {
+      alertIntro(database, environment, intro.id, INTRO_ALERTS.closed);
       const { requesterName } = await readConsentParticipants(database, intro.requesterId);
       await Promise.all([
         deliverIntroEmail(database, environment, toEmailFacts(intro, requesterName, INTRO_EMAIL_EVENTS.declined)),

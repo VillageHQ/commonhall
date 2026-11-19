@@ -12,8 +12,8 @@ The app's code. Map, import rules and file roles: `docs/architecture.md`; read i
   checklist, scheduled jobs).
 - `modules/`: one folder per feature, each with its own `AGENTS.md`. Core: `members`, `admin`. Switches: `feed`,
   `messages`, `network`, `intros`, `asks`, `chat`, `job-board`, `perks`. `registry.ts` lists them.
-- `platform/`: infrastructure with no product opinion (auth, audit, branding, database, email, jobs, rate limits,
-  secrets, settings, Village, the weekly email schedule).
+- `platform/`: infrastructure with no product opinion (auth, audit, branding, database, email, jobs, alerts
+  (`notifications/`: `notify()`), rate limits, secrets, settings, Village, the weekly email schedule).
 - `components/`: UI with no module knowledge; `components/ui/` holds the shared parts (`app/parts.css`).
 - `test/`: fake Village, Resend and chat servers, fixtures, and the architecture tests (`test/architecture/`):
   they fail on a wrong import, a route outside its module, a schema `drizzle.config.ts` misses, or a module page

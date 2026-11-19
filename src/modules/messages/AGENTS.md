@@ -7,6 +7,7 @@ Direct messages between two members. Toggleable.
 - `reads.ts`: inbox, thread pages and changes, each scoped to who may see them.
 - `limits.ts`: rate limits. Admin reports share the report limit.
 - `email.ts`: the new-message email. At most one per conversation per recipient every 15 minutes (`message_email_notice`), queued in the send's transaction. It never carries the message text.
+- `alerts.ts`: the phone and browser alert beside it, through `notify()` after the send; never the text, none for a withheld message.
 - Pages: `/inbox`, `/inbox/<id>`, `/messages/new?to=` (Message links there; the first Send starts it).
 - `rules-thread-*.ts`: pure client cache and thread logic.
 - `service-erasure.ts`: a deleted account's messages show as deleted; the other member keeps the conversation.

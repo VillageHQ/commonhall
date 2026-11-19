@@ -179,6 +179,15 @@ export function isListedInDirectory(now = new Date()) {
   return and(isActiveMember(now), isListedMember());
 }
 
+// Names for a picker (Settings › Alerts mutes): the members the directory lists, but the viewer.
+export async function readListedMemberNames(database: Database, viewerId: string, now = new Date()) {
+  return database
+    .select({ id: user.id, name: user.name })
+    .from(user)
+    .where(and(isListedInDirectory(now), ne(user.id, viewerId)))
+    .orderBy(asc(user.name));
+}
+
 // How many open jobs a member's company has (and the ones the member linked), from a feature above members (the job board). The directory page and
 // route pass it in while that feature is on; without it the cards show no "Hiring" and the filter is ignored.
 // A member with no profile row is a founder, the default.

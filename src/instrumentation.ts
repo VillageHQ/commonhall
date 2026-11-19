@@ -20,6 +20,8 @@ export async function register() {
 
   await migrateOnBoot(process.env, undefined, async () => {
     await sealVillageSecretOnBoot(getDatabase(), process.env);
+    // Each server makes its own alert (VAPID) keys on first start.
+    await (await import("./platform/notifications/vapid")).readVapidKeys(getDatabase());
     if (isDemo) await bootDemo();
   });
   if (isDemo && !resolveMigrationPlan(process.env).shouldRun) await bootDemo();
