@@ -18,9 +18,16 @@
     "production": {
       "autoIncrement": true,
       "android": { "buildType": "app-bundle" }
+    },
+    "testflight": {
+      "extends": "production",
+      "ios": { "credentialsSource": "local" }
     }
   },
   "submit": {
-    "production": {}
+    "production": {},
+    "testflight": {
+      "ios": { "ascAppId": "6836913644", "appleTeamId": "TA6D5Y2M2U" }
+    }
   }
 }

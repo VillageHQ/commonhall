@@ -43,3 +43,7 @@ yarn-error.*
 # Native bundles and the web preview build
 dist-native/
 dist-web/
+
+# Signing files for a local-credentials build (never committed)
+credentials.json
+ios-certs/
