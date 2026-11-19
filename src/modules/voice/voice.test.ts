@@ -18,6 +18,7 @@ import { memberBlock } from "@/modules/members/schema";
 import { saveModuleState } from "@/platform/modules/enablement";
 import { DEFAULT_PREFERENCES, DEVICE_TYPES, NOTIFICATION_KINDS } from "@/platform/notifications/contract";
 import { registerDevice, savePreferences, setMute } from "@/platform/notifications/service";
+import { readChatAvailableAction } from "@/shell/chat-available";
 import { runVoiceReminders } from "@/shell/voice-alerts";
 import { clearDatabase, createTestDatabase } from "@/test/database";
 import { FAKE_LIVEKIT_KEY, FAKE_LIVEKIT_SECRET, startFakeLiveKitServer } from "@/test/fake-livekit-server";
@@ -220,6 +221,24 @@ describe("voice rooms", () => {
     const fourth = await call(postAvailable, member.cookie, {});
     expect(fourth.status).toBe(429);
     expect(await fourth.json()).toMatchObject({ code: VOICE_ERROR_CODES.broadcastLimit, message: VOICE_MESSAGES.broadcastLimit });
+  });
+
+  it("puts 'I'm available' in chat only while Rooms is on, with the day's count the Rooms page shows", async () => {
+    const member = await createSignedInMember(database);
+    const readChatInitial = async () => {
+      const action = await readChatAvailableAction(database, process.env, member.userId);
+      return action ? (action.props as { initial: { broadcastsLeft: number } }).initial : null;
+    };
+    expect(await readChatInitial()).toEqual({ broadcastsLeft: VOICE_LIMITS.broadcastsPerDay, isConfigured: true });
+
+    const { roomId } = (await (await call(postAvailable, member.cookie, {})).json()) as { roomId: string };
+    expect((await join(member, roomId)).role).toBe(ROOM_ROLES.host);
+    expect((await readChatInitial())?.broadcastsLeft).toBe(VOICE_LIMITS.broadcastsPerDay - 1);
+    const rooms = (await (await call(postRooms, member.cookie, {})).json()) as { broadcastsLeft: number };
+    expect(rooms.broadcastsLeft).toBe(VOICE_LIMITS.broadcastsPerDay - 1);
+
+    await saveModuleState(database, voiceManifest, false);
+    expect(await readChatInitial()).toBeNull();
   });
 
   describe("alerts", () => {

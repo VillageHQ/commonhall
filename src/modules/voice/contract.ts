@@ -103,6 +103,12 @@ export const VOICE_MESSAGES = {
   badTarget: "That person isn't in this room.",
 } as const;
 
+// The line under "I'm available to talk", on Rooms and in chat.
+export function describeBroadcastsLeft(broadcastsLeft: number) {
+  if (broadcastsLeft === 0) return `You've said you're available ${VOICE_LIMITS.broadcastsPerDay} times today. Start a room instead, or try again tomorrow.`;
+  return `Opens a room with you as host and alerts the community, except anyone in quiet hours or who muted you. ${broadcastsLeft} of ${VOICE_LIMITS.broadcastsPerDay} left today.`;
+}
+
 const roomIdSchema = z.string().uuid();
 
 export const createRoomBodySchema = z
