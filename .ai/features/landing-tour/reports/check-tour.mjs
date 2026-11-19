@@ -196,7 +196,7 @@ for (const theme of ["light", "dark"]) {
   watch(page, tag);
   await page.goto(ORIGIN, { waitUntil: "networkidle" });
   await page.locator("#demo").scrollIntoViewIfNeeded();
-  const text = await page.evaluate(() => document.getElementById("tour-screen").shadowRoot?.querySelector(".tour-mount")?.innerText.slice(0, 200).replace(/\s+/g, " ") ?? "(no shadow root)");
+  const text = await page.evaluate(() => document.getElementById("tour-screen").shadowRoot?.querySelector(".tour-mount")?.innerText.slice(0, 400).replace(/\s+/g, " ") ?? "(no shadow root)");
   results.push(`${tag}: ${text}`);
   if (!/Who are you trying to reach/.test(text)) problems.push(`${tag}: the still of step 1 does not show`);
   await page.locator("#demo .wrap").screenshot({ path: join(outDir, "tour-no-js.png") });

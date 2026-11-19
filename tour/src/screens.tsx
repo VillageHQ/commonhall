@@ -5,8 +5,19 @@ import { Building2 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 
+import { AlertSettingsForm } from "@/components/alerts/alert-settings-form";
+import { DeviceAlertsCard } from "@/components/alerts/device-alerts-card";
+import { MutedPeople } from "@/components/alerts/muted-people";
 import { BackLink, PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
+import { LibraryBrowse } from "@/modules/library/components/library-browse";
+import { LibraryLeaderboard } from "@/modules/library/components/library-leaderboard";
+import { LIBRARY_BOARD_PERIODS, LIBRARY_PAGES } from "@/modules/library/contract";
+import { LiveRoom } from "@/modules/voice/components/live-room";
+import { RoomsBoard } from "@/modules/voice/components/rooms-board";
+import { VOICE_PAGE } from "@/modules/voice/contract";
+import { VOICE_QUERY_KEYS } from "@/modules/voice/queries";
+import { ROUTES } from "@/platform/http/routes";
 import { ANNOUNCEMENT_AUDIENCES } from "@/modules/admin/contract-announcements";
 import { AnnouncementComposer } from "@/modules/admin/components/announcement-composer";
 import type { SentAnnouncement } from "@/modules/admin/reads-announcements";
@@ -26,6 +37,9 @@ import { buildShellNavigation } from "@/shell/navigation";
 
 import {
   ADMIN,
+  ALERT_KINDS,
+  ALERT_MEMBERS,
+  ALERT_MUTED,
   ANNOUNCEMENT_COHORTS,
   ANNOUNCEMENT_MEMBERS,
   ASK_ALLOWANCE,
@@ -45,7 +59,15 @@ import {
   HIRING_ASK_HREF,
   INTRO_CONNECTOR,
   INTRO_TARGET,
+  LIBRARY_BOARD,
+  LIBRARY_ITEMS,
+  readAlertPreferences,
   readDirectory,
+  ROOM_HREF,
+  ROOM_ID,
+  ROOM_TITLE,
+  ROOM_VIEWER_ID,
+  ROOMS_PAGE,
   SEARCH_QUERY,
   SEARCH_RESULT,
   SENT_ANNOUNCEMENTS,
@@ -75,6 +97,65 @@ export function seedTourData(client: QueryClient) {
     client.setQueryData(directoryQuery(parseDirectoryFilters(sector ? { sector } : {})).queryKey, readDirectory(sector));
   }
   client.setQueryData(directoryQuery(parseDirectoryFilters({ view: "experts" })).queryKey, readDirectory("", true));
+  client.setQueryData(VOICE_QUERY_KEYS.rooms, ROOMS_PAGE);
+}
+
+// src/app/(app)/library/page.tsx
+function LibraryPage() {
+  return (
+    <LibraryBrowse
+      communityName={COMMUNITY_NAME}
+      items={LIBRARY_ITEMS}
+      filters={{ kind: null, job: null, search: null, mine: false }}
+      topPeople={LIBRARY_BOARD.people}
+      askHref={null}
+      flash={null}
+    />
+  );
+}
+
+// src/app/(app)/library/leaderboard/page.tsx
+function LibraryLeaderboardPage() {
+  return <LibraryLeaderboard board={LIBRARY_BOARD} period={LIBRARY_BOARD_PERIODS.month} peopleHref={ROUTES.people} />;
+}
+
+// src/app/(app)/rooms/page.tsx
+function RoomsPage() {
+  return (
+    <>
+      <PageHeader title="Rooms" description="Talk live with your community: drop into a room, or say you're free to talk. Rooms are never recorded." />
+      <RoomsBoard initial={ROOMS_PAGE} viewerId={ROOM_VIEWER_ID} />
+    </>
+  );
+}
+
+// src/app/(app)/rooms/[roomId]/page.tsx, for the live room (the app's LiveKit is the tour's stand-in).
+function RoomPage() {
+  return (
+    <>
+      <PageHeader back={{ href: VOICE_PAGE, label: "Rooms" }} eyebrow="Live · Open to the community · Never recorded" title={ROOM_TITLE} />
+      <LiveRoom roomId={ROOM_ID} title={ROOM_TITLE} isInviteOnly={false} />
+    </>
+  );
+}
+
+// src/app/(app)/me/alerts/page.tsx. `?quiet=1`: quiet hours on (the step's end state).
+function AlertsPage() {
+  const isQuietOn = useSearchParams().get("quiet") === "1";
+  return (
+    <>
+      <BackLink href={ROUTES.editCard}>My profile</BackLink>
+      <header data-slot="page-header" className="fh-pagehead">
+        <h1 className="fh-h1">Alerts</h1>
+        <p className="fh-lede">What {COMMUNITY_NAME} alerts you to on your phone and computer, and when it stays quiet.</p>
+      </header>
+      <div className="grid max-w-[720px] gap-4">
+        <DeviceAlertsCard vapidPublicKey="" isPaused={false} />
+        <AlertSettingsForm key={String(isQuietOn)} preferences={readAlertPreferences(isQuietOn)} kinds={ALERT_KINDS} isSaved />
+        <MutedPeople muted={ALERT_MUTED} members={ALERT_MEMBERS} />
+      </div>
+    </>
+  );
 }
 
 function SearchPage() {
@@ -258,6 +339,11 @@ const PAGES: Record<string, { page: () => React.ReactNode; isAdmin: boolean }> =
   "/directory": { page: DirectoryPage, isAdmin: false },
   "/jobs": { page: JobsPage, isAdmin: false },
   "/search/candidates": { page: CandidatesPage, isAdmin: false },
+  [LIBRARY_PAGES.browse]: { page: LibraryPage, isAdmin: false },
+  [LIBRARY_PAGES.leaderboard]: { page: LibraryLeaderboardPage, isAdmin: false },
+  [VOICE_PAGE]: { page: RoomsPage, isAdmin: false },
+  [ROOM_HREF]: { page: RoomPage, isAdmin: false },
+  "/me/alerts": { page: AlertsPage, isAdmin: false },
   "/admin/announcements": { page: AnnouncementsPage, isAdmin: true },
   "/admin": { page: AdminPage, isAdmin: true },
 };

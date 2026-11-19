@@ -3,6 +3,7 @@ import { renderToString } from "react-dom/server";
 import { renderAccentCss } from "@/platform/design/accent";
 import { DEMO_COMMUNITY } from "@/platform/demo/people";
 
+import { ROOM_PICTURES } from "./data";
 import { setTourAddress } from "./shims/next-navigation";
 import { createTourQueryClient, TourScreens } from "./screens";
 import { TOUR_STEPS } from "./steps";
@@ -25,7 +26,8 @@ export function renderFirstStill() {
 }
 
 export function listPictures() {
-  const pictures = new Set<string>();
+  // The live room's people arrive after it "connects", so no server render shows them.
+  const pictures = new Set<string>(ROOM_PICTURES);
   for (const step of TOUR_STEPS) {
     for (const href of [step.start, step.still]) {
       for (const match of render(href).matchAll(/tour\/(?:faces|logos)\/[\w-]+\.(?:webp|svg)/g)) pictures.add(match[0]);

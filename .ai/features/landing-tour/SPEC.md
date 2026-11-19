@@ -33,6 +33,11 @@ does not want.
    - Grow: customer intros, job board, find candidates in the portfolio, perks.
    - Hear from the fund: announcements, feed, Slack, Discord, WhatsApp and Telegram posts, admin reports.
    The competitor comparison table keeps its honest ticks.
+5. **Round 5 (19 Nov 2026, charter: ./CHARTER-round5.md).** Three more steps from the real screens, after Find
+   candidates: the AI library and its leaderboard, a live voice room on stage, and Settings › Alerts with quiet hours
+   (11 steps). The groups gain Voice rooms and "I'm available to talk" (Meet and connect), Phone alerts and The phone app
+   (Hear from the fund: installable now, the store app follows), and a fifth group, AI across the portfolio (the
+   library, upvotes and the leaderboard, kind and job, the secret check). Still no status tags.
 
 ## Scope
 In: the tour (existing journeys), centring, grouped boxes, deploy notes for the tour build. Out: new app features; the
@@ -46,7 +51,8 @@ tour steps for them (part `tour-new-steps`).
 4. At 390 px it plays on a timer, nothing overflows sideways, and every step is readable.
 5. With reduced motion nothing animates; steps change on a tap.
 6. The page still loads nothing from another site and logs no console error (the CSP stays `'self'`).
-7. The 4 groups show every feature listed above; no "Built", "Partly" or "Coming" tag remains in the feature boxes.
+7. The groups (5 since round 5) show every feature listed above; no "Built", "Partly" or "Coming" tag remains in the
+   feature boxes.
 8. Unwanted path: with JavaScript off, the section still shows a readable still of the first step.
 
 ## Verification contract
@@ -57,6 +63,8 @@ step, the centring measure, console and network logs, the reduced-motion and no-
 - tour-new-steps · needs: this part's tour framework (how a step is declared) · owner: landing-tour · check in: write how
   to add a step in this feature's NOTES.md before merging.
 - announcements, mentors-calls, find-candidates · needs: nothing now; their screens join the tour later · owner: each part.
+- ai-library, voice-sessions, notifications · their screens joined the tour in round 5 (part landing-round5); a change to
+  `LibraryBrowse`, `LibraryLeaderboard`, `RoomsBoard`, `LiveRoom` or the alerts components needs `pnpm tour:build`.
 
 ## Open questions
 None.
