@@ -8,6 +8,10 @@ import { composeAnswerReportBody, composeAskReportBody } from "../asks/contract.
 import { readReportableAnswer, readReportableAsk } from "../asks/reads.ts";
 import { ask, askAnswer } from "../asks/schema.ts";
 import { removeAnswerWithin, removeAskWithin } from "../asks/service.ts";
+import { composeLibraryReportBody } from "../library/contract.ts";
+import { readLibraryViewer, readVisibleItemForAction } from "../library/reads.ts";
+import { libraryItem } from "../library/schema.ts";
+import { removeLibraryItemWithin } from "../library/service.ts";
 import { user } from "../../platform/database/auth-schema.ts";
 import type { Database, Transaction } from "../../platform/database/client.ts";
 import { comment, post } from "../feed/schema.ts";
@@ -157,6 +161,19 @@ export async function reportAskAnswer(context: RequestContext, answerId: string)
   });
 }
 
+export async function reportLibraryItem(context: RequestContext, itemId: string) {
+  const viewer = await readLibraryViewer(context.database, context.member);
+  const target = await readVisibleItemForAction(context.database, viewer, itemId);
+  if (!target) throw contentGoneError();
+  return saveReport(context, {
+    targetType: REPORT_TARGETS.libraryItem,
+    targetId: itemId,
+    reportedMemberId: target.authorId,
+    body: composeLibraryReportBody(target.title, target.pitch),
+    contentCreatedAt: target.createdAt,
+  });
+}
+
 function selectMessageReports(database: Database) {
   return database
     .select({
@@ -240,13 +257,15 @@ async function readExistingTargets(database: Database, rows: ReportRow[]) {
   const commentIds = idsOfType(REPORT_TARGETS.comment);
   const askIds = idsOfType(REPORT_TARGETS.ask);
   const answerIds = idsOfType(REPORT_TARGETS.askAnswer);
-  const [posts, comments, asks, answers] = await Promise.all([
+  const libraryIds = idsOfType(REPORT_TARGETS.libraryItem);
+  const [posts, comments, asks, answers, libraryItems] = await Promise.all([
     postIds.length === 0 ? [] : database.select({ id: post.id }).from(post).where(inArray(post.id, postIds)),
     commentIds.length === 0 ? [] : database.select({ id: comment.id }).from(comment).where(inArray(comment.id, commentIds)),
     askIds.length === 0 ? [] : database.select({ id: ask.id }).from(ask).where(inArray(ask.id, askIds)),
     answerIds.length === 0 ? [] : database.select({ id: askAnswer.id }).from(askAnswer).where(inArray(askAnswer.id, answerIds)),
+    libraryIds.length === 0 ? [] : database.select({ id: libraryItem.id }).from(libraryItem).where(inArray(libraryItem.id, libraryIds)),
   ]);
-  return new Set([...posts, ...comments, ...asks, ...answers].map(({ id }) => id));
+  return new Set([...posts, ...comments, ...asks, ...answers, ...libraryItems].map(({ id }) => id));
 }
 
 function toIsoOrNull(timestamp: string | null) {
@@ -258,6 +277,7 @@ const CONTENT_DELETERS = {
   [REPORT_TARGETS.comment]: deleteCommentWithin,
   [REPORT_TARGETS.ask]: removeAskWithin,
   [REPORT_TARGETS.askAnswer]: removeAnswerWithin,
+  [REPORT_TARGETS.libraryItem]: removeLibraryItemWithin,
 };
 
 function isDeletableTarget(targetType: string): targetType is keyof typeof CONTENT_DELETERS {
@@ -390,7 +410,7 @@ export async function dismissReport({ database, member }: RequestContext, report
 export async function deleteReportedContent({ database, member }: RequestContext, report: ReportActionBody) {
   const { targetType } = report;
   if (!isDeletableTarget(targetType)) {
-    throw new RequestError(UNPROCESSABLE_STATUS, ADMIN_ERROR_CODES.notDeletable, "Only posts, replies, asks and answers can be deleted from here.");
+    throw new RequestError(UNPROCESSABLE_STATUS, ADMIN_ERROR_CODES.notDeletable, "Only posts, replies, asks, answers and library items can be deleted from here.");
   }
   await withAdminTransaction(database, member.id, async (transaction) => {
     const locked = await lockOpenReport(transaction, report);
