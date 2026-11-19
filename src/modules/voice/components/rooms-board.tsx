@@ -114,7 +114,12 @@ export function RoomsBoard({ initial, viewerId }: { initial: RoomsData; viewerId
     initialData: initial,
     refetchInterval: (query) => (isRouteGone(query.state.error) ? false : ROOMS_POLL_MS),
   });
-  const available = useMutation({ mutationFn: voiceRequests.available, onSuccess: ({ roomId }) => router.push(toRoomHref(roomId)) });
+  // A refusal (the day's limit, used in another tab) refreshes the count beside the button.
+  const available = useMutation({
+    mutationFn: voiceRequests.available,
+    onSuccess: ({ roomId }) => router.push(toRoomHref(roomId)),
+    onError: () => void rooms.refetch(),
+  });
   const { live, scheduled, broadcastsLeft, isConfigured } = rooms.data;
 
   return (
@@ -130,7 +135,7 @@ export function RoomsBoard({ initial, viewerId }: { initial: RoomsData; viewerId
       <p className="fh-hint">
         {broadcastsLeft === 0
           ? "You've said you're available 3 times today. Start a room instead, or try again tomorrow."
-          : `Opens a room with you as host and tells the community you're free to talk. ${broadcastsLeft} of ${VOICE_LIMITS.broadcastsPerDay} left today.`}
+          : `Opens a room with you as host and alerts the community, except anyone in quiet hours or who muted you. ${broadcastsLeft} of ${VOICE_LIMITS.broadcastsPerDay} left today.`}
       </p>
       {available.error ? (
         <FlashNote kind={FLASH_KINDS.needs} className="mt-3">

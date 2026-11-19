@@ -94,7 +94,7 @@ the owner picks the first wave on the decision page. Goal matching stays an idea
 - [ ] Portfolio MCP server: use Commonhall from a founder's Claude or ChatGPT — portfolio-mcp — size S — [spec](features/portfolio-mcp/SPEC.md)
 - [ ] "Ask the portfolio": an AI that answers from the portfolio's shared playbooks — ask-the-portfolio — size M — [spec](features/ask-the-portfolio/SPEC.md)
 - [ ] AI stack census: which AI tools portfolio companies tried, kept or dropped — ai-stack-census — size S — [spec](features/ai-stack-census/SPEC.md)
-- [x] Voice rooms: live and scheduled audio rooms like Clubhouse, "I'm available to talk", never recorded (the owner's answer; alerts wait for notifications) — voice-sessions — size L — [spec](features/voice-sessions/SPEC.md) · [notes](features/voice-sessions/NOTES.md) · [PR #92](https://github.com/VillageHQ/commonhall/pull/92)
+- [x] Voice rooms: live and scheduled audio rooms like Clubhouse, "I'm available to talk" and reminders alert members' phones, never recorded (the owner's answer) — voice-sessions — size L — [spec](features/voice-sessions/SPEC.md) · [notes](features/voice-sessions/NOTES.md) · [PR #92](https://github.com/VillageHQ/commonhall/pull/92) · [PR #94](https://github.com/VillageHQ/commonhall/pull/94) (alerts)
 ### Wave 3
 - [ ] AI vendor trust exchange: security reviews of AI vendors done once, reused by all — ai-vendor-trust — size M — [spec](features/ai-vendor-trust/SPEC.md)
 - [ ] AI credits and procurement desk — ai-credits-desk — size S — [spec](features/ai-credits-desk/SPEC.md)

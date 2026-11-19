@@ -206,13 +206,21 @@ export async function startAvailableRoom({ database, member }: RequestContext, n
   });
 }
 
+// Starting a scheduled room (early or on time) claims its reminders, so "Remind me" fires when it really starts and
+// the minute job never sends them again. Returns the reminders to send, or null when they went out already.
 export async function startScheduledRoom({ database, member }: RequestContext, roomId: string, now = new Date()) {
-  await database.transaction(async (transaction) => {
+  return database.transaction(async (transaction) => {
     const room = await lockRoom(transaction, roomId);
     if (room.hostId !== member.id) throw notHost();
     if (room.status === ROOM_STATUSES.ended) throw ended();
-    if (room.status === ROOM_STATUSES.live) return;
-    await transaction.update(voiceRoom).set({ status: ROOM_STATUSES.live, startedAt: now }).where(eq(voiceRoom.id, roomId));
+    if (room.status === ROOM_STATUSES.live) return null;
+    await transaction
+      .update(voiceRoom)
+      .set({ status: ROOM_STATUSES.live, startedAt: now, remindersSentAt: room.remindersSentAt ?? now })
+      .where(eq(voiceRoom.id, roomId));
+    if (room.remindersSentAt) return null;
+    const reminders = await transaction.select({ memberId: voiceRoomReminder.memberId }).from(voiceRoomReminder).where(eq(voiceRoomReminder.roomId, roomId));
+    return { id: room.id, title: room.title, hostId: room.hostId, memberIds: reminders.map(({ memberId }) => memberId) };
   });
 }
 
