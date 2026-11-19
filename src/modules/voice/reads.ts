@@ -46,7 +46,18 @@ function toIso(value: Date | null) {
   return value ? value.toISOString() : null;
 }
 
-export type RoomsPage = { live: RoomCard[]; scheduled: RoomCard[]; broadcastsLeft: number; isConfigured: boolean };
+export type AvailableToTalkState = { broadcastsLeft: number; isConfigured: boolean };
+export type RoomsPage = { live: RoomCard[]; scheduled: RoomCard[] } & AvailableToTalkState;
+
+function toBroadcastsLeft(broadcastsToday: number) {
+  return Math.max(0, VOICE_LIMITS.broadcastsPerDay - broadcastsToday);
+}
+
+// What "I'm available to talk" needs outside Rooms (the Inbox, a conversation): no room list, no LiveKit call.
+export async function readAvailableToTalk(database: Database, environment: Environment, viewerId: string, now = new Date()): Promise<AvailableToTalkState> {
+  const [config, broadcasts] = await Promise.all([readVoiceConfig(database, environment), countBroadcastsToday(database, viewerId, now)]);
+  return { broadcastsLeft: toBroadcastsLeft(broadcasts), isConfigured: config !== null };
+}
 
 // Live rooms now (newest first) and scheduled rooms (soonest first), with their stage faces and how many are in.
 export async function readRoomsPage(database: Database, environment: Environment, viewerId: string, now = new Date()): Promise<RoomsPage> {
@@ -92,7 +103,7 @@ export async function readRoomsPage(database: Database, environment: Environment
   return {
     live: cards.filter((card) => card.status === ROOM_STATUSES.live),
     scheduled: cards.filter((card) => card.status === ROOM_STATUSES.scheduled).sort((first, second) => (first.scheduledFor ?? "").localeCompare(second.scheduledFor ?? "")),
-    broadcastsLeft: Math.max(0, VOICE_LIMITS.broadcastsPerDay - broadcasts),
+    broadcastsLeft: toBroadcastsLeft(broadcasts),
     isConfigured: config !== null,
   };
 }

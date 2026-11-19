@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery, useSuspenseInfiniteQuery } from "@tanstack/react-query";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 
 import { ConfirmAction } from "@/components/confirm-action";
 import { FormError } from "@/components/form-error";
@@ -78,7 +78,10 @@ function usePollFailureExit(error: Error | null) {
 
 // Commonhall's thread page (threadPage): "‹ Inbox", the name, one line, the messages, the reply box. Community keeps
 // older messages, retries, delete, report and block (a quiet link at the foot).
-function ThreadView({ conversationId, communityName }: { conversationId: string; communityName: string }) {
+// `headerAction` is another module's action under the head, passed in by the page (Rooms' "I'm available to talk").
+type ThreadProps = { conversationId: string; communityName: string; headerAction?: ReactNode };
+
+function ThreadView({ conversationId, communityName, headerAction }: ThreadProps) {
   const thread = useSuspenseInfiniteQuery(threadQuery(conversationId));
   const changes = useQuery(threadChangesQuery(conversationId));
   const { data: pending } = useQuery(pendingMessagesQuery(conversationId));
@@ -136,6 +139,7 @@ function ThreadView({ conversationId, communityName }: { conversationId: string;
           {peer.name}
         </h1>
         <p className="fh-small fh-muted">{describeThreadLine(communityName)}</p>
+        {headerAction}
       </div>
       {thread.hasNextPage ? (
         <Button
@@ -217,10 +221,10 @@ function ThreadView({ conversationId, communityName }: { conversationId: string;
   );
 }
 
-export function Thread({ conversationId, communityName }: { conversationId: string; communityName: string }) {
+export function Thread({ conversationId, communityName, headerAction }: ThreadProps) {
   return (
     <QueryBoundary loadingMessage="Opening your conversation…">
-      <ThreadView key={conversationId} conversationId={conversationId} communityName={communityName} />
+      <ThreadView key={conversationId} conversationId={conversationId} communityName={communityName} headerAction={headerAction} />
     </QueryBoundary>
   );
 }

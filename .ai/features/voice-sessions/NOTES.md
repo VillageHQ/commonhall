@@ -9,6 +9,14 @@ Set up › Features. Rooms are **never recorded**: there is no egress service, n
 - **Pages:** `/rooms` (live now, coming up, "I'm available to talk", Start a room), `/rooms/<id>` (the live room,
   a scheduled room's Remind me / Start now, or "ended"), `/admin/rooms` (Set up › Rooms: where LiveKit runs).
   An invite-only room is not found for anyone off its list.
+- **"I'm available to talk" in chat** (built 19 Nov 2026, part chat-available): the same button sits under the head of
+  the Inbox (`/inbox`) and of each conversation (`/inbox/<id>`), only while Rooms is on and LiveKit is set up.
+  `src/shell/chat-available.tsx` (`readChatAvailableAction`) reads `readAvailableToTalk` (the day's count left and
+  whether LiveKit is set up; no room list, no LiveKit call) and renders `components/available-to-talk.tsx`; the
+  pages pass it in (the Inbox under its `PageHeader`, a conversation through `Thread`'s `headerAction`), so messages
+  never imports voice. It posts to the same `/api/voice/available` as Rooms (`useAvailableToTalk`, shared with
+  `rooms-board.tsx`): same 3-a-day limit, same refusal words from the server, same alert; a refused 4th turns the
+  button off with the 0-left line (`describeBroadcastsLeft`, also Rooms' line). The tap opens the room as host.
 - **Tables** (`schema.ts`, migration `0041_voice_rooms`): `voice_room` (host, access open/invite, status
   scheduled/live/ended, `empty_stage_since`), `voice_room_member` (role host/cohost/speaker/listener, raised hand,
   invite list), `voice_room_reminder`, `voice_broadcast` (one row per "I'm available", for the limit).
@@ -78,7 +86,7 @@ permissions; a moved-down member's microphone is unpublished by LiveKit.
 
 ## Tests
 - `src/modules/voice/voice.test.ts` (real routes, real Postgres, fake LiveKit `src/test/fake-livekit-server.ts`):
-  token grants by role, signed-out and invite-only refusals, the stage controls pushed to LiveKit, end, hand-over to
+  token grants by role, signed-out and invite-only refusals, the chat button only while Rooms is on with Rooms' count, the stage controls pushed to LiveKit, end, hand-over to
   a co-host, the 2-minute rule (and no end while LiveKit is down), the 4th broadcast, and the alerts (fake Expo
   push server `src/test/fake-push-server.ts`): who a broadcast reaches and who it skips, one alert per double tap,
   reminders on Start now and from the minute job, never twice.

@@ -12,6 +12,7 @@ import { readBrandingForPage } from "@/platform/branding/branding";
 import { PAGE_TITLES } from "@/platform/branding/page-metadata";
 import { getDatabase } from "@/platform/database/client";
 import { modulePage } from "@/platform/modules/module-page";
+import { readChatAvailableAction } from "@/shell/chat-available";
 
 type ConversationPageProps = { params: Promise<{ conversationId: string }> };
 
@@ -29,7 +30,12 @@ export async function generateMetadata({ params }: ConversationPageProps): Promi
 }
 
 export default modulePage(messagesManifest, async function ConversationPage({ params }: ConversationPageProps) {
-  const [page, community] = await Promise.all([readPage((await params).conversationId), readBrandingForPage()]);
+  const member = await requireMember();
+  const [page, community, availableAction] = await Promise.all([
+    readPage((await params).conversationId),
+    readBrandingForPage(),
+    readChatAvailableAction(getDatabase(), process.env, member.id),
+  ]);
   if (!page) notFound();
 
   const queryClient = new QueryClient();
@@ -37,7 +43,7 @@ export default modulePage(messagesManifest, async function ConversationPage({ pa
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <Thread conversationId={page.conversationId} communityName={community.name} />
+      <Thread conversationId={page.conversationId} communityName={community.name} headerAction={availableAction} />
     </HydrationBoundary>
   );
 });
