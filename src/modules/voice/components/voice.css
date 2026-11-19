@@ -1,0 +1,63 @@
+/* Rooms, in the Commonhall look: paper, ink, hairlines, serif titles. Kept out of parts.css so the landing tour's copy
+   of the app's styles doesn't change. */
+
+.vr-live-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--ribbon);flex:none}
+.vr-live-dot[data-pulse="true"]{animation:vr-pulse 1.6s ease-in-out infinite}
+@keyframes vr-pulse{50%{opacity:.35}}
+@media (prefers-reduced-motion:reduce){.vr-live-dot[data-pulse="true"]{animation:none}}
+
+.vr-cards{display:grid;gap:12px;margin-top:12px}
+@media (min-width:760px){.vr-cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.vr-card{display:flex;flex-direction:column;gap:10px;padding:16px;border:1px solid var(--rule);border-radius:var(--r);background:var(--leaf);color:inherit;text-decoration:none;transition:border-color .18s var(--ease)}
+a.vr-card:hover{border-color:var(--graphite)}
+.vr-card-top{display:flex;align-items:center;gap:8px;font-size:12.5px;line-height:16px;color:var(--graphite)}
+.vr-card-title{font:600 19px/25px var(--serif);overflow-wrap:anywhere}
+.vr-faces{display:flex;align-items:center}
+.vr-faces > *{margin-left:-8px;box-shadow:0 0 0 2px var(--leaf);border-radius:50%}
+.vr-faces > *:first-child{margin-left:0}
+.vr-card-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--graphite)}
+
+.vr-composer{margin-top:16px}
+.vr-choice{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.vr-picked{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.vr-results{margin-top:6px;border:1px solid var(--rule);border-radius:var(--r-sm);max-height:220px;overflow:auto;background:var(--leaf)}
+.vr-result{display:flex;align-items:center;gap:10px;width:100%;padding:8px 10px;border:0;background:transparent;color:var(--ink);text-align:left;font:inherit}
+.vr-result:hover,.vr-result:focus-visible{background:var(--vellum)}
+
+/* The room */
+.vr-room{padding-bottom:8px}
+.vr-room-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.vr-section-label{margin-top:24px;font-size:12.5px;line-height:16px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--graphite)}
+.vr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:18px 8px;margin-top:12px}
+.vr-grid[data-stage="true"]{grid-template-columns:repeat(auto-fill,minmax(108px,1fr))}
+.vr-person{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;padding:6px 2px;border:0;border-radius:var(--r-sm);background:transparent;color:var(--ink);font:inherit;text-align:center}
+button.vr-person:hover{background:var(--vellum)}
+.vr-person[aria-pressed="true"]{background:var(--vellum)}
+.vr-ring{position:relative;border-radius:50%;padding:3px;box-shadow:0 0 0 2px transparent;transition:box-shadow .12s var(--ease)}
+.vr-ring[data-speaking="true"]{box-shadow:0 0 0 3px var(--ink)}
+.vr-person-name{font-size:13.5px;line-height:18px;font-weight:500;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vr-person-role{font-size:12px;line-height:14px;color:var(--graphite)}
+.vr-badge{position:absolute;right:-2px;bottom:-2px;display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--leaf);border:1px solid var(--rule);font-size:13px;line-height:1}
+.vr-badge-hand{left:-2px;right:auto}
+.vr-reaction{position:absolute;top:-6px;left:50%;transform:translateX(-50%);font-size:28px;line-height:1;animation:vr-float 2.4s ease-out forwards;pointer-events:none}
+@keyframes vr-float{0%{opacity:0;transform:translate(-50%,8px)}15%{opacity:1}100%{opacity:0;transform:translate(-50%,-34px)}}
+@media (prefers-reduced-motion:reduce){.vr-reaction{animation:none}}
+
+.vr-panel{margin-top:16px;padding:14px 16px;border:1px solid var(--rule);border-radius:var(--r);background:var(--leaf)}
+.vr-hands{display:grid;gap:8px;margin-top:8px}
+.vr-hand-row{display:flex;align-items:center;gap:10px}
+.vr-hand-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.vr-bar{position:sticky;bottom:calc(var(--tab-h) + 8px);z-index:35;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:24px;padding:10px 12px;background:var(--leaf);border:1px solid var(--rule);border-radius:12px;box-shadow:var(--shadow)}
+@media (min-width:1000px){.vr-bar{bottom:16px}}
+.vr-bar-group{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.vr-round{display:inline-grid;place-items:center;width:44px;height:44px;border-radius:50%;border:1px solid var(--rule);background:var(--paper);color:var(--ink);font-size:20px;line-height:1}
+.vr-round[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.vr-reactions{display:flex;gap:4px;padding:6px;border:1px solid var(--rule);border-radius:999px;background:var(--leaf)}
+.vr-reactions button{width:38px;height:38px;border:0;border-radius:50%;background:transparent;font-size:20px;line-height:1}
+.vr-reactions button:hover{background:var(--vellum)}
+
+.vr-chat{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.vr-chat-list{display:flex;flex-direction:column;gap:6px;max-height:260px;overflow:auto;font-size:14px;line-height:20px}
+.vr-chat-list b{font-weight:600}
+.vr-chat form{display:flex;gap:8px}
