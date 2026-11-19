@@ -91,7 +91,7 @@ types into the real fields and clicks the real links.
      start: "/directory",             // the address the step opens on
      still: "/people/demo-sam.lee",   // its end state: reduced motion, and the no-JS still if it is step 1
      async settle(hands) { await hands.fill("#field", "words"); },   // optional: fill fields for the still;
-                                      // hands.show(selector) scrolls it to the top at once (the visitor can't scroll)
+                                      // hands.show(selector, whole?) scrolls it to the top at once unless `whole` is all in view
      async play(hands) {              // the scripted run; ends on the still
        await hands.point(".fh-mcard");          // move the pointer (scrolls the screen if needed)
        await hands.click("a.fh-book");          // a real click: links and buttons that only change the screen
@@ -116,11 +116,11 @@ types into the real fields and clicks the real links.
   press on "I'm available to talk" (`tap`), a click on the live card, then `LiveRoom` on the stand-in LiveKit: Oliver
   Grant hosts, Priya Shah co-hosts, Grace Kim speaks (muted), nine listen (Sam Lee is "You", Marcus Webb's hand is up).
   The pointer opens Reactions and sends 👏 (shown on the page only), then presses the hand (`tap`). The still waits for
-  the people, then shows the stage at the top (`hands.show`).
+  the people; when the audience doesn't fit (a phone) it scrolls the stage to the top (`hands.show`); at 1280 px the room fits and nothing moves (a scroll there would push the tall menu up).
 - **Alerts** (`/me/alerts` → `?quiet=1`): the page's three cards (this device on; the kinds with "Voice rooms opening"
   off; Noah Berg muted). The pointer clicks the quiet-hours switch for real (it only changes the screen), points at the
   days and presses Save (`tap`). `?quiet=1` renders the form with quiet hours on (the form is keyed by it); the still
-  scrolls to "Quiet hours".
+  scrolls to "Quiet hours" when the day buttons are out of view.
 
 ## The feature groups (`#rooms`)
 `div.groups` of five `section.fgroup` cards (Meet and connect · Raise · Grow · Hear from the fund · AI across the

@@ -162,12 +162,14 @@ export class Player {
     setFieldValue((await this.find(selector)) as HTMLInputElement | HTMLTextAreaElement, text);
   }
 
-  // Scroll the screen at once so the element sits near the top, for a still (no pointer, no motion): the visitor
-  // can't scroll the screen themselves.
-  async show(selector: string) {
+  // For a still (no pointer, no motion; the visitor can't scroll the screen): unless `whole` is already all in view,
+  // scroll at once so `selector` sits near the top. A screen that fits isn't moved.
+  async show(selector: string, whole = selector) {
     const element = await this.find(selector);
     const { root } = this.options;
     const box = root.getBoundingClientRect();
+    const needed = (await this.find(whole)).getBoundingClientRect();
+    if (needed.top >= box.top && needed.bottom <= box.bottom) return;
     const top = (element.getBoundingClientRect().top - box.top) / this.options.readScale();
     root.scrollTop = Math.max(0, root.scrollTop + top - 16);
   }

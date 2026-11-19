@@ -165,7 +165,7 @@ export const TOUR_STEPS: readonly TourStep[] = [
     async settle(hands) {
       // The people arrive once the room "connects"; then the stage goes to the top, clear of the room's control bar.
       await hands.find("[data-testid='room-person']");
-      await hands.show(".vr-section-label");
+      await hands.show(".vr-section-label", "[data-testid='audience']");
     },
     async play(hands) {
       await hands.wait(500);
@@ -192,7 +192,7 @@ export const TOUR_STEPS: readonly TourStep[] = [
     start: "/me/alerts",
     still: "/me/alerts?quiet=1",
     async settle(hands) {
-      await hands.show("form[aria-label='Alert settings'] fieldset h3:nth-of-type(2)");
+      await hands.show("form[aria-label='Alert settings'] fieldset h3:nth-of-type(2)", "[role='group'][aria-label='Days']");
     },
     async play(hands) {
       await hands.wait(500);
