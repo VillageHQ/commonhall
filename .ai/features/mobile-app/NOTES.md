@@ -14,7 +14,8 @@ Built 19 Nov 2026 (round 5, part "mobile-app"). Spec: `SPEC.md`. Proof: `reports
   loads, the app puts `window.CommonhallApp` (`version`, `platform`, `pushToken`, `openRoom()`) and
   `__commonhallBridge.call()` in the page. The app's server calls run as the page's own `fetch`, so they carry the
   member's cookie and the site's origin and pass the route kit's checks unchanged: **no app token, no origin
-  exception, no second sign-in.** Only `POST /api/voice/*`, `POST|DELETE /api/notifications/devices` may be called, and
+  exception, no second sign-in.** The bootstrap runs again when each page finishes loading (Android may miss the
+  before-load run); frames inside a page load in place, only page navigations to other sites open the browser. Only `POST /api/voice/*`, `POST|DELETE /api/notifications/devices` may be called, and
   only from a page on the community's own origin.
 
 ## Joining a community
@@ -42,7 +43,8 @@ with the same answers for a wrong code, an expired one and an unknown address.
   bridge: `POST /api/notifications/devices { type: "expo", token }`. A 401 (signed out) tries again on the next page;
   landing on a sign-in page re-arms it, so whoever signs in next gets this phone.
 - Each Expo message now carries `data.origin` (the server's address) besides `url` and `kind`. A tap opens `url` in
-  the community that sent it (switching if the phone knows several), cold start included.
+  the community that sent it (switching if the phone knows several; the join screen, prefilled, if it no longer lists
+  it), cold start included.
 - Sign-out in the app removes the app's token on the server (`forgetThisBrowser` reads `CommonhallApp.pushToken`).
 - Settings › Alerts in the app says the app handles this phone's alerts and keeps "Send a test alert".
 
@@ -54,10 +56,12 @@ with the same answers for a wrong code, an expired one and an unknown address.
   (`@livekit/react-native` `registerGlobals()`, its Expo plugin and `@config-plugins/react-native-webrtc`). Stage and
   audience with faces, talking rings, raised hands, invite up / move down / co-hosts for moderators, reactions, mute,
   End room for the host, Leave quietly. Every role change still goes through the server's voice API.
-- **Minimise** keeps the room connected under the portal with a bar ("Pricing AMA · On stage, talking").
+- **Minimise** keeps the room connected under the portal with a bar ("Pricing AMA · On stage, talking"; the dot greys
+  when the room closes). One room at a time: opening another leaves the first (`/api/voice/leave`). No room chat yet.
 - **Locked screen:** Android: `modules/voice-service`, a local Expo module (Kotlin) running a foreground service
   (`mediaPlayback`, plus `microphone` while on stage and allowed) with a notification showing the room, Mute/Unmute and
-  Leave on the lock screen. iOS: `UIBackgroundModes: ["audio"]` keeps the WebRTC audio session (and a speaker's
+  Leave on the lock screen. A running service updates in place (Android refuses a new foreground service from the
+  background); if the microphone type is refused it keeps playing as media. iOS: `UIBackgroundModes: ["audio"]` keeps the WebRTC audio session (and a speaker's
   microphone) going; iOS lock-screen controls would need CallKit (not built).
 
 ## Builds

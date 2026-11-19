@@ -52,6 +52,15 @@ export default function App() {
         void open(sender, path);
         return;
       }
+      // From a community this phone no longer lists: offer to join it again rather than open the path elsewhere.
+      if (origin && !sender) {
+        const read = readAddress(origin);
+        if (read.ok) {
+          setOpened(null);
+          setJoinAddress(`${read.origin}${path}`);
+        }
+        return;
+      }
       if (current) setOpenRequest({ path, at: Date.now() });
       else if (communitiesRef.current[0]) void open(communitiesRef.current[0], path);
     },

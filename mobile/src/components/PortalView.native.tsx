@@ -1,6 +1,7 @@
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, type ComponentType, type Ref } from "react";
 import { BackHandler, Linking, Platform } from "react-native";
-import { WebView, type WebViewMessageEvent, type WebViewNavigation, type WebViewProps } from "react-native-webview";
+import { WebView, type WebViewMessageEvent, type WebViewProps } from "react-native-webview";
+import type { ShouldStartLoadRequest } from "react-native-webview/lib/WebViewTypes";
 
 import { buildBootstrapScript, buildCallScript, buildNavigateScript, buildPushTokenScript, isAllowedCall, parseBridgeMessage, toApiAnswer, type ApiAnswer } from "../lib/bridge";
 import { isSameOrigin, opensInPortal, toSafePath } from "../lib/links";
@@ -94,8 +95,9 @@ export const PortalView = forwardRef<PortalHandle, PortalViewProps>(function Por
   );
 
   const onShouldStartLoad = useCallback(
-    (request: WebViewNavigation) => {
-      if (opensInPortal(request.url, origin)) return true;
+    (request: ShouldStartLoadRequest) => {
+      // Frames inside a page (the Perks catalogue) load where they are; only the page itself may leave for the browser.
+      if (request.isTopFrame === false || opensInPortal(request.url, origin)) return true;
       if (/^(https?|mailto|tel):/i.test(request.url)) void Linking.openURL(request.url);
       return false;
     },
@@ -126,7 +128,11 @@ export const PortalView = forwardRef<PortalHandle, PortalViewProps>(function Por
       }}
       onLoadEnd={(event) => {
         const { url } = event.nativeEvent;
-        if (isSameOrigin(url, origin)) onPageLoaded(new URL(url).pathname);
+        if (!isSameOrigin(url, origin)) return;
+        // Android may run the before-load script too early for a page; the bootstrap is guarded, so running it again
+        // here only fills in a page that missed it (the page listens for the ready event).
+        webView.current?.injectJavaScript(bootstrap);
+        onPageLoaded(new URL(url).pathname);
       }}
       onError={(event) => onFailed(event.nativeEvent.description || "The page didn't load.")}
       onHttpError={(event) => {

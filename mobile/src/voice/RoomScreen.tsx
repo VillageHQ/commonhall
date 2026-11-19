@@ -47,7 +47,7 @@ function readJoin(json: unknown): JoinAnswer | null {
   return typeof serverUrl === "string" && typeof token === "string" ? { serverUrl, token } : null;
 }
 
-type RoomScreenProps = { portal: PortalHandle; origin: string; roomId: string; title: string; isShown: boolean; onMinimize: () => void; onClose: () => void; onStatus: (status: string) => void };
+type RoomScreenProps = { portal: PortalHandle; origin: string; roomId: string; title: string; isShown: boolean; onMinimize: () => void; onClose: () => void; onStatus: (status: string, isLive: boolean) => void };
 
 export function RoomScreen({ portal, origin, roomId, title, isShown, onMinimize, onClose, onStatus }: RoomScreenProps) {
   const colors = useColors();
@@ -157,7 +157,7 @@ export function RoomScreen({ portal, origin, roomId, title, isShown, onMinimize,
   }, [phase, title, myRole, isMuted]);
 
   useEffect(() => {
-    onStatus(phase === "live" ? (isOnStage(myRole) ? (isMuted ? "On stage, muted" : "On stage, talking") : "Listening") : phase === "connecting" ? "Joining…" : "Room closed");
+    onStatus(phase === "live" ? (isOnStage(myRole) ? (isMuted ? "On stage, muted" : "On stage, talking") : "Listening") : phase === "connecting" ? "Joining…" : "Room closed", phase === "live");
   }, [phase, myRole, isMuted, onStatus]);
 
   // Moved off the stage: LiveKit unpublishes the microphone; this keeps the button honest.

@@ -11,6 +11,7 @@ import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
+import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 
@@ -29,9 +30,27 @@ class VoiceRoomService : Service() {
     private const val NOTIFICATION_ID = 4107
 
     var onAction: ((String) -> Unit)? = null
+
+    // The running service, so a change (invited up, muted) updates it in place: Android refuses to start a
+    // foreground service from the background, but a running one may change its notification and types.
+    @Volatile
+    var running: VoiceRoomService? = null
   }
 
+  private var isForeground = false
+
   override fun onBind(intent: Intent?): IBinder? = null
+
+  override fun onCreate() {
+    super.onCreate()
+    running = this
+  }
+
+  override fun onDestroy() {
+    running = null
+    isForeground = false
+    super.onDestroy()
+  }
 
   override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
     when (intent?.action) {
@@ -44,28 +63,46 @@ class VoiceRoomService : Service() {
         return START_NOT_STICKY
       }
     }
-    val title = intent?.getStringExtra(EXTRA_TITLE) ?: "Voice room"
-    val canTalk = intent?.getBooleanExtra(EXTRA_CAN_TALK, false) ?: false
-    val isMuted = intent?.getBooleanExtra(EXTRA_IS_MUTED, true) ?: true
-    val notification = buildNotification(title, canTalk, isMuted)
-    // The microphone type only while on stage and allowed: Android 14 stops a service that claims it without the permission.
-    val hasMicrophone = canTalk && ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
-    try {
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-        val types = if (hasMicrophone) {
-          ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK or ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE
-        } else {
-          ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
-        }
-        startForeground(NOTIFICATION_ID, notification, types)
-      } else {
-        startForeground(NOTIFICATION_ID, notification)
-      }
-    } catch (error: Exception) {
-      stopSelf()
-    }
+    show(
+      intent?.getStringExtra(EXTRA_TITLE) ?: "Voice room",
+      intent?.getBooleanExtra(EXTRA_CAN_TALK, false) ?: false,
+      intent?.getBooleanExtra(EXTRA_IS_MUTED, true) ?: true,
+    )
     return START_NOT_STICKY
   }
+
+  // Shows the room, or updates it. The microphone type only while on stage and allowed (Android 14 refuses it
+  // without the permission, and from the background); if refused, the room keeps playing as media.
+  fun show(title: String, canTalk: Boolean, isMuted: Boolean) {
+    val notification = buildNotification(title, canTalk, isMuted)
+    val hasMicrophone = canTalk && ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+      startForeground(NOTIFICATION_ID, notification)
+      isForeground = true
+      return
+    }
+    val playback = ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+    val types = if (hasMicrophone) playback or ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE else playback
+    if (tryStartForeground(notification, types) || (types != playback && tryStartForeground(notification, playback))) {
+      isForeground = true
+      return
+    }
+    if (isForeground) {
+      // Already running: keep going and just refresh what the notification says.
+      getSystemService(NotificationManager::class.java).notify(NOTIFICATION_ID, notification)
+    } else {
+      stopSelf()
+    }
+  }
+
+  @RequiresApi(Build.VERSION_CODES.Q)
+  private fun tryStartForeground(notification: Notification, types: Int): Boolean =
+    try {
+      startForeground(NOTIFICATION_ID, notification, types)
+      true
+    } catch (error: Exception) {
+      false
+    }
 
   private fun buildNotification(title: String, canTalk: Boolean, isMuted: Boolean): Notification {
     val manager = getSystemService(NotificationManager::class.java)
@@ -82,6 +119,7 @@ class VoiceRoomService : Service() {
       .setContentTitle(title)
       .setContentText(status)
       .setOngoing(true)
+      .setOnlyAlertOnce(true)
       .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
       .setCategory(NotificationCompat.CATEGORY_CALL)
       .setContentIntent(open)

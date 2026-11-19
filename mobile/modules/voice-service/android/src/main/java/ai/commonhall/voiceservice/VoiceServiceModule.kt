@@ -1,6 +1,8 @@
 package ai.commonhall.voiceservice
 
 import android.content.Intent
+import android.os.Handler
+import android.os.Looper
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import expo.modules.kotlin.modules.Module
@@ -9,6 +11,8 @@ import java.lang.ref.WeakReference
 
 // JS: start (or update) and stop the voice room service, and hear its lock-screen buttons ("mute", "leave").
 class VoiceServiceModule : Module() {
+  private val mainThread = Handler(Looper.getMainLooper())
+
   override fun definition() = ModuleDefinition {
     Name("CommonhallVoiceService")
 
@@ -24,6 +28,12 @@ class VoiceServiceModule : Module() {
     }
 
     Function("start") { title: String, canTalk: Boolean, isMuted: Boolean ->
+      // A running service is updated in place (allowed from the background); only the first start needs the app open.
+      val running = VoiceRoomService.running
+      if (running != null) {
+        mainThread.post { running.show(title, canTalk, isMuted) }
+        return@Function true
+      }
       val context = appContext.reactContext ?: return@Function false
       val intent = Intent(context, VoiceRoomService::class.java)
         .setAction(VoiceRoomService.ACTION_SHOW)

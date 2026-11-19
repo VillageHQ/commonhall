@@ -34,7 +34,7 @@ export function PortalScreen({ community, startPath, openRequest, onSwitchCommun
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [room, setRoom] = useState<OpenRoom | null>(null);
   const [isRoomShown, setIsRoomShown] = useState(false);
-  const [roomStatus, setRoomStatus] = useState("Joining…");
+  const [roomStatus, setRoomStatus] = useState({ text: "Joining…", isLive: false });
   const [pushToken, setPushToken] = useState<string | null>(null);
   const isRegistered = useRef(false);
   const startUrl = useMemo(() => toPortalUrl(community.origin, startPath), [community.origin, startPath]);
@@ -76,10 +76,26 @@ export function PortalScreen({ community, startPath, openRequest, onSwitchCommun
     [portal],
   );
 
-  const onOpenRoom = useCallback((roomId: string, title: string) => {
-    setRoom((current) => (current?.roomId === roomId ? current : { roomId, title: title || "Voice room" }));
-    setIsRoomShown(true);
-  }, []);
+  const roomRef = useRef<OpenRoom | null>(null);
+  useEffect(() => {
+    roomRef.current = room;
+  }, [room]);
+
+  const onOpenRoom = useCallback(
+    (roomId: string, title: string) => {
+      const current = roomRef.current;
+      if (current?.roomId !== roomId) {
+        // One room at a time: opening another leaves the one playing.
+        if (current) void portal.call("POST", "/api/voice/leave", { roomId: current.roomId });
+        roomRef.current = { roomId, title: title || "Voice room" };
+        setRoom(roomRef.current);
+      }
+      setIsRoomShown(true);
+    },
+    [portal],
+  );
+
+  const onRoomStatus = useCallback((text: string, isLive: boolean) => setRoomStatus({ text, isLive }), []);
 
   const closeRoom = useCallback(() => {
     setRoom(null);
@@ -150,11 +166,11 @@ export function PortalScreen({ community, startPath, openRequest, onSwitchCommun
 
       {room && !isRoomShown ? (
         <Pressable accessibilityRole="button" testID="room-mini-bar" accessibilityLabel={`Back to ${room.title}`} onPress={() => setIsRoomShown(true)} style={[styles.miniBar, { paddingBottom: insets.bottom + 10 }]}>
-          <View style={styles.liveDot} />
+          <View style={[styles.liveDot, roomStatus.isLive ? null : styles.closedDot]} />
           <Text style={styles.miniTitle} numberOfLines={1}>
             {room.title}
           </Text>
-          <Text style={styles.miniStatus}>{roomStatus}</Text>
+          <Text style={styles.miniStatus}>{roomStatus.text}</Text>
         </Pressable>
       ) : null}
       {room ? (
@@ -167,7 +183,7 @@ export function PortalScreen({ community, startPath, openRequest, onSwitchCommun
           isShown={isRoomShown}
           onMinimize={() => setIsRoomShown(false)}
           onClose={closeRoom}
-          onStatus={setRoomStatus}
+          onStatus={onRoomStatus}
         />
       ) : null}
     </View>
@@ -194,6 +210,7 @@ function makeStyles(colors: Colors) {
     linkText: { color: colors.ink, fontFamily: SANS, fontSize: 15, textDecorationLine: "underline" },
     miniBar: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 16, paddingTop: 12, backgroundColor: colors.ink },
     liveDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.live },
+    closedDot: { backgroundColor: colors.muted },
     miniTitle: { flex: 1, color: colors.paper, fontFamily: SANS, fontSize: 15, fontWeight: "600" },
     miniStatus: { color: colors.paper, opacity: 0.75, fontFamily: SANS, fontSize: 13 },
   });
