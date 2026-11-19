@@ -1,19 +1,38 @@
 ---
 id: mobile-app
-status: idea
-waits-on: []
-size: S
-touches: []
+status: specced
+waits-on: [notifications, voice-sessions]
+size: one day
+touches: ["mobile/"]
 ---
-# Spec: Mobile: install Commonhall on the phone, with push notifications
+# Spec: The Commonhall store app (iOS and Android)
 
-**Added:** 2026-11-19 (round 5, wave 1)
+**Approved:** 19 Nov 2026 by the owner (decision page "Commonhall: AI library, phone app, voice rooms"): "preferable full
+app"; the browser app installs and receives alerts too (part notifications).
 
-## What & why
-Founders open the app rarely and live on their phone. There is no mobile app and no push.
+## Core user journey
+1. A founder installs Commonhall from the App Store or Google Play.
+2. First open: "Join your community": they type their fund's portal address (or open an invite link that carries it).
+3. They sign in by email link or a 6-digit code (emailed links open the browser, so a code avoids leaving the app).
+4. The whole portal works inside the app, with native alerts (Expo push) and native voice rooms that keep playing when the
+   screen locks, with lock-screen controls. **Goal.**
 
-## Rough scope
-An installable web app (manifest, icons in the fund's name and logo) with Web Push run by each fund's own server; a Today card that shows iPhone users how to add it to the home screen; push for intro asks, answers, messages and events. A store app (Capacitor wrapper with a "join your community" first screen) only when a fund asks: item store-app.
+## Scope
+In: an Expo (React Native) app in `mobile/`: community picker and memory of the last one, sign-in, the portal in a web view
+with native navigation chrome, native push registration (`POST /api/notifications/devices`, type "expo"), native voice
+rooms with the LiveKit React Native SDK using the token API from voice-sessions, background audio, deep links from alerts,
+EAS build profiles for iOS and Android. Out: uploading to the stores (needs the owner's yes and account), offline mode.
+
+## Acceptance criteria
+1. EAS builds succeed for iOS (simulator build) and Android (APK).
+2. On the Android emulator (or a simulator run): join community, sign in by code, browse, receive a push, join a voice room
+   and hear audio.
+3. Voice continues with the app in the background (Android verified; iOS background mode configured and documented).
+4. A push opens the right screen.
+5. Unwanted path: an address that is not a Commonhall server shows a plain error, never a blank web view.
+
+## Depends on / check-ins
+- notifications, voice-sessions · needs: their contracts on main · owner: each part · check in: start after both merge.
 
 ## Open questions
-- Which events send a push by default.
+- Which Apple and Google accounts publish the app (asked before any upload).
