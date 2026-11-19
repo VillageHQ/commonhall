@@ -2,6 +2,8 @@
    The build (tour/build.mjs) scopes the app's page-level rules to .tour-app and turns its window-width rules into
    rules on the box's width. */
 @import "../../src/app/globals.css";
+/* Rooms keeps its styles beside its components (the app loads them with the screen). */
+@import "../../src/modules/voice/components/voice.css";
 @source "./";
 
 .tour-app {

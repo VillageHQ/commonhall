@@ -1,4 +1,4 @@
-import { ANNOUNCEMENT_BODY, ANNOUNCEMENT_SUBJECT, ASK_BODY, CANDIDATES_PAGE, DIRECTORY_SECTOR, EXPERTS_VIEW_HREF, INTRO_ASK_PAGE, INTRO_NOTE, SEARCH_QUERY } from "./data";
+import { ANNOUNCEMENT_BODY, ANNOUNCEMENT_SUBJECT, ASK_BODY, CANDIDATES_PAGE, DIRECTORY_SECTOR, EXPERTS_VIEW_HREF, INTRO_ASK_PAGE, INTRO_NOTE, ROOM_HREF, SEARCH_QUERY } from "./data";
 import type { Player } from "./player";
 
 // The tour's steps, in order. Each is one tab on the landing page. How to add one: tour/AGENTS.md and
@@ -132,6 +132,78 @@ export const TOUR_STEPS: readonly TourStep[] = [
       await hands.point(".fh-result .fh-pathtext");
       await hands.wait(1400);
       await hands.point("[data-slot='hiring-request'] a");
+      await hands.wait(1800);
+    },
+  },
+  {
+    id: "library",
+    label: "AI library",
+    caption: "Founders share the AI skills, agents and prompts that work for them. Upvote what helped; the leaderboard shows who shares most.",
+    start: "/library",
+    still: "/library/leaderboard",
+    async play(hands) {
+      await hands.wait(500);
+      await hands.point("[data-testid='library-card'] .fh-lib-title");
+      await hands.wait(1100);
+      // An upvote is a request: the tour only presses.
+      await hands.tap("[data-testid='library-card']:nth-child(2) .fh-lib-vote button");
+      await hands.wait(700);
+      await hands.click("main .fh-btn-row a[href='/library/leaderboard']");
+      await hands.wait(900);
+      await hands.point("[data-testid='board-people'] li");
+      await hands.wait(1400);
+      await hands.point("[data-testid='board-companies'] li");
+      await hands.wait(1800);
+    },
+  },
+  {
+    id: "rooms",
+    label: "Voice rooms",
+    caption: "Live voice rooms, like Clubhouse. Say you're available to talk, or drop into a room and raise a hand. Never recorded.",
+    start: "/rooms",
+    still: ROOM_HREF,
+    async settle(hands) {
+      // The people arrive once the room "connects"; then the stage goes to the top, clear of the room's control bar.
+      await hands.find("[data-testid='room-person']");
+      await hands.show(".vr-section-label", "[data-testid='audience']");
+    },
+    async play(hands) {
+      await hands.wait(500);
+      // "I'm available to talk" opens a room and alerts the community: the tour only presses.
+      await hands.tap("main .fh-btn-row button");
+      await hands.wait(1200);
+      await hands.click("[data-testid='live-room']");
+      await hands.wait(1000);
+      await hands.point("[data-testid='stage'] [data-role='host']");
+      await hands.wait(1600);
+      // A reaction stays on the page (the tour's LiveKit sends nothing).
+      await hands.click("button[aria-label='Reactions']");
+      await hands.wait(300);
+      await hands.click("button[aria-label='React 👏']");
+      await hands.wait(1000);
+      await hands.tap("[data-testid='hand']");
+      await hands.wait(1800);
+    },
+  },
+  {
+    id: "alerts",
+    label: "Alerts",
+    caption: "Alerts on your phone and computer, from the app you install. Pick what alerts you, mute people, set quiet hours.",
+    start: "/me/alerts",
+    still: "/me/alerts?quiet=1",
+    async settle(hands) {
+      await hands.show("form[aria-label='Alert settings'] fieldset h3:nth-of-type(2)", "[role='group'][aria-label='Days']");
+    },
+    async play(hands) {
+      await hands.wait(500);
+      await hands.point("#alert-kind-voice_broadcast");
+      await hands.wait(1100);
+      // The switch only changes the screen; Save would send, so the tour only presses it.
+      await hands.click("#quiet-on");
+      await hands.wait(700);
+      await hands.point("[role='group'][aria-label='Days']");
+      await hands.wait(1300);
+      await hands.tap("form[aria-label='Alert settings'] button[type='submit']");
       await hands.wait(1800);
     },
   },
