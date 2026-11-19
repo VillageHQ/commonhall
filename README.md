@@ -41,6 +41,8 @@ curl -fsSL https://raw.githubusercontent.com/VillageHQ/commonhall/main/install.s
 
 [Read the guide](docs/self-host-vps.md) for what to rent and how to point your domain.
 
+**Ports to open:** 80 and 443 (TCP) for the site, plus TCP 7881 and UDP 50000–50100 for voice rooms (Rooms). The installer opens them in `ufw` when it's on; if your hosting company has its own firewall in its dashboard, open them there too. Voice rooms run on LiveKit on the same server, with keys the installer makes; they are never recorded.
+
 - **Stopped halfway?** Run the same command again. It keeps your settings and picks up where it stopped. Until you create your admin account, it ends with your setup token and the `/setup` steps again.
 - **Behind NAT or a load balancer** (as on Fly.io), the server goes out from a different address than visitors reach. The installer notices and shows the command that passes the addresses your domain points at, like `curl -fsSL https://raw.githubusercontent.com/VillageHQ/commonhall/main/install.sh | sudo COMMUNITY_DOMAIN=community.example.com COMMUNITY_SERVER_IP=203.0.113.10,2001:db8::10 bash`.
 - **No ready-made app to download?** The installer builds it on the server instead. That takes about 3 minutes with 4 GB of memory and 2 dedicated processors, and 30 minutes or more on a small 2 GB server, so use a bigger server for the first install if you can. If the build fails, the installer shows its last lines and the cause.
@@ -267,6 +269,8 @@ With no trusted header, sign-in is limited per account instead: 5 wrong password
 | `RESEND_WEBHOOK_SECRET` | No | Signing secret of your Resend webhook. Bounced and complaining addresses stop getting optional email. |
 | `JOBS_TICK_SECRET` | No | Lets a scheduler call `/api/jobs/tick`. 32+ random characters. `CRON_SECRET` works too. |
 | `CRON_SECRET` | On Vercel | The Vercel button asks for it. Vercel sends it with each cron call. 32+ random characters. |
+| `LIVEKIT_URL`, `LIVEKIT_API_KEY`, `LIVEKIT_API_SECRET` | For Rooms | The LiveKit server voice rooms use: the address browsers connect to (`wss://`) and its keys. The `install.sh` server sets them. Without them, an admin can paste LiveKit Cloud keys in **Set up › Rooms**. |
+| `LIVEKIT_API_URL` | No | How the app reaches LiveKit when that differs from `LIVEKIT_URL`, like `http://livekit:7880` inside docker. |
 | `JOBS_SELF_TICK` | No | `true` makes a long-running server run its own timed jobs every minute. The `install.sh` server and the DigitalOcean template set it. |
 | `DATABASE_CA_CERT` | No | PEM CA used to verify database TLS. Escaped `\n` is accepted. |
 | `DATABASE_TLS_ALLOW_UNVERIFIED` | No | `true` encrypts without verifying when no CA is available. No template sets it. |

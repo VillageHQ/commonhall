@@ -67,6 +67,8 @@ export const AUDIT_ACTIONS = {
   mailSettingsSaved: "mail_settings_saved",
   mailDnsChecked: "mail_dns_checked",
   announcementSent: "announcement_sent",
+  // Set up › Rooms (voice's service-settings.ts).
+  voiceSettingsSaved: "voice_settings_saved",
   // The library: an admin features, unfeatures or removes a shared item (library's service.ts).
   libraryItemFeatured: "library_item_featured",
   libraryItemUnfeatured: "library_item_unfeatured",

@@ -1,6 +1,6 @@
 ---
 id: voice-sessions
-status: specced
+status: built (alerts wait for notifications)
 waits-on: []
 size: one day
 touches: ["src/modules/voice/", "src/app/", "docker-compose.yml", "deploy/", "install.sh", "drizzle/"]

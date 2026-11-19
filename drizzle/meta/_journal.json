@@ -288,6 +288,13 @@
       "when": 1795094379269,
       "tag": "0041_library",
       "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "7",
+      "when": 1795096098381,
+      "tag": "0042_voice_rooms",
+      "breakpoints": true
     }
   ]
 }

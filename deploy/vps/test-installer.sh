@@ -380,6 +380,8 @@ test_fresh_install() {
   assert_true "generates POSTGRES_PASSWORD" is_secret POSTGRES_PASSWORD
   assert_true "generates SETUP_TOKEN" is_secret SETUP_TOKEN
   assert_true "generates BETTER_AUTH_SECRET" is_secret BETTER_AUTH_SECRET
+  assert_true "generates LIVEKIT_API_SECRET for voice rooms" is_secret LIVEKIT_API_SECRET
+  assert_true "generates LIVEKIT_API_KEY for voice rooms" has_setting "LIVEKIT_API_KEY=API"
   assert_true "sets APP_URL to HTTPS" has_setting "APP_URL=https://$DOMAIN"
   assert_called "systemctl enable --now community-backup.timer"
   assert_called "pull --quiet app"
@@ -571,6 +573,19 @@ test_rerun() {
   assert_not_called "volume rm"
   assert_not_called "down"
 
+  it "adds voice rooms' keys to an install from before them, and keeps every other line"
+  point_domain_at "$SERVER_IP"
+  run_installer COMMUNITY_DOMAIN="$DOMAIN"
+  sed -i '/^LIVEKIT_/d' "$ENV_FILE"
+  local lines_before
+  lines_before="$(cat "$ENV_FILE")"
+  run_installer COMMUNITY_DOMAIN="$DOMAIN" STUB_ADMIN_EXISTS=1
+  assert_exit 0
+  assert_says "Created the keys for voice rooms"
+  assert_true "adds LIVEKIT_API_SECRET" is_secret LIVEKIT_API_SECRET
+  assert_true "keeps every earlier line" test "$lines_before" = "$(head -n "$(printf '%s
+' "$lines_before" | wc -l)" "$ENV_FILE")"
+
   it "still shows the setup token after a first install that stopped"
   point_domain_at "$SERVER_IP"
   run_installer COMMUNITY_DOMAIN="$DOMAIN" STUB_APP_HEALTH=starting COMMUNITY_HEALTH_TIMEOUT_SECONDS=1
@@ -624,11 +639,13 @@ test_rerun() {
 test_firewall() {
   describe "Handling the firewall"
 
-  it "allows only the web ports when ufw is on"
+  it "allows only the web ports and voice rooms' media ports when ufw is on"
   point_domain_at "$SERVER_IP"
   run_installer COMMUNITY_DOMAIN="$DOMAIN" STUB_UFW_ACTIVE=1
   assert_called "ufw allow 80/tcp"
   assert_called "ufw allow 443/tcp"
+  assert_called "ufw allow 7881/tcp"
+  assert_called "ufw allow 50000:50100/udp"
   assert_not_called "ufw enable"
   assert_not_called "ufw default"
   assert_not_called "ufw deny"

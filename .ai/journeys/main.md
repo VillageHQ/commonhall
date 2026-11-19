@@ -18,4 +18,4 @@ asked for (often outside the community), and the fund's platform lead (admin).
 5. Two weeks later the founder is asked "did it help?" → the answer counts in the fund's partner report
    ([partner-report.md](partner-report.md)). Payoff: a warm intro that happened, and a number the partners believe.
 
-Other core journeys: [asks-board.md](asks-board.md), [weekly-email.md](weekly-email.md), [your-data.md](your-data.md).
+Other core journeys: [asks-board.md](asks-board.md), [weekly-email.md](weekly-email.md), [your-data.md](your-data.md), [voice-rooms.md](voice-rooms.md).

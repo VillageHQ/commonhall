@@ -101,8 +101,8 @@ describe("the shell with modules off", () => {
     });
 
     it("hides the credits tab", async () => {
-      // Slack and Discord start off, so their tab is hidden too; Jobs starts on. Set up › Perks stays: its switch turns Perks on.
-      expect((await readAdminTabFacts(database, ENVIRONMENT)).hiddenTabHrefs).toEqual(["/admin/village", "/admin/integrations"]);
+      // Slack and Discord, and Rooms, start off, so their tabs are hidden too; Jobs starts on. Set up › Perks stays: its switch turns Perks on.
+      expect((await readAdminTabFacts(database, ENVIRONMENT)).hiddenTabHrefs).toEqual(["/admin/village", "/admin/integrations", "/admin/rooms"]);
     });
 
     it("doesn't count an out-of-credits notice", async () => {

@@ -18,6 +18,9 @@ import { PERKS_ADMIN_PAGE } from "../modules/perks/contract.ts";
 import { perksManifest } from "../modules/perks/manifest.ts";
 import { readPerksUrl } from "../modules/perks/service.ts";
 import { MODULES } from "../modules/registry.ts";
+import { VOICE_ADMIN_PAGE } from "../modules/voice/contract.ts";
+import { voiceManifest } from "../modules/voice/manifest.ts";
+import { readVoiceConfig } from "../modules/voice/service-settings.ts";
 import { readEnabledIds } from "./enabled-modules.ts";
 
 // Set up (Commonhall's setupPage): the plumbing pages in one place, each with one plain line and whether it is set
@@ -42,6 +45,8 @@ export type SetupFacts = {
   isChatPosting: boolean;
   isPerksOn: boolean;
   isPerksShown: boolean;
+  isVoiceOn: boolean;
+  isVoiceReady: boolean;
   featuresOn: number;
   openReports: number;
 };
@@ -110,6 +115,13 @@ export function readSetupRows(facts: SetupFacts): SetupRow[] {
       state: facts.isPerksOn && facts.isPerksShown ? done : OPTIONAL,
     },
     {
+      key: "rooms",
+      title: "Rooms",
+      href: facts.isVoiceOn ? VOICE_ADMIN_PAGE : ROUTES.adminFeatures,
+      description: "Live voice rooms on your own server (LiveKit), or with LiveKit Cloud keys. Never recorded.",
+      state: facts.isVoiceOn ? isDone(facts.isVoiceReady) : OPTIONAL,
+    },
+    {
       key: "audit",
       title: "Audit log",
       href: ROUTES.adminAuditLog,
@@ -143,7 +155,8 @@ export async function readSetupPage(database: Database, environment: Environment
   const isNetworkOn = enabledIds.has(networkManifest.id);
   const isChatOn = enabledIds.has(chatManifest.id);
   const isPerksOn = enabledIds.has(perksManifest.id);
-  const [branding, mail, plan, keys, chats, perksUrl, openReports] = await Promise.all([
+  const isVoiceOn = enabledIds.has(voiceManifest.id);
+  const [branding, mail, plan, keys, chats, perksUrl, openReports, voiceConfig] = await Promise.all([
     readBranding(database),
     readMailSettings(database),
     readPlanSettings(database),
@@ -151,6 +164,7 @@ export async function readSetupPage(database: Database, environment: Environment
     isChatOn ? readChatConnections(database) : [],
     isPerksOn ? readPerksUrl(database) : null,
     readOpenReportCount(database),
+    isVoiceOn ? readVoiceConfig(database, environment) : null,
   ]);
   const config = readResendConfig(environment);
   const facts: SetupFacts = {
@@ -163,6 +177,8 @@ export async function readSetupPage(database: Database, environment: Environment
     isChatPosting: chats.some(({ channelId, isPaused }) => Boolean(channelId) && !isPaused),
     isPerksOn,
     isPerksShown: perksUrl !== null,
+    isVoiceOn,
+    isVoiceReady: voiceConfig !== null,
     featuresOn: MODULES.filter(({ manifest }) => manifest.kind === MODULE_KINDS.toggleable && enabledIds.has(manifest.id)).length,
     openReports,
   };

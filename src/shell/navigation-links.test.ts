@@ -126,7 +126,7 @@ describe("the sidebar", () => {
     renderShellPart(SidebarNavigation);
 
     expect(screen.getByText("Members")).toBeTruthy();
-    expect(readNames("Main")).toEqual(["Today", "Asks & updates", "Feed", "Search", "Directory", "Jobs", "Intros", "Inbox", "Perks", "Library", "My profile"]);
+    expect(readNames("Main")).toEqual(["Today", "Asks & updates", "Feed", "Search", "Directory", "Jobs", "Intros", "Inbox", "Rooms", "Perks", "Library", "My profile"]);
   });
 
   it("lists the console menu under Console on console pages", () => {

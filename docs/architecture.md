@@ -20,6 +20,7 @@ src/
                 The feed is a toggle too, on where no admin chose.
     job-board/  Toggle, on by default. Founders' open jobs from their hiring tools, a public
                 board and a website widget.
+    voice/      Toggle, off by default. Live voice rooms (Rooms) on LiveKit; never recorded.
     library/    Toggle, on by default. Members share AI skills, agents, prompts and tool
                 connections across the portfolio, with upvotes and a leaderboard.
     admin/      Core. Roster, reports, audit view, health, the features screen.
@@ -45,7 +46,7 @@ app -> shell -> modules -> components -> platform
 Inside `modules`:
 
 ```text
-members <- messages, feed, network, intros, asks, job-board, library
+members <- messages, feed, network, intros, asks, job-board, voice, library
 all     <- admin
 ```
 
