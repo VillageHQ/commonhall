@@ -8,6 +8,7 @@ import { introsManifest } from "@/modules/intros/manifest";
 import { membersManifest } from "@/modules/members/manifest";
 import { readListedMemberNames } from "@/modules/members/reads-directory";
 import { messagesManifest } from "@/modules/messages/manifest";
+import { voiceManifest } from "@/modules/voice/manifest";
 import { requireMember } from "@/platform/auth/session";
 import { readBrandingForPage } from "@/platform/branding/branding";
 import { PAGE_TITLES } from "@/platform/branding/page-metadata";
@@ -27,6 +28,8 @@ const KIND_FEATURES: readonly { kind: NotificationKind; featureId: string }[] = 
   { kind: NOTIFICATION_KINDS.intro, featureId: introsManifest.id },
   { kind: NOTIFICATION_KINDS.answer, featureId: introsManifest.id },
   { kind: NOTIFICATION_KINDS.message, featureId: messagesManifest.id },
+  { kind: NOTIFICATION_KINDS.voiceBroadcast, featureId: voiceManifest.id },
+  { kind: NOTIFICATION_KINDS.voiceRoom, featureId: voiceManifest.id },
 ];
 
 // Settings › Alerts: this device, what alerts the member, quiet hours, muted broadcasters.

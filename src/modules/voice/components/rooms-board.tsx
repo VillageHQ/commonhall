@@ -130,7 +130,7 @@ export function RoomsBoard({ initial, viewerId }: { initial: RoomsData; viewerId
       <p className="fh-hint">
         {broadcastsLeft === 0
           ? "You've said you're available 3 times today. Start a room instead, or try again tomorrow."
-          : `Opens a room with you as host and tells the community you're free to talk. ${broadcastsLeft} of ${VOICE_LIMITS.broadcastsPerDay} left today.`}
+          : `Opens a room with you as host and alerts the community, except anyone in quiet hours or who muted you. ${broadcastsLeft} of ${VOICE_LIMITS.broadcastsPerDay} left today.`}
       </p>
       {available.error ? (
         <FlashNote kind={FLASH_KINDS.needs} className="mt-3">
