@@ -66,7 +66,7 @@ It asks for your domain. Then it works through these steps and tells you what it
 4. Checks that no other program is using the web ports.
 5. Installs Docker, the tool that runs your community.
 6. Adds spare memory, if your server is small.
-7. Allows web traffic, if your server has a firewall switched on.
+7. Allows web traffic, if your server has a firewall switched on: ports 80 and 443, and TCP 7881 and UDP 50000–50100 for voice rooms.
 8. Creates your private secrets and settings.
 9. Downloads the app.
 10. Starts everything.
@@ -211,4 +211,4 @@ Keep a copy of this file in your password manager. It holds your secrets.
 
 ## What it installs
 
-Three programs, each in its own Docker container: the app, a Postgres 17 database, and Caddy, which handles certificates and HTTPS. Only ports 80 and 443 are open to the internet. The database isn't. Your files live in `/opt/community`, the `community` command in `/usr/local/bin`, and your data in a Docker volume named `community_postgres-data`.
+Four programs, each in its own Docker container: the app, a Postgres 17 database, Caddy, which handles certificates and HTTPS, and LiveKit, which carries the sound of voice rooms (Rooms). Open to the internet: ports 80 and 443, and for voice rooms TCP 7881 and UDP 50000–50100. The database isn't. LiveKit's keys are in `.env` (`LIVEKIT_API_KEY`, `LIVEKIT_API_SECRET`), made by the installer; an install from before voice rooms gets them on its next upgrade. Rooms are never recorded: no recording service is installed. Your files live in `/opt/community`, the `community` command in `/usr/local/bin`, and your data in a Docker volume named `community_postgres-data`.

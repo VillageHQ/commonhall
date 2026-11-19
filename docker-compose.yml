@@ -15,5 +15,14 @@ services:
       timeout: 3s
       retries: 10
 
+  # Voice rooms (Rooms) for local development: LiveKit in dev mode, keys devkey / secret. Never records.
+  livekit:
+    image: livekit/livekit-server:v1.13
+    command: --dev --bind 0.0.0.0 --node-ip 127.0.0.1
+    ports:
+      - "127.0.0.1:${LIVEKIT_PORT:-7880}:7880"
+      - "127.0.0.1:7881:7881"
+      - "127.0.0.1:7882:7882/udp"
+
 volumes:
   postgres-data:

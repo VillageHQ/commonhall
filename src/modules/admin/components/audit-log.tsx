@@ -105,6 +105,7 @@ const ACTION_LINES: Partial<Record<AuditAction, (facts: ActionFacts) => ActionLi
   [AUDIT_ACTIONS.chatResumed]: ({ detail }) => ({ words: "Turned posting back on", target: detail }),
   [AUDIT_ACTIONS.chatDisconnected]: ({ detail }) => ({ words: "Disconnected, token deleted", target: detail }),
   [AUDIT_ACTIONS.perksSaved]: () => ({ words: "Changed settings: perks" }),
+  [AUDIT_ACTIONS.voiceSettingsSaved]: () => ({ words: "Changed settings: voice rooms" }),
   [AUDIT_ACTIONS.perksRemoved]: () => ({ words: "Removed the perks marketplace" }),
   [AUDIT_ACTIONS.villageSettingsChanged]: ({ detail }) => ({ words: `Changed the Village settings: ${detail}` }),
   [AUDIT_ACTIONS.settingsSaved]: ({ detail }) => ({ words: detail ? `Changed settings: ${readSettingsFieldWords(detail)}` : "Changed settings" }),
