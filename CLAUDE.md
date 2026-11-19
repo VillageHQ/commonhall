@@ -32,7 +32,7 @@ Better Auth, Vitest, pnpm. Village is optional (network search, intro paths and 
 - Every email goes through the outbox in its change's transaction, and is sent once.
 
 ## Where the notes are
-- `src/AGENTS.md` (the code map) and one per module: `src/modules/admin/`, `src/modules/asks/`, `src/modules/chat/`, `src/modules/feed/`, `src/modules/intros/`, `src/modules/job-board/`, `src/modules/members/`, `src/modules/messages/`, `src/modules/network/`, `src/modules/perks/`.
+- `src/AGENTS.md` (the code map) and one per module: `src/modules/admin/`, `src/modules/asks/`, `src/modules/chat/`, `src/modules/feed/`, `src/modules/intros/`, `src/modules/job-board/`, `src/modules/library/`, `src/modules/members/`, `src/modules/messages/`, `src/modules/network/`, `src/modules/perks/`.
 - `scripts/AGENTS.md`.
 - How features work today: `.ai/features/chat-perks/NOTES.md`, `.ai/features/fix-intros/NOTES.md`,
   `.ai/features/fix-small/NOTES.md`, `.ai/features/hosting-data-settings/NOTES.md`, `.ai/features/partner-report/NOTES.md`, `.ai/features/small-gaps/NOTES.md`,
@@ -57,6 +57,7 @@ Better Auth, Vitest, pnpm. Village is optional (network search, intro paths and 
   `.ai/features/onboarding-village-connect/NOTES.md`, `.ai/features/onboarding-guided-start/NOTES.md`,
   `.ai/features/mentors-calls/NOTES.md` (community roles, booking links, Book a call, calls counted),
   `.ai/features/find-candidates/NOTES.md` (Find candidates on a job: the button, the search, the hiring request),
+  `.ai/features/ai-library/NOTES.md` (the portfolio AI library: visibility, the secret scan, votes, the leaderboard),
   `.ai/features/fix-installer/NOTES.md` (install.sh: build failures, swap, first install, DNS), `.ai/features/onboarding-claude-setup/NOTES.md` (setup:instance), `.ai/features/fix-network-page/NOTES.md`, `.ai/features/self-call-http/NOTES.md` (rewrites behind an https tunnel).
 - `tour/AGENTS.md` (the landing page's live tour, built into `site/tour/`).
 - No notes: `.do/`, `.github/`, `deploy/` (`deploy/cloudflare/README.md` runs commonhall.ai), `docs/` (guides), `drizzle/` (generated), `site/` (own README), `public/` (demo pictures),

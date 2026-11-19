@@ -11,7 +11,7 @@ The app's code. Map, import rules and file roles: `docs/architecture.md`; read i
 - `shell/`: code reading several modules for one screen (navigation, Today, onboarding, weekly email, setup
   checklist, scheduled jobs).
 - `modules/`: one folder per feature, each with its own `AGENTS.md`. Core: `members`, `admin`. Switches: `feed`,
-  `messages`, `network`, `intros`, `asks`, `chat`, `job-board`, `perks`. `registry.ts` lists them.
+  `messages`, `network`, `intros`, `asks`, `chat`, `job-board`, `perks`, `library`. `registry.ts` lists them.
 - `platform/`: infrastructure with no product opinion (auth, audit, branding, database, email, jobs, rate limits,
   secrets, settings, Village, the weekly email schedule).
 - `components/`: UI with no module knowledge; `components/ui/` holds the shared parts (`app/parts.css`).

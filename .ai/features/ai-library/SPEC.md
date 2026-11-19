@@ -1,6 +1,6 @@
 ---
 id: ai-library
-status: specced
+status: in-review
 waits-on: []
 size: half a day
 touches: ["src/modules/library/", "src/shell/", "src/app/", "drizzle/"]
