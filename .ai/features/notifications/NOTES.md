@@ -56,6 +56,8 @@ Built 19 Nov 2026 (round 5, part "notifications"). Spec: `SPEC.md`. Proof: `repo
 | The connector says no, or the person says no | the asker | `answer` | `transitionIntro` (decline), `service-consent.ts` `tellEveryoneAboutNo` |
 | The person says yes | the asker and the connector | `answer` | `service-consent.ts` `tellEveryoneAboutYes` |
 | A new message | the recipient | `message` | `modules/messages/service.ts` `sendMessage` → `alerts.ts` |
+| "I'm available to talk" | every member (not blocked either way) | `voice_broadcast` | `/api/voice/available` → `shell/voice-alerts.ts` |
+| A scheduled room starts | members who tapped Remind me | `voice_room` | `/api/voice/start` and job `voice-reminders` → `shell/voice-alerts.ts` |
 
 Alerts never carry a message's words, an intro's note or reason, or whose no it was. A withheld message or intro
 (a block) sends no alert. A new kind adds its row to `KIND_FEATURES` in `src/app/(app)/me/alerts/page.tsx`.
