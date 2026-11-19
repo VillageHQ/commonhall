@@ -780,9 +780,9 @@ a.fh-tag:hover{background:var(--fund-tint)}
 .fh-lib-two{display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
 .fh-lib-radio{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:15px}
 .fh-lib-today{list-style:none;margin:0;padding:0}
-.fh-lib-today a{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid var(--rule);color:var(--ink);text-decoration:none}
-.fh-lib-today li:first-child a{border-top:0}
-.fh-lib-today a > span{display:flex;flex-direction:column}
+.fh-lib-today a.fh-lib-today-link{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid var(--rule);color:var(--ink);text-decoration:none}
+.fh-lib-today li:first-child a.fh-lib-today-link{border-top:0}
+.fh-lib-today a.fh-lib-today-link > span{display:flex;flex-direction:column}
 .fh-asks-grid > aside.fh-stack{margin-top:16px}
 @media (min-width:700px){
 .fh-lib-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -791,3 +791,4 @@ a.fh-tag:hover{background:var(--fund-tint)}
 @media (min-width:1000px){
 .fh-asks-grid > aside.fh-stack{margin-top:0}
 }
+.fh-lib-today a.fh-lib-today-link:hover b{text-decoration:underline}

@@ -96,7 +96,7 @@ export function LibraryBrowse({ communityName, items, filters, topPeople, askHre
       ) : null}
       <PageHeader
         title="Library"
-        description={`AI skills, agents, prompts and tool connections that ${communityName} founders use, shared across the portfolio. Upvote what worked for you.`}
+        description={`AI skills, agents, prompts and tool connections that founders across ${communityName} use and share. Upvote what worked for you.`}
         action={
           <>
             <Button asChild variant="ink">

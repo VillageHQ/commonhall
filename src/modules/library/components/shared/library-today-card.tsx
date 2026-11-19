@@ -19,7 +19,7 @@ export function LibraryTodayCard({ items }: { items: LibraryCard[] }) {
       <ul className="fh-lib-today">
         {items.map((item) => (
           <li key={item.id}>
-            <Link href={toLibraryItemPage(item.id)}>
+            <Link href={toLibraryItemPage(item.id)} className="fh-lib-today-link">
               <span className="min-w-0">
                 <b>{item.title}</b>
                 <span className="fh-small fh-muted">
