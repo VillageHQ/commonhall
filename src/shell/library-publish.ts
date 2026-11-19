@@ -1,10 +1,14 @@
 import "server-only";
 
+import { eq } from "drizzle-orm";
+
 import { POST_TYPES } from "@/modules/feed/contract";
 import { feedManifest } from "@/modules/feed/manifest";
 import { createPost } from "@/modules/feed/service";
 import { LIBRARY_KIND_LABELS, LIBRARY_VISIBILITIES, toLibraryItemPage } from "@/modules/library/contract";
-import type { PublishedItem } from "@/modules/library/service";
+import { post } from "@/modules/feed/schema";
+import { saveLibraryFeedPost, type PublishedItem, type RemovedLibraryItem } from "@/modules/library/service";
+import type { Transaction } from "@/platform/database/client";
 import { resolveAppUrl } from "@/platform/http/app-url";
 import type { RequestContext } from "@/platform/http/request-context";
 import { isModuleEnabled } from "@/platform/modules/enablement";
@@ -28,8 +32,14 @@ export async function postNewLibraryItem(context: RequestContext, item: Publishe
     } catch {
       appUrl = null;
     }
-    await createPost(context, { type: POST_TYPES.plain, body: composeLibraryPost(item, appUrl) });
+    const created = await createPost(context, { type: POST_TYPES.plain, body: composeLibraryPost(item, appUrl) });
+    await saveLibraryFeedPost(context.database, item.id, created.id);
   } catch (error) {
     logError("library-feed-post", error);
   }
+}
+
+// A removed item takes its announcing post with it, so the feed never links to a page that's gone.
+export async function deleteLibraryFeedPost(transaction: Transaction, { feedPostId }: RemovedLibraryItem) {
+  if (feedPostId) await transaction.delete(post).where(eq(post.id, feedPostId));
 }

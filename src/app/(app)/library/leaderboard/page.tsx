@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 import { LibraryLeaderboard } from "@/modules/library/components/library-leaderboard";
 import { libraryManifest } from "@/modules/library/manifest";
-import { readLeaderboard } from "@/modules/library/reads";
+import { readLeaderboard, readLibraryViewer } from "@/modules/library/reads";
 import { parseBoardPeriod, type LibrarySearchParams } from "@/modules/library/rules-page";
 import { requireMember } from "@/platform/auth/session";
 import { getDatabase } from "@/platform/database/client";
@@ -14,8 +14,9 @@ export const metadata: Metadata = { title: "Library leaderboard" };
 type LeaderboardPageProps = { searchParams: Promise<LibrarySearchParams> };
 
 export default modulePage(libraryManifest, async function LeaderboardPage({ searchParams }: LeaderboardPageProps) {
-  await requireMember();
+  const member = await requireMember();
   const period = parseBoardPeriod(await searchParams);
-  const board = await readLeaderboard(getDatabase(), period);
+  const database = getDatabase();
+  const board = await readLeaderboard(database, await readLibraryViewer(database, member), period);
   return <LibraryLeaderboard board={board} period={period} peopleHref={ROUTES.people} />;
 });

@@ -23,6 +23,7 @@ CREATE TABLE "library_item" (
 	"download_count" integer DEFAULT 0 NOT NULL,
 	"featured_at" timestamp (3) with time zone,
 	"featured_by_user_id" text,
+	"feed_post_id" uuid,
 	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "library_item_kind_known" CHECK ("library_item"."kind" in ('skill', 'agent', 'prompt', 'tool_connection', 'automation', 'playbook')),

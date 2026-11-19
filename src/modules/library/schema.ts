@@ -40,6 +40,9 @@ export const libraryItem = pgTable(
     downloadCount: integer("download_count").notNull().default(0),
     featuredAt: libraryTimestamp("featured_at"),
     featuredByUserId: text("featured_by_user_id").references(() => user.id, { onDelete: "set null" }),
+    // The feed post that announced it (src/shell/library-publish.ts), removed with the item. No foreign key: this
+    // module can't name the feed's table.
+    feedPostId: uuid("feed_post_id"),
     createdAt: libraryTimestamp("created_at").notNull().defaultNow(),
     updatedAt: libraryTimestamp("updated_at").notNull().defaultNow(),
   },

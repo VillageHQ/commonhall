@@ -1,5 +1,5 @@
 {
-  "id": "ca97236a-137a-4868-901d-ddee842fb7d8",
+  "id": "df5887c0-0892-4cc2-91f9-b4b03cc17f3d",
   "prevId": "83c52455-6c85-47a9-bfbe-d64df0d3a410",
   "version": "7",
   "dialect": "postgresql",
@@ -4293,6 +4293,12 @@
         "featured_by_user_id": {
           "name": "featured_by_user_id",
           "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "feed_post_id": {
+          "name": "feed_post_id",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },

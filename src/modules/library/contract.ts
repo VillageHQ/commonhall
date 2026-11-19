@@ -233,5 +233,5 @@ export const LIBRARY_BOARD_PERIODS = { month: "month", all: "all" } as const;
 export type LibraryBoardPeriod = (typeof LIBRARY_BOARD_PERIODS)[keyof typeof LIBRARY_BOARD_PERIODS];
 
 export function composeLibraryReportBody(title: string, pitch: string) {
-  return `${title}\n${pitch}`;
+  return `${title}: ${pitch}`;
 }

@@ -304,8 +304,9 @@ export function startOfMonth(now: Date) {
 
 // Upvotes received on items, counted in SQL: by the item's author, and by the author's company on show (without case).
 // "This month" counts upvotes given since the first of the month (UTC). A removed item's votes went with it; a removed
-// author's items leave the board with them, unless the admin kept their content.
-export async function readLeaderboard(database: Database, period: LibraryBoardPeriod, now = new Date()): Promise<Leaderboard> {
+// author's items leave the board with them, unless the admin kept their content. Only items the viewer may see count,
+// so the board never hints at an item hidden from them.
+export async function readLeaderboard(database: Database, viewer: LibraryViewer, period: LibraryBoardPeriod, now = new Date()): Promise<Leaderboard> {
   const since = period === LIBRARY_BOARD_PERIODS.month ? gte(libraryVote.createdAt, startOfMonth(now)) : undefined;
   const received = sql<number>`count(*)`.mapWith(Number);
   const company = shownCompanyColumn(libraryItem.authorId);
@@ -325,7 +326,7 @@ export async function readLeaderboard(database: Database, period: LibraryBoardPe
       .innerJoin(libraryItem, eq(libraryItem.id, libraryVote.itemId))
       .innerJoin(user, eq(user.id, libraryItem.authorId))
       .leftJoin(memberProfile, eq(memberProfile.userId, libraryItem.authorId))
-      .where(and(isAuthorShown(now), since))
+      .where(and(isItemVisibleTo(viewer, now), since))
       .groupBy(libraryItem.authorId, user.name, memberProfile.title)
       .orderBy(desc(received), asc(user.name))
       .limit(LIBRARY_LIMITS.leaderboardRows),
@@ -340,7 +341,7 @@ export async function readLeaderboard(database: Database, period: LibraryBoardPe
       .from(libraryVote)
       .innerJoin(libraryItem, eq(libraryItem.id, libraryVote.itemId))
       .innerJoin(user, eq(user.id, libraryItem.authorId))
-      .where(and(isAuthorShown(now), since, sql`nullif(trim(${company}), '') is not null`))
+      .where(and(isItemVisibleTo(viewer, now), since, sql`nullif(trim(${company}), '') is not null`))
       // By position: the key's subquery carries bound values, so writing it again wouldn't match the select.
       .groupBy(sql.raw("1"))
       .orderBy(desc(received), sql.raw("1"))

@@ -26,7 +26,7 @@ import { readIntroForViewer } from "../intros/reads.ts";
 import { isBanActive } from "../../platform/auth/member-status.ts";
 import { enforceMessagingLimit, MESSAGING_KINDS } from "../messages/limits.ts";
 import { RequestError } from "../../platform/http/request-error.ts";
-import { type RequestContext } from "../../platform/http/request-context.ts";
+import { type RequestContext, type SessionMember } from "../../platform/http/request-context.ts";
 import {
   ADMIN_ERROR_CODES,
   ADMIN_PAGE_SIZES,
@@ -272,12 +272,18 @@ function toIsoOrNull(timestamp: string | null) {
   return timestamp ? new Date(timestamp).toISOString() : null;
 }
 
+// A library item removed from the queue takes its announcing feed post with it, as from the item's page.
+async function removeLibraryItemAndPostWithin(transaction: Transaction, admin: SessionMember, itemId: string) {
+  const { feedPostId } = await removeLibraryItemWithin(transaction, admin, itemId);
+  if (feedPostId) await transaction.delete(post).where(eq(post.id, feedPostId));
+}
+
 const CONTENT_DELETERS = {
   [REPORT_TARGETS.post]: deletePostWithin,
   [REPORT_TARGETS.comment]: deleteCommentWithin,
   [REPORT_TARGETS.ask]: removeAskWithin,
   [REPORT_TARGETS.askAnswer]: removeAnswerWithin,
-  [REPORT_TARGETS.libraryItem]: removeLibraryItemWithin,
+  [REPORT_TARGETS.libraryItem]: removeLibraryItemAndPostWithin,
 };
 
 function isDeletableTarget(targetType: string): targetType is keyof typeof CONTENT_DELETERS {

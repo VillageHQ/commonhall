@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Field } from "@/components/form-field";
 import { Button } from "@/components/ui/button";
@@ -88,6 +88,11 @@ export function PublishForm({ initial, ownCompany }: { initial: PublishDraft; ow
   const [files, setFiles] = useState<File[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isBusy, setIsBusy] = useState(false);
+  const errorRef = useRef<HTMLDivElement>(null);
+  // The refusal sits at the top of a long form: bring it into view, where the button was clicked far below.
+  useEffect(() => {
+    if (error) errorRef.current?.scrollIntoView({ block: "center" });
+  }, [error]);
   const isNewVersion = Boolean(initial.itemId);
   const totalBytes = files.reduce((sum, file) => sum + file.size, 0);
   const set = <Key extends keyof PublishDraft>(key: Key, value: PublishDraft[Key]) => setDraft((current) => ({ ...current, [key]: value }));
@@ -115,9 +120,11 @@ export function PublishForm({ initial, ownCompany }: { initial: PublishDraft; ow
       }}
     >
       {error ? (
-        <Note kind="needs" role="alert" className="mb-4">
-          {error}
-        </Note>
+        <div ref={errorRef}>
+          <Note kind="needs" role="alert" className="mb-4">
+            {error}
+          </Note>
+        </div>
       ) : null}
       <Field htmlFor="library-title" label="Title">
         <Input id="library-title" value={draft.title} onChange={(event) => set("title", event.target.value)} maxLength={LIBRARY_LIMITS.titleLength} required placeholder="Outbound email reviewer" />

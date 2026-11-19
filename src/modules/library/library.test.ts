@@ -6,6 +6,7 @@ import { POST as postFeature } from "@/app/api/library/feature/route";
 import { POST as postPublish } from "@/app/api/library/publish/route";
 import { POST as postRemove } from "@/app/api/library/remove/route";
 import { POST as postVote } from "@/app/api/library/vote/route";
+import { post } from "@/modules/feed/schema";
 import { LIBRARY_VISIBILITIES } from "@/modules/library/contract";
 import { readLeaderboard, readLibraryItem, readLibraryItems, readLibraryViewer, startOfMonth } from "@/modules/library/reads";
 import { libraryFile, libraryItem, libraryVote } from "@/modules/library/schema";
@@ -90,6 +91,11 @@ describe("the library", () => {
     expect(download.headers.get("content-disposition")).toContain("attachment");
     expect(await download.text()).toBe("# A prompt");
     expect((await postJson(postVote, "/api/library/vote", outsider, { itemId: forAll, isUpvoted: true })).status).toBe(200);
+    // The leaderboard counts only what the viewer may see, so it never hints at a hidden item.
+    await database.insert(libraryVote).values({ itemId: forTeam, voterId: fundTeam.userId });
+    const boardFor = async (viewer: Member) => (await readLeaderboard(database, await readLibraryViewer(database, { id: viewer.userId, email: "" }), "all")).people.map(({ upvotes }) => upvotes);
+    expect(await boardFor(outsider)).toEqual([1]);
+    expect(await boardFor(fundTeam)).toEqual([2]);
   });
 
   it("refuses an upload with a secret, naming the file and line, and stores nothing", async () => {
@@ -143,7 +149,8 @@ describe("the library", () => {
     const admin = await member({}, "admin");
     expect((await postJson(postRemove, "/api/library/remove", admin, { itemId: removedItem })).status).toBe(200);
 
-    const allTime = await readLeaderboard(database, "all", now);
+    const adminViewer = await readLibraryViewer(database, { id: admin.userId, email: "", role: "admin" });
+    const allTime = await readLeaderboard(database, adminViewer, "all", now);
     expect(allTime.people.map(({ member: person, upvotes }) => [person.id, upvotes])).toEqual(
       expect.arrayContaining([
         [ada.userId, 3],
@@ -160,7 +167,7 @@ describe("the library", () => {
     const [{ total } = { total: 0 }] = await database.select({ total: sql<number>`count(*)`.mapWith(Number) }).from(libraryVote);
     expect(allTime.people.reduce((sum, { upvotes }) => sum + upvotes, 0)).toBe(total);
 
-    const month = await readLeaderboard(database, "month", now);
+    const month = await readLeaderboard(database, adminViewer, "month", now);
     expect(month.people.map(({ member: person, upvotes }) => [person.id, upvotes])).toEqual([
       [priya.userId, 2],
       [ada.userId, 1],
@@ -175,8 +182,11 @@ describe("the library", () => {
     expect((await postJson(postFeature, "/api/library/feature", admin, { itemId, isFeatured: true })).status).toBe(200);
     const viewer = await readLibraryViewer(database, { id: author.userId, email: "" });
     expect((await readLibraryItem(database, viewer, itemId))?.isFeatured).toBe(true);
+    // The feed (on where no admin chose) got a post announcing it; the removal takes the post too.
+    expect((await database.select({ body: post.body }).from(post)).map(({ body }) => body)).toEqual([expect.stringContaining("Shared in the library: Cold email reviewer")]);
     expect((await postJson(postRemove, "/api/library/remove", admin, { itemId })).status).toBe(200);
     expect(await readLibraryItem(database, viewer, itemId)).toBeNull();
+    expect(await database.select().from(post)).toEqual([]);
     const audit = await database.select({ action: adminAuditEntry.action }).from(adminAuditEntry);
     expect(audit.map(({ action }) => action)).toEqual(expect.arrayContaining([AUDIT_ACTIONS.libraryItemFeatured, AUDIT_ACTIONS.libraryItemRemoved]));
   });

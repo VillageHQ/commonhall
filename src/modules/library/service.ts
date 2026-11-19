@@ -151,11 +151,15 @@ export async function setLibraryItemFeatured({ database, member }: RequestContex
   logAdminAction(isFeatured ? "library_item_featured" : "library_item_unfeatured", member.id, itemId);
 }
 
+// What a removal leaves for the caller to clean up: the feed post that announced the item, if any.
+export type RemovedLibraryItem = { feedPostId: string | null };
+export type OnLibraryItemRemoved = (transaction: Transaction, removed: RemovedLibraryItem) => Promise<void>;
+
 // An admin's removal, from the item's page or the report queue: the item, its files, votes and reviews go, and the
 // audit log keeps its title and pitch.
-export async function removeLibraryItemWithin(transaction: Transaction, admin: SessionMember, itemId: string) {
+export async function removeLibraryItemWithin(transaction: Transaction, admin: SessionMember, itemId: string): Promise<RemovedLibraryItem> {
   const [item] = await transaction
-    .select({ authorId: libraryItem.authorId, title: libraryItem.title, pitch: libraryItem.pitch })
+    .select({ authorId: libraryItem.authorId, title: libraryItem.title, pitch: libraryItem.pitch, feedPostId: libraryItem.feedPostId })
     .from(libraryItem)
     .where(eq(libraryItem.id, itemId))
     .for("update");
@@ -167,6 +171,7 @@ export async function removeLibraryItemWithin(transaction: Transaction, admin: S
     targetName: await readName(transaction, item.authorId),
     detail: composeLibraryReportBody(item.title, item.pitch),
   });
+  return { feedPostId: item.feedPostId };
 }
 
 async function readName(transaction: Transaction, memberId: string) {
@@ -174,18 +179,27 @@ async function readName(transaction: Transaction, memberId: string) {
   return author?.name ?? null;
 }
 
-// The author takes their own item down (not audited), or an admin removes any item (audited).
-export async function removeLibraryItem({ database, member }: RequestContext, itemId: string, isAdmin: boolean) {
+// The author takes their own item down (not audited), or an admin removes any item (audited). `onRemoved` runs in the
+// same transaction; the route passes the shell's, which deletes the item's feed post.
+export async function removeLibraryItem({ database, member }: RequestContext, itemId: string, isAdmin: boolean, onRemoved: OnLibraryItemRemoved) {
   if (isAdmin) {
-    await withAdminTransaction(database, member.id, (transaction) => removeLibraryItemWithin(transaction, member, itemId));
+    await withAdminTransaction(database, member.id, async (transaction) => onRemoved(transaction, await removeLibraryItemWithin(transaction, member, itemId)));
     logAdminAction("library_item_removed", member.id, itemId);
     return;
   }
-  const removed = await database
-    .delete(libraryItem)
-    .where(and(eq(libraryItem.id, itemId), eq(libraryItem.authorId, member.id)))
-    .returning({ id: libraryItem.id });
-  if (removed.length === 0) throw libraryItemGoneError();
+  await database.transaction(async (transaction) => {
+    const [removed] = await transaction
+      .delete(libraryItem)
+      .where(and(eq(libraryItem.id, itemId), eq(libraryItem.authorId, member.id)))
+      .returning({ feedPostId: libraryItem.feedPostId });
+    if (!removed) throw libraryItemGoneError();
+    await onRemoved(transaction, removed);
+  });
+}
+
+// The feed post that announced a new item, so a removal can take it away too.
+export async function saveLibraryFeedPost(database: Database, itemId: string, feedPostId: string) {
+  await database.update(libraryItem).set({ feedPostId }).where(eq(libraryItem.id, itemId));
 }
 
 // A download counts once per file fetched.

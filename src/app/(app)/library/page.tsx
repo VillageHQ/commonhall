@@ -25,11 +25,12 @@ export default modulePage(libraryManifest, async function LibraryPage({ searchPa
   const [community, items, board, enabledIds] = await Promise.all([
     readBrandingForPage(),
     readLibraryItems(database, viewer, filters),
-    readLeaderboard(database, LIBRARY_BOARD_PERIODS.month),
+    readLeaderboard(database, viewer, LIBRARY_BOARD_PERIODS.month),
     readEnabledIds(database),
   ]);
   const thing = filters.kind ? LIBRARY_KIND_LABELS[filters.kind].toLowerCase() : "AI tool";
-  const askTitle = filters.search ? `Does anyone have a ${thing} for “${filters.search}”?` : `Does anyone have a ${thing} they’d share?`;
+  const withArticle = `${/^[aeiou]/i.test(thing) ? "an" : "a"} ${thing}`;
+  const askTitle = filters.search ? `Does anyone have ${withArticle} for “${filters.search}”?` : `Does anyone have ${withArticle} they’d share?`;
   return (
     <LibraryBrowse
       communityName={community.name}
