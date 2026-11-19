@@ -27,3 +27,8 @@ before it). Built as a graph of bounded parts (graph-orchestrator), each part th
 ## Parts
 ai-library · notifications · voice-sessions (rooms first, broadcast after notifications merges) · then mobile-app ·
 then the landing page and tour. Specs on main are the truth (PR #90).
+
+## Store builds (the owner, 19 Nov 2026)
+Publish with Absi's own Apple team and Expo account (as for the Saimeen app). Builds go to TestFlight internal testing
+and an Android test build only: never a public store release, never an App Store review submission. Name "Commonhall"
+(or "Commonhall by Village" if taken). Internal group "Absi". No Google Play account, so Android is an APK only.

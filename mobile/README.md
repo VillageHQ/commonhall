@@ -34,7 +34,19 @@ export with `MSYS_NO_PATHCONV=1`, or the base path turns into a Windows path.)
 
 ## Build it (EAS)
 
-`eas.json` has three profiles: `development` (a dev client; Android APK, iOS simulator), `preview` (internal APK and
-simulator build) and `production` (store builds). Builds need the publishing account's EAS project:
-`eas init` there, then set `EAS_PROJECT_ID` (push tokens need it). Nothing has been uploaded to a store; that waits for
-the owner's choice of Apple and Google accounts.
+`eas.json` has four profiles: `development` (a dev client; Android APK, iOS simulator), `preview` (an installable
+Android APK and an iOS simulator build), `production` (store builds, EAS-managed signing) and `testflight` (production,
+signed with local files, for Commonhall's own TestFlight builds).
+
+Commonhall's own app is published from the Expo account `tinyring` (project `@tinyring/commonhall`, its id is the default
+in `app.config.ts`) and Apple team `TA6D5Y2M2U` (App Store Connect app "Commonhall"). Only TestFlight internal testing
+and Android test APKs: never a public release or an App Store review submission.
+
+```sh
+npx eas-cli build -p android --profile preview            # an APK to install from the build page
+npx eas-cli build -p ios --profile testflight --wait      # needs credentials.json + ios-certs/ (git-ignored)
+npx eas-cli submit -p ios --profile testflight --latest   # to TestFlight; needs the ASC API key fields (see NOTES)
+```
+
+A fund publishing its own copy runs `eas init` on its own Expo account and sets `EAS_PROJECT_ID` and `EAS_OWNER` (push
+tokens need the project id), changes the bundle id, and uses the `production` profile.

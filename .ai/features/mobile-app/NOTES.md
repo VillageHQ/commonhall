@@ -65,9 +65,30 @@ with the same answers for a wrong code, an expired one and an unknown address.
   microphone) going; iOS lock-screen controls would need CallKit (not built).
 
 ## Builds
-`mobile/eas.json`: `development` (dev client, APK, iOS simulator), `preview` (APK, simulator), `production` (store).
+`mobile/eas.json`: `development` (dev client, APK, iOS simulator), `preview` (APK, simulator), `production` (store,
+EAS-managed signing), `testflight` (production signed with local files; submit profile with the App Store Connect app id).
 Bundle id and package `ai.commonhall.app`, scheme `commonhall`. Icons are drawn from the door-gap mark
 (`mobile/scripts/make-icons.py`).
+
+## Where Commonhall's own app is published (19 Nov 2026, the owner's choice)
+TestFlight internal testing and Android test APKs only: never a public release, never an App Store review submission.
+- **Apple:** Absi's team `TA6D5Y2M2U`. App ID `ai.commonhall.app` ("Commonhall", Push Notifications on; background
+  audio is only an Info.plist mode). App Store Connect app "Commonhall" (`6836913644`, SKU `commonhall`). Profile
+  "Commonhall App Store" (App Store, the team's distribution certificate, valid to 21 Jul 2027). TestFlight internal
+  group "Absi".
+- **Expo:** account `tinyring`, project `@tinyring/commonhall` (id `963d0817-…`, the default in `app.config.ts`;
+  a fund's own copy overrides it with `EAS_PROJECT_ID` and `EAS_OWNER`). The Android signing key was made by EAS in the
+  cloud on the first build and lives there.
+- **Push (APNs):** its own key "Commonhall push" (`633797XK4M`), Production, limited to `ai.commonhall.app`, uploaded to
+  the Expo project's iOS credentials. Production-only means TestFlight and store builds get alerts; a development build
+  (APNs sandbox) does not. Other apps' push keys on the team were not touched.
+- **Signing files** sit beside the app, git-ignored: `mobile/credentials.json` (profile + distribution certificate and
+  its password) and `mobile/ios-certs/` (the `.p12`, the profile, the push key, the App Store Connect API key). Copies
+  are kept with the team's other signing files on the owner's PC, never in the repo.
+- **Submitting:** `eas submit -p ios --profile testflight --latest` needs `ascApiKeyPath`, `ascApiKeyId` and
+  `ascApiKeyIssuerId` in the submit profile; they are added for the run and not committed, so the public repo holds no
+  key ids. Build numbers count up on EAS (`appVersionSource: remote`, `autoIncrement`).
+- The project archive EAS uploads is the whole repo (about 330 MB), because `mobile/` sits inside it.
 
 ## What was proven, and what wasn't (19 Nov 2026)
 - Proven: unit tests (`npm test`, 13), `tsc`, `expo-doctor` 20/20, `expo prebuild` for Android (config plugins apply,

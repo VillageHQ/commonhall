@@ -1,6 +1,6 @@
 ---
 id: mobile-app
-status: built (store builds wait for the publishing accounts)
+status: built; TestFlight internal and an Android test APK (19 Nov 2026)
 waits-on: [notifications, voice-sessions]
 size: one day
 touches: ["mobile/", "src/platform/auth/", "src/app/signin/", "src/app/api/", "src/modules/voice/components/", "src/platform/native-app/"]
@@ -33,9 +33,9 @@ EAS build profiles for iOS and Android. Out: uploading to the stores (needs the 
 
 ## Where it stands (19 Nov 2026)
 Built in `mobile/`; how it works: `NOTES.md`. Against the criteria:
-1. EAS builds: profiles ready (`mobile/eas.json`); not run. They need the publishing account's EAS project, and this
-   Windows PC has no Android SDK (`eas build --local` doesn't run on Windows). The native JavaScript bundles for Android
-   and iOS compile (`expo export`) and `expo prebuild` applies every plugin.
+1. EAS builds: done in Expo's cloud on Absi's Expo account and Apple team (the owner's choice, 19 Nov 2026). iOS build 1
+   (1.0.0) is on TestFlight, internal group "Absi"; an installable Android APK (`preview`). Never a public release or an
+   App Store review submission. Where everything lives: `NOTES.md`, "Where Commonhall's own app is published".
 2. Journey: proven in the web preview with real clicks (join, sign in by code, browse, an alert shown and tapped, a
    voice room joined with audio arriving); not on an emulator.
 3. Background voice: the Android foreground service and the iOS audio background mode are in place and documented;
@@ -50,4 +50,5 @@ portal page, so no token sign-in was needed.
 - notifications, voice-sessions · needs: their contracts on main · owner: each part · check in: start after both merge.
 
 ## Open questions
-- Which Apple and Google accounts publish the app (asked before any upload).
+- Answered 19 Nov 2026: Absi's own Apple team and Expo account, TestFlight internal and an Android APK only. No Google
+  Play account yet, so no Play upload.
