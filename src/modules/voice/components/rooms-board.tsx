@@ -114,7 +114,12 @@ export function RoomsBoard({ initial, viewerId }: { initial: RoomsData; viewerId
     initialData: initial,
     refetchInterval: (query) => (isRouteGone(query.state.error) ? false : ROOMS_POLL_MS),
   });
-  const available = useMutation({ mutationFn: voiceRequests.available, onSuccess: ({ roomId }) => router.push(toRoomHref(roomId)) });
+  // A refusal (the day's limit, used in another tab) refreshes the count beside the button.
+  const available = useMutation({
+    mutationFn: voiceRequests.available,
+    onSuccess: ({ roomId }) => router.push(toRoomHref(roomId)),
+    onError: () => void rooms.refetch(),
+  });
   const { live, scheduled, broadcastsLeft, isConfigured } = rooms.data;
 
   return (
