@@ -14,8 +14,9 @@ import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { isRouteGone } from "@/platform/http/polling";
 
-import { ROOM_ACCESS, toRoomHref, VOICE_LIMITS, type RoomCard } from "../contract";
+import { describeBroadcastsLeft, ROOM_ACCESS, toRoomHref, type RoomCard } from "../contract";
 import { ROOMS_POLL_MS, VOICE_QUERY_KEYS, voiceRequests } from "../queries";
+import { useAvailableToTalk } from "./available-to-talk";
 import { RoomComposer } from "./room-composer";
 
 type RoomsData = Awaited<ReturnType<typeof voiceRequests.rooms>>;
@@ -106,7 +107,6 @@ function ScheduledCard({ room, viewerId }: { room: RoomCard; viewerId: string })
 }
 
 export function RoomsBoard({ initial, viewerId }: { initial: RoomsData; viewerId: string }) {
-  const router = useRouter();
   const [isComposing, setIsComposing] = useState(false);
   const rooms = useQuery({
     queryKey: VOICE_QUERY_KEYS.rooms,
@@ -114,7 +114,8 @@ export function RoomsBoard({ initial, viewerId }: { initial: RoomsData; viewerId
     initialData: initial,
     refetchInterval: (query) => (isRouteGone(query.state.error) ? false : ROOMS_POLL_MS),
   });
-  const available = useMutation({ mutationFn: voiceRequests.available, onSuccess: ({ roomId }) => router.push(toRoomHref(roomId)) });
+  // A refusal (the day's limit, used in another tab) refreshes the count beside the button.
+  const available = useAvailableToTalk(() => void rooms.refetch());
   const { live, scheduled, broadcastsLeft, isConfigured } = rooms.data;
 
   return (
@@ -127,11 +128,7 @@ export function RoomsBoard({ initial, viewerId }: { initial: RoomsData; viewerId
           Start a room
         </Button>
       </div>
-      <p className="fh-hint">
-        {broadcastsLeft === 0
-          ? "You've said you're available 3 times today. Start a room instead, or try again tomorrow."
-          : `Opens a room with you as host and tells the community you're free to talk. ${broadcastsLeft} of ${VOICE_LIMITS.broadcastsPerDay} left today.`}
-      </p>
+      <p className="fh-hint">{describeBroadcastsLeft(broadcastsLeft)}</p>
       {available.error ? (
         <FlashNote kind={FLASH_KINDS.needs} className="mt-3">
           {available.error.message}

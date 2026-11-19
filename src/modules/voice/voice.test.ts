@@ -1,5 +1,5 @@
 import { TokenVerifier } from "livekit-server-sdk";
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { POST as postAvailable } from "@/app/api/voice/available/route";
 import { POST as postCreate } from "@/app/api/voice/create/route";
@@ -10,12 +10,19 @@ import { POST as postRemind } from "@/app/api/voice/remind/route";
 import { POST as postLeave } from "@/app/api/voice/leave/route";
 import { POST as postRole } from "@/app/api/voice/role/route";
 import { POST as postRooms } from "@/app/api/voice/rooms/route";
+import { POST as postStart } from "@/app/api/voice/start/route";
 import { ROLE_ACTIONS, ROOM_ROLES, VOICE_ERROR_CODES, VOICE_LIMITS, VOICE_MESSAGES, type RoomJoin } from "@/modules/voice/contract";
 import { voiceManifest } from "@/modules/voice/manifest";
 import { checkRoom, toLiveKitRoomName } from "@/modules/voice/service";
+import { memberBlock } from "@/modules/members/schema";
 import { saveModuleState } from "@/platform/modules/enablement";
+import { DEFAULT_PREFERENCES, DEVICE_TYPES, NOTIFICATION_KINDS } from "@/platform/notifications/contract";
+import { registerDevice, savePreferences, setMute } from "@/platform/notifications/service";
+import { readChatAvailableAction } from "@/shell/chat-available";
+import { runVoiceReminders } from "@/shell/voice-alerts";
 import { clearDatabase, createTestDatabase } from "@/test/database";
 import { FAKE_LIVEKIT_KEY, FAKE_LIVEKIT_SECRET, startFakeLiveKitServer } from "@/test/fake-livekit-server";
+import { startFakePushServer } from "@/test/fake-push-server";
 import { createSignedInMember } from "@/test/signed-in-member";
 
 const APP_URL = "http://localhost:3000";
@@ -25,17 +32,21 @@ type Member = Awaited<ReturnType<typeof createSignedInMember>>;
 describe("voice rooms", () => {
   const database = createTestDatabase();
   let livekit: Awaited<ReturnType<typeof startFakeLiveKitServer>>;
-  const saved = { url: process.env.LIVEKIT_URL, key: process.env.LIVEKIT_API_KEY, secret: process.env.LIVEKIT_API_SECRET };
+  let push: Awaited<ReturnType<typeof startFakePushServer>>;
+  const saved = { url: process.env.LIVEKIT_URL, key: process.env.LIVEKIT_API_KEY, secret: process.env.LIVEKIT_API_SECRET, expo: process.env.EXPO_PUSH_URL };
 
   beforeAll(async () => {
     livekit = await startFakeLiveKitServer();
     process.env.LIVEKIT_URL = livekit.url;
     process.env.LIVEKIT_API_KEY = FAKE_LIVEKIT_KEY;
     process.env.LIVEKIT_API_SECRET = FAKE_LIVEKIT_SECRET;
+    push = await startFakePushServer();
+    process.env.EXPO_PUSH_URL = push.expoUrl;
   });
 
   beforeEach(async () => {
     livekit.reset();
+    push.reset();
     await clearDatabase(database);
     await saveModuleState(database, voiceManifest, true);
   });
@@ -44,7 +55,9 @@ describe("voice rooms", () => {
     process.env.LIVEKIT_URL = saved.url;
     process.env.LIVEKIT_API_KEY = saved.key;
     process.env.LIVEKIT_API_SECRET = saved.secret;
+    process.env.EXPO_PUSH_URL = saved.expo;
     await livekit.close();
+    await push.close();
     await database.$client.end();
   });
 
@@ -208,5 +221,100 @@ describe("voice rooms", () => {
     const fourth = await call(postAvailable, member.cookie, {});
     expect(fourth.status).toBe(429);
     expect(await fourth.json()).toMatchObject({ code: VOICE_ERROR_CODES.broadcastLimit, message: VOICE_MESSAGES.broadcastLimit });
+  });
+
+  it("puts 'I'm available' in chat only while Rooms is on, with the day's count the Rooms page shows", async () => {
+    const member = await createSignedInMember(database);
+    const readChatInitial = async () => {
+      const action = await readChatAvailableAction(database, process.env, member.userId);
+      return action ? (action.props as { initial: { broadcastsLeft: number } }).initial : null;
+    };
+    expect(await readChatInitial()).toEqual({ broadcastsLeft: VOICE_LIMITS.broadcastsPerDay, isConfigured: true });
+
+    const { roomId } = (await (await call(postAvailable, member.cookie, {})).json()) as { roomId: string };
+    expect((await join(member, roomId)).role).toBe(ROOM_ROLES.host);
+    expect((await readChatInitial())?.broadcastsLeft).toBe(VOICE_LIMITS.broadcastsPerDay - 1);
+    const rooms = (await (await call(postRooms, member.cookie, {})).json()) as { broadcastsLeft: number };
+    expect(rooms.broadcastsLeft).toBe(VOICE_LIMITS.broadcastsPerDay - 1);
+
+    await saveModuleState(database, voiceManifest, false);
+    expect(await readChatInitial()).toBeNull();
+  });
+
+  describe("alerts", () => {
+    const EVENTUALLY = { timeout: 5_000, interval: 50 };
+    let tokenCount = 0;
+
+    async function withPhone(member: Member) {
+      tokenCount += 1;
+      await registerDevice(database, process.env, member.userId, { type: DEVICE_TYPES.expo, token: `ExponentPushToken[voiceTest${String(tokenCount).padStart(4, "0")}]` });
+      return member;
+    }
+
+    async function members(count: number) {
+      return Promise.all(Array.from({ length: count }, () => createSignedInMember(database)));
+    }
+
+    // Quiet right now, in UTC: from the hour before to two hours on.
+    function quietNow() {
+      const hour = new Date().getUTCHours();
+      const at = (offset: number) => `${String((hour + offset + 24) % 24).padStart(2, "0")}:00`;
+      return { ...DEFAULT_PREFERENCES, quietHours: { isOn: true, from: at(-1), to: at(2), days: [0, 1, 2, 3, 4, 5, 6], timeZone: "UTC" } };
+    }
+
+    it("'I'm available' alerts every member but those in quiet hours, who muted the host, turned it off or blocked", async () => {
+      const [host, awake, sleeping, muting, off, blocking, noPhone] = await members(7);
+      for (const member of [host, awake, sleeping, muting, off, blocking]) await withPhone(member!);
+      await savePreferences(database, sleeping!.userId, quietNow());
+      await setMute(database, muting!.userId, host!.userId, true);
+      await savePreferences(database, off!.userId, { ...DEFAULT_PREFERENCES, offKinds: [NOTIFICATION_KINDS.voiceBroadcast] });
+      await database.insert(memberBlock).values({ blockerId: blocking!.userId, blockedId: host!.userId });
+      void noPhone; // A member with no device on file is simply not read.
+
+      const [first, second] = await Promise.all([call(postAvailable, host!.cookie, {}), call(postAvailable, host!.cookie, {})]);
+      const { roomId } = (await first.json()) as { roomId: string };
+      await second.json();
+
+      await vi.waitFor(() => expect(push.state.expoMessages).toHaveLength(1), EVENTUALLY);
+      expect(push.state.expoMessages[0]).toMatchObject({
+        title: "Test Member is available to talk",
+        data: { url: `/rooms/${roomId}`, kind: NOTIFICATION_KINDS.voiceBroadcast },
+      });
+      // The double tap opened one room and sent one alert.
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      expect(push.state.expoMessages).toHaveLength(1);
+    });
+
+    it("reminds the members who tapped Remind me when the room starts, once, early or on time", async () => {
+      const [host, keen, uninterested] = await members(3);
+      for (const member of [host, keen, uninterested]) await withPhone(member!);
+      const schedule = async (title: string) => {
+        const scheduledFor = new Date(Date.now() + 60 * 60_000).toISOString();
+        const response = await call(postCreate, host!.cookie, { title, access: "open", scheduledFor, inviteeIds: [] });
+        const { roomId } = (await response.json()) as { roomId: string };
+        expect((await call(postRemind, keen!.cookie, { roomId, isOn: true })).status).toBe(200);
+        return roomId;
+      };
+      const onTime = await schedule("Pricing office hours");
+      const early = await schedule("Hiring office hours");
+
+      // Nothing before its time.
+      expect(await runVoiceReminders(database, process.env)).toMatchObject({ sent: 0 });
+
+      // The host starts one early: its reminder goes now.
+      expect((await call(postStart, host!.cookie, { roomId: early })).status).toBe(200);
+      await vi.waitFor(() => expect(push.state.expoMessages).toHaveLength(1), EVENTUALLY);
+      expect(push.state.expoMessages[0]).toMatchObject({ title: "Starting now: Hiring office hours", data: { url: `/rooms/${early}`, kind: NOTIFICATION_KINDS.voiceRoom } });
+
+      // The minute job sends the other at its time, and neither again.
+      const inTwoHours = new Date(Date.now() + 2 * 60 * 60_000);
+      expect(await runVoiceReminders(database, process.env, inTwoHours)).toMatchObject({ sent: 1 });
+      expect(push.state.expoMessages.map(({ title, data }) => ({ title, url: data.url }))).toEqual([
+        { title: "Starting now: Hiring office hours", url: `/rooms/${early}` },
+        { title: "Starting now: Pricing office hours", url: `/rooms/${onTime}` },
+      ]);
+      expect(await runVoiceReminders(database, process.env, inTwoHours)).toMatchObject({ sent: 0 });
+      expect(push.state.expoMessages).toHaveLength(2);
+    });
   });
 });
