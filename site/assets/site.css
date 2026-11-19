@@ -344,7 +344,13 @@ html:not(.js) .tour-screen { height: 560px; }
   .nav { gap: 18px; }
 }
 @media (min-width: 761px) {
-  .groups { grid-template-columns: 1fr 1fr; }
+  /* Two balanced columns (a tall group beside a short one leaves no hole); the fifth group spans both, its list in two. */
+  .groups { display: block; columns: 2; column-gap: 14px; }
+  .groups .fgroup { break-inside: avoid; margin-bottom: 14px; }
+  .fgroup.wide { column-span: all; margin-bottom: 0; }
+  .fgroup.wide ul { display: grid; grid-template-columns: 1fr 1fr; column-gap: 28px; }
+  .fgroup.wide li { align-content: start; }
+  .fgroup.wide li:nth-child(2) { border-top: 0; }
 }
 @media (max-width: 980px) {
   .pieces { grid-template-columns: repeat(2, minmax(0, 1fr)); }

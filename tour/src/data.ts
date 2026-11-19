@@ -14,6 +14,10 @@ import { DEMO_COMMUNITY, DEMO_COMMUNITY_ROLES, DEMO_OUTSIDERS, DEMO_PEOPLE, toDe
 import { toAskDraftHref } from "@/platform/modules/manifest";
 import { isExpertRole, readCommunityRole } from "@/modules/members/contract-community-roles";
 import { toPictureSlug } from "@/platform/demo/pictures";
+import { LIBRARY_JOBS, LIBRARY_KINDS, LIBRARY_VISIBILITIES, type LibraryJob, type LibraryKind } from "@/modules/library/contract";
+import type { Leaderboard, LibraryCard, LibraryMember } from "@/modules/library/reads";
+import { ROOM_ACCESS, ROOM_ROLES, ROOM_STATUSES, toRoomHref, type RoomCard, type RoomFace, type RoomJoin, type RoomRole } from "@/modules/voice/contract";
+import { NOTIFICATION_KINDS, type AlertPreferences, type NotificationKind } from "@/platform/notifications/contract";
 
 // The tour's made-up community: the demo's own people (src/platform/demo/people.ts), their generated portraits and
 // drawn logos. Nothing here is a real person or company. The build copies only the pictures these lines name.
@@ -360,3 +364,153 @@ export const SENT_ANNOUNCEMENTS: SentAnnouncement[] = [
     sentAt: new Date(TOUR_NOW.getTime() - 9 * 86_400_000),
   },
 ];
+
+// ---------- The AI library ----------
+
+function libraryMember(key: string): LibraryMember {
+  const member = person(key);
+  return { id: idOf(key), name: member.name, title: member.title, company: member.company, avatarUrl: faceUrl(member.name), companyLogoUrl: logoUrl(member.company) };
+}
+
+function libraryItem(id: number, key: string, title: string, pitch: string, kind: LibraryKind, job: LibraryJob, upvotes: number, extra: Partial<LibraryCard> = {}): LibraryCard {
+  return {
+    id: `00000000-0000-4000-8000-0000000d${String(id).padStart(4, "0")}`,
+    title,
+    pitch,
+    kind,
+    job,
+    visibility: LIBRARY_VISIBILITIES.portfolio,
+    author: libraryMember(key),
+    upvotes,
+    isUpvoted: false,
+    isFeatured: false,
+    isMine: key === FOUNDER.key,
+    updatedAt: new Date(TOUR_NOW.getTime() - id * 2 * 86_400_000).toISOString(),
+    ...extra,
+  };
+}
+
+// Made-up items by the demo people, like the demo's own library (src/shell/demo-library.ts). The first is featured.
+export const LIBRARY_ITEMS: LibraryCard[] = [
+  libraryItem(1, "priya.shah", "Cold email reviewer", "Scores a cold email out of 10 and rewrites the opening line.", LIBRARY_KINDS.prompt, LIBRARY_JOBS.sales, 7, { isFeatured: true }),
+  libraryItem(2, "ada.okafor", "CRM tool connection for Claude", "Lets an AI assistant look up deals and contacts in your CRM, read-only.", LIBRARY_KINDS.toolConnection, LIBRARY_JOBS.sales, 4),
+  libraryItem(3, "sam.lee", "Support inbox triage agent", "Tags every new ticket by urgency and drafts a first reply for a person to check.", LIBRARY_KINDS.agent, LIBRARY_JOBS.supportOps, 4),
+  libraryItem(4, "marcus.webb", "Interview scorecard writer", "Turns a job description into a scorecard with questions and what good looks like.", LIBRARY_KINDS.skill, LIBRARY_JOBS.hiring, 3),
+  libraryItem(5, "elena.rossi", "Monthly investor update drafter", "Drafts the monthly update from your metrics sheet and three bullet points.", LIBRARY_KINDS.prompt, LIBRARY_JOBS.fundraising, 3),
+  libraryItem(6, "hana.sato", "Product launch playbook with AI", "Our two-week launch plan, with the prompts we used at each step.", LIBRARY_KINDS.playbook, LIBRARY_JOBS.marketing, 4),
+];
+
+const BOARD_PEOPLE: readonly (readonly [string, number])[] = [
+  ["priya.shah", 12],
+  ["ada.okafor", 9],
+  ["hana.sato", 8],
+  ["sam.lee", 6],
+  ["marcus.webb", 5],
+  ["elena.rossi", 4],
+  ["zara.ahmed", 3],
+];
+
+export const LIBRARY_BOARD: Leaderboard = {
+  people: BOARD_PEOPLE.map(([key, upvotes]) => ({ member: libraryMember(key), upvotes })),
+  companies: BOARD_PEOPLE.map(([key, upvotes]) => {
+    const { company } = person(key);
+    return { company, logoUrl: logoUrl(company), upvotes, people: 1 };
+  }),
+};
+
+// ---------- Voice rooms ----------
+
+function roomFace(key: string, role: RoomRole): RoomFace {
+  const member = person(key);
+  return { id: idOf(key), name: member.name, faceUrl: faceUrl(member.name), role };
+}
+
+export const ROOM_ID = "00000000-0000-4000-8000-0000000e0001";
+export const ROOM_HREF = toRoomHref(ROOM_ID);
+export const ROOM_TITLE = "Selling to hospitals: what we learned";
+export const ROOM_VIEWER_ID = idOf(FOUNDER.key);
+
+export type TourRoomPerson = RoomFace & { isSpeaking: boolean; isMuted: boolean; isHandRaised: boolean };
+
+function inRoom(key: string, role: RoomRole, extra: Partial<TourRoomPerson> = {}): TourRoomPerson {
+  return { ...roomFace(key, role), isSpeaking: false, isMuted: role === ROOM_ROLES.listener, isHandRaised: false, ...extra };
+}
+
+// Everyone in the live room: the stage, then the audience. Sam Lee, the founder the tour follows, is listening.
+export const ROOM_PEOPLE: readonly TourRoomPerson[] = [
+  inRoom("oliver.grant", ROOM_ROLES.host, { isSpeaking: true }),
+  inRoom("priya.shah", ROOM_ROLES.cohost),
+  inRoom("grace.kim", ROOM_ROLES.speaker, { isMuted: true }),
+  inRoom("sam.lee", ROOM_ROLES.listener),
+  ...["ada.okafor", "marcus.webb", "elena.rossi", "tomas.novak", "hana.sato", "diego.alvarez", "noah.berg", "zara.ahmed"].map((key) =>
+    inRoom(key, ROOM_ROLES.listener, { isHandRaised: key === "marcus.webb" }),
+  ),
+];
+
+// The pictures the live room shows: it fills in after it "connects", so the build's server render never sees them.
+export const ROOM_PICTURES = ROOM_PEOPLE.map(({ faceUrl: url }) => url).filter((url): url is string => Boolean(url));
+
+function roomCard(id: string, title: string, stage: RoomFace[], extra: Partial<RoomCard> = {}): RoomCard {
+  const host = stage[0]!;
+  return {
+    id,
+    title,
+    access: ROOM_ACCESS.open,
+    status: ROOM_STATUSES.live,
+    scheduledFor: null,
+    startedAt: new Date(TOUR_NOW.getTime() - 25 * 60_000).toISOString(),
+    isBroadcast: false,
+    hostId: host.id,
+    hostName: host.name,
+    stage,
+    listenerCount: 0,
+    hasReminder: false,
+    isInvited: false,
+    ...extra,
+  };
+}
+
+const ROOM_STAGE: RoomFace[] = ROOM_PEOPLE.filter(({ role }) => role !== ROOM_ROLES.listener).map(({ id, name, faceUrl: url, role }) => ({ id, name, faceUrl: url, role }));
+
+// What the Rooms page reads (readRoomsPage): two live rooms, one coming up, three "I'm available" left today.
+export const ROOMS_PAGE: { live: RoomCard[]; scheduled: RoomCard[]; broadcastsLeft: number; isConfigured: boolean } = {
+  live: [
+    roomCard(ROOM_ID, ROOM_TITLE, ROOM_STAGE, { listenerCount: ROOM_PEOPLE.length }),
+    roomCard("00000000-0000-4000-8000-0000000e0002", "Elena is available to talk", [roomFace("elena.rossi", ROOM_ROLES.host)], { isBroadcast: true, listenerCount: 2 }),
+  ],
+  scheduled: [
+    roomCard("00000000-0000-4000-8000-0000000e0003", "Pricing your first enterprise deal", [roomFace("noah.berg", ROOM_ROLES.host), roomFace("zara.ahmed", ROOM_ROLES.cohost)], {
+      status: ROOM_STATUSES.scheduled,
+      scheduledFor: "2026-11-20T16:00:00.000Z",
+      startedAt: null,
+      hasReminder: true,
+    }),
+  ],
+  broadcastsLeft: 3,
+  isConfigured: true,
+};
+
+// What the tour's stand-in for the join request answers (the token goes to the stand-in LiveKit, never a server).
+export const ROOM_JOIN: RoomJoin = { serverUrl: "wss://rooms.example.com", token: "tour", roomName: ROOM_ID, role: ROOM_ROLES.listener, identity: ROOM_VIEWER_ID };
+
+// ---------- Alerts ----------
+
+export const ALERT_KINDS: readonly NotificationKind[] = [
+  NOTIFICATION_KINDS.intro,
+  NOTIFICATION_KINDS.answer,
+  NOTIFICATION_KINDS.message,
+  NOTIFICATION_KINDS.voiceBroadcast,
+  NOTIFICATION_KINDS.voiceRoom,
+];
+
+// Sam keeps every alert but rooms opening; quiet hours for the night are switched on in the step.
+export function readAlertPreferences(isQuietOn: boolean): AlertPreferences {
+  return {
+    isOn: true,
+    offKinds: [NOTIFICATION_KINDS.voiceRoom],
+    quietHours: { isOn: isQuietOn, from: "22:00", to: "07:00", days: [0, 1, 2, 3, 4, 5, 6], timeZone: "America/New_York" },
+  };
+}
+
+export const ALERT_MUTED = [{ id: idOf("noah.berg"), name: person("noah.berg").name }];
+export const ALERT_MEMBERS = DEMO_PEOPLE.filter(({ key }) => key !== FOUNDER.key).map(({ key, name }) => ({ id: idOf(key), name }));

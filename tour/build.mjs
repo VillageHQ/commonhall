@@ -20,19 +20,23 @@ const START_MARK = "<!-- tour:start (written by pnpm tour:build; edit tour/src, 
 const END_MARK = "<!-- tour:end -->";
 
 // The app's modules the tour swaps for stand-ins: Next's router and links, the server guard, the requests, the
-// sign-out and the module registry (the menu only needs the manifests).
+// sign-out, the module registry (the menu only needs the manifests), LiveKit and joining a voice room (a made-up live
+// room), and the browser's alert permission (the visitor's browser is never asked).
 const SHIMS = path.join(ROOT, "tour", "src", "shims");
 const PACKAGE_SHIMS = {
   "next/link": "next-link.tsx",
   "next/navigation": "next-navigation.ts",
   "next/image": "next-image.tsx",
   "server-only": "empty.ts",
+  "livekit-client": "livekit-client.ts",
 };
 const FILE_SHIMS = {
   "src/platform/http/post-request": "post-request.ts",
   "src/platform/auth/sign-out": "sign-out.ts",
   "src/modules/registry": "registry.ts",
   "src/components/use-is-in-browser": "use-is-in-browser.ts",
+  "src/modules/voice/queries": "voice-queries.ts",
+  "src/components/alerts/push-client": "push-client.ts",
 };
 
 function shimPlugin() {
@@ -40,8 +44,8 @@ function shimPlugin() {
   return {
     name: "tour-shims",
     setup(builder) {
-      builder.onResolve({ filter: /^(next\/link|next\/navigation|next\/image|server-only)$/ }, (args) => ({ path: path.join(SHIMS, PACKAGE_SHIMS[args.path]) }));
-      builder.onResolve({ filter: /(post-request|sign-out|registry|use-is-in-browser)(\.tsx?)?$/ }, (args) => {
+      builder.onResolve({ filter: /^(next\/link|next\/navigation|next\/image|server-only|livekit-client)$/ }, (args) => ({ path: path.join(SHIMS, PACKAGE_SHIMS[args.path]) }));
+      builder.onResolve({ filter: /(post-request|sign-out|registry|use-is-in-browser|queries|push-client)(\.tsx?)?$/ }, (args) => {
         const bare = args.path.replace(/\.tsx?$/, "");
         const absolute = bare.startsWith("@/") ? path.join(ROOT, "src", bare.slice(2)) : path.resolve(args.resolveDir, bare);
         const shim = byFile.get(absolute);
@@ -63,6 +67,8 @@ const COMMON = {
   // The app's public settings read process.env; the tour has none, so they take their defaults.
   define: { "process.env.NODE_ENV": '"production"', "process.env": "{}" },
   plugins: [shimPlugin()],
+  // A component's own stylesheet (Rooms' voice.css) reaches the tour through tour/src/tour.css, with the app's others.
+  loader: { ".css": "empty" },
   logLevel: "error",
   legalComments: "none",
   write: false,
