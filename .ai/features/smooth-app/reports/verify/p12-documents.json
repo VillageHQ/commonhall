@@ -1,0 +1,16 @@
+[
+ {
+  "t": 1795206076847,
+  "frame": "app",
+  "url": "/__app/",
+  "status": 200,
+  "location": null
+ },
+ {
+  "t": 1795206076932,
+  "frame": "portal",
+  "url": "/today",
+  "status": 200,
+  "location": null
+ }
+]

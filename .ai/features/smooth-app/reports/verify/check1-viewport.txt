@@ -1,0 +1,8 @@
+== Safari iPhone UA ==
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+== Safari UA + CommonhallApp/1 ==
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+== no UA ==
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+== /today status (Safari UA, signed out) ==
+307 

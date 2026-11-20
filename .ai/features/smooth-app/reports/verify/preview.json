@@ -1,0 +1,68 @@
+[
+ {
+  "id": "join",
+  "pass": null,
+  "evidence": "joined http://localhost:9738 in the app, signed in as Sam; portal frame at http://localhost:9738/today; documents so far: app /__app/ 200, portal /today 307→/signin, portal /signin 200, portal /api/demo/sign-in 303→/, portal / 308→/today, portal /today 200",
+  "proof": ""
+ },
+ {
+  "id": "12",
+  "pass": true,
+  "evidence": "fresh app open: portal documents /today 200; any \"/\" redirect=false",
+  "proof": ""
+ },
+ {
+  "id": "2",
+  "pass": true,
+  "evidence": "web preview portal: html[data-app]=\"commonhall\", CommonhallApp.appActions=true, typeof appAction=function; viewport=\"width=device-width, initial-scale=1\" (the preview's iframe sends the browser's own user agent, so no viewport-fit here)",
+  "proof": ""
+ },
+ {
+  "id": "11",
+  "pass": true,
+  "evidence": "app document: iframe top=0px height=844px; native ••• button=false; visible text outside the portal=[]; portal .fh-topbar count=1 at y=52",
+  "proof": "reports/verify/p11-app-one-header.jpg"
+ },
+ {
+  "id": "15",
+  "pass": true,
+  "evidence": "app light .fh-topbar: backdrop-filter=none -webkit-backdrop-filter=undefined bg=rgb(250, 250, 247) (--paper #fafaf7) height=56",
+  "proof": "reports/verify/p15-app-light-topbar.jpg"
+ },
+ {
+  "id": "15",
+  "pass": true,
+  "evidence": "app dark (html.dark=true) .fh-topbar: backdrop-filter=none bg=rgb(14, 14, 13) (--paper #0e0e0d)",
+  "proof": "reports/verify/p15-app-dark-topbar.jpg"
+ },
+ {
+  "id": "13",
+  "pass": true,
+  "evidence": "avatar menu \"This app\" group reads: [\"This app\",\"Reload\",\"Open in the browser\",\"Switch community\"]",
+  "proof": "reports/verify/p13-app-avatar-menu.jpg"
+ },
+ {
+  "id": "13",
+  "pass": true,
+  "evidence": "Reload: portal reloaded at /today; window marker after = null",
+  "proof": "reports/verify/p13-after-reload.jpg"
+ },
+ {
+  "id": "13",
+  "pass": true,
+  "evidence": "Open in the browser: app window.open calls=[\"http://localhost:9738/today\"]; new tab=http://localhost:9738/today; app page still the same",
+  "proof": "reports/verify/p13-after-open-browser.jpg"
+ },
+ {
+  "id": "13",
+  "pass": null,
+  "evidence": "the new tab landed on http://localhost:9738/today",
+  "proof": ""
+ },
+ {
+  "id": "13",
+  "pass": true,
+  "evidence": "Switch community: join screen address field visible=true, portal iframes=0; screen reads \"Commonhall Join your community Type the address your fund sent you, or paste your invite link. Community address Continue On this phone Northwind Founders localhost:9738 Commonhall is invite-only: each fund runs its own community. Your fund's team can tell you its address.\"",
+  "proof": "reports/verify/p13-after-switch.jpg"
+ }
+]

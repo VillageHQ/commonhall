@@ -1,0 +1,62 @@
+[
+ {
+  "id": "a1",
+  "pass": true,
+  "evidence": "Today → Rooms (arrived 101 ms) → Back 0.1 s later: outline ever after Back=false; every sample to 6 s clean on /today=true; h1=\"Sam, 2 things wait for you\"; 390:/today ol=[] pr=[] pg=contents | 698:/today ol=[] pr=[] pg=contents | 1011:/today ol=[] pr=[] pg=contents | 1324:/today ol=[] pr=[] pg=contents | 1633:/today ol=[] pr=[] pg=contents | 1944:/today ol=[] pr=[] pg=contents | 2252:/today ol=[] pr=[] pg=contents | 2566:/today ol=[] pr=[] pg=contents | 2878:/today ol=[] pr=[] pg=contents | 3187:/today ol=[] pr=[] pg=contents | 3500:/today ol=[] pr=[] pg=contents | 3809:/today ol=[] pr=[] pg=contents | 4120:/today ol=[] pr=[] pg=contents | 4430:/today ol=[] pr=[] pg=contents | 4741:/today ol=[] pr=[] pg=contents | 5053:/today ol=[] pr=[] pg=contents | 5364:/today ol=[] pr=[] pg=contents | 5674:/today ol=[] pr=[] pg=contents | 5984:/today ol=[] pr=[] pg=contents",
+  "proof": "reports/verify/recheck-a1-back-after-rooms.jpg"
+ },
+ {
+  "id": "a2",
+  "pass": true,
+  "evidence": "Today → Asks → fund mark: outline ever after the tap=false; all samples clean=true; h1=\"Sam, 2 things wait for you\"; 725:/today ol=[] pr=[] pg=contents | 1028:/today ol=[] pr=[] pg=contents | 1343:/today ol=[] pr=[] pg=contents | 1655:/today ol=[] pr=[] pg=contents | 1962:/today ol=[] pr=[] pg=contents | 2271:/today ol=[] pr=[] pg=contents | 2581:/today ol=[] pr=[] pg=contents | 2892:/today ol=[] pr=[] pg=contents | 3205:/today ol=[] pr=[] pg=contents | 3513:/today ol=[] pr=[] pg=contents | 3828:/today ol=[] pr=[] pg=contents | 4137:/today ol=[] pr=[] pg=contents | 4446:/today ol=[] pr=[] pg=contents | 4756:/today ol=[] pr=[] pg=contents | 5065:/today ol=[] pr=[] pg=contents | 5372:/today ol=[] pr=[] pg=contents | 5684:/today ol=[] pr=[] pg=contents | 5996:/today ol=[] pr=[] pg=contents",
+  "proof": "reports/verify/recheck-a2-fundmark-after-asks.jpg"
+ },
+ {
+  "id": "b",
+  "pass": true,
+  "evidence": "re-tap /today: at 0.12 s pressed=[] outline=[]; at 1.1 s pressed=[] outline=[] page=contents; outline ever=false",
+  "proof": "reports/verify/recheck-b-retap-today.jpg"
+ },
+ {
+  "id": "b",
+  "pass": true,
+  "evidence": "re-tap /asks: at 0.12 s pressed=[] outline=[]; at 1.1 s pressed=[] outline=[] page=contents; outline ever=false",
+  "proof": "reports/verify/recheck-b-retap-asks.jpg"
+ },
+ {
+  "id": "extra",
+  "pass": null,
+  "evidence": "tap Asks (held 1.5 s) then Today 300 ms later: 425:/today ol=[\"Asks\"] pr=[\"/asks\"] pg=none | 829:/today ol=[\"Asks\"] pr=[\"/asks\"] pg=none | 1236:/today ol=[\"Asks\"] pr=[\"/asks\"] pg=none | 1641:/today ol=[\"Asks\"] pr=[\"/asks\"] pg=none | 2043:/today ol=[\"Asks\"] pr=[\"/asks\"] pg=none | 2455:/today ol=[\"Asks\"] pr=[\"/asks\"] pg=none | 2872:/today ol=[\"Asks\"] pr=[\"/asks\"] pg=none | 3285:/today ol=[\"Asks\"] pr=[\"/asks\"] pg=none | 3701:/today ol=[\"Asks\"] pr=[\"/asks\"] pg=none | 4103:/today ol=[\"Asks\"] pr=[\"/asks\"] pg=none | 4504:/today ol=[\"Asks\"] pr=[\"/asks\"] pg=none | 4918:/today ol=[\"Asks\"] pr=[\"/asks\"] pg=none | 5325:/today ol=[\"Asks\"] pr=[\"/asks\"] pg=none | 5737:/today ol=[\"Asks\"] pr=[\"/asks\"] pg=none",
+  "proof": "reports/verify/recheck-x-tap-then-current.jpg"
+ },
+ {
+  "id": "c",
+  "pass": true,
+  "evidence": "/today→/rooms: lit -2 ms vs click; during: outline=[\"Rooms\"] old page=none aria-current=[\"/today\"]; after: /rooms h1=\"Rooms\" pressed=[] outline=[] aria-current=[\"/rooms\"]",
+  "proof": "reports/verify/recheck-c-rooms-outline.jpg, reports/verify/recheck-c-rooms-page.jpg"
+ },
+ {
+  "id": "c",
+  "pass": true,
+  "evidence": "/rooms→/people: lit -2 ms vs click; during: outline=[\"People\"] old page=none aria-current=[\"/rooms\"]; after: /people h1=\"People\" pressed=[] outline=[] aria-current=[\"/people\"]",
+  "proof": "reports/verify/recheck-c-people-outline.jpg, reports/verify/recheck-c-people-page.jpg"
+ },
+ {
+  "id": "c",
+  "pass": true,
+  "evidence": "/admin→/admin/members: lit -2 ms vs click; during: outline=[\"Members\"] old page=none aria-current=[\"/admin\"]; after: /admin/members h1=\"Members\" pressed=[] outline=[] aria-current=[\"/admin/members\"]",
+  "proof": "reports/verify/recheck-c-admin-members-outline.jpg, reports/verify/recheck-c-admin-members-page.jpg"
+ },
+ {
+  "id": "c",
+  "pass": true,
+  "evidence": "/admin/members→/admin/settings: lit -2 ms vs click; during: outline=[\"Set up\"] old page=none aria-current=[\"/admin/members\"]; after: /admin/settings h1=\"Set up\" pressed=[] outline=[] aria-current=[\"/admin/settings\"]",
+  "proof": "reports/verify/recheck-c-admin-settings-outline.jpg, reports/verify/recheck-c-admin-settings-page.jpg"
+ },
+ {
+  "id": "d",
+  "pass": true,
+  "evidence": "desktop Today→Rooms, Back, Forward: outline ever=false; after Back /today h1=\"Sam, 2 things wait for you\" pressed=[]; after Forward /rooms pressed=[]",
+  "proof": "reports/verify/recheck-d-back.jpg"
+ }
+]

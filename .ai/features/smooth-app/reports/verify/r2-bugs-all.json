@@ -1,0 +1,152 @@
+[
+ {
+  "id": "3",
+  "pass": true,
+  "evidence": "phone Today→Rooms (arrived)→Back after 100ms: frames with a visible outline=0 of 366; samples to 6s: 2:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\" | 1229:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\" | 2446:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\" | 3662:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\" | 4890:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\"",
+  "proof": "reports/verify/r2-c3-phone-back-100.jpg"
+ },
+ {
+  "id": "3",
+  "pass": true,
+  "evidence": "phone Today→Rooms (arrived)→Back after 1000ms: frames with a visible outline=0 of 366; samples to 6s: 1:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\" | 1234:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\" | 2448:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\" | 3663:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\" | 4876:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\"",
+  "proof": "reports/verify/r2-c3-phone-back-1000.jpg"
+ },
+ {
+  "id": "3",
+  "pass": true,
+  "evidence": "phone Today→Rooms (arrived)→Back after 3000ms: frames with a visible outline=0 of 366; samples to 6s: 1:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\" | 1214:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\" | 2440:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\" | 3662:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\" | 4881:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\"",
+  "proof": "reports/verify/r2-c3-phone-back-3000.jpg"
+ },
+ {
+  "id": "3",
+  "pass": true,
+  "evidence": "phone Today→Rooms (held)→Back at 300ms: before Back 300:/today ol=[\"Rooms\"] pr=[\"/rooms\"] pend=/rooms pg=none h1=\"Sam, 2 things wait for you\"; after: outline frames=0 []; 7:/asks ol=[] pr=[] pend=null pg=contents h1=\"Asks\" | 1224:/asks ol=[] pr=[] pend=null pg=contents h1=\"Asks\" | 2453:/asks ol=[] pr=[] pend=null pg=contents h1=\"Asks\" | 3667:/asks ol=[] pr=[] pend=null pg=contents h1=\"Asks\" | 4883:/asks ol=[] pr=[] pend=null pg=contents h1=\"Asks\" | 6099:/asks ol=[] pr=[] pend=null pg=contents h1=\"Asks\"",
+  "proof": "reports/verify/r2-c3-phone-back-during-hold.jpg"
+ },
+ {
+  "id": "3",
+  "pass": true,
+  "evidence": "phone Today→Asks (arrived)→fund mark: outline frames=0; 109:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\" | 1335:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\" | 2548:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\" | 3760:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\" | 4969:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\"",
+  "proof": "reports/verify/r2-c3-phone-fundmark-after-asks.jpg"
+ },
+ {
+  "id": "3",
+  "pass": true,
+  "evidence": "phone Today→Asks (held 1.5s)→fund mark (→/today, same address) 100ms later: at 1s 1:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\"; at 6.5s 6.5:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\"; first sample with no outline at 313ms",
+  "proof": "reports/verify/r2-c3-phone-fundmark-during-hold-100.jpg"
+ },
+ {
+  "id": "3",
+  "pass": true,
+  "evidence": "phone Today→Asks (held 1.5s)→fund mark (→/today, same address) 300ms later: at 1s 1:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\"; at 6.5s 6.5:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\"; first sample with no outline at 310ms",
+  "proof": "reports/verify/r2-c3-phone-fundmark-during-hold-300.jpg"
+ },
+ {
+  "id": "4",
+  "pass": true,
+  "evidence": "recheck-x-300: tap Asks, tap Today at 422ms; at 1s 1:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\"; at 6s 6:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\"; samples: 1073:/today/ol0/pr0/null 1574:/today/ol0/pr0/null 2082:/today/ol0/pr0/null 2594:/today/ol0/pr0/null 3108:/today/ol0/pr0/null 3619:/today/ol0/pr0/null 4130:/today/ol0/pr0/null 4641:/today/ol0/pr0/null 5155:/today/ol0/pr0/null 5669:/today/ol0/pr0/null",
+  "proof": "reports/verify/r2-c4-recheck-x-300-1s.jpg, reports/verify/r2-c4-recheck-x-300-6s.jpg"
+ },
+ {
+  "id": "4",
+  "pass": true,
+  "evidence": "gap-40: tap Asks, tap Today at 156ms; at 1s 1:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\"; at 6s 6:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\"; samples: 1021:/today/ol0/pr0/null 1535:/today/ol0/pr0/null 2050:/today/ol0/pr0/null 2566:/today/ol0/pr0/null 3079:/today/ol0/pr0/null 3592:/today/ol0/pr0/null 4096:/today/ol0/pr0/null 4610:/today/ol0/pr0/null 5121:/today/ol0/pr0/null 5634:/today/ol0/pr0/null",
+  "proof": "reports/verify/r2-c4-gap-40-1s.jpg, reports/verify/r2-c4-gap-40-6s.jpg"
+ },
+ {
+  "id": "4",
+  "pass": true,
+  "evidence": "gap-120: tap Asks, tap Today at 241ms; at 1s 1:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\"; at 6s 6:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\"; samples: 1040:/today/ol0/pr0/null 1552:/today/ol0/pr0/null 2065:/today/ol0/pr0/null 2577:/today/ol0/pr0/null 3091:/today/ol0/pr0/null 3604:/today/ol0/pr0/null 4115:/today/ol0/pr0/null 4632:/today/ol0/pr0/null 5146:/today/ol0/pr0/null 5660:/today/ol0/pr0/null",
+  "proof": "reports/verify/r2-c4-gap-120-1s.jpg, reports/verify/r2-c4-gap-120-6s.jpg"
+ },
+ {
+  "id": "4",
+  "pass": true,
+  "evidence": "gap-300: tap Asks, tap Today at 405ms; at 1s 1:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\"; at 6s 6:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\"; samples: 1021:/today/ol0/pr0/null 1531:/today/ol0/pr0/null 2042:/today/ol0/pr0/null 2553:/today/ol0/pr0/null 3070:/today/ol0/pr0/null 3579:/today/ol0/pr0/null 4080:/today/ol0/pr0/null 4590:/today/ol0/pr0/null 5105:/today/ol0/pr0/null 5609:/today/ol0/pr0/null",
+  "proof": "reports/verify/r2-c4-gap-300-1s.jpg, reports/verify/r2-c4-gap-300-6s.jpg"
+ },
+ {
+  "id": "4",
+  "pass": true,
+  "evidence": "slow150-gap100: tap Asks, tap Today at 226ms; at 1s 1:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\"; at 6s 6:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\"; samples: 1025:/today/ol0/pr0/null 1540:/today/ol0/pr0/null 2050:/today/ol0/pr0/null 2562:/today/ol0/pr0/null 3076:/today/ol0/pr0/null 3591:/today/ol0/pr0/null 4094:/today/ol0/pr0/null 4596:/today/ol0/pr0/null 5108:/today/ol0/pr0/null 5623:/today/ol0/pr0/null",
+  "proof": "reports/verify/r2-c4-slow150-gap100-1s.jpg, reports/verify/r2-c4-slow150-gap100-6s.jpg"
+ },
+ {
+  "id": "4",
+  "pass": true,
+  "evidence": "slow150-gap40: tap Asks, tap Today at 153ms; at 1s 1:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\"; at 6s 6:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\"; samples: 1020:/today/ol0/pr0/null 1527:/today/ol0/pr0/null 2040:/today/ol0/pr0/null 2552:/today/ol0/pr0/null 3060:/today/ol0/pr0/null 3574:/today/ol0/pr0/null 4085:/today/ol0/pr0/null 4600:/today/ol0/pr0/null 5107:/today/ol0/pr0/null 5619:/today/ol0/pr0/null",
+  "proof": "reports/verify/r2-c4-slow150-gap40-1s.jpg, reports/verify/r2-c4-slow150-gap40-6s.jpg"
+ },
+ {
+  "id": "5",
+  "pass": true,
+  "evidence": "phone re-tap /today: at 0.1s 0.1:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\"; at 1.1s 1.1:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\"; ever lit=[] outline frames=0",
+  "proof": "reports/verify/r2-c5-phone-retap-today.jpg"
+ },
+ {
+  "id": "5",
+  "pass": true,
+  "evidence": "phone re-tap /asks: at 0.1s 0.1:/asks ol=[] pr=[] pend=null pg=contents h1=\"Asks\"; at 1.1s 1.1:/asks ol=[] pr=[] pend=null pg=contents h1=\"Asks\"; ever lit=[] outline frames=0",
+  "proof": "reports/verify/r2-c5-phone-retap-asks.jpg"
+ },
+ {
+  "id": "5",
+  "pass": true,
+  "evidence": "phone re-tap /people: at 0.1s 0.1:/people ol=[] pr=[] pend=null pg=contents h1=\"People\"; at 1.1s 1.1:/people ol=[] pr=[] pend=null pg=contents h1=\"People\"; ever lit=[] outline frames=0",
+  "proof": "reports/verify/r2-c5-phone-retap-people.jpg"
+ },
+ {
+  "id": "6",
+  "pass": true,
+  "evidence": "synthetic pointerdown→pointercancel on Asks: lit on down=true; right after cancel data-pressed=null nav pressing=false; 0.8s later 0.8:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\"; outline frames=0",
+  "proof": ""
+ },
+ {
+  "id": "6",
+  "pass": true,
+  "evidence": "CDP touch on People then slide up300 (dx 0, dy -300) and lift: events=pointerdown,pointercancel; lit while down=[\"/people\"]; 0.3s after lift 0.3:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\"; 1.2s 1.2:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\"; outline frames=0",
+  "proof": "reports/verify/r2-c6-phone-slide-up300.jpg"
+ },
+ {
+  "id": "6",
+  "pass": true,
+  "evidence": "CDP touch on People then slide sideways-off-bar (dx 0, dy -80) and lift: events=pointerdown,pointercancel; lit while down=[\"/people\"]; 0.3s after lift 0.3:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\"; 1.2s 1.2:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\"; outline frames=0",
+  "proof": "reports/verify/r2-c6-phone-slide-sideways-off-bar.jpg"
+ },
+ {
+  "id": "6",
+  "pass": true,
+  "evidence": "CDP touch on People then slide along-bar (dx 140, dy 0) and lift: events=pointerdown,pointercancel; lit while down=[\"/people\"]; 0.3s after lift 0.3:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\"; 1.2s 1.2:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\"; outline frames=0",
+  "proof": "reports/verify/r2-c6-phone-slide-along-bar.jpg"
+ },
+ {
+  "id": "3",
+  "pass": true,
+  "evidence": "desktop Today→Rooms→Back→Forward: outline frames after Rooms arrived=0; after Back b:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\"; after Forward f:/rooms ol=[] pr=[] pend=null pg=contents h1=\"Rooms\"; 5s later 5s:/rooms ol=[] pr=[] pend=null pg=contents h1=\"Rooms\"",
+  "proof": "reports/verify/r2-c3-desk-back-forward.jpg"
+ },
+ {
+  "id": "3",
+  "pass": true,
+  "evidence": "desktop Today→Rooms (held)→Back at 300ms→Forward: before Back 0.3:/today ol=[\"Rooms\"] pr=[\"/rooms\"] pend=/rooms pg=none h1=\"Sam, 2 things wait for you\"; 2.5s after Back b:/asks ol=[] pr=[] pend=null pg=contents h1=\"Asks\"; after Forward f:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\"; 4s later late:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\"; outline frames after Back=0",
+  "proof": "reports/verify/r2-c3-desk-back-during-hold.jpg"
+ },
+ {
+  "id": "4",
+  "pass": true,
+  "evidence": "desktop sidebar Asks (held) then Today 120ms later: at ~1s 1:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\"; at ~6s 6:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\"",
+  "proof": "reports/verify/r2-c4-desk-gap120-6s.jpg"
+ },
+ {
+  "id": "5",
+  "pass": true,
+  "evidence": "desktop click Today on Today: 0.1s 0.1:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\"; 1.1s 1.1:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\"; ever lit=[]",
+  "proof": ""
+ },
+ {
+  "id": "6",
+  "pass": true,
+  "evidence": "desktop mouse down on People, drag 600px away, release: lit on down=[\"/people\"]; 0.3s 0.3:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\"; 1.2s 1.2:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\"",
+  "proof": "reports/verify/r2-c6-desk-drag-away.jpg"
+ }
+]

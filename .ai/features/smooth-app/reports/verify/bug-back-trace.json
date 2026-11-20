@@ -1,0 +1,199 @@
+{
+ "B": {
+  "trace": [
+   {
+    "ms": 840,
+    "path": "/today",
+    "outline": [
+     "Asks"
+    ],
+    "pressed": [
+     "/asks"
+    ],
+    "current": [
+     "/today"
+    ],
+    "pageDisplay": "none"
+   },
+   {
+    "ms": 1256,
+    "path": "/today",
+    "outline": [
+     "Asks"
+    ],
+    "pressed": [
+     "/asks"
+    ],
+    "current": [
+     "/today"
+    ],
+    "pageDisplay": "none"
+   },
+   {
+    "ms": 1663,
+    "path": "/today",
+    "outline": [
+     "Asks"
+    ],
+    "pressed": [
+     "/asks"
+    ],
+    "current": [
+     "/today"
+    ],
+    "pageDisplay": "none"
+   },
+   {
+    "ms": 2073,
+    "path": "/today",
+    "outline": [
+     "Asks"
+    ],
+    "pressed": [
+     "/asks"
+    ],
+    "current": [
+     "/today"
+    ],
+    "pageDisplay": "none"
+   },
+   {
+    "ms": 2475,
+    "path": "/today",
+    "outline": [
+     "Asks"
+    ],
+    "pressed": [
+     "/asks"
+    ],
+    "current": [
+     "/today"
+    ],
+    "pageDisplay": "none"
+   },
+   {
+    "ms": 2884,
+    "path": "/today",
+    "outline": [
+     "Asks"
+    ],
+    "pressed": [
+     "/asks"
+    ],
+    "current": [
+     "/today"
+    ],
+    "pageDisplay": "none"
+   },
+   {
+    "ms": 3300,
+    "path": "/today",
+    "outline": [
+     "Asks"
+    ],
+    "pressed": [
+     "/asks"
+    ],
+    "current": [
+     "/today"
+    ],
+    "pageDisplay": "none"
+   },
+   {
+    "ms": 3711,
+    "path": "/today",
+    "outline": [
+     "Asks"
+    ],
+    "pressed": [
+     "/asks"
+    ],
+    "current": [
+     "/today"
+    ],
+    "pageDisplay": "none"
+   },
+   {
+    "ms": 4115,
+    "path": "/today",
+    "outline": [
+     "Asks"
+    ],
+    "pressed": [
+     "/asks"
+    ],
+    "current": [
+     "/today"
+    ],
+    "pageDisplay": "none"
+   },
+   {
+    "ms": 4517,
+    "path": "/today",
+    "outline": [
+     "Asks"
+    ],
+    "pressed": [
+     "/asks"
+    ],
+    "current": [
+     "/today"
+    ],
+    "pageDisplay": "none"
+   },
+   {
+    "ms": 4921,
+    "path": "/today",
+    "outline": [
+     "Asks"
+    ],
+    "pressed": [
+     "/asks"
+    ],
+    "current": [
+     "/today"
+    ],
+    "pageDisplay": "none"
+   },
+   {
+    "ms": 5334,
+    "path": "/today",
+    "outline": [],
+    "pressed": [],
+    "current": [
+     "/today"
+    ],
+    "pageDisplay": "contents"
+   },
+   {
+    "ms": 5740,
+    "path": "/today",
+    "outline": [],
+    "pressed": [],
+    "current": [
+     "/today"
+    ],
+    "pageDisplay": "contents"
+   },
+   {
+    "ms": 6148,
+    "path": "/today",
+    "outline": [],
+    "pressed": [],
+    "current": [
+     "/today"
+    ],
+    "pageDisplay": "contents"
+   }
+  ]
+ },
+ "C": {
+  "path": "/today",
+  "outline": [],
+  "pressed": [],
+  "current": [
+   "/today"
+  ],
+  "pageDisplay": "contents"
+ }
+}

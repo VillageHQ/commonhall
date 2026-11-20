@@ -1,0 +1,44 @@
+[
+ {
+  "id": "9",
+  "pass": true,
+  "evidence": "phone (hover:none) chip \"A hire\" with :hover=true, aria-pressed=false: bg rgb(242, 241, 236) → rgb(242, 241, 236) (mouse hover colour would be rgb(230, 229, 223))",
+  "proof": "reports/verify/c9c-phone-chip-hovered.jpg"
+ },
+ {
+  "id": "2",
+  "pass": true,
+  "evidence": "plain browser 9737: html[data-app]=null, typeof window.CommonhallApp=undefined, viewport=\"width=device-width, initial-scale=1\"",
+  "proof": ""
+ },
+ {
+  "id": "15",
+  "pass": true,
+  "evidence": "plain browser light .fh-topbar: backdrop-filter=\"saturate(1.2) blur(8px)\" bg=rgba(250, 250, 247, 0.94) height=56 padding-top=0px",
+  "proof": "reports/verify/c15-plain-light-topbar.jpg"
+ },
+ {
+  "id": "15",
+  "pass": true,
+  "evidence": "plain browser dark .fh-topbar: backdrop-filter=\"saturate(1.2) blur(8px)\" bg=rgba(14, 14, 13, 0.94) height=56 padding-top=0px",
+  "proof": "reports/verify/c15-plain-dark-topbar.jpg"
+ },
+ {
+  "id": "14",
+  "pass": true,
+  "evidence": "plain browser phone avatar menu: app-actions groups=0; items: My profile Alerts Email Your data More Jobs Perks Library Feed Dark mode Off Sign out",
+  "proof": "reports/verify/c14-plain-avatar-menu.jpg"
+ },
+ {
+  "id": "14",
+  "pass": true,
+  "evidence": "plain browser desktop avatar menu: app-actions groups=0; items: My profile Alerts Email Your data More Jobs Perks Library Feed Dark mode Off Sign out",
+  "proof": "reports/verify/c14-plain-desk-avatar-menu.jpg"
+ },
+ {
+  "id": "extra",
+  "pass": null,
+  "evidence": "prefetches during one load of Today (phone, 3 s idle): 20 total; per link {\"/\":2,\"/asks?compose=1\":2,\"/rooms/8132c2dd-b1bf-4171-95e0-e76e3b6f713f\":2,\"/intros/d26797b6-95a1-4cbd-9f44-222d668ca0c6\":2,\"/asks/98a65551-b778-4029-b95f-acb073fe1490\":2,\"/asks\":2,\"/rooms\":2,\"/people\":2,\"/inbox\":2,\"/me/alerts\":2}",
+  "proof": ""
+ }
+]

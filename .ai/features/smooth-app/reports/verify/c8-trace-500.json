@@ -1,0 +1,272 @@
+{
+ "docs": [
+  "/asks"
+ ],
+ "trace": [
+  {
+   "ms": 19,
+   "path": "/today",
+   "outline": 1,
+   "pressed": [
+    "/asks",
+    "/asks"
+   ],
+   "pressing": 2,
+   "pageDisplay": "none",
+   "h1": "Sam, 2 things wait for you",
+   "h1Visible": false,
+   "mainText": 860
+  },
+  {
+   "ms": 290,
+   "path": "/today",
+   "outline": 1,
+   "pressed": [
+    "/asks",
+    "/asks"
+   ],
+   "pressing": 2,
+   "pageDisplay": "none",
+   "h1": "Sam, 2 things wait for you",
+   "h1Visible": false,
+   "mainText": 860
+  },
+  {
+   "ms": 555,
+   "path": "/today",
+   "outline": 1,
+   "pressed": [
+    "/asks",
+    "/asks"
+   ],
+   "pressing": 2,
+   "pageDisplay": "none",
+   "h1": "Sam, 2 things wait for you",
+   "h1Visible": false,
+   "mainText": 860
+  },
+  {
+   "ms": 820,
+   "path": "/today",
+   "outline": 1,
+   "pressed": [
+    "/asks",
+    "/asks"
+   ],
+   "pressing": 2,
+   "pageDisplay": "none",
+   "h1": "Sam, 2 things wait for you",
+   "h1Visible": false,
+   "mainText": 860
+  },
+  {
+   "ms": 1077,
+   "path": "/asks",
+   "outline": 0,
+   "pressed": [],
+   "pressing": 0,
+   "pageDisplay": "contents",
+   "h1": "Asks",
+   "h1Visible": true,
+   "mainText": 1307
+  },
+  {
+   "ms": 1338,
+   "path": "/asks",
+   "outline": 0,
+   "pressed": [],
+   "pressing": 0,
+   "pageDisplay": "contents",
+   "h1": "Asks",
+   "h1Visible": true,
+   "mainText": 1307
+  },
+  {
+   "ms": 1604,
+   "path": "/asks",
+   "outline": 0,
+   "pressed": [],
+   "pressing": 0,
+   "pageDisplay": "contents",
+   "h1": "Asks",
+   "h1Visible": true,
+   "mainText": 1307
+  },
+  {
+   "ms": 1866,
+   "path": "/asks",
+   "outline": 0,
+   "pressed": [],
+   "pressing": 0,
+   "pageDisplay": "contents",
+   "h1": "Asks",
+   "h1Visible": true,
+   "mainText": 1307
+  },
+  {
+   "ms": 2134,
+   "path": "/asks",
+   "outline": 0,
+   "pressed": [],
+   "pressing": 0,
+   "pageDisplay": "contents",
+   "h1": "Asks",
+   "h1Visible": true,
+   "mainText": 1307
+  },
+  {
+   "ms": 2397,
+   "path": "/asks",
+   "outline": 0,
+   "pressed": [],
+   "pressing": 0,
+   "pageDisplay": "contents",
+   "h1": "Asks",
+   "h1Visible": true,
+   "mainText": 1307
+  },
+  {
+   "ms": 2650,
+   "path": "/asks",
+   "outline": 0,
+   "pressed": [],
+   "pressing": 0,
+   "pageDisplay": "contents",
+   "h1": "Asks",
+   "h1Visible": true,
+   "mainText": 1307
+  },
+  {
+   "ms": 2902,
+   "path": "/asks",
+   "outline": 0,
+   "pressed": [],
+   "pressing": 0,
+   "pageDisplay": "contents",
+   "h1": "Asks",
+   "h1Visible": true,
+   "mainText": 1307
+  },
+  {
+   "ms": 3165,
+   "path": "/asks",
+   "outline": 0,
+   "pressed": [],
+   "pressing": 0,
+   "pageDisplay": "contents",
+   "h1": "Asks",
+   "h1Visible": true,
+   "mainText": 1307
+  },
+  {
+   "ms": 3429,
+   "path": "/asks",
+   "outline": 0,
+   "pressed": [],
+   "pressing": 0,
+   "pageDisplay": "contents",
+   "h1": "Asks",
+   "h1Visible": true,
+   "mainText": 1307
+  },
+  {
+   "ms": 3686,
+   "path": "/asks",
+   "outline": 0,
+   "pressed": [],
+   "pressing": 0,
+   "pageDisplay": "contents",
+   "h1": "Asks",
+   "h1Visible": true,
+   "mainText": 1307
+  },
+  {
+   "ms": 3938,
+   "path": "/asks",
+   "outline": 0,
+   "pressed": [],
+   "pressing": 0,
+   "pageDisplay": "contents",
+   "h1": "Asks",
+   "h1Visible": true,
+   "mainText": 1307
+  },
+  {
+   "ms": 4192,
+   "path": "/asks",
+   "outline": 0,
+   "pressed": [],
+   "pressing": 0,
+   "pageDisplay": "contents",
+   "h1": "Asks",
+   "h1Visible": true,
+   "mainText": 1307
+  },
+  {
+   "ms": 4469,
+   "path": "/asks",
+   "outline": 0,
+   "pressed": [],
+   "pressing": 0,
+   "pageDisplay": "contents",
+   "h1": "Asks",
+   "h1Visible": true,
+   "mainText": 1307
+  },
+  {
+   "ms": 4723,
+   "path": "/asks",
+   "outline": 0,
+   "pressed": [],
+   "pressing": 0,
+   "pageDisplay": "contents",
+   "h1": "Asks",
+   "h1Visible": true,
+   "mainText": 1307
+  },
+  {
+   "ms": 4989,
+   "path": "/asks",
+   "outline": 0,
+   "pressed": [],
+   "pressing": 0,
+   "pageDisplay": "contents",
+   "h1": "Asks",
+   "h1Visible": true,
+   "mainText": 1307
+  },
+  {
+   "ms": 5243,
+   "path": "/asks",
+   "outline": 0,
+   "pressed": [],
+   "pressing": 0,
+   "pageDisplay": "contents",
+   "h1": "Asks",
+   "h1Visible": true,
+   "mainText": 1307
+  },
+  {
+   "ms": 5503,
+   "path": "/asks",
+   "outline": 0,
+   "pressed": [],
+   "pressing": 0,
+   "pageDisplay": "contents",
+   "h1": "Asks",
+   "h1Visible": true,
+   "mainText": 1307
+  },
+  {
+   "ms": 5766,
+   "path": "/asks",
+   "outline": 0,
+   "pressed": [],
+   "pressing": 0,
+   "pageDisplay": "contents",
+   "h1": "Asks",
+   "h1Visible": true,
+   "mainText": 1307
+  }
+ ]
+}
