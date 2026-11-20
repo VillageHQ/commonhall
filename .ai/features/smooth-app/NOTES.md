@@ -18,19 +18,23 @@ owner's phone test of TestFlight 4. The causes these fix: [DIAGNOSIS.md](DIAGNOS
 ## Instant tabs (Part A, any browser)
 - A press on a tab-bar or sidebar item lights it at once (`data-pressed="true"`, styled like the current tab in
   `parts.css`; the current tab lets go while another is pressed). `aria-current` stays on the page shown.
-- On the click (not the finger-down), the page area swaps the page for that tab's outline
-  (`src/shell/tab-outlines.tsx`, built from `src/components/page-outline.tsx`) until the new page commits. The old page
-  stays mounted, only hidden, so a press that never arrives (5 s, `PRESSED_TIMEOUT_MS`) gives it back as it was.
-- One press for the whole shell: `PressedTabProvider` and `PendingTabPage` in `src/shell/pressed-tab.tsx`, around the
-  page in `app-shell.tsx`. A press ends for good when the address changes, so Back never brings an outline back; a
-  tap on the tab already shown records nothing.
+- On the click (not the finger-down), `<html data-pending-tab="/people">` shows that tab's outline and hides the page
+  until the new page commits (`PressEnd` clears it on every address change, before paint). The outlines
+  (`src/shell/tab-outlines.tsx`, built from `src/components/page-outline.tsx`) are drawn once after load, hidden, next
+  to the page in `app-shell.tsx` (`MenuTabOutlines`), with one CSS rule per outline; the old page stays mounted, so a
+  press that never arrives (5 s, `PRESSED_TIMEOUT_MS`) gives it back as it was. Cost: about 175 hidden elements and
+  3–4 KB of compressed JavaScript per page; the server's HTML is unchanged.
+- **The press is DOM attributes, not React state** (`src/shell/pressed-tab.tsx`): tap a tab and then the tab you are on
+  before the first page comes, and the router keeps a render waiting for a page it dropped. React state updates in the
+  shell then never reach the screen (not even with `flushSync`), so an outline kept in state stayed over the page.
+  Attributes set by the handlers always land. A tap on the tab already shown ends any press.
 - **Why not `loading.tsx`, as the spec said:** React keeps a shown loading screen up for at least 300 ms
   (`FALLBACK_THROTTLE_MS`), so with `loading.tsx` the full page came about 130 ms later than before on the phone
   profile and the outline flashed on fast connections. It also made `notFound()` and `redirect()` in those pages
   answer after a 200, which needed guard layouts and route-group moves. Drawing the outline from the tap has neither
   cost. The price: only taps on the tab bar and the sidebar get an outline, not other links to those pages.
-- The Rooms outline is drawn for room-start-instant's layout (the box over a full-width Start button); until that
-  merges, it only roughly matches today's Rooms page.
+- An outline follows its page's first screen; a change to a tab page's layout changes its outline too (checked side by
+  side at 390 px with `.ai/tmp`-style pairs: the outline shown by setting `data-pending-tab`, then the page).
 - Adding a tab: give it an outline in `TAB_OUTLINES` (keyed by its address), or it keeps the old page on screen until
   the new one comes.
 - Hover looks apply only where there is a mouse: every `:hover` rule in `parts.css` and `globals.css` sits in
