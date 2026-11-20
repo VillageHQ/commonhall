@@ -25,7 +25,7 @@ import { Stepper } from "@/components/ui/stepper";
 import { Switch } from "@/components/ui/switch";
 import { Tag, Tags } from "@/components/ui/tag";
 import { Textarea } from "@/components/ui/textarea";
-import { FounderViewStrip, ModeSwitch, SidebarNavigation, TabBar } from "@/shell/navigation-links";
+import { FounderViewStrip, SidebarNavigation, TabBar } from "@/shell/navigation-links";
 import type { ShellNavigation } from "@/shell/navigation-rules";
 import { PhoneFoot, ShellFooterLine, ShellFundMark } from "@/shell/shell-chrome";
 import { SidebarMember } from "@/shell/user-menu";
@@ -152,7 +152,7 @@ export function PartsGallery({ crops, navigation }: { crops: Record<string, Crop
           <aside className="fh-side">
             <ShellFundMark name={COMMUNITY} logo={null} isAdmin={false} size="sidebar" pathname="/" />
             <SidebarNavigation navigation={navigation} isAdmin={false} badges={{}} pathname="/" />
-            <SidebarMember member={SAM} />
+            <SidebarMember member={SAM} navigation={navigation} pathname="/" />
             <ShellFooterLine isAdmin={false} pathname="/" />
           </aside>
         </div>,
@@ -164,9 +164,8 @@ export function PartsGallery({ crops, navigation }: { crops: Record<string, Crop
         <div className="parts-side w-[264px]">
           <aside className="fh-side">
             <ShellFundMark name={COMMUNITY} logo={null} isAdmin size="sidebar" pathname="/admin" />
-            <ModeSwitch pathname="/admin" />
             <SidebarNavigation navigation={navigation} isAdmin badges={{}} pathname="/admin" />
-            <SidebarMember member={MAYA} />
+            <SidebarMember member={MAYA} navigation={navigation} pathname="/admin" />
             <ShellFooterLine isAdmin pathname="/admin" />
           </aside>
         </div>,
@@ -187,10 +186,10 @@ export function PartsGallery({ crops, navigation }: { crops: Record<string, Crop
       {part("shell-founder-view-strip", "Founder-view strip", <FounderViewStrip name={MAYA.name} pathname="/" />, { width: 1016 })}
       {part(
         "sidebar-me-signout",
-        "The member and Sign out",
+        "The member (opens the avatar menu)",
         <div className="parts-me">
           <aside className="fh-side">
-            <SidebarMember member={SAM} />
+            <SidebarMember member={SAM} navigation={navigation} pathname="/" />
           </aside>
         </div>,
         { width: 247 },

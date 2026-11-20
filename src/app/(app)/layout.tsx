@@ -15,7 +15,7 @@ import { EnabledModulesProvider } from "@/platform/modules/enabled-modules";
 import { AppShell } from "@/shell/app-shell";
 import { readEnabledIds, readModuleBadges } from "@/shell/enabled-modules";
 import { buildShellNavigation } from "@/shell/navigation";
-import { readNavigationBadges } from "@/shell/navigation-badges";
+import { readMemberTabBadges, readNavigationBadges } from "@/shell/navigation-badges";
 
 export default async function AppLayout({ children }: { children: ReactNode }) {
   const { id, name, email, role } = await requireMember();
@@ -23,9 +23,10 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   const isAdmin = isAdminMember({ id, email, role });
   const database = getDatabase();
   const enabledIds = await readEnabledIds(database);
-  const [adminBadges, moduleBadges, avatarUrl] = await Promise.all([
+  const [adminBadges, moduleBadges, tabBadges, avatarUrl] = await Promise.all([
     isAdmin ? readNavigationBadges(database, process.env) : {},
     readModuleBadges(database, id, enabledIds),
+    readMemberTabBadges(database, id, enabledIds),
     readAvatarUrl(database, id),
   ]);
 
@@ -34,7 +35,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
       community={{ name: communityName, descriptor, logo }}
       member={{ id, name, email, image: avatarUrl, isAdmin }}
       navigation={buildShellNavigation(enabledIds, isAdmin)}
-      badges={{ ...adminBadges, ...moduleBadges }}
+      badges={{ ...adminBadges, ...moduleBadges, ...tabBadges }}
       isNetworkOn={enabledIds.has(networkManifest.id)}
     >
       {children}

@@ -11,10 +11,10 @@ export const membersManifest = {
   icon: Users,
   needsVillage: false,
   requires: [],
-  navigation: [{ label: "Directory", href: ROUTES.members, icon: Users, section: NAVIGATION_SECTIONS.primary }],
+  navigation: [{ label: "People", href: ROUTES.people, icon: Users, section: NAVIGATION_SECTIONS.primary }],
   adminTabs: [],
   paths: {
-    pages: [ROUTES.feed, ROUTES.today, ROUTES.landing, ROUTES.welcome, ROUTES.members, ROUTES.people, ROUTES.editCard, ROUTES.join, ROUTES.confirmEmail],
+    pages: [ROUTES.feed, ROUTES.today, ROUTES.landing, ROUTES.welcome, ROUTES.people, ROUTES.messages, ROUTES.guidedAsk, ROUTES.editCard, ROUTES.join, ROUTES.confirmEmail],
     api: [API_ROUTES.members, API_ROUTES.profile, API_ROUTES.onboarding, API_ROUTES.invites, API_ROUTES.inviteAccept, API_ROUTES.inviteNotMe],
   },
 } satisfies CoreManifest;

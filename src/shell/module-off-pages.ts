@@ -7,7 +7,9 @@ import { MODULE_KINDS } from "@/platform/modules/manifest";
 
 const TOGGLEABLE = MODULES.map(({ manifest }) => manifest).filter(({ kind }) => kind !== MODULE_KINDS.core);
 
+// An owned path ending in "/" claims only the pages under it (Messages owns /inbox/<id>; the Inbox itself is a shell page).
 function isUnder(pathname: string, ownedPath: string) {
+  if (ownedPath.endsWith("/")) return pathname.startsWith(ownedPath) && pathname.length > ownedPath.length;
   return pathname === ownedPath || pathname.startsWith(`${ownedPath}/`);
 }
 

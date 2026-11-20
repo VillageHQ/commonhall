@@ -23,8 +23,10 @@ export function toUrlPath(file: string) {
   return `/${segments.join("/")}`;
 }
 
+// An owned path ending in "/" claims only the pages under it, as in src/shell/module-off-pages.ts.
 function matches(urlPath: string, ownedPath: string) {
   if (ownedPath === "/") return urlPath === "/";
+  if (ownedPath.endsWith("/")) return urlPath.startsWith(ownedPath) && urlPath.length > ownedPath.length;
   return urlPath === ownedPath || urlPath.startsWith(`${ownedPath}/`);
 }
 

@@ -25,13 +25,14 @@ function readParam(value: string | string[] | undefined) {
   return typeof value === "string" ? value.trim() : "";
 }
 
-// Only back to a search: never a link elsewhere.
+// Only back to People's search: never a link elsewhere.
 function readBack(value: string) {
-  return value.startsWith(`${ROUTES.network}?`) || value === ROUTES.network ? value : ROUTES.network;
+  return value.startsWith(`${ROUTES.people}?`) || value === ROUTES.people ? value : ROUTES.people;
 }
 
-// "Ask Marcus to introduce you to Rosa Lindqvist": the one-step ask from a search result (Commonhall's
-// oneStepAskPage). Search stays lit; the path comes from the asker's own search, saved for a day.
+// "Ask Marcus to introduce you to Rosa Lindqvist": the one-step ask from "Search their networks" on People
+// (Commonhall's oneStepAskPage). People stays lit; the path comes from the asker's own search, saved for a day.
+// Without a path in the address, next.config.mjs sends the old link to People.
 export default modulePage(networkManifest, async function SearchAskPage({ searchParams }: SearchAskPageProps) {
   const member = await requireMember();
   const database = getDatabase();

@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { Eye, LayoutDashboard } from "lucide-react";
+import { Eye } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ComponentProps } from "react";
@@ -21,6 +21,7 @@ import {
   readMemberKey,
   readMemberTabKey,
   readShellMode,
+  MENU_PLACES,
   SHELL_MODES,
   type NavigationBadgeCounts,
   type ShellMode,
@@ -43,26 +44,30 @@ function hasBadge(items: readonly ShellNavigationItem[], badge: string) {
   return items.some((item) => item.badge === badge);
 }
 
+// The counts that change while a member stays on a page: unread messages, the intro asks waiting for their yes
+// (as the introducer; the asks where they are the person asked for come with the page), and new offers on their asks.
 function useLiveBadges(items: readonly ShellNavigationItem[], badges: NavigationBadgeCounts): NavigationBadgeCounts {
+  const hasInbox = hasBadge(items, NAVIGATION_BADGES.inbox);
+  const hasIntros = hasInbox && badges[NAVIGATION_BADGES.introsWaiting] !== undefined;
   const { data } = useQuery({
     ...unreadCountQuery(),
-    enabled: hasBadge(items, NAVIGATION_BADGES.messages),
+    enabled: hasInbox && badges[NAVIGATION_BADGES.messages] !== undefined,
     initialData: { unreadCount: badges[NAVIGATION_BADGES.messages] ?? 0 },
   });
   const { data: introCounts } = useQuery({
     ...introCountsQuery(),
-    enabled: hasBadge(items, NAVIGATION_BADGES.intros),
-    initialData: { waitingOnYou: badges[NAVIGATION_BADGES.intros] ?? 0, updates: 0, outcomesDue: 0 },
+    enabled: hasIntros,
+    initialData: { waitingOnYou: badges[NAVIGATION_BADGES.introsWaiting] ?? 0, updates: 0, outcomesDue: 0 },
   });
   const { data: askCounts } = useQuery({
     ...askCountsQuery(),
     enabled: hasBadge(items, NAVIGATION_BADGES.asks),
     initialData: { newOffers: badges[NAVIGATION_BADGES.asks] ?? 0 },
   });
+  const introsWaiting = hasIntros ? introCounts.waitingOnYou + (badges[NAVIGATION_BADGES.introsForYou] ?? 0) : 0;
   return {
     ...badges,
-    [NAVIGATION_BADGES.messages]: data.unreadCount,
-    [NAVIGATION_BADGES.intros]: introCounts.waitingOnYou + introCounts.updates + introCounts.outcomesDue,
+    [NAVIGATION_BADGES.inbox]: data.unreadCount + introsWaiting,
     [NAVIGATION_BADGES.asks]: askCounts.newOffers,
   };
 }
@@ -79,8 +84,24 @@ export function NavigationBadge({ count, description }: NavigationBadgeProps) {
   );
 }
 
-function ItemBadge({ item, badges }: { item: ShellNavigationItem; badges: NavigationBadgeCounts }) {
+const LIVE_DOT_PLACES = { sidebar: "ml-auto", tab: "absolute top-[10px] left-[calc(50%+8px)]" } as const;
+
+// The Rooms item's dot while a room is live: a dot in the ribbon colour (Rooms' own live dot), not a number.
+function LiveDot({ count, place }: { count: number | undefined; place: keyof typeof LIVE_DOT_PLACES }) {
+  if (!count) return null;
+  return (
+    <span
+      role="img"
+      aria-label={describeNavigationBadge(NAVIGATION_BADGES.live, count)}
+      data-slot="live-dot"
+      className={`inline-block size-2 shrink-0 rounded-full bg-[var(--ribbon)] ${LIVE_DOT_PLACES[place]}`}
+    />
+  );
+}
+
+function ItemBadge({ item, badges, place }: { item: ShellNavigationItem; badges: NavigationBadgeCounts; place: keyof typeof LIVE_DOT_PLACES }) {
   const count = item.badge ? badges[item.badge] : undefined;
+  if (item.badge === NAVIGATION_BADGES.live) return <LiveDot count={count} place={place} />;
   return <NavigationBadge count={count} description={item.badge && count ? describeNavigationBadge(item.badge, count) : undefined} />;
 }
 
@@ -90,7 +111,8 @@ function useCurrentItems({ navigation, isAdmin, pathname: pathnameOverride }: Om
   const currentPathname = usePathname();
   const pathname = pathnameOverride ?? currentPathname;
   const mode = readShellMode(pathname, isAdmin);
-  const items = mode === SHELL_MODES.console ? navigation.console : navigation.member;
+  // A member's menu shows its five tabs; the rest sit under the avatar. The console lists all of its items.
+  const items = mode === SHELL_MODES.console ? navigation.console : navigation.member.filter((item) => item.place === MENU_PLACES.tab);
   const currentKey = mode === SHELL_MODES.console ? readConsoleKey(pathname) : readMemberKey(pathname, items);
   const currentTabKey = mode === SHELL_MODES.console ? readConsoleTabKey(pathname) : readMemberTabKey(pathname, items);
   return { mode, items, currentKey, currentTabKey };
@@ -113,29 +135,28 @@ export function SidebarNavigation({ navigation, isAdmin, badges, pathname }: She
         >
           {item.icon}
           <span>{item.label}</span>
-          <ItemBadge item={item} badges={liveBadges} />
+          <ItemBadge item={item} badges={liveBadges} place="sidebar" />
         </NavigationLink>
       ))}
     </nav>
   );
 }
 
-// The console's tabs keep Commonhall's order (Home · Intros · Asks · Members · Set up), not the sidebar's.
+// The console's tabs keep their own order (Home · Asks · Members · Announce · Set up), not the sidebar's.
 function orderTabs(tabs: readonly ShellNavigationItem[], mode: ShellMode) {
   if (mode !== SHELL_MODES.console) return tabs;
   return [...tabs].sort((first, second) => CONSOLE_TAB_ORDER.indexOf(first.key) - CONSOLE_TAB_ORDER.indexOf(second.key));
 }
 
 // The phone's bottom bar (crops shell-tabbar-member-phone.png, shell-tabbar-admin-phone.png): equal columns, an icon
-// over an 11 px label; the current tab takes the fund colour and a 2 px bar on its top edge. An admin's last tab
-// switches mode, in Ink. With the feed on there can be eight; they still share the width equally (parts.css).
+// over an 11 px label; the current tab takes the fund colour and a 2 px bar on its top edge. Five at most: the
+// switch between the console and the founder view lives in the avatar menu.
 export function TabBar({ navigation, isAdmin, badges, pathname }: ShellNavigationProps) {
   const { mode, items, currentTabKey } = useCurrentItems({ navigation, isAdmin, pathname });
   const tabs = orderTabs(items.filter((item) => item.tabLabel), mode);
   const liveBadges = useLiveBadges(tabs, badges);
-  const columns = tabs.length + (isAdmin ? 1 : 0);
   return (
-    <nav aria-label="Sections" data-slot="tab-bar" data-count={columns} className="fh-tabbar" style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}>
+    <nav aria-label="Sections" data-slot="tab-bar" data-count={tabs.length} className="fh-tabbar" style={{ gridTemplateColumns: `repeat(${tabs.length}, 1fr)` }}>
       {tabs.map((item) => (
         <NavigationLink
           key={item.key}
@@ -145,37 +166,10 @@ export function TabBar({ navigation, isAdmin, badges, pathname }: ShellNavigatio
         >
           {item.icon}
           <span>{item.tabLabel}</span>
-          <ItemBadge item={item} badges={liveBadges} />
+          <ItemBadge item={item} badges={liveBadges} place="tab" />
         </NavigationLink>
       ))}
-      {isAdmin && mode === SHELL_MODES.console ? (
-        <Link href={ROUTES.feed} className="fh-switch">
-          <Eye aria-hidden="true" className="fh-i" strokeWidth={1.5} />
-          <span>Founder</span>
-        </Link>
-      ) : null}
-      {isAdmin && mode === SHELL_MODES.member ? (
-        <Link href={ROUTES.admin} className="fh-switch">
-          <LayoutDashboard aria-hidden="true" className="fh-i" strokeWidth={1.5} />
-          <span>Console</span>
-        </Link>
-      ) : null}
     </nav>
-  );
-}
-
-// The admin's switch at the top of the sidebar (crop segmented-control.png): Console | View as a founder.
-export function ModeSwitch({ pathname }: { pathname?: string }) {
-  const mode = useShellMode(true, pathname);
-  return (
-    <div className="fh-seg fh-block" role="group" aria-label="View">
-      <Link className="fh-segbtn" href={ROUTES.admin} aria-current={mode === SHELL_MODES.console ? "true" : undefined}>
-        Console
-      </Link>
-      <Link className="fh-segbtn" href={ROUTES.feed} aria-current={mode === SHELL_MODES.member ? "true" : undefined}>
-        View as a founder
-      </Link>
-    </div>
   );
 }
 
@@ -187,7 +181,7 @@ export function FounderViewStrip({ name, pathname }: { name: string; pathname?: 
     <div data-slot="founder-view-strip" className="fh-preview-strip">
       <Eye aria-hidden="true" className="fh-i fh-s" strokeWidth={1.5} />
       <span>
-        <b>Founder view.</b> This is what members see. You are signed in as {name}, an admin.
+        <b>Founder view.</b> What members see. You are {name}, an admin.
       </span>
       <Link href={ROUTES.admin}>Back to console</Link>
     </div>

@@ -1,7 +1,7 @@
 import { Handshake } from "lucide-react";
 
 import { API_ROUTES, ROUTES } from "../../platform/http/routes.ts";
-import { MODULE_KINDS, NAVIGATION_SECTIONS, type ToggleableManifest } from "../../platform/modules/manifest.ts";
+import { MODULE_KINDS, type ToggleableManifest } from "../../platform/modules/manifest.ts";
 
 export const introsManifest = {
   kind: MODULE_KINDS.toggleable,
@@ -13,7 +13,8 @@ export const introsManifest = {
   // Works without Village: members ask each other from profiles. With Network on, search paths are a second way in.
   needsVillage: false,
   requires: [],
-  navigation: [{ label: "Intros", href: ROUTES.intros, icon: Handshake, section: NAVIGATION_SECTIONS.primary, badge: "intros" }],
+  // Intros live in the Inbox (round 6): no menu entry of their own.
+  navigation: [],
   adminTabs: [{ label: "Intro log", href: ROUTES.adminIntroLog }],
-  paths: { pages: [ROUTES.intros, ROUTES.introConsent, ROUTES.introOptOut, ROUTES.introConsentOld, ROUTES.guidedAsk], api: [API_ROUTES.intros] },
+  paths: { pages: [ROUTES.intros, ROUTES.introConsent, ROUTES.introOptOut, ROUTES.introConsentOld], api: [API_ROUTES.intros] },
 } satisfies ToggleableManifest;

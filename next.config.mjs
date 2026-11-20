@@ -85,7 +85,7 @@ export const nextConfig = {
     { source: "/demo/faces/:name([a-z0-9-]+)\.svg", destination: "/demo/faces/:name.webp", permanent: true },
     // Commonhall's addresses for the directory and profiles (the transplant). Old links in emails and bookmarks still
     // work; the query goes along.
-    { source: "/members", destination: "/directory", permanent: true },
+    { source: "/members", destination: "/people", permanent: true },
     { source: "/members/card", destination: "/me", permanent: true },
     { source: "/members/data", destination: "/me/data", permanent: true },
     { source: "/members/:memberId", destination: "/people/:memberId", permanent: true },
@@ -95,12 +95,18 @@ export const nextConfig = {
     { source: "/messages/:conversationId((?!new$)[^/]+)", destination: "/inbox/:conversationId", permanent: true },
     { source: "/public/jobs", destination: "/jobs", permanent: true },
     // Search took Commonhall's address; old links and bookmarks (and their ?q=) land on it.
-    { source: "/network", destination: "/search", permanent: true },
+    { source: "/network", destination: "/people", permanent: true },
     // Round 6 (.ai/features/simplify-round6/SPEC.md, "The redirect pattern"): an unconditional redirect goes here, in
     // its part's own block below. These run before src/proxy.ts, so an old address redirects even while its module
     // is off. A redirect whose target depends on which modules are on is a tiny page in src/shell/ instead, its path
     // in its module's `paths`.
-    // Part 1 (shell and tabs):
+    // Part 1 (shell and tabs): Search and Directory became People; Intros moved into the Inbox. /ask is a page
+    // (src/app/(app)/ask/), since where it goes depends on which modules are on. /search/ask with an intro path (from
+    // "Search their networks") is the one-step intro ask; without one it lands on People. /search/candidates stays.
+    { source: "/directory", destination: "/people", permanent: true },
+    { source: "/search", destination: "/people", permanent: true },
+    { source: "/search/ask", missing: [{ type: "query", key: "target" }], destination: "/people", permanent: true },
+    { source: "/intros", destination: "/inbox?show=intros", permanent: true },
     // Part 2 (member screens):
     // The library's leaderboard became its "Top" sort (LIBRARY_TOP_PAGE); ?period= is ignored there.
     { source: "/library/leaderboard", destination: "/library?sort=top", permanent: true },

@@ -4,7 +4,8 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { cn } from "cn";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useDeferredValue, useState } from "react";
+import { SlidersHorizontal } from "lucide-react";
+import { useDeferredValue, useState, type ReactNode } from "react";
 
 import { EmptyState } from "@/components/empty-state";
 import { QueryBoundary } from "@/components/query-boundary";
@@ -18,31 +19,37 @@ import { EMPTY_DIRECTORY_FILTERS, hasDirectoryFilters, parseDirectoryFilters, re
 import { PROFILE_LIMITS, UPDATED_WITHIN_DAYS, type Directory, type DirectoryFilters, type DirectoryMember } from "@/modules/members/contract-profile";
 import { toRoleLine } from "@/modules/members/rules-words";
 import { ROUTES } from "@/platform/http/routes";
-import { formatDayMonth } from "@/platform/text/format-date";
 
 import { directoryQuery } from "@/modules/members/queries-directory";
 import { COMMUNITY_ROLE_LABELS, COMMUNITY_ROLES, EXPERT_ROLES } from "@/modules/members/contract-community-roles";
 import { BookCallButton } from "@/modules/members/components/book-call-button";
 
-// Commonhall's directory (member-directory-populated): one search box, five selects, the count, then two columns of
-// ruled rows. A row is one link to the profile: photo, serif name, logo + "Role, Company · City", the "working on"
-// line, square chips and "fresh as of".
+// People's member search (round 6, SPEC "People"): one search box with "Filter" beside it (the view switch and the
+// selects fold behind it), the count, then two columns of ruled rows, 30 to a page. A row is one link to the
+// profile: photo, serif name, logo + "Role, Company · City", and at most a role and a hiring chip (15 words at most).
 
 const SEARCH_DEBOUNCE_MS = 250;
 const MEMBER_AVATAR_SIZE_PX = 36;
 const RESULTS_ID = "member-results";
-const SEARCH_INPUT_ID = "member-search";
+export const SEARCH_INPUT_ID = "member-search";
+const FILTERS_ID = "people-filters";
 
 let pendingSearch: ReturnType<typeof setTimeout> | undefined;
 
 function applyFilters(filters: DirectoryFilters) {
-  window.history.replaceState(null, "", `${ROUTES.members}${toDirectoryQueryString(filters)}`);
+  window.history.replaceState(null, "", `${ROUTES.people}${toDirectoryQueryString(filters)}`);
+}
+
+// "An expert" on People: the experts and mentors view, keeping the words typed.
+export function openExpertsView() {
+  const filters = parseDirectoryFilters(Object.fromEntries(new URLSearchParams(window.location.search)));
+  applyFilters({ ...filters, isExpertsView: true, communityRole: "", updatedWithinDays: 0, page: 1 });
 }
 
 function scheduleSearch(search: string, filters: DirectoryFilters) {
   clearTimeout(pendingSearch);
   pendingSearch = setTimeout(() => {
-    if (window.location.pathname === ROUTES.members) applyFilters({ ...filters, search, page: 1 });
+    if (window.location.pathname === ROUTES.people) applyFilters({ ...filters, search, page: 1 });
   }, SEARCH_DEBOUNCE_MS);
 }
 
@@ -69,11 +76,17 @@ function readRoleChip(member: DirectoryMember) {
   return member.communityRole === COMMUNITY_ROLES.founder ? null : COMMUNITY_ROLE_LABELS[member.communityRole];
 }
 
+const HELP_LINE_LENGTH = 60;
+
+// "Can help with" on an expert's card, cut to one short line; the profile has the rest.
+function shortenHelpLine(text: string) {
+  return text.length <= HELP_LINE_LENGTH ? text : `${text.slice(0, HELP_LINE_LENGTH).replace(/\s+\S*$/, "")}…`;
+}
+
 export function MemberRow({ member }: { member: DirectoryMember }) {
-  const { id, name, title, company, location, companyLogoUrl, bio, avatarUrl, freshAt } = member;
+  const { id, name, title, company, location, companyLogoUrl, avatarUrl } = member;
   const hiringLabel = readHiringLabel(member.hiringJobCount);
   const roleLine = toRoleLine({ title, company, location });
-  const chips = [member.stage, member.sector, member.cohort].filter((chip): chip is string => Boolean(chip));
   const roleChip = readRoleChip(member);
   return (
     <Link href={`${ROUTES.people}/${id}`} className="fh-mcard">
@@ -85,20 +98,17 @@ export function MemberRow({ member }: { member: DirectoryMember }) {
           {roleLine || " "}
         </span>
       </div>
-      {bio ? <p className="fh-wo wrap-anywhere">{bio}</p> : null}
-      <div className="fh-meta">
-        {roleChip ? <Tag tone="accent">{roleChip}</Tag> : null}
-        {chips.map((chip) => (
-          <Tag key={chip}>{chip}</Tag>
-        ))}
-        {hiringLabel ? <Tag tone="sage">{hiringLabel}</Tag> : null}
-        <span className="fh-fresh">fresh as of {formatDayMonth(freshAt)}</span>
-      </div>
+      {roleChip || hiringLabel ? (
+        <div className="fh-meta">
+          {roleChip ? <Tag tone="accent">{roleChip}</Tag> : null}
+          {hiringLabel ? <Tag tone="sage">{hiringLabel}</Tag> : null}
+        </div>
+      ) : null}
     </Link>
   );
 }
 
-// "Experts and mentors": the role, what they can help with, and "Book a call" where the viewer may see the link.
+// "Experts and mentors": the role, a short "can help with", and "Book a call" where the viewer may see the link.
 // The card isn't one link here, since it holds a second action: the name opens the profile.
 export function ExpertRow({ member }: { member: DirectoryMember }) {
   const { id, name, title, company, location, companyLogoUrl, avatarUrl, canHelpWith, bookingUrl } = member;
@@ -115,12 +125,7 @@ export function ExpertRow({ member }: { member: DirectoryMember }) {
           {roleLine || " "}
         </span>
       </div>
-      {canHelpWith ? (
-        <p className="fh-wo wrap-anywhere">
-          <span className="fh-muted">Can help with: </span>
-          {canHelpWith}
-        </p>
-      ) : null}
+      {canHelpWith ? <p className="fh-wo wrap-anywhere">{shortenHelpLine(canHelpWith)}</p> : null}
       <div className="fh-meta">
         <Tag tone="accent">{COMMUNITY_ROLE_LABELS[member.communityRole]}</Tag>
         {bookingUrl ? <BookCallButton memberId={id} memberName={name} bookingUrl={bookingUrl} /> : null}
@@ -131,13 +136,13 @@ export function ExpertRow({ member }: { member: DirectoryMember }) {
 
 function DirectoryEmpty({ filters, onClear }: { filters: DirectoryFilters; onClear: () => void }) {
   if (filters.isExpertsView && !hasDirectoryFilters(filters)) {
-    return <EmptyState title="No experts or mentors yet" description="An admin marks members as mentors, experts, advisors or entrepreneurs in residence, and they show here." />;
+    return <EmptyState title="No experts or mentors yet" description="An admin marks who mentors, and they show here." />;
   }
   if (!hasDirectoryFilters(filters)) {
-    return <EmptyState title="No members in the directory yet" description="Members show here once they accept their invite." />;
+    return <EmptyState title="No members yet" description="Members show here once they accept their invite." />;
   }
   return (
-    <EmptyState title="No member matches" description="Try a company, a city or a skill, or clear the filters.">
+    <EmptyState title="No member matches" description="Try other words, or clear the filters.">
       <Button type="button" variant="secondary" size="sm" onClick={onClear}>
         Clear
       </Button>
@@ -239,15 +244,20 @@ function MoreLinks({ page, pageCount, filters }: { page: number; pageCount: numb
   );
 }
 
-type DirectoryResultsProps = { filters: DirectoryFilters; onClear: () => void; isStale: boolean };
+type DirectoryResultsProps = { filters: DirectoryFilters; onClear: () => void; isStale: boolean; isFilterOpen: boolean };
 
-function DirectoryResults({ filters, onClear, isStale }: DirectoryResultsProps) {
+function DirectoryResults({ filters, onClear, isStale, isFilterOpen }: DirectoryResultsProps) {
   const { data: directory } = useSuspenseQuery(directoryQuery(filters));
   const { members, matchCount, page, pageCount, filterOptions } = directory;
   const isFiltered = hasDirectoryFilters(filters);
   return (
     <>
-      <DirectoryFilterMenus filters={filters} options={filterOptions} />
+      {isFilterOpen ? (
+        <div id={FILTERS_ID} data-slot="people-filters" className="mt-3">
+          <DirectoryViewSwitch filters={filters} />
+          <DirectoryFilterMenus filters={filters} options={filterOptions} />
+        </div>
+      ) : null}
       <div id={RESULTS_ID} tabIndex={-1} aria-busy={isStale} className={cn("outline-none", isStale && "opacity-60")}>
         {members.length === 0 ? (
           <div className="mt-4">
@@ -292,33 +302,58 @@ function DirectoryViewSwitch({ filters }: { filters: DirectoryFilters }) {
   );
 }
 
-export function MemberDirectory() {
+// How many filters are set, the experts view counting as one: "Filter · 2" on the button.
+function countFilters(filters: DirectoryFilters) {
+  const { stage, sector, city, cohort, updatedWithinDays, hiring, communityRole, tag, isExpertsView } = filters;
+  return [stage, sector, city, cohort, updatedWithinDays, hiring, communityRole, tag, isExpertsView].filter(Boolean).length;
+}
+
+type MemberDirectoryProps = {
+  // What a member typed can also be looked for elsewhere (People's chips and "Search their networks"): shown between
+  // the box and the members.
+  between?: ReactNode;
+  placeholder?: string;
+};
+
+export function MemberDirectory({ between, placeholder = "Name, company or skill" }: MemberDirectoryProps) {
   const searchParams = useSearchParams();
   const queryString = searchParams.toString();
   const deferredQueryString = useDeferredValue(queryString);
   const filters = parseDirectoryFilters(Object.fromEntries(searchParams));
   const deferredFilters = parseDirectoryFilters(Object.fromEntries(new URLSearchParams(deferredQueryString)));
   const [searchDraft, setSearchDraft] = useState(filters.search);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const filterCount = countFilters(filters);
 
   return (
     <>
-      <DirectoryViewSwitch filters={filters} />
-      <div role="search">
+      <div role="search" className="flex items-center gap-2">
         <SearchBox
           id={SEARCH_INPUT_ID}
+          className="min-w-0 flex-1"
           value={searchDraft}
           maxLength={PROFILE_LIMITS.search}
-          placeholder="Name, company or skill"
-          aria-label="Search the directory"
+          placeholder={placeholder}
+          aria-label="Search people"
           autoComplete="off"
           onChange={(event) => {
             setSearchDraft(event.target.value);
             scheduleSearch(event.target.value, filters);
           }}
         />
+        <Button type="button" variant="secondary" aria-expanded={isFilterOpen} aria-controls={FILTERS_ID} onClick={() => setIsFilterOpen(!isFilterOpen)}>
+          <SlidersHorizontal aria-hidden="true" />
+          {filterCount ? `Filter · ${filterCount}` : "Filter"}
+        </Button>
       </div>
+      {between}
       <QueryBoundary loadingMessage="Gathering everyone…">
-        <DirectoryResults filters={deferredFilters} onClear={() => clearFilters(setSearchDraft, filters.isExpertsView)} isStale={queryString !== deferredQueryString} />
+        <DirectoryResults
+          filters={deferredFilters}
+          onClear={() => clearFilters(setSearchDraft, filters.isExpertsView)}
+          isStale={queryString !== deferredQueryString}
+          isFilterOpen={isFilterOpen}
+        />
       </QueryBoundary>
     </>
   );

@@ -1,56 +1,59 @@
 import "server-only";
 
-import { ArrowLeftRight, AudioLines, BookUser, Building2, CalendarCheck, FileChartColumn, Gift, Hand, Inbox, LayoutDashboard, LibraryBig, Megaphone, Newspaper, Search, Settings2, UserRound, UserRoundPlus, Users, type LucideIcon } from "lucide-react";
+import { AudioLines, CalendarCheck, FileChartColumn, Gift, Hand, Inbox, LayoutDashboard, LibraryBig, Megaphone, Newspaper, Settings2, Building2, Users, type LucideIcon } from "lucide-react";
 import { createElement } from "react";
 
 import { ANNOUNCEMENT_PAGE } from "@/modules/admin/contract-announcements";
 import { ASKS_ADMIN_PAGE } from "@/modules/asks/contract";
-import { JOB_BOARD_PAGES } from "@/modules/job-board/contract";
 import { MODULES } from "@/modules/registry";
 import { ROUTES } from "@/platform/http/routes";
 import { NAVIGATION_SECTIONS, type NavigationSection } from "@/platform/modules/manifest";
 
-import { CONSOLE_KEYS, MEMBER_KEYS, NAVIGATION_BADGES, type ShellNavigation, type ShellNavigationItem } from "./navigation-rules";
+import { CONSOLE_KEYS, MEMBER_KEYS, MENU_PLACES, NAVIGATION_BADGES, type ShellNavigation, type ShellNavigationItem } from "./navigation-rules";
 
-type MenuEntry = Omit<ShellNavigationItem, "icon" | "href"> & {
+type MenuEntry = Omit<ShellNavigationItem, "icon" | "href" | "place"> & {
   icon: LucideIcon;
-  // The module that must be on for the entry to show; none = always.
-  moduleId?: string;
-  // Where it goes: the module's own menu entry when it has one (so a renamed route follows), else this.
+  place?: ShellNavigationItem["place"];
+  // The modules of which at least one must be on for the entry to show; none = always.
+  moduleIds?: readonly string[];
+  // Where it goes: this, else the first module's own menu entry (so a renamed route follows).
   href?: string;
+  // An href for when only some of its modules are on: the first whose module is on wins.
+  hrefByModule?: readonly (readonly [string, string])[];
 };
 
-// Commonhall's member menu, in its order: Today · Asks & updates · Search · Directory · Jobs · Intros · Inbox ·
-// [Rooms] · [Perks] · [Library] · My profile. Six of them are phone tabs, and Community's Feed while it's on.
+// The member's five tabs, in order: Rooms · Today · Asks · People · Inbox (SPEC "The member tab set"). Rooms shows
+// while it's on; Inbox while Messages or Intros is. The rest sit under the avatar's "More", each while it's on.
 const MEMBER_MENU: readonly MenuEntry[] = [
+  { key: MEMBER_KEYS.rooms, label: "Rooms", tabLabel: "Rooms", icon: AudioLines, moduleIds: ["voice"], badge: NAVIGATION_BADGES.live },
   { key: MEMBER_KEYS.today, label: "Today", tabLabel: "Today", icon: CalendarCheck, href: ROUTES.today },
-  { key: MEMBER_KEYS.asks, label: "Asks & updates", tabLabel: "Asks", icon: Hand, moduleId: "asks", badge: NAVIGATION_BADGES.asks },
-  // Community's switchable feed (on where no admin chose; Commonhall has none): its own page and phone tab, listed
-  // only while it's on.
-  { key: MEMBER_KEYS.feed, label: "Feed", tabLabel: "Feed", icon: Newspaper, moduleId: "feed" },
-  { key: MEMBER_KEYS.search, label: "Search", tabLabel: "Search", icon: Search, moduleId: "network" },
-  { key: MEMBER_KEYS.directory, label: "Directory", tabLabel: "Directory", icon: BookUser, moduleId: "members" },
-  { key: MEMBER_KEYS.jobs, label: "Jobs", icon: Building2, moduleId: "job-board" },
-  { key: MEMBER_KEYS.intros, label: "Intros", tabLabel: "Intros", icon: ArrowLeftRight, moduleId: "intros", badge: NAVIGATION_BADGES.intros },
-  { key: MEMBER_KEYS.inbox, label: "Inbox", tabLabel: "Inbox", icon: Inbox, moduleId: "messages", badge: NAVIGATION_BADGES.messages },
-  { key: MEMBER_KEYS.rooms, label: "Rooms", icon: AudioLines, moduleId: "voice" },
-  { key: MEMBER_KEYS.perks, label: "Perks", icon: Gift, moduleId: "perks" },
-  // The portfolio AI library (round 5), while it's on; no phone tab, like Jobs and Perks.
-  { key: MEMBER_KEYS.library, label: "Library", icon: LibraryBig, moduleId: "library" },
-  { key: MEMBER_KEYS.me, label: "My profile", icon: UserRound, href: ROUTES.editCard },
+  { key: MEMBER_KEYS.asks, label: "Asks", tabLabel: "Asks", icon: Hand, moduleIds: ["asks"], badge: NAVIGATION_BADGES.asks },
+  { key: MEMBER_KEYS.people, label: "People", tabLabel: "People", icon: Users, href: ROUTES.people },
+  { key: MEMBER_KEYS.inbox, label: "Inbox", tabLabel: "Inbox", icon: Inbox, moduleIds: ["messages", "intros"], href: ROUTES.messages, badge: NAVIGATION_BADGES.inbox },
+  { key: MEMBER_KEYS.jobs, label: "Jobs", icon: Building2, moduleIds: ["job-board"], place: MENU_PLACES.more },
+  { key: MEMBER_KEYS.perks, label: "Perks", icon: Gift, moduleIds: ["perks"], place: MENU_PLACES.more },
+  { key: MEMBER_KEYS.library, label: "Library", icon: LibraryBig, moduleIds: ["library"], place: MENU_PLACES.more },
+  { key: MEMBER_KEYS.feed, label: "Feed", icon: Newspaper, moduleIds: ["feed"], place: MENU_PLACES.more },
 ];
 
-// Commonhall's console menu: Home · Partner report · Intro log · Members · Invites · Asks & digest · Job board · Set up.
-// Set up leads to Settings, where the setup checklist and the plumbing pages start, until the Set up list is built.
+// The console: Home · Members · Asks & intros · Announce · Report · Set up. Every admin page keeps its address.
+// The phone shows the five with a tabLabel as tabs (Report lights Home).
 const CONSOLE_MENU: readonly MenuEntry[] = [
   { key: CONSOLE_KEYS.home, label: "Home", tabLabel: "Home", icon: LayoutDashboard, href: ROUTES.admin },
-  { key: CONSOLE_KEYS.report, label: "Partner report", icon: FileChartColumn, href: ROUTES.adminReport },
-  { key: CONSOLE_KEYS.introLog, label: "Intro log", tabLabel: "Intros", icon: ArrowLeftRight, moduleId: "intros", href: ROUTES.adminIntroLog },
   { key: CONSOLE_KEYS.members, label: "Members", tabLabel: "Members", icon: Users, href: ROUTES.adminMembers },
-  { key: CONSOLE_KEYS.invites, label: "Invites", icon: UserRoundPlus, href: ROUTES.adminInvites },
-  { key: CONSOLE_KEYS.asks, label: "Asks & digest", tabLabel: "Asks", icon: Hand, moduleId: "asks", href: ASKS_ADMIN_PAGE },
-  { key: CONSOLE_KEYS.announcements, label: "Announcements", icon: Megaphone, href: ANNOUNCEMENT_PAGE },
-  { key: CONSOLE_KEYS.jobs, label: "Job board", icon: Building2, moduleId: "job-board", href: JOB_BOARD_PAGES.admin },
+  {
+    key: CONSOLE_KEYS.asks,
+    label: "Asks & intros",
+    tabLabel: "Asks",
+    icon: Hand,
+    moduleIds: ["asks", "intros"],
+    hrefByModule: [
+      ["asks", ASKS_ADMIN_PAGE],
+      ["intros", ROUTES.adminIntroLog],
+    ],
+  },
+  { key: CONSOLE_KEYS.announce, label: "Announce", tabLabel: "Announce", icon: Megaphone, href: ANNOUNCEMENT_PAGE },
+  { key: CONSOLE_KEYS.report, label: "Report", icon: FileChartColumn, href: ROUTES.adminReport },
   { key: CONSOLE_KEYS.setup, label: "Set up", tabLabel: "Set up", icon: Settings2, href: ROUTES.adminSettings, badge: NAVIGATION_BADGES.admin },
 ];
 
@@ -59,12 +62,13 @@ const MODULE_ENTRIES = new Map(MODULES.map(({ manifest }) => [manifest.id, manif
 const ALL_MODULE_IDS: ReadonlySet<string> = new Set(MODULES.map(({ manifest }) => manifest.id));
 
 function readEntries(menu: readonly MenuEntry[], enabledIds: ReadonlySet<string>) {
-  return menu.flatMap(({ moduleId, href, ...entry }) => {
-    if (moduleId && !enabledIds.has(moduleId)) return [];
-    const moduleEntry = moduleId ? MODULE_ENTRIES.get(moduleId) : undefined;
-    const resolvedHref = href ?? moduleEntry?.href;
+  return menu.flatMap(({ moduleIds, href, hrefByModule, place, ...entry }) => {
+    const onIds = (moduleIds ?? []).filter((id) => enabledIds.has(id));
+    if (moduleIds && onIds.length === 0) return [];
+    const moduleEntry = onIds[0] ? MODULE_ENTRIES.get(onIds[0]) : undefined;
+    const resolvedHref = hrefByModule?.find(([id]) => enabledIds.has(id))?.[1] ?? href ?? moduleEntry?.href;
     if (!resolvedHref) return [];
-    return [{ ...entry, href: resolvedHref, ...(moduleEntry?.isFullPageLoad ? { isFullPageLoad: true } : {}) }];
+    return [{ ...entry, place: place ?? MENU_PLACES.tab, href: resolvedHref, ...(moduleEntry?.isFullPageLoad ? { isFullPageLoad: true } : {}) }];
   });
 }
 
