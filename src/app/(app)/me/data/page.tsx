@@ -46,7 +46,7 @@ function Item({ term, children }: { term: ReactNode; children?: ReactNode }) {
   );
 }
 
-function RecordRow({ term, detail }: { term: string; detail: ReactNode }) {
+function RecordRow({ term, detail }: { term: ReactNode; detail: string }) {
   return (
     <li>
       <span>
@@ -221,15 +221,8 @@ export default modulePage(membersManifest, async function YourDataPage() {
                 </>
               ) : null}
               {isIntrosOn ? (
-                // A record, not a switch: intro asks are switched on Privacy only (round 7).
-                <RecordRow
-                  term="Members can ask you for intros"
-                  detail={
-                    <>
-                      {readIntroAsksDetail(privacy)} · <Link href={ME_PAGES.privacy}>change it on Privacy</Link>
-                    </>
-                  }
-                />
+                // A record, not a switch: intro asks are switched on Privacy only (round 7), so its name links there.
+                <RecordRow term={<Link href={ME_PAGES.privacy}>Members can ask you for intros</Link>} detail={readIntroAsksDetail(privacy)} />
               ) : null}
               {isIntrosOn ? <RecordRow term="Named in partner reports" detail={isCredited ? "yes" : "no, only counted"} /> : null}
             </ul>

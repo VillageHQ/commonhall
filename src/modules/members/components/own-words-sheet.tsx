@@ -81,9 +81,9 @@ function FieldInput({ field, value, onChange, isFocused }: { field: OwnField; va
       </label>
       <div className="fh-edit">
         {field.isLong ? (
-          <Textarea ref={control} id={id} value={value} maxLength={field.maxLength} className="min-h-[84px]" onChange={(event) => onChange(event.target.value)} />
+          <Textarea ref={control} id={id} value={value} placeholder={field.filledValue ?? undefined} maxLength={field.maxLength} className="min-h-[84px]" onChange={(event) => onChange(event.target.value)} />
         ) : (
-          <Input ref={control} id={id} value={value} maxLength={field.maxLength} onChange={(event) => onChange(event.target.value)} />
+          <Input ref={control} id={id} value={value} placeholder={field.filledValue ?? undefined} maxLength={field.maxLength} onChange={(event) => onChange(event.target.value)} />
         )}
         {field.hint ? <p className="fh-hint">{field.hint}</p> : null}
       </div>
