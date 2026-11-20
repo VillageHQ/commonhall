@@ -446,6 +446,17 @@ export async function readPostedAskTimes(connection: DatabaseOrTransaction, memb
   return rows.map(({ createdAt }) => createdAt);
 }
 
+// A job's hiring request uses no weekly ask once a week: the first one posted for the job in the allowance window.
+// Later ones (a repost, or the same job's request with other words) count like any ask.
+export async function isHiringRequestFree(connection: DatabaseOrTransaction, jobId: string, now: Date) {
+  const [row] = await connection
+    .select({ id: ask.id })
+    .from(ask)
+    .where(and(eq(ask.hiringJobId, jobId), gte(ask.createdAt, new Date(now.getTime() - ALLOWANCE_WINDOW_MS))))
+    .limit(1);
+  return !row;
+}
+
 export async function readOpenAskCount(connection: DatabaseOrTransaction, memberId: string, now: Date) {
   const [row] = await connection
     .select({ openCount: count() })

@@ -205,7 +205,7 @@ async function readCompanyForNewJob(context: RequestContext, company: string | u
 export async function addManualJob(context: RequestContext, body: z.infer<typeof addJobBodySchema>) {
   const ownSource = body.sourceId ? (await readOwnSource(context, body.sourceId, { adminToo: false })).source : null;
   const company = ownSource ? null : await readCompanyForNewJob(context, body.company);
-  await context.database.transaction(async (transaction) => {
+  const card = await context.database.transaction(async (transaction) => {
     const sourceId = ownSource?.id ?? (await readOrMakeCompanyCard(transaction, context.member.id, company ?? ""));
     await transaction.select({ id: jobSource.id }).from(jobSource).where(eq(jobSource.id, sourceId)).for("no key update");
     const [row] = await transaction
@@ -224,7 +224,12 @@ export async function addManualJob(context: RequestContext, body: z.infer<typeof
       postedAt: new Date(),
       isManual: true,
     });
+    const [shown] = await transaction.select({ hidden: jobSource.hidden, hiddenByAdmin: jobSource.hiddenByAdmin }).from(jobSource).where(eq(jobSource.id, sourceId));
+    return shown;
   });
+  // A hidden card keeps the job off the board, so the message says where it is instead of "on the board".
+  if (card?.hiddenByAdmin) return { message: `Added "${body.title}". An admin hid this company's jobs, so it shows on the board once an admin shows them again.` };
+  if (card?.hidden) return { message: `Added "${body.title}". This company is hidden from the board: tap "Show this company on the board" to list it.` };
   return { message: `Added "${body.title}". It's on the job board now.` };
 }
 

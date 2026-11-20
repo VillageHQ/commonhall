@@ -192,7 +192,7 @@ export function PublishForm({ initial, ownCompany }: { initial: PublishDraft; ow
         ) : (
           <p className="fh-small">
             <span className="fh-muted">Kind:</span> <b>{LIBRARY_KIND_LABELS[kind]}</b>{" "}
-            <button type="button" className="fh-linkbtn" onClick={() => setIsChangingKind(true)} aria-label={`Change the kind (now ${LIBRARY_KIND_LABELS[kind]})`}>
+            <button type="button" className="fh-linkbtn underline underline-offset-2" onClick={() => setIsChangingKind(true)} aria-label={`Change the kind (now ${LIBRARY_KIND_LABELS[kind]})`}>
               Change
             </button>
           </p>

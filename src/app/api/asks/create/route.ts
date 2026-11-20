@@ -22,7 +22,7 @@ async function routeSafely(...routeArguments: Parameters<typeof routeAskToHelper
 
 export const POST = asksRoutes.member("asks-create", createAskBodySchema, async (context, body) => {
   await enforceAskPostingLimit(context.database, context.member.id, ASK_POSTING_KINDS.ask);
-  // A hiring request from a job uses no weekly ask, once the job checks out (round 7).
+  // A hiring request from a job: the job must check out; the job's first one a week uses no weekly ask (round 7).
   const isHiringRequest = body.kind === ASK_KINDS.ask && body.hiringJobId !== null;
   const checkedHiringJobId = isHiringRequest ? await readCheckedHiringJobId(context.database, context.member, body.hiringJobId ?? "") : null;
   if (isHiringRequest && !checkedHiringJobId) {

@@ -71,6 +71,14 @@ describe("a hiring request made from a job", () => {
     ]);
   });
 
+  it("is free once a week per job: a second request for the same job uses an ask", async () => {
+    const draft = { title: "We're hiring a Founding backend engineer at Tallyhealth. Who do you know?", category: ASK_CATEGORIES.hire, hiringJobId: jobId };
+    expect((await call(postCreate, founder, draft)).status).toBe(200);
+    expect((await call(postCreate, founder, { ...draft, title: "Anyone know a good accountant in Boston?" })).status).toBe(200);
+    expect(await readAsksUsed(founder)).toBe(1);
+    expect((await database.select({ hiringJobId: ask.hiringJobId }).from(ask)).map(({ hiringJobId }) => hiringJobId).sort()).toEqual([jobId, null]);
+  });
+
   it("refuses a job the member doesn't hire for, and a made-up one, posting nothing", async () => {
     expect((await call(postCreate, other, { title: "Free ask, please", hiringJobId: jobId })).status).toBe(404);
     expect((await call(postCreate, founder, { title: "Free ask, please", hiringJobId: "6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a4b" })).status).toBe(404);

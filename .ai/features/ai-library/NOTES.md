@@ -4,7 +4,7 @@ A switchable module, `library` (`src/modules/library/`, its `AGENTS.md` lists ev
 Admin › Features turns it off, and then its pages and API answer 404 while the data is kept.
 
 ## Data (`schema.ts`, migration `drizzle/0041_library.sql`)
-- `library_item`: title (≤120), pitch (≤160, one line), kind, job, description, install steps, link (http/https only),
+- `library_item`: title (≤120), pitch (≤160, one line), kind, job (may be empty since round 7), description, install steps, link (http/https only),
   visibility (`portfolio` default, `fund_team`, `companies`), `version_count`, `download_count`, `featured_at`,
   `feed_post_id` (the post that announced it; no foreign key, as the module can't name the feed's table).
 - `library_item_company`: the chosen companies of a `companies` item, by name without case or extra spaces.

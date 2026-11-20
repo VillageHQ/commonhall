@@ -425,6 +425,16 @@ describe("the job board", () => {
     expect(await readBoardJobs(database, null)).toHaveLength(6);
   });
 
+  it("says a job added to a hidden company's card isn't on the board yet", async () => {
+    await call(postAddJob, founder, { title: "Founding designer" });
+    const [card] = await database.select().from(jobSource);
+    if (!card) throw new Error("no card");
+    await call(postHide, founder, { sourceId: card.id, hidden: true });
+    const added = await call(postAddJob, founder, { title: "Founding engineer" });
+    expect(((await added.json()) as { message: string }).message).toContain("hidden from the board");
+    expect(await readBoardJobs(database, null)).toEqual([]);
+  });
+
   it("takes each careers link once, so no job shows twice, even after two quick clicks", async () => {
     await linkGreenhouse();
     const again = await call(postLink, founder, { company: "Stripe Example", link: "https://boards.greenhouse.io/ok-stripe/" });

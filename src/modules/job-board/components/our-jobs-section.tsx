@@ -42,8 +42,9 @@ function readEmptyLine(source: JobSourceView) {
 }
 
 // One linked company (Commonhall's sourceBlock): its name, how it is pulled, its jobs, then Pull now · Hide · Remove.
+// Jobs added by hand are always listed (their Remove lives only here); pulled jobs show up to SHOWN_JOBS.
 function SourceBlock({ source, jobs }: { source: JobSourceView; jobs: readonly SourceJob[] }) {
-  const shown = jobs.slice(0, SHOWN_JOBS);
+  const shown = [...jobs.filter((job) => job.isManual), ...jobs.filter((job) => !job.isManual).slice(0, SHOWN_JOBS)];
   const isLockedByAdmin = source.hiddenByAdmin;
   return (
     <div className="fh-jobsource" id={`source-${source.id}`}>

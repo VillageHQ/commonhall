@@ -8,6 +8,7 @@ import { isModuleEnabled } from "@/platform/modules/enablement";
 import { toAskDraftHref } from "@/platform/modules/manifest";
 import { asksManifest } from "@/modules/asks/manifest";
 import { ASK_CATEGORIES } from "@/modules/asks/contract";
+import { isHiringRequestFree } from "@/modules/asks/reads";
 import { toCompanySlug, type BoardJob } from "@/modules/job-board/contract";
 import { jobBoardManifest } from "@/modules/job-board/manifest";
 import { readBoardJob, readMemberCompany } from "@/modules/job-board/reads";
@@ -40,6 +41,8 @@ export type FindCandidatesPage = {
   // The search the job turns into, or null when its title has no words (the founder types the role).
   query: string | null;
   hiringAskHref: string | null;
+  // The job's first hiring request this week uses no weekly ask; the draft carries the job only then.
+  isHiringRequestFree: boolean;
 };
 
 // The page behind the button. Null (a 404) for a job that isn't listed, or a member outside its company.
@@ -49,11 +52,13 @@ export async function readFindCandidatesPage(database: Database, member: Session
   if (!job) return null;
   if (!mayFindCandidates(await readCandidateViewer(database, member), job)) return null;
   const canAskCommunity = await isModuleEnabled(database, asksManifest);
+  const isFree = canAskCommunity && (await isHiringRequestFree(database, job.id, new Date()));
   return {
     job: { id: job.id, title: job.title, company: job.company, location: job.location, url: job.url },
     role: readRole(job.title),
     query: buildCandidateQuery(job),
-    hiringAskHref: canAskCommunity ? toAskDraftHref(draftHiringAsk({ ...job, role: typedWords ?? "" }), { category: ASK_CATEGORIES.hire, jobId: job.id }) : null,
+    hiringAskHref: canAskCommunity ? toAskDraftHref(draftHiringAsk({ ...job, role: typedWords ?? "" }), { category: ASK_CATEGORIES.hire, jobId: isFree ? job.id : null }) : null,
+    isHiringRequestFree: isFree,
   };
 }
 
