@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { listenToVoiceService, showVoiceService, stopVoiceService } from "../../modules/voice-service";
 import type { PortalHandle } from "../components/portal-types";
-import { readErrorCode, readFailureMessage } from "../lib/bridge";
+import { readErrorCode, readFailureMessage, type RoomClosedReason } from "../lib/bridge";
 import { SANS, SERIF, useColors, type Colors } from "../theme";
 import { playRemoteAudio, startRoomAudio, stopRemoteAudio, stopRoomAudio } from "./audio";
 import { isModerator, isOnStage, NOTIFIED_ALREADY, readActions, readRole, ROLE_ORDER, ROLE_WORDS, REACTIONS, type RoleAction, type RoomRole } from "./rules";
@@ -49,9 +49,20 @@ function readJoin(json: unknown): JoinAnswer | null {
   return typeof serverUrl === "string" && typeof token === "string" ? { serverUrl, token } : null;
 }
 
-type RoomScreenProps = { portal: PortalHandle; origin: string; roomId: string; title: string; isShown: boolean; onMinimize: () => void; onClose: () => void; onStatus: (status: string, isLive: boolean) => void };
+type RoomScreenProps = {
+  portal: PortalHandle;
+  origin: string;
+  roomId: string;
+  title: string;
+  // The page said the member already told people about this room: no "Tell people I'm here".
+  hasNotified: boolean;
+  isShown: boolean;
+  onMinimize: () => void;
+  onClose: (reason: RoomClosedReason) => void;
+  onStatus: (status: string, isLive: boolean) => void;
+};
 
-export function RoomScreen({ portal, origin, roomId, title, isShown, onMinimize, onClose, onStatus }: RoomScreenProps) {
+export function RoomScreen({ portal, origin, roomId, title, hasNotified, isShown, onMinimize, onClose, onStatus }: RoomScreenProps) {
   const colors = useColors();
   const styles = makeStyles(colors);
   const insets = useSafeAreaInsets();
@@ -66,7 +77,11 @@ export function RoomScreen({ portal, origin, roomId, title, isShown, onMinimize,
   const [notice, setNotice] = useState<{ text: string; isProblem: boolean } | null>(null);
   const [isBusy, setIsBusy] = useState(false);
   const [isTelling, setIsTelling] = useState(false);
-  const [hasTold, setHasTold] = useState(false);
+  const [hasTold, setHasTold] = useState(hasNotified);
+  // The same room handed over again by a page that knows better.
+  useEffect(() => {
+    if (hasNotified) setHasTold(true);
+  }, [hasNotified]);
 
   const refresh = useCallback(() => {
     const room = roomRef.current;
@@ -187,7 +202,7 @@ export function RoomScreen({ portal, origin, roomId, title, isShown, onMinimize,
     await portal.call("POST", "/api/voice/leave", { roomId });
     stopVoiceService();
     await roomRef.current?.disconnect();
-    onClose();
+    onClose("left");
   }, [portal, roomId, onClose]);
 
   // The lock screen's Mute and Leave.
@@ -240,7 +255,7 @@ export function RoomScreen({ portal, origin, roomId, title, isShown, onMinimize,
       <View style={containerStyle} testID="room-closed">
         <Text style={styles.title}>{title}</Text>
         <Text style={[styles.body, phase === "failed" ? styles.warning : null]}>{words}</Text>
-        <Pressable accessibilityRole="button" style={styles.primaryButton} onPress={onClose}>
+        <Pressable accessibilityRole="button" style={styles.primaryButton} onPress={() => onClose(phase)}>
           <Text style={styles.primaryButtonText}>Back to the portal</Text>
         </Pressable>
       </View>

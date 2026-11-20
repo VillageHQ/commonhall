@@ -3,7 +3,7 @@ import { BackHandler, Linking, Platform } from "react-native";
 import { WebView, type WebViewMessageEvent, type WebViewProps } from "react-native-webview";
 import type { ShouldStartLoadRequest } from "react-native-webview/lib/WebViewTypes";
 
-import { buildBootstrapScript, buildCallScript, buildNavigateScript, buildPushTokenScript, isAllowedCall, parseBridgeMessage, toApiAnswer, type ApiAnswer } from "../lib/bridge";
+import { buildBootstrapScript, buildCallScript, buildNavigateScript, buildPushTokenScript, buildRoomClosedScript, isAllowedCall, isRoomId, parseBridgeMessage, toApiAnswer, type ApiAnswer } from "../lib/bridge";
 import { isSameOrigin, opensInPortal, toSafePath } from "../lib/links";
 import type { PortalHandle, PortalViewProps } from "./portal-types";
 
@@ -50,6 +50,9 @@ export const PortalView = forwardRef<PortalHandle, PortalViewProps>(function Por
       },
       reload: () => webView.current?.reload(),
       setPushToken: (token) => webView.current?.injectJavaScript(buildPushTokenScript(token)),
+      roomClosed: (roomId, reason) => {
+        if (isRoomId(roomId) && isSameOrigin(currentUrl.current, origin)) webView.current?.injectJavaScript(buildRoomClosedScript(roomId, reason));
+      },
     }),
     [origin],
   );
@@ -82,7 +85,7 @@ export const PortalView = forwardRef<PortalHandle, PortalViewProps>(function Por
       const message = parseBridgeMessage(event.nativeEvent.data);
       if (!message) return;
       if (message.type === "voice.open") {
-        onOpenRoom(message.roomId, message.title);
+        onOpenRoom(message.roomId, message.title, message.hasNotified);
         return;
       }
       const waiting = pending.current.get(message.id);
