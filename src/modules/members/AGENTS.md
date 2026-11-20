@@ -10,7 +10,7 @@ Core. Always on. Others build on it; it never imports them.
 - `service-admin.ts`: what an admin does to one member: confirm an email, confirm or clear a LinkedIn claim.
 - `service-blocks.ts`, `contract-blocks.ts`: blocks. Whoever calls `setMemberBlocked` passes the effects that run in the same transaction.
 - `service-report-credit.ts`: the "credit me in reports" switch, off by default.
-- Pages `/people` (the member search on People, `src/shell/people-screen.tsx`), `/people/<id>`, `/me`, `/me/data`, `/me/email`: `.ai/features/fh-directory-profile/NOTES.md`.
+- Pages `/people` (with `shell/people-screen.tsx`), `/people/<id>`, `/me`, `/me/data`, `/me/email`: `.ai/features/fh-directory-profile/NOTES.md`.
 - `slots.tsx`: `MemberConversationSlot`, filled by messages. The shell passes `HiringLookup`.
 - `service-linkedin.ts`: LinkedIn claims, and whether a member's email is trusted.
 - `*-fill-in.ts`: the fill-in's data: the admin's basis, each member's answer (`member_lookup`), the lines (`member_fill_in`). Network saves here.
