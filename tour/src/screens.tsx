@@ -151,8 +151,8 @@ function AlertsPage() {
       </header>
       <div className="grid max-w-[720px] gap-4">
         <DeviceAlertsCard vapidPublicKey="" isPaused={false} />
-        <PauseCard pausedUntil={null} timeZone="America/New_York" />
-        <AlertSettingsForm key={String(isQuietOn)} preferences={readAlertPreferences(isQuietOn)} kinds={ALERT_KINDS} />
+        <PauseCard pausedUntil={null} timeZone="America/New_York" isSaved />
+        <AlertSettingsForm key={String(isQuietOn)} preferences={readAlertPreferences(isQuietOn)} kinds={ALERT_KINDS} isSaved />
         <MutedPeople muted={ALERT_MUTED} members={ALERT_MEMBERS} />
       </div>
     </>

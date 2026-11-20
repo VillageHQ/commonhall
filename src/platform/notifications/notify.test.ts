@@ -12,6 +12,7 @@ import { seedMember } from "@/test/members";
 import { seedConversation } from "@/test/messages";
 import { DEFAULT_PREFERENCES, DEVICE_TYPES, NOTIFICATION_KINDS, PAUSE_CHOICES, registerDeviceBodySchema } from "./contract";
 import { notify } from "./notify";
+import { readPreferences } from "./reads";
 import { notificationDevice } from "./schema";
 import { pauseAlerts, registerDevice, savePreferences, setMute } from "./service";
 import { readVapidKeys } from "./vapid";
@@ -99,6 +100,19 @@ describe("notify()", () => {
     // Resume ends the pause at once.
     expect(await pauseAlerts(database, paused, { until: null }, NOON_UTC)).toBeNull();
     expect(await send([paused], { kind: NOTIFICATION_KINDS.voiceRoom })).toMatchObject({ sent: 1, skipped: 0 });
+  });
+
+  it("pauses until 08:00 tomorrow on the member's clock, taking the browser's zone only before their first save", async () => {
+    const fresh = await seedMember(database, { name: "Lena Example" });
+    const chose = await seedMember(database, { name: "Milo Example" });
+    await savePreferences(database, chose, { ...DEFAULT_PREFERENCES, timeZone: "UTC" });
+
+    // Noon UTC Monday is 21:00 in Tokyo; Tuesday 08:00 there is 23:00 UTC Monday.
+    expect(await pauseAlerts(database, fresh, { until: PAUSE_CHOICES.tomorrow, timeZone: "Asia/Tokyo" }, NOON_UTC)).toEqual(new Date("2026-11-16T23:00:00Z"));
+    expect((await readPreferences(database, fresh)).timeZone).toBe("Asia/Tokyo");
+    // A member who chose UTC keeps it.
+    expect(await pauseAlerts(database, chose, { until: PAUSE_CHOICES.tomorrow, timeZone: "Asia/Tokyo" }, NOON_UTC)).toEqual(new Date("2026-11-17T08:00:00Z"));
+    expect((await readPreferences(database, chose)).timeZone).toBe("UTC");
   });
 
   it("keeps a muted person's broadcasts away, but not their other alerts", async () => {

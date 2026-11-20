@@ -80,6 +80,7 @@ const DAYS_IN_WEEK = 7;
 export const ALL_DAYS = [0, 1, 2, 3, 4, 5, 6] as const;
 export const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
 export const MAXIMUM_QUIET_TIMES = 3;
+export const QUIET_TIMES_FULL = `Up to ${MAXIMUM_QUIET_TIMES} quiet times. Remove one first.`;
 export const DEFAULT_TIME_ZONE = "UTC";
 
 export function isKnownTimeZone(timeZone: string) {
@@ -115,7 +116,7 @@ export const QUIET_TIME_PRESETS = [
 export const preferencesBodySchema = z.object({
   isOn: z.boolean(),
   offKinds: z.array(z.enum(NOTIFICATION_KIND_VALUES)).max(NOTIFICATION_KIND_VALUES.length),
-  quietTimes: z.array(quietTimeSchema).max(MAXIMUM_QUIET_TIMES, `Up to ${MAXIMUM_QUIET_TIMES} quiet times. Remove one first.`),
+  quietTimes: z.array(quietTimeSchema).max(MAXIMUM_QUIET_TIMES, QUIET_TIMES_FULL),
   timeZone: timeZoneSchema,
   // During quiet times, alerts sent straight to the member (DIRECT_KINDS) still come.
   letDirectThrough: z.boolean(),
@@ -126,7 +127,7 @@ export type AlertPreferences = z.infer<typeof preferencesBodySchema>;
 export const DEFAULT_PREFERENCES: AlertPreferences = { isOn: true, offKinds: [], quietTimes: [], timeZone: DEFAULT_TIME_ZONE, letDirectThrough: true };
 
 // A pause holds back every alert: for an hour, or until 08:00 tomorrow in the member's time zone. null resumes.
-// `timeZone` (the browser's) fills the member's zone while it is still the default, as a first save does.
+// `timeZone` (the browser's) becomes the member's zone when nothing was saved yet, as a first save does.
 export const PAUSE_CHOICES = { hour: "1h", tomorrow: "tomorrow" } as const;
 
 export const pauseBodySchema = z.object({

@@ -19,6 +19,8 @@ import {
   DAY_LABELS,
   DEFAULT_TIME_ZONE,
   isDirectKind,
+  MAXIMUM_QUIET_TIMES,
+  QUIET_TIMES_FULL,
   NOTIFICATION_API_ROUTES,
   NOTIFICATION_KIND_LABELS,
   QUIET_TIME_PRESETS,
@@ -33,6 +35,8 @@ type AlertSettingsFormProps = {
   preferences: AlertPreferences;
   // Only the kinds this community has switched on (no rooms rows while Rooms is off, say).
   kinds: readonly NotificationKind[];
+  // Whether the member ever saved: until then, the page shows (and the first save keeps) the browser's own zone.
+  isSaved: boolean;
 };
 
 const NEW_QUIET_TIME: QuietTime = { from: "09:00", to: "12:00", allDay: false, days: [1, 2, 3, 4, 5] };
@@ -49,7 +53,7 @@ function isSameQuietTime(first: QuietTime, second: QuietTime) {
 
 // Alerts › Quiet times, Let through, What alerts you. Every change saves at once; a refused one (a fourth quiet
 // time, say) shows its one line and goes back to what was saved.
-export function AlertSettingsForm({ preferences, kinds }: AlertSettingsFormProps) {
+export function AlertSettingsForm({ preferences, kinds, isSaved }: AlertSettingsFormProps) {
   const router = useRouter();
   const flash = useFlash();
   const [chosen, setChosen] = useState(preferences);
@@ -58,10 +62,11 @@ export function AlertSettingsForm({ preferences, kinds }: AlertSettingsFormProps
   const [editing, setEditing] = useState<{ index: number; quietTime: QuietTime } | null>(null);
   const [editError, setEditError] = useState<string | null>(null);
   const [isZoneOpen, setIsZoneOpen] = useState(false);
+  const [hasSaved, setHasSaved] = useState(isSaved);
   const isInBrowser = useIsInBrowser();
-  // Until the member picks one, the default zone shows (and saves) as the browser's own.
-  const browserZone = isInBrowser ? Intl.DateTimeFormat().resolvedOptions().timeZone : "";
-  const current = chosen.timeZone === DEFAULT_TIME_ZONE && browserZone ? { ...chosen, timeZone: browserZone } : chosen;
+  // Before the first save the browser's zone shows, and the first save keeps it; after that, the saved zone shows.
+  const browserZone = isInBrowser && !hasSaved ? Intl.DateTimeFormat().resolvedOptions().timeZone : "";
+  const current = browserZone ? { ...chosen, timeZone: browserZone } : chosen;
   const timeZones = useMemo(() => (isZoneOpen ? readTimeZones(current.timeZone) : []), [isZoneOpen, current.timeZone]);
 
   const save = useMutation({
@@ -78,6 +83,7 @@ export function AlertSettingsForm({ preferences, kinds }: AlertSettingsFormProps
   function change(next: Partial<AlertPreferences>) {
     const body = { ...current, ...next };
     setChosen(body);
+    setHasSaved(true);
     save.mutate(body);
   }
 
@@ -101,10 +107,12 @@ export function AlertSettingsForm({ preferences, kinds }: AlertSettingsFormProps
   }
 
   function editDay(day: number) {
+    setEditError(null);
     setEditing((open) => (open ? { ...open, quietTime: { ...open.quietTime, days: open.quietTime.days.includes(day) ? open.quietTime.days.filter((entry) => entry !== day) : [...open.quietTime.days, day].toSorted() } } : open));
   }
 
   function editField(fields: Partial<QuietTime>) {
+    setEditError(null);
     setEditing((open) => (open ? { ...open, quietTime: { ...open.quietTime, ...fields } } : open));
   }
 
@@ -193,6 +201,8 @@ export function AlertSettingsForm({ preferences, kinds }: AlertSettingsFormProps
               </Button>
             </div>
           </form>
+        ) : current.quietTimes.length >= MAXIMUM_QUIET_TIMES ? (
+          <p className="fh-small fh-muted mt-3">{QUIET_TIMES_FULL}</p>
         ) : (
           <div className="fh-btn-row mt-3" role="group" aria-label="Add a quiet time">
             {presets.map(({ label, quietTime }) => (

@@ -8,19 +8,19 @@ import { useFlash } from "@/components/flash";
 import { FormError } from "@/components/form-error";
 import { Button } from "@/components/ui/button";
 import { postRequest } from "@/platform/http/post-request";
-import { DEFAULT_TIME_ZONE, NOTIFICATION_API_ROUTES, PAUSE_CHOICES, type PauseBody } from "@/platform/notifications/contract";
+import { NOTIFICATION_API_ROUTES, PAUSE_CHOICES, type PauseBody } from "@/platform/notifications/contract";
 import { describeUntil } from "./alert-words";
 
 const pauseResponseSchema = z.object({ message: z.string(), pausedUntil: z.string().nullable() });
 
 // Pause alerts: 1 hour · Until tomorrow (08:00 on the member's clock), or Resume while paused. Saves at once.
-export function PauseCard({ pausedUntil, timeZone }: { pausedUntil: string | null; timeZone: string }) {
+// `isSaved`: the member saved before; until then, the browser's zone goes along and becomes theirs (service.ts).
+export function PauseCard({ pausedUntil, timeZone, isSaved }: { pausedUntil: string | null; timeZone: string; isSaved: boolean }) {
   const router = useRouter();
   const flash = useFlash();
   const pause = useMutation({
     mutationFn: (until: PauseBody["until"]) => {
-      // The browser's zone fills the member's while it is still the default (service.ts).
-      const browserZone = timeZone === DEFAULT_TIME_ZONE ? Intl.DateTimeFormat().resolvedOptions().timeZone : undefined;
+      const browserZone = isSaved ? undefined : Intl.DateTimeFormat().resolvedOptions().timeZone;
       return postRequest(NOTIFICATION_API_ROUTES.pause, { until, timeZone: browserZone }, pauseResponseSchema);
     },
     onSuccess: ({ message }) => {

@@ -48,7 +48,7 @@ Built 19 Nov 2026 (round 5, part "notifications"). Spec: `SPEC.md`. Proof: `repo
     by every sign-out (`platform/auth/sign-out.ts`).
 - **Routes** (owned by the platform manifest, `/api/notifications`): `POST|DELETE devices`, `PUT|POST preferences`
   (`{ isOn, offKinds, quietTimes, timeZone, letDirectThrough }`, which replaces the quiet times), `POST pause`
-  (`{ until: "1h" | "tomorrow" | null, timeZone? }`; the browser's zone fills the member's while it is still UTC),
+  (`{ until: "1h" | "tomorrow" | null, timeZone? }`; the browser's zone becomes the member's only before their first save),
   `POST mutes`, `POST test`, `GET icon?size=`. All member routes but the icon.
 - **`src/app/manifest.ts`**: the web app manifest from branding (name, a short name of whole words up to 12
   characters, the brand colour, the icons; opens on `/today`). `page-metadata.ts` adds the iPhone home-screen icon and
@@ -59,7 +59,7 @@ Built 19 Nov 2026 (round 5, part "notifications"). Spec: `SPEC.md`. Proof: `repo
 - **Screens**: Alerts at `/me/alerts` (members manifest; from the avatar menu, My profile and the bell on Rooms,
   whose `?from=rooms` makes the back link go to Rooms): `components/alerts/device-alerts-card.tsx` (this device:
   Turn on is the only place the browser asks for permission; off; test), `pause-card.tsx` (1 hour · Until tomorrow,
-  or Resume), `alert-settings-form.tsx` (Quiet times: the time zone (the browser's while the saved one is still UTC)
+  or Resume), `alert-settings-form.tsx` (Quiet times: the time zone (the browser's until the first save, which keeps it; then the saved one)
   with Change, each quiet time in one line with Edit and Remove, the presets and Custom; Let through; What alerts
   you: All alerts, then "Sent to me" and "From the portfolio", one switch per kind whose feature is on). Every change
   there saves at once; a refused one (a fourth quiet time) shows its line and goes back. `muted-people.tsx` (folded).

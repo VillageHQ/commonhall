@@ -18,7 +18,7 @@ import { getDatabase } from "@/platform/database/client";
 import { ROUTES } from "@/platform/http/routes";
 import { modulePage } from "@/platform/modules/module-page";
 import { NOTIFICATION_KINDS, type NotificationKind } from "@/platform/notifications/contract";
-import { readMutedPeople, readPreferences } from "@/platform/notifications/reads";
+import { readMutedPeople, readPreferences, readPreferenceSaved } from "@/platform/notifications/reads";
 import { readVapidKeys } from "@/platform/notifications/vapid";
 import { readEnabledIds } from "@/shell/enabled-modules";
 
@@ -41,10 +41,11 @@ type AlertsPageProps = { searchParams: Promise<{ from?: string }> };
 export default modulePage(membersManifest, async function AlertsPage({ searchParams }: AlertsPageProps) {
   const member = await requireMember();
   const database = getDatabase();
-  const [{ from }, enabledIds, preferences, muted, members, keys] = await Promise.all([
+  const [{ from }, enabledIds, preferences, isSaved, muted, members, keys] = await Promise.all([
     searchParams,
     readEnabledIds(database),
     readPreferences(database, member.id),
+    readPreferenceSaved(database, member.id),
     readMutedPeople(database, member.id),
     readListedMemberNames(database, member.id),
     readVapidKeys(database),
@@ -60,8 +61,8 @@ export default modulePage(membersManifest, async function AlertsPage({ searchPar
       </header>
       <div className="grid max-w-[720px] gap-4">
         <DeviceAlertsCard vapidPublicKey={keys.publicKey} isPaused={!preferences.isOn} />
-        <PauseCard pausedUntil={pausedUntil?.toISOString() ?? null} timeZone={preferences.timeZone} />
-        <AlertSettingsForm preferences={choices} kinds={kinds} />
+        <PauseCard pausedUntil={pausedUntil?.toISOString() ?? null} timeZone={preferences.timeZone} isSaved={isSaved} />
+        <AlertSettingsForm preferences={choices} kinds={kinds} isSaved={isSaved} />
         <MutedPeople muted={muted} members={members} />
       </div>
     </>
