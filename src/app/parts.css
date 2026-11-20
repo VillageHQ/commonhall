@@ -614,7 +614,7 @@ a.fh-chip{text-decoration:none}
 .fh-comments .fh-ch .fh-pill{height:20px;font-size:11.5px;margin-left:4px}
 .fh-comments .fh-comment p{margin-top:4px}
 .fh-helpbox{margin-top:20px}
-.fh-helpbox .fh-decide > .fh-field:first-child{margin-top:0}
+.fh-helpbox > .fh-decide:first-child > .fh-field:first-child{margin-top:0}
 .fh-decide:has(input[name="kind"][value="done_myself"]:checked) .fh-ifknow{display:none}
 .fh-asks-grid aside .fh-sheet + .fh-sheet{margin-top:16px}
 .fh-modrows .fh-r{grid-template-columns:auto minmax(0,1fr)}
