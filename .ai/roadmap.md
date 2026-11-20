@@ -105,6 +105,23 @@ the owner picks the first wave on the decision page. Goal matching stays an idea
 ### Open bugs to fix along the way
 - [ ] `/search/ask` answers 500 when the member's Village link waits for approval; an ask's details are saved but never shown; links in an ask's line are not clickable; the landing page's Schedule call buttons print white on white; commonhall.ai answers unknown paths with an empty 404 — see `.ai/bugs.md`
 
+## Round 6 (20 Nov 2026): a much simpler app, Rooms first
+From the owner's ask on 20 Nov 2026: fewer tabs, Rooms as the main thing people join, far less text, plus notify-others
+for rooms and member-set quiet times. The study and plan: [study](features/simplify-round6/STUDY.md) · [spec](features/simplify-round6/SPEC.md).
+- [ ] Part 0, shared contracts: live-room reads, the alert log for checking, the redirect pattern — simplify-round6 — size S — [spec](features/simplify-round6/SPEC.md)
+- [ ] Part 1, shell and tabs: Rooms · Today · Asks · People · Inbox, the avatar menu, People merges Search and Directory, intros in Inbox — simplify-round6 — size M — [spec](features/simplify-round6/SPEC.md)
+- [ ] Part 2, member screens: text and layout cuts (Today, Asks, intros, profiles, settings, Jobs, Perks, Library) — simplify-round6 — size M — [spec](features/simplify-round6/SPEC.md)
+- [ ] Part 3, Rooms: notify others when you start or join a room, follows, the Rooms and room screen cuts, "I'm available" retired — room-join-notify — size M — [spec](features/room-join-notify/SPEC.md)
+- [ ] Part 4, alerts schedule: several quiet times, presets, pause, let direct alerts through — notify-schedule — size S — [spec](features/notify-schedule/SPEC.md)
+- [ ] Part 5, admin console: Home "This week", Asks & intros, Members, Announce, one Set up — simplify-round6 — size M — [spec](features/simplify-round6/SPEC.md)
+### Follow-ups from the round-6 study (no spec yet)
+- [ ] Nudge buttons for admins: who could help on an ask, nudge a stuck connector
+- [ ] A partner introduces two people directly, without spending their own asks
+- [ ] Rooms: attendance for admins and hosts, recurring rooms, a share link
+- [ ] Usage next to each feature switch
+- [ ] An admin-set default for quiet times
+- [ ] Check: Asks' "20 hours median time to first help" against the Partner report's "24 hours"; admin Home's "no email sent yet" against Invites' "Sent 18 Nov"
+
 ## Later (someday / deferred)
 - [ ] Admin console: member-view switch, mail page lists, Village test connection, the mail setup step (the home and the asks page are built) — parity — [spec](features/admin-console/SPEC.md)
 - [ ] Search and Village fallbacks: member-profile search, search cache, city filter, Village cancel on disconnect — parity — [spec](features/search-without-village/SPEC.md)
