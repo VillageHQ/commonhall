@@ -55,7 +55,7 @@ Announce (`/admin/announcements`, `/admin/digest`). A tab whose module is off is
   the two numbers in view; everything for an engineer under Advanced (`src/shell/admin-setup-rows.ts`). The guided
   start no longer has a branding step, so the branding form is on one page only.
 - **Features** lists Rooms first, with "Needs a voice server" until one is set up; Feed says "Under More in the menu".
-  Feed is off by default for new communities (migration 0045 kept it on for communities that had members).
+  Feed is off by default for new communities (migration 0046 kept it on for communities that had members).
 - **Report** leads with the one-line verdict and three numbers; rows and tables at zero are left out on the page
   (the CSV and the partner email are unchanged).
 - Invites says "Added" for an invite that was never emailed, and "Sent" only when it was.
