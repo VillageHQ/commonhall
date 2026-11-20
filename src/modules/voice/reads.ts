@@ -7,6 +7,7 @@ import type { Database } from "@/platform/database/client";
 import { shownFaceColumns, toShownFaceUrl } from "@/modules/members/reads-pictures";
 
 import { isOnStage, ROOM_ACCESS, ROOM_ROLES, type RoomAccess, type RoomFace, type RoomRole, type RoomStatus } from "./contract";
+import { hasAlerted } from "./service";
 import { voiceRoom, voiceRoomMember, voiceRoomReminder } from "./schema";
 
 const ROLE_ORDER: Record<RoomRole, number> = { host: 0, cohost: 1, speaker: 2, listener: 3 };
@@ -52,6 +53,8 @@ export type RoomView = {
   isViewerInvited: boolean;
   hasReminder: boolean;
   stage: RoomFace[];
+  // Whether the host's start alerted people: the quiet-start line shows only when it didn't.
+  hasAlerted: boolean;
 };
 
 // One room for its page, or null when the viewer may not see it (an invite-only room they're not on).
@@ -76,7 +79,7 @@ export async function readRoomView(database: Database, viewerId: string, roomId:
     .from(voiceRoomMember)
     .where(and(eq(voiceRoomMember.roomId, roomId), eq(voiceRoomMember.memberId, viewerId)));
   if (row.access === ROOM_ACCESS.invite && !seat?.isInvited) return null;
-  const stages = await readStages(database, [roomId]);
+  const [stages, alerted] = await Promise.all([readStages(database, [roomId]), hasAlerted(database, roomId, row.hostId)]);
   const stage = stages.get(roomId) ?? [];
   return {
     ...row,
@@ -86,6 +89,7 @@ export async function readRoomView(database: Database, viewerId: string, roomId:
     viewerRole: (seat?.role as RoomRole | undefined) ?? null,
     isViewerInvited: Boolean(seat?.isInvited),
     stage: stage.filter((face) => isOnStage(face.role)),
+    hasAlerted: alerted,
   };
 }
 

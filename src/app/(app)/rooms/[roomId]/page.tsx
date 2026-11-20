@@ -43,7 +43,7 @@ export default modulePage(voiceManifest, async function RoomPage({ params, searc
         description={room.status === ROOM_STATUSES.live ? undefined : `Hosted by ${room.hostName}`}
         action={isHost && isOpen ? <RenameRoom key={room.title} roomId={room.id} title={room.title} /> : undefined}
       />
-      {isHost && room.status === ROOM_STATUSES.live && query[QUIET_START_PARAM] ? <QuietStartNote /> : null}
+      {isHost && room.status === ROOM_STATUSES.live && query[QUIET_START_PARAM] && !room.hasAlerted ? <QuietStartNote /> : null}
       {room.status === ROOM_STATUSES.live ? <LiveRoom roomId={room.id} title={room.title} /> : null}
       {room.status === ROOM_STATUSES.scheduled ? (
         <ScheduledRoom roomId={room.id} scheduledFor={room.scheduledFor} isHost={isHost} hasReminder={room.hasReminder} />

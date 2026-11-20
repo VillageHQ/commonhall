@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 
 import { Field } from "@/components/form-field";
 import { Button } from "@/components/ui/button";
@@ -17,10 +17,23 @@ import { VOICE_QUERY_KEYS, voiceRequests } from "../queries";
 export function StartRoom({ isConfigured }: { isConfigured: boolean }) {
   const router = useRouter();
   const [isScheduling, setIsScheduling] = useState(false);
-  const start = useMutation({ mutationFn: () => voiceRequests.create({}), onSuccess: (room) => router.push(toStartedRoomHref(room)) });
+  // A quick second tap lands before the button greys out: only the first one starts.
+  const isStarting = useRef(false);
+  const start = useMutation({
+    mutationFn: () => voiceRequests.create({}),
+    onSuccess: (room) => router.push(toStartedRoomHref(room)),
+    onError: () => {
+      isStarting.current = false;
+    },
+  });
+  function startNow() {
+    if (isStarting.current) return;
+    isStarting.current = true;
+    start.mutate();
+  }
   return (
     <div className="vr-start">
-      <Button variant="ink" className="vr-start-button" onClick={() => start.mutate()} disabled={!isConfigured || start.isPending} data-testid="start-room">
+      <Button variant="ink" className="vr-start-button" onClick={startNow} disabled={!isConfigured || start.isPending} data-testid="start-room">
         Start a room
       </Button>
       <p className="fh-small fh-muted vr-start-note">

@@ -281,12 +281,15 @@ describe("voice rooms", () => {
       expect(started.isQuiet).toBe(false);
       await call(postEnd, member.cookie, { roomId: started.roomId });
     }
-    const fourth = await startRoom(member, "One more");
-    expect(fourth.isQuiet).toBe(true);
+    // Tapped twice: one room, and both answers say it was quiet.
+    const answers = await Promise.all([call(postCreate, member.cookie, { title: "One more" }), call(postCreate, member.cookie, { title: "One more" })]);
+    const [fourth, again] = (await Promise.all(answers.map((answer) => answer.json()))) as StartedRoom[];
+    expect(again).toEqual(fourth);
+    expect(fourth!.isQuiet).toBe(true);
     const rows = await database.select({ roomId: voiceBroadcast.roomId, audience: voiceBroadcast.audience }).from(voiceBroadcast);
     expect(rows).toHaveLength(VOICE_LIMITS.broadcastsPerDay);
     expect(rows.every(({ audience }) => audience === NOTIFY_AUDIENCES.everyone)).toBe(true);
-    expect(rows.some(({ roomId }) => roomId === fourth.roomId)).toBe(false);
+    expect(rows.some(({ roomId }) => roomId === fourth!.roomId)).toBe(false);
   });
 
   it("keeps the follows made before round 7 in Your data's export", async () => {

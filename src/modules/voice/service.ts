@@ -182,6 +182,12 @@ async function claimNotify(transaction: Transaction, roomId: string, senderId: s
 
 export type CreatedRoom = { roomId: string; notify: ClaimedNotify | null; isQuiet: boolean };
 
+// Whether the host's start of this room alerted people (one `voice_broadcast` row).
+export async function hasAlerted(connection: DatabaseOrTransaction, roomId: string, hostId: string) {
+  const [row] = await connection.select({ id: voiceBroadcast.id }).from(voiceBroadcast).where(and(eq(voiceBroadcast.roomId, roomId), eq(voiceBroadcast.memberId, hostId))).limit(1);
+  return row !== undefined;
+}
+
 // Start a room now (one tap: an empty title becomes "<first name>'s room") or schedule one (a title is needed, as
 // nobody is in it yet). Starting now alerts everyone, within the host's 3 alerting starts a day; past them the room
 // starts quietly. The caller sends the alert after commit.
@@ -193,7 +199,8 @@ export async function createRoom({ database, member }: RequestContext, body: Cre
     const me = await lockMember(transaction, member.id);
     const title = typed || toAutoRoomTitle(me.name);
     const repeat = await findRecentRoom(transaction, member.id, and(eq(voiceRoom.title, title), eq(voiceRoom.isBroadcast, false)), now);
-    if (repeat) return { roomId: repeat, notify: null, isQuiet: false };
+    // A second tap answers as the first did: a live room that alerted nobody is still quiet.
+    if (repeat) return { roomId: repeat, notify: null, isQuiet: !scheduledAt && !(await hasAlerted(transaction, repeat, member.id)) };
     const roomId = await insertRoom(transaction, member.id, { title, scheduledAt }, now);
     if (scheduledAt) return { roomId, notify: null, isQuiet: false };
     const notify = await claimNotify(transaction, roomId, member.id, NOTIFY_AUDIENCES.everyone, [], now);
