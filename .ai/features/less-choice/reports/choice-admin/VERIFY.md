@@ -29,3 +29,21 @@ The app ran at http://localhost:6151 (production build). The database started em
 6. **"Your card" (the last guided step) ends with a "Next" button and carries the heading "Welcome to Northwind Founders".** That heading is the member welcome copy, which reads oddly for the admin. "Next" on step 2 of 2 is unclear; "Save" or "Done" would say what it does. (12-start-step2-card-phone.png)
 7. **New behaviour, not a bug: Alex counted as "1 person waiting for your OK" after accepting.** Home's Needs you shows this only after launch. It was not on the checklist Home before launch, so the admin first meets it after launch.
 8. **Not tested:** "Skip the guided start" *before* launch, because the throwaway database could not be reset mid-run. It was tested after launch only, where it goes to /admin.
+
+## Re-check after repair
+
+2026-11-20. An independent verifier ran the production build at :6151 on a fresh empty copy, in a real browser (Playwright Chromium). Admin: Jordan Vale. No source files were edited.
+
+| Check | Result | Measured | Screenshot |
+|---|---|---|---|
+| R1: link rows on a phone (390px) | PASS | 3 rows, one "Copy link" per row (112px, x=235), with an "Open in your email" text link under the person. Text column 150px. "Sam Lee" (60px) and "sam.lee@example.com" (136px) fit in full. "Adaline Montgomery-Okonkwo" (229px) and her email (210px) end in "…". The address-only row shows the address once. "Copy all links" sits below. Sam's button changed to "Copied". The clipboard held `http://localhost:6151/invite?token=…`, checked on a 4th invite, Casey Ortiz. Nothing overlaps; no horizontal scroll. | R1-link-rows-390.png |
+| R3: last guided step | PASS | Step 2 of 2 "Your card": the buttons are "Save and finish" and "Skip for now" beside it. There is no "Next" on the page. | R3-last-step-save-and-finish-390.png |
+| R2: checklist Home at 1280x860 | PASS | Checklist: left 304, width 720, bottom 466. Partner report tile: left 304, width 720, top 482. Gap 16px, left edges aligned, width difference 0. "Your card" is not done. | R2-checklist-report-tile-1280.png |
+| Step 4: Save and finish | PASS | Both questions filled, then "Save and finish". The admin lands on /admin, h1 "This week", with no checklist. The Partner report tile is 358px wide at 390, and Needs you shows "4 invites not accepted yet". | R4-after-finish-this-week-390.png |
+
+Notes, none of them blocking:
+- At 390, the address-only row still cuts a typical address: "alex.founder@example.com" (197px) shows as "alex.founder@exa…" in the 150px column. The name column is 150px because the 112px "Copy link" button plus the avatar take the rest. A shorter button, icon + "Copy", would give about 40px more.
+- Step 2 still shows "Welcome to Northwind Founders" above the admin's card (item 6 above). This was not part of the repair.
+- "Copied" goes back to "Copy link" after a few seconds, which is expected.
+- The invite count on the checklist reads 4: the extra one is the Casey Ortiz invite made for the clipboard check.
+- The Playwright browser was shared with another session: my first tab was closed mid-run. I signed in again in a new isolated context and carried on. None of the results depend on that tab.
