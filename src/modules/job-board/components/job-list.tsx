@@ -100,15 +100,15 @@ export function JobList({
             <div className="fh-end">
               {candidatesHref ? (
                 <Button asChild variant="secondary" size="sm">
-                  <Link href={candidatesHref}>
-                    Find candidates<span className="sr-only">{` for ${job.title} at ${job.company}`}</span>
+                  <Link href={candidatesHref} aria-label={`Find candidates for ${job.title} at ${job.company}`}>
+                    Find candidates
                   </Link>
                 </Button>
               ) : null}
               {job.url ? (
                 <Button asChild variant="secondary" size="sm">
-                  <a href={job.url} target="_blank" rel="noopener noreferrer">
-                    Apply<span className="sr-only">{` for ${job.title} at ${job.company}`}</span>
+                  <a href={job.url} target="_blank" rel="noopener noreferrer" aria-label={`Apply for ${job.title} at ${job.company}`}>
+                    Apply
                   </a>
                 </Button>
               ) : null}

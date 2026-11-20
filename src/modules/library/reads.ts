@@ -116,7 +116,7 @@ export type LibraryCard = {
   updatedAt: string;
 };
 
-export type LibraryFilters = { kind: LibraryKind | null; job: LibraryJob | null; search: string | null; mine?: boolean };
+export type LibraryFilters = { kind: LibraryKind | null; job: LibraryJob | null; search: string | null; mine?: boolean; top?: boolean };
 
 function readSearchWords(search: string | null) {
   return (search ?? "").split(/\s+/).filter(Boolean).slice(0, 8);
@@ -172,9 +172,9 @@ function toCard(row: CardRow, viewerId: string): LibraryCard {
   };
 }
 
-// Browse: featured items first, then the most upvoted, then the newest. Search matches every typed word in the title
+// Browse: featured items first (not under "Top"), then the most upvoted, then the newest. Search matches every typed word in the title
 // or the pitch.
-export async function readLibraryItems(database: Database, viewer: LibraryViewer, { kind, job, search, mine = false }: LibraryFilters, now = new Date()) {
+export async function readLibraryItems(database: Database, viewer: LibraryViewer, { kind, job, search, mine = false, top = false }: LibraryFilters, now = new Date()) {
   const words = readSearchWords(search);
   const rows = await database
     .select(cardColumns(viewer.id))
@@ -190,7 +190,7 @@ export async function readLibraryItems(database: Database, viewer: LibraryViewer
         ...words.map((word) => or(ilike(libraryItem.title, `%${escapeLike(word)}%`), ilike(libraryItem.pitch, `%${escapeLike(word)}%`))),
       ),
     )
-    .orderBy(sql`${libraryItem.featuredAt} is null`, desc(upvoteCount), desc(libraryItem.updatedAt), desc(libraryItem.id))
+    .orderBy(...(top ? [] : [sql`${libraryItem.featuredAt} is null`]), desc(upvoteCount), desc(libraryItem.updatedAt), desc(libraryItem.id))
     .limit(LIBRARY_LIMITS.itemsPerPage);
   return rows.map((row) => toCard(row, viewer.id));
 }

@@ -15,7 +15,8 @@ import { modulePage } from "@/platform/modules/module-page";
 
 export const metadata: Metadata = { title: PAGE_TITLES.perks };
 
-// Commonhall's Perks (copy/member-perks-on.md): the head, BuiltFirst's marketplace in its frame, one line under it.
+// Commonhall's Perks (copy/member-perks-on.md): the head, then BuiltFirst's marketplace in its frame with one line
+// under it (the demo: made-up deals, each with Claim).
 // This page has its own Content-Security-Policy (next.config.mjs): frames from BuiltFirst only.
 export default modulePage(perksManifest, async function PerksPage() {
   await requireMember();
@@ -24,15 +25,19 @@ export default modulePage(perksManifest, async function PerksPage() {
 
   return (
     <>
-      <PageHeader title="Perks" description={`Deals for ${community.name} founders, run by BuiltFirst.`} />
+      <PageHeader title="Perks" description={`Deals for ${community.name} founders.`} />
       {/* The demo never frames BuiltFirst: its frame holds made-up deals instead. */}
       {isDemo || url ? (
-        <>
-          {url && !isDemo ? <PerksFrame url={url} title={`Perks for ${community.name} founders`} /> : <DemoPerksList />}
-          <p className="fh-small fh-muted mt-2.5">BuiltFirst may ask you to sign in with your BuiltFirst account.</p>
-        </>
+        url && !isDemo ? (
+          <>
+            <PerksFrame url={url} title={`Perks for ${community.name} founders`} />
+            <p className="fh-small fh-muted mt-2.5">BuiltFirst may ask you to sign in.</p>
+          </>
+        ) : (
+          <DemoPerksList />
+        )
       ) : (
-        <EmptyState title="No perks yet" description="Your admin hasn’t added the perks marketplace yet. It shows up here when they do." />
+        <EmptyState title="No perks yet" description="They show here once your admin adds them." />
       )}
     </>
   );

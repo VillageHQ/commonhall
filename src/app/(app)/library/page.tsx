@@ -25,7 +25,8 @@ export default modulePage(libraryManifest, async function LibraryPage({ searchPa
   const [community, items, board, enabledIds] = await Promise.all([
     readBrandingForPage(),
     readLibraryItems(database, viewer, filters),
-    readLeaderboard(database, viewer, LIBRARY_BOARD_PERIODS.month),
+    // The month's top sharers show only under the "Top" sort (the old leaderboard page).
+    filters.top ? readLeaderboard(database, viewer, LIBRARY_BOARD_PERIODS.month) : null,
     readEnabledIds(database),
   ]);
   const thing = filters.kind ? LIBRARY_KIND_LABELS[filters.kind].toLowerCase() : "AI tool";
@@ -36,7 +37,7 @@ export default modulePage(libraryManifest, async function LibraryPage({ searchPa
       communityName={community.name}
       items={items}
       filters={filters}
-      topPeople={board.people}
+      topPeople={board?.people}
       askHref={enabledIds.has(ASKS_MODULE_ID) ? toAskDraftHref(askTitle) : null}
       flash={readLibraryFlash(params)}
     />

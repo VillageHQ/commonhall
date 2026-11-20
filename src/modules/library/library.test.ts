@@ -174,6 +174,20 @@ describe("the library", () => {
     ]);
   });
 
+  it("puts featured items first, except under the Top sort, which goes by upvotes alone", async () => {
+    const author = await member();
+    const voter = await member();
+    const admin = await member({}, "admin");
+    const featured = await publishId(author, { title: "Featured one" });
+    const liked = await publishId(author, { title: "Liked one" });
+    expect((await postJson(postFeature, "/api/library/feature", admin, { itemId: featured, isFeatured: true })).status).toBe(200);
+    expect((await postJson(postVote, "/api/library/vote", voter, { itemId: liked, isUpvoted: true })).status).toBe(200);
+    const viewer = await readLibraryViewer(database, { id: voter.userId, email: "" });
+    const order = async (top: boolean) => (await readLibraryItems(database, viewer, { kind: null, job: null, search: null, top })).map(({ id }) => id);
+    expect(await order(false)).toEqual([featured, liked]);
+    expect(await order(true)).toEqual([liked, featured]);
+  });
+
   it("lets admins feature and remove, in the audit log; members can't feature", async () => {
     const author = await member();
     const admin = await member({}, "admin");

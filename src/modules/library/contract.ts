@@ -8,8 +8,13 @@ export const LIBRARY_PAGE_TITLE = "Library";
 export const LIBRARY_PAGES = {
   browse: LIBRARY_PAGE,
   publish: `${LIBRARY_PAGE}/new`,
+  // The old leaderboard page: next.config.mjs sends it to the "Top" sort (LIBRARY_TOP_PAGE).
   leaderboard: `${LIBRARY_PAGE}/leaderboard`,
 } as const;
+
+// The browse page's "Top" sort: items by upvotes, and the month's top sharers above them.
+export const LIBRARY_SORTS = { top: "top" } as const;
+export const LIBRARY_TOP_PAGE = `${LIBRARY_PAGE}?sort=${LIBRARY_SORTS.top}`;
 
 export function toLibraryItemPage(itemId: string) {
   return `${LIBRARY_PAGE}/${itemId}`;
