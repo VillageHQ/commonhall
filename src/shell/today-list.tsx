@@ -1,21 +1,17 @@
-import { ArrowLeftRight, Building2, ChevronRight, Gift, Hand, Plus, RefreshCw } from "lucide-react";
+import { Plus } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
-import { EmptyState } from "@/components/empty-state";
+import "./today.css";
+
 import { FlashNote } from "@/components/flash";
 import { PageHeader, SectionHead } from "@/components/page-header";
 import { Avatar } from "@/components/ui/avatar";
-import { SheetHead } from "@/components/ui/card";
-import { Pill } from "@/components/ui/pill";
-import { AllowancePips } from "@/components/ui/search-box";
-import { ASKS_PAGE, describeAgo, describeAllowance, describeAnswerCount, describeCanHelp, toAskPage, type AskAllowance } from "@/modules/asks/contract";
-import { TargetLine } from "@/modules/asks/components/post-parts";
+import { ASKS_PAGE, describeAgo, describeAnswerCount, toAskPage } from "@/modules/asks/contract";
 import { INTRO_STATES, type Intro } from "@/modules/intros/contract";
 import { TargetMemberAsk } from "@/modules/intros/components/target-member-ask";
-import { JOB_BOARD_PAGES } from "@/modules/job-board/contract";
-import { NewThisWeekCard } from "@/modules/members/components/new-this-week-card";
-import { PERKS_PAGE } from "@/modules/perks/contract";
+import { toRoomHref } from "@/modules/voice/contract";
+import type { LiveRoom } from "@/modules/voice/reads-live";
 import { ROUTES } from "@/platform/http/routes";
 
 import { NextStepCard } from "./next-step-card";
@@ -23,13 +19,11 @@ import type { NextStep } from "./next-steps";
 import { FactButtons, NotThisWeekButton } from "./today-actions";
 import type { TodayItems } from "./today";
 
-export const TODAY_END_LINE = "That’s everything this week.";
-// Commonhall's "Ask for an intro" opens its guided ask (/ask), which another build area adds. Until then it opens the
-// network search, or the composer when search is off, so the main button never leads nowhere.
-export const GUIDED_ASK_PAGE = "/ask";
-const COMPOSE_PAGE = `${ASKS_PAGE}#compose`;
+// "Post an ask" opens the Asks box, focused (round 6: the old /ask intro wizard is gone from Today).
+export const TODAY_COMPOSE_PAGE = `${ASKS_PAGE}?compose=1`;
+// At most this many things wait on Today, and this many asks you could help with (the round-6 spec).
+export const TODAY_LIMITS = { waiting: 3, help: 2, faces: 4 } as const;
 const ICON = { "aria-hidden": true, className: "fh-i fh-xs", strokeWidth: 1.5 } as const;
-const SMALL_ICON = { "aria-hidden": true, className: "fh-i fh-s", strokeWidth: 1.5 } as const;
 
 function firstWord(name: string) {
   return name.trim().split(/\s+/)[0] ?? name;
@@ -40,258 +34,194 @@ export function possessive(name: string) {
   return name.endsWith("s") ? `${name}’` : `${name}’s`;
 }
 
-function plural(count: number, one: string, many: string) {
-  return count === 1 ? one : many;
-}
-
-// "CFO at Brightside Clinics" → "CFO, Brightside Clinics", as Commonhall writes a person's role.
-function describeTargetAbout(headline: string | null) {
-  return headline ? headline.replace(" at ", ", ") : "";
+// "Maya + 3": the first face's first name and how many more are in.
+export function describeRoomPeople(room: Pick<LiveRoom, "faces" | "count">) {
+  const first = room.faces[0];
+  if (!first) return room.count > 0 ? `${room.count} in` : "Nobody in yet";
+  const others = Math.max(room.count - 1, 0);
+  return others ? `${firstWord(first.name)} + ${others}` : `${firstWord(first.name)} is in`;
 }
 
 function describeIntroLine(intro: Intro) {
-  const about = describeTargetAbout(intro.target.headline);
-  if (intro.state === INTRO_STATES.requested) return `${intro.requester.name} asks you to introduce them to ${intro.target.name}${about ? ` (${about})` : ""}.`;
-  return `${intro.target.name} said yes. Introduce ${firstWord(intro.requester.name)} to ${firstWord(intro.target.name)}.`;
+  if (intro.state === INTRO_STATES.requested) return `${intro.requester.name} asks you to introduce them to ${intro.target.name}.`;
+  return `${intro.target.name} said yes. Introduce ${firstWord(intro.requester.name)}.`;
 }
+
+// The full-width "Live now" card: shown only while a room is live (never a placeholder), one tap to the room.
+export function LiveNowCard({ room }: { room: LiveRoom }) {
+  return (
+    <section className="td-live" aria-label="Live now">
+      <div className="td-live-text">
+        <span className="td-live-kicker">
+          <span className="td-live-dot" aria-hidden="true" />
+          Live now
+        </span>
+        <b className="td-live-title">{room.title}</b>
+        <span className="td-live-faces">
+          {room.faces.length ? (
+            <span className="td-stack" aria-hidden="true">
+              {room.faces.slice(0, TODAY_LIMITS.faces).map((face, index) => (
+                <Avatar key={`${face.name}-${index}`} stableId={face.name} name={face.name} imageUrl={face.image} sizePx={28} />
+              ))}
+            </span>
+          ) : null}
+          {describeRoomPeople(room)}
+        </span>
+      </div>
+      <Link className="fh-btn fh-btn-primary" href={toRoomHref(room.id)} aria-label={`Join ${room.title}`}>
+        Join
+      </Link>
+    </section>
+  );
+}
+
+type MoreLink = { label: string; href: string; isFullLoad?: boolean };
 
 type TodayPageProps = {
   today: TodayItems;
   memberName: string;
-  communityName: string;
-  digestDay: string;
   dateLabel: string;
-  allowance: AskAllowance | null;
-  perksCommunityName: string | null;
-  openJobCount: number | null;
+  // The live room at the top (null while none is live or Rooms is off).
+  liveRoom: LiveRoom | null;
+  // Only where reply-by-email is set up: the weekly email's day.
+  replyDay: string | null;
+  // "Is this right?" lines, only in a member's first two weeks.
+  showFacts: boolean;
+  isAsksOn: boolean;
   nextSteps: readonly NextStep[];
   lookupQuestion: ReactNode;
-  // "Add <fund> to your home screen" (src/components/alerts/install-card.tsx), above everything in the main column.
+  // "Add <fund> to your home screen" (src/components/alerts/install-card.tsx).
   installCard?: ReactNode;
   flash: string | null;
+  // Jobs, Perks, Library: whichever are on.
+  moreLinks: readonly MoreLink[];
   now: Date;
-  // Where "Ask for an intro" goes today (see GUIDED_ASK_PAGE).
-  askIntroHref: string;
-  // "New in the library", while the library is on and has something new for this member.
-  libraryCard?: ReactNode;
 };
 
-// Commonhall's Today (todayPage): what needs you in the main column (asks on your paths, intros waiting for your
-// yes, lines to check), your own asks and the community's boards in the right rail.
-export function TodayPage({ today, memberName, communityName, digestDay, dateLabel, allowance, perksCommunityName, openJobCount, nextSteps, lookupQuestion, installCard = null, flash, now, askIntroHref, libraryCard = null }: TodayPageProps) {
+// Commonhall's Today, round 6: the live room first, then what waits on you, then asks you could help with, then one
+// "More for you" row. Your own asks live on Asks › Yours.
+export function TodayPage({ today, memberName, dateLabel, liveRoom, replyDay, showFacts, isAsksOn, nextSteps, lookupQuestion, installCard = null, flash, moreLinks, now }: TodayPageProps) {
   const first = firstWord(memberName);
-  const help = today.helpableAsks;
   const forYou = today.introsForYou ?? [];
   const intros = [...today.introsToAnswer, ...today.introsToFinish];
-  const facts = today.profileLines;
-  const waitingCount = intros.length + forYou.length;
-  const lead = help.length
-    ? `You could help with ${help.length === 1 ? "this one" : `these ${help.length}`}`
-    : waitingCount
-      ? `${first}, ${waitingCount === 1 ? "one intro is" : `${waitingCount} intros are`} waiting for your yes`
-      : facts.length
-        ? `${first}, is this right?`
-        : "That’s everything this week";
-  const plus = [
-    help.length && waitingCount ? `${waitingCount === 1 ? "one intro" : `${waitingCount} intros`} waiting for your yes` : null,
-    (help.length || waitingCount) && facts.length ? `${facts.length === 1 ? "one line" : `${facts.length} lines`} on your profile` : null,
-  ].filter(Boolean);
-  const isNothing = !help.length && !waitingCount && !facts.length;
-  const digest = possessive(digestDay);
-  const mineCount = today.ownPosts.length + today.introsInMotion.length;
+  const answered = today.ownPosts.filter(({ answerCount }) => answerCount > 0);
+  const facts = showFacts ? today.profileLines : [];
+  // Waiting on you: intros for your yes first, then intros you're asked to make, then answers to your asks; 3 at most.
+  const shownForYou = forYou.slice(0, TODAY_LIMITS.waiting);
+  const shownIntros = intros.slice(0, TODAY_LIMITS.waiting - shownForYou.length);
+  const shownAnswered = answered.slice(0, TODAY_LIMITS.waiting - shownForYou.length - shownIntros.length);
+  const waitingCount = forYou.length + intros.length + answered.length;
+  const help = today.helpableAsks.slice(0, TODAY_LIMITS.help);
+  const title = waitingCount
+    ? `${first}, ${waitingCount === 1 ? "one thing waits" : `${waitingCount} things wait`} for you`
+    : help.length
+      ? `${first}, you could help`
+      : "Nothing needs you right now";
 
   return (
-    <>
+    <div className="td-page">
       {flash ? <FlashNote>{flash}</FlashNote> : null}
       <PageHeader
-        eyebrow={`${dateLabel} · ${possessive(first)} week at ${communityName}`}
-        title={lead}
-        description={
-          isNothing
-            ? `Nothing needs you right now. New asks you could help with land here and in ${digest} digest.`
-            : `${plus.length ? `Plus ${plus.join(" and ")}. ` : ""}Each item also works by replying to ${digest} email.`
-        }
+        eyebrow={dateLabel}
+        title={title}
+        description={replyDay && (waitingCount || help.length) ? `Or answer by replying to ${possessive(replyDay)} email.` : undefined}
         action={
-          <>
-            <Link className="fh-btn fh-btn-ink fh-btn-sm" href={askIntroHref}>
-              <ArrowLeftRight {...ICON} />
-              Ask for an intro
-            </Link>
-            <Link className="fh-btn fh-btn-secondary fh-btn-sm" href={COMPOSE_PAGE}>
+          isAsksOn ? (
+            <Link className="fh-btn fh-btn-secondary fh-btn-sm" href={TODAY_COMPOSE_PAGE}>
               <Plus {...ICON} />
               Post an ask
             </Link>
-          </>
+          ) : undefined
         }
       />
-      <div className="fh-today">
-        <div>
-          {installCard}
-          {lookupQuestion}
-          {help.length ? (
-            <section className="fh-tsec">
-              <SectionHead title={`${help.length} ${plural(help.length, "ask", "asks")} on your paths`} link={<Link href={ASKS_PAGE}>All asks</Link>} />
-              {help.map((ask) => (
-                <article key={ask.id} className="fh-titem" id={`ask-${ask.id}`}>
-                  <div className="fh-ph">
-                    <Avatar stableId={ask.author.id} name={ask.author.name} imageUrl={ask.author.avatarUrl} sizePx={28} />
-                    <div>
-                      <b>{ask.author.name}</b>
-                      <span>{describeAgo(ask.createdAt, now)}</span>
-                    </div>
-                  </div>
-                  <p className="fh-body">{ask.title}</p>
-                  {ask.who ? <TargetLine who={ask.who} /> : null}
-                  <p className="fh-why">
-                    <b>Why you:</b> {ask.whyYou}
-                  </p>
-                  <div className="fh-btn-row">
-                    <Link className="fh-btn fh-btn-primary" href={`${toAskPage(ask.id)}#help`}>
-                      <Hand {...ICON} />I can help
-                    </Link>
-                    <NotThisWeekButton askId={ask.id} />
-                  </div>
-                </article>
-              ))}
-            </section>
-          ) : null}
-          {waitingCount ? (
-            <section className="fh-tsec">
-              <SectionHead title="Waiting for your yes" link={<Link href={ROUTES.intros}>Your intros</Link>} />
-              {forYou.map((intro) => (
-                <TargetMemberAsk key={intro.id} intro={intro} ago={describeAgo(intro.createdAt, now)} />
-              ))}
-              {intros.map((intro) => (
-                <article key={intro.id} className="fh-titem">
-                  <div className="fh-ph">
-                    <Avatar stableId={intro.requester.id} name={intro.requester.name} imageUrl={intro.requester.avatarUrl} sizePx={28} />
-                    <div>
-                      <b>{describeIntroLine(intro)}</b>
-                      <span>{`Asked ${describeAgo(intro.createdAt, now)}. ${firstWord(intro.target.name)} hears nothing unless you say yes.`}</span>
-                    </div>
-                  </div>
-                  {intro.note ? <div className="fh-quote fh-notetext">{intro.note}</div> : null}
-                  <div className="fh-btn-row">
-                    <Link className="fh-btn fh-btn-primary" href={`${ROUTES.intros}/${intro.id}`}>
-                      Answer
-                    </Link>
-                  </div>
-                </article>
-              ))}
-            </section>
-          ) : null}
-          {facts.length ? (
-            <section className="fh-tsec">
-              <SectionHead title="Is this right?" link={<Link href={`${ROUTES.editCard}#village-lines`}>My profile</Link>} />
-              <p className="fh-small fh-muted" style={{ margin: "-4px 0 10px" }}>
-                We filled this in from public sources. Change anything; you decide what shows.
-              </p>
-              {facts.map((fact) => (
-                <article key={fact.field} className="fh-titem fh-fact" id={`fact-${fact.field}`}>
-                  <p className="fh-small fh-muted">
-                    <RefreshCw {...ICON} className="fh-i fh-xs inline-block align-[-2px]" /> Filled in from public profiles · refreshed {new Date(fact.filledAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
-                  </p>
-                  <p className="fh-factline">
-                    <b>{fact.label}</b> {fact.value}
-                  </p>
-                  <FactButtons field={fact.field} label={fact.label} value={fact.value} />
-                </article>
-              ))}
-            </section>
-          ) : null}
-          {isNothing ? (
-            <EmptyState title="That’s everything this week" description="Nothing to answer. When a member asks for someone you know, it shows here first.">
-              <Link className="fh-btn fh-btn-secondary fh-btn-sm" href={ASKS_PAGE}>
-                Browse the open asks
-              </Link>
-            </EmptyState>
-          ) : null}
-          {nextSteps.map((nextStep) => (
-            <NextStepCard key={nextStep.title} nextStep={nextStep} />
+      {liveRoom ? <LiveNowCard room={liveRoom} /> : null}
+      {installCard}
+      {lookupQuestion}
+      {waitingCount ? (
+        <section className="fh-tsec">
+          <SectionHead title="Waiting on you" />
+          {shownForYou.map((intro) => (
+            <TargetMemberAsk key={intro.id} intro={intro} ago={describeAgo(intro.createdAt, now)} />
           ))}
-        </div>
-        <aside>
-          <section className="fh-sheet">
-            <SheetHead title="Your asks in motion" link={<Link href={`${ASKS_PAGE}?tab=yours`}>Yours</Link>} />
-            {allowance ? (
-              <div className="fh-allow">
-                <AllowancePips left={allowance.left} total={allowance.cap} label={describeAllowance(allowance)} />
-                <span className="fh-small fh-muted">Asks you post and intro asks share it. Declined, expired and withdrawn intro asks come back.</span>
+          {shownIntros.map((intro) => (
+            <article key={intro.id} className="fh-titem td-row">
+              <Avatar stableId={intro.requester.id} name={intro.requester.name} imageUrl={intro.requester.avatarUrl} sizePx={28} />
+              <div>
+                <b>{describeIntroLine(intro)}</b>
               </div>
-            ) : null}
-            {mineCount ? (
-              <div className="fh-rows">
-                {today.ownPosts.map((post) => (
-                  <Link key={post.id} className="fh-r" href={toAskPage(post.id)}>
-                    <Hand {...SMALL_ICON} />
-                    <div className="fh-who">
-                      <b className="fh-plain">{post.body}</b>
-                      <span>{`${post.helperCount ? describeCanHelp(post.helperCount) : "No paths found yet"} · ${describeAnswerCount(post.answerCount)} · ${describeAgo(post.createdAt, now)}`}</span>
-                    </div>
-                    <div className="fh-end">
-                      <Pill tone="open">Open</Pill>
-                    </div>
-                  </Link>
-                ))}
-                {today.introsInMotion.map((intro) => (
-                  <Link key={intro.id} className="fh-r" href={`${ROUTES.intros}/${intro.id}`}>
-                    <ArrowLeftRight {...SMALL_ICON} />
-                    <div className="fh-who">
-                      <b className="fh-plain">{`Intro to ${intro.target.name} via ${firstWord(intro.introducer.name)}`}</b>
-                      <span>{`asked ${describeAgo(intro.createdAt, now)}`}</span>
-                    </div>
-                    <div className="fh-end">
-                      <Pill tone="open">{intro.state === INTRO_STATES.requested ? `With ${firstWord(intro.introducer.name)}` : `With ${firstWord(intro.target.name)}`}</Pill>
-                    </div>
-                  </Link>
-                ))}
+              <Link className="fh-btn fh-btn-primary fh-btn-sm" href={`${ROUTES.intros}/${intro.id}`}>
+                Answer
+              </Link>
+            </article>
+          ))}
+          {shownAnswered.map((post) => (
+            <article key={post.id} className="fh-titem td-row">
+              <div>
+                <b>{post.body}</b>
+                <span className="fh-small fh-muted">{describeAnswerCount(post.answerCount)}</span>
               </div>
+              <Link className="fh-btn fh-btn-secondary fh-btn-sm" href={toAskPage(post.id)} aria-label={`Read the answers to ${post.body}`}>
+                Read
+              </Link>
+            </article>
+          ))}
+        </section>
+      ) : null}
+      {help.length ? (
+        <section className="fh-tsec">
+          <SectionHead title="You could help" link={<Link href={ASKS_PAGE}>All asks</Link>} />
+          {help.map((ask) => (
+            <article key={ask.id} className="fh-titem" id={`ask-${ask.id}`}>
+              <div className="fh-ph">
+                <Avatar stableId={ask.author.id} name={ask.author.name} imageUrl={ask.author.avatarUrl} sizePx={28} />
+                <div>
+                  <b>{ask.author.name}</b>
+                </div>
+              </div>
+              <p className="fh-body">{ask.title}</p>
+              <div className="fh-btn-row">
+                <Link className="fh-btn fh-btn-primary" href={`${toAskPage(ask.id)}#help`} title={ask.whyYou}>
+                  I can help
+                </Link>
+                <NotThisWeekButton askId={ask.id} />
+              </div>
+            </article>
+          ))}
+        </section>
+      ) : null}
+      {facts.length ? (
+        <section className="fh-tsec">
+          <SectionHead title="Is this right?" />
+          {facts.map((fact) => (
+            <article key={fact.field} className="fh-titem fh-fact" id={`fact-${fact.field}`}>
+              <p className="fh-factline">
+                <b>{fact.label}</b> {fact.value}
+              </p>
+              <FactButtons field={fact.field} label={fact.label} value={fact.value} />
+            </article>
+          ))}
+        </section>
+      ) : null}
+      {nextSteps.map((nextStep) => (
+        <NextStepCard key={nextStep.title} nextStep={nextStep} />
+      ))}
+      {moreLinks.length ? (
+        <nav className="td-more" aria-label="More for you">
+          <b>More for you</b>
+          {moreLinks.map((link) =>
+            // Perks loads as a full page, so its own Content-Security-Policy header applies.
+            link.isFullLoad ? (
+              <a key={link.href} href={link.href}>
+                {link.label}
+              </a>
             ) : (
-              <p className="fh-small fh-muted">
-                Nothing in motion. <Link href={askIntroHref}>Ask for an intro</Link> or <Link href={COMPOSE_PAGE}>post an ask</Link>.
-              </p>
-            )}
-          </section>
-          {perksCommunityName ? (
-            // A full page load, so /perks's own Content-Security-Policy header applies.
-            <a className="fh-sheet fh-perks-card" href={PERKS_PAGE} style={{ marginTop: 14 }}>
-              <Gift {...SMALL_ICON} />
-              <span>
-                <b>Perks</b>
-                <span className="fh-small fh-muted">Deals for {perksCommunityName} founders</span>
-              </span>
-              <ChevronRight {...ICON} />
-            </a>
-          ) : null}
-          {openJobCount !== null ? (
-            <section className="fh-sheet" style={{ marginTop: 16 }}>
-              <SheetHead
-                title={
-                  <>
-                    <Building2 {...SMALL_ICON} className="fh-i fh-s inline-block align-[-3px]" /> Jobs
-                  </>
-                }
-                link={<Link href={JOB_BOARD_PAGES.board}>The board</Link>}
-              />
-              <p className="fh-small">
-                {openJobCount ? `${openJobCount} ${plural(openJobCount, "open job", "open jobs")} at ${communityName} companies.` : "No open jobs yet."} Hiring?{" "}
-                <Link href={JOB_BOARD_PAGES.ours}>Add yours</Link>.
-              </p>
-            </section>
-          ) : null}
-          {libraryCard}
-          {today.newMembers.length > 0 ? (
-            <div style={{ marginTop: 16 }}>
-              <NewThisWeekCard newMembers={today.newMembers} />
-            </div>
-          ) : null}
-          {isNothing ? null : (
-            <p className="fh-small fh-muted" style={{ marginTop: 14 }}>
-              {TODAY_END_LINE}
-            </p>
+              <Link key={link.href} href={link.href}>
+                {link.label}
+              </Link>
+            ),
           )}
-        </aside>
-      </div>
-    </>
+        </nav>
+      ) : null}
+    </div>
   );
 }
