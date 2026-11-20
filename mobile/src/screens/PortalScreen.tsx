@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import type { PortalHandle } from "../components/portal-types";
 import { PortalView } from "../components/PortalView";
-import type { RoomClosedReason } from "../lib/bridge";
+import type { AppAction, RoomClosedReason } from "../lib/bridge";
 import type { Community } from "../lib/community";
 import { toPortalUrl } from "../lib/links";
 import { setUpPush } from "../push/push";
@@ -99,6 +99,18 @@ export function PortalScreen({ community, startPath, openRequest, onSwitchCommun
     [portal],
   );
 
+  // The avatar menu's "This app" group on the page.
+  const onAppAction = useCallback(
+    (action: AppAction) => {
+      if (action === "reload") {
+        setFailure(null);
+        portal.reload();
+      } else if (action === "browser") void Linking.openURL(startUrl);
+      else onSwitchCommunity();
+    },
+    [portal, startUrl, onSwitchCommunity],
+  );
+
   const onRoomStatus = useCallback((text: string, isLive: boolean) => setRoomStatus({ text, isLive }), []);
 
   // The page under the room learns why it closed (it says so and offers Join again).
@@ -153,7 +165,7 @@ export function PortalScreen({ community, startPath, openRequest, onSwitchCommun
       ) : null}
 
       <View style={styles.portal}>
-        <PortalView key={attempt} ref={portalRef} origin={community.origin} startUrl={startUrl} pushToken={pushToken} onOpenRoom={onOpenRoom} onPageLoaded={onPageLoaded} onFailed={setFailure} />
+        <PortalView key={attempt} ref={portalRef} origin={community.origin} startUrl={startUrl} pushToken={pushToken} onOpenRoom={onOpenRoom} onAppAction={onAppAction} onPageLoaded={onPageLoaded} onFailed={setFailure} />
         {failure ? (
           <View style={styles.failure} testID="portal-failure">
             <Text style={styles.failureTitle}>We couldn&apos;t open {community.name}</Text>

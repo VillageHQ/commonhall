@@ -1,10 +1,12 @@
 // The app and the portal page talk through the web view. The page's own fetch carries the member's session cookie
 // and the site's own origin, so the server's checks stay as they are: no app tokens, no second sign-in.
 //   app -> page: `__commonhallBridge.call(id, method, path, body)` runs a fetch in the page.
-//   page -> app: JSON messages: the fetch's answer, and "open this voice room" (with whether the member already told
-//   people about it).
+//   page -> app: JSON messages: the fetch's answer, "open this voice room" (with whether the member already told
+//   people about it), and the avatar menu's "This app" actions (reload, open in the browser, switch community).
 //   app -> page: the event "commonhall-room-closed" when the app's room screen closes, so the room page says why.
 // The page reads `window.CommonhallApp` (src/platform/native-app/bridge.ts in the web app).
+
+import { isSameOrigin } from "./links.ts";
 
 export const BRIDGE_VERSION = 1;
 export const NATIVE_APP_READY_EVENT = "commonhall-app-ready";
@@ -13,9 +15,17 @@ export const ROOM_CLOSED_EVENT = "commonhall-room-closed";
 // Why the room screen closed, as the page reads it (src/platform/native-app/bridge.ts, ROOM_CLOSED_REASONS).
 export type RoomClosedReason = "left" | "ended" | "elsewhere" | "failed";
 
+// The page marks itself as inside the app with this attribute on <html>; the site's CSS keys on `html[data-app]`.
+export const APP_MARK = "commonhall";
+
+// What the avatar menu's "This app" group asks the app to do.
+export const APP_ACTIONS = ["reload", "browser", "switch"] as const;
+export type AppAction = (typeof APP_ACTIONS)[number];
+
 export type BridgeMessage =
   | { type: "api.result"; id: number; status: number; body: string }
-  | { type: "voice.open"; roomId: string; title: string; hasNotified: boolean };
+  | { type: "voice.open"; roomId: string; title: string; hasNotified: boolean }
+  | { type: "app.action"; action: AppAction };
 
 export type ApiMethod = "POST" | "DELETE";
 
@@ -54,13 +64,22 @@ export function parseBridgeMessage(raw: string): BridgeMessage | null {
     // A page from before this fact sends nothing: the app then learns it from the server's answer, as before.
     return { type: "voice.open", roomId: message.roomId, title, hasNotified: message.hasNotified === true };
   }
+  if (message.type === "app.action" && typeof message.action === "string" && (APP_ACTIONS as readonly string[]).includes(message.action)) {
+    return { type: "app.action", action: message.action as AppAction };
+  }
   return null;
+}
+
+// A message from the web view, read only when the page that sent it is the community's own.
+export function readPortalMessage(raw: string, pageUrl: string, origin: string): BridgeMessage | null {
+  return isSameOrigin(pageUrl, origin) ? parseBridgeMessage(raw) : null;
 }
 
 // Runs in the page before its own scripts (react-native-webview's injectedJavaScriptBeforeContentLoaded).
 export function buildBootstrapScript({ platform, pushToken }: { platform: string; pushToken: string | null }) {
   const facts = JSON.stringify({ version: BRIDGE_VERSION, platform, pushToken });
   return `(function () {
+  document.documentElement.dataset.app = ${JSON.stringify(APP_MARK)};
   if (window.__commonhallBridge) return true;
   var facts = ${facts};
   function send(message) {
@@ -70,7 +89,9 @@ export function buildBootstrapScript({ platform, pushToken }: { platform: string
     version: facts.version,
     platform: facts.platform,
     pushToken: facts.pushToken,
-    openRoom: function (roomId, title, facts) { send({ type: "voice.open", roomId: String(roomId), title: String(title || ""), hasNotified: Boolean(facts && facts.hasNotified === true) }); }
+    appActions: true,
+    openRoom: function (roomId, title, facts) { send({ type: "voice.open", roomId: String(roomId), title: String(title || ""), hasNotified: Boolean(facts && facts.hasNotified === true) }); },
+    appAction: function (action) { send({ type: "app.action", action: String(action) }); }
   };
   window.__commonhallBridge = {
     call: function (id, method, path, body) {

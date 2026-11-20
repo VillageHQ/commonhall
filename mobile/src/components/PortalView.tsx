@@ -1,6 +1,6 @@
 import { createElement, forwardRef, useCallback, useImperativeHandle, useRef } from "react";
 
-import { BRIDGE_VERSION, isAllowedCall, NATIVE_APP_READY_EVENT, ROOM_CLOSED_EVENT, toApiAnswer } from "../lib/bridge";
+import { APP_ACTIONS, APP_MARK, BRIDGE_VERSION, isAllowedCall, NATIVE_APP_READY_EVENT, ROOM_CLOSED_EVENT, toApiAnswer, type AppAction } from "../lib/bridge";
 import { toSafePath } from "../lib/links";
 import type { PortalHandle, PortalViewProps } from "./portal-types";
 
@@ -12,7 +12,7 @@ type PortalWindow = Window & { CommonhallApp?: unknown };
 // The web preview (`expo start --web` through scripts/web-preview.mjs): the portal in an iframe on the same address,
 // so the app can reach into the page exactly as the phone's web view does: `window.CommonhallApp` in the page, and
 // calls made with the page's own fetch (its cookie, its origin).
-export const PortalView = forwardRef<PortalHandle, PortalViewProps>(function PortalView({ startUrl, pushToken, onOpenRoom, onPageLoaded, onFailed }, ref) {
+export const PortalView = forwardRef<PortalHandle, PortalViewProps>(function PortalView({ startUrl, pushToken, onOpenRoom, onAppAction, onPageLoaded, onFailed }, ref) {
   const frame = useRef<HTMLIFrameElement | null>(null);
   const token = useRef(pushToken);
 
@@ -28,15 +28,21 @@ export const PortalView = forwardRef<PortalHandle, PortalViewProps>(function Por
 
   const describeApp = useCallback(
     (page: PortalWindow) => {
+      // The same marks and fields as the phone's bootstrap script (lib/bridge.ts).
+      page.document.documentElement.dataset.app = APP_MARK;
       page.CommonhallApp = {
         version: BRIDGE_VERSION,
         platform: "web",
         pushToken: token.current,
+        appActions: true,
         openRoom: (roomId: string, title: string, facts?: { hasNotified?: unknown }) => onOpenRoom(String(roomId), String(title ?? ""), facts?.hasNotified === true),
+        appAction: (action: unknown) => {
+          if ((APP_ACTIONS as readonly unknown[]).includes(action)) onAppAction(action as AppAction);
+        },
       };
       page.dispatchEvent(new Event(NATIVE_APP_READY_EVENT));
     },
-    [onOpenRoom],
+    [onOpenRoom, onAppAction],
   );
 
   useImperativeHandle(

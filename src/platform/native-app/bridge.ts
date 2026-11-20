@@ -14,6 +14,17 @@ export type RoomClosed = { roomId: string; reason: RoomClosedReason };
 // or a Notify when starting it), so the app doesn't offer it again. Apps before this ignore it.
 export type OpenRoomFacts = { hasNotified: boolean };
 
+// The app's own actions, which the avatar menu's "This app" group offers (mobile/src/lib/bridge.ts, APP_ACTIONS).
+export const APP_ACTIONS = { reload: "reload", browser: "browser", switch: "switch" } as const;
+export type AppAction = (typeof APP_ACTIONS)[keyof typeof APP_ACTIONS];
+
+// The app's user agent carries this (`applicationNameForUserAgent`), so the server can tell its pages apart.
+export const NATIVE_APP_USER_AGENT_MARK = "CommonhallApp/";
+
+export function isNativeAppUserAgent(userAgent: string | null | undefined) {
+  return Boolean(userAgent?.includes(NATIVE_APP_USER_AGENT_MARK));
+}
+
 export type NativeApp = {
   version: number;
   platform: string;
@@ -21,6 +32,8 @@ export type NativeApp = {
   pushToken: string | null;
   // Opens a live voice room in the app's own player, which keeps playing with the screen locked.
   openRoom: (roomId: string, title: string, facts?: OpenRoomFacts) => void;
+  // Reload, open in the browser, switch community; null in an app from before these (it shows no "This app" items).
+  appAction: ((action: AppAction) => void) | null;
 };
 
 type WindowWithApp = Window & { CommonhallApp?: Partial<NativeApp> };
@@ -29,7 +42,8 @@ export function readNativeApp(): NativeApp | null {
   if (typeof window === "undefined") return null;
   const app = (window as WindowWithApp).CommonhallApp;
   if (!app || typeof app.openRoom !== "function") return null;
-  return { version: Number(app.version) || 1, platform: String(app.platform ?? ""), pushToken: typeof app.pushToken === "string" ? app.pushToken : null, openRoom: app.openRoom };
+  const appAction = (app as { appActions?: unknown }).appActions === true && typeof app.appAction === "function" ? app.appAction : null;
+  return { version: Number(app.version) || 1, platform: String(app.platform ?? ""), pushToken: typeof app.pushToken === "string" ? app.pushToken : null, openRoom: app.openRoom, appAction };
 }
 
 // For useSyncExternalStore: the app can arrive after the page (the web preview sets it on load).
@@ -61,4 +75,14 @@ export function subscribeToRoomClosed(roomId: string, onClosed: (reason: RoomClo
 
 export function isInNativeApp() {
   return readNativeApp() !== null;
+}
+
+// For useSyncExternalStore: whether the app takes the avatar menu's "This app" actions (a stable boolean snapshot).
+export function hasAppActions() {
+  return readNativeApp()?.appAction != null;
+}
+
+// Asks the app to do one of its own actions; does nothing in a browser or an app from before them.
+export function runAppAction(action: AppAction) {
+  readNativeApp()?.appAction?.(action);
 }

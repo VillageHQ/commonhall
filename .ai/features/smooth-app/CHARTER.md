@@ -24,3 +24,21 @@ Product code, store builds, merging. The council settles the forks listed in eac
 ## Rules kept
 A throwaway Postgres on a free port and made-up people only; the demo database on 9495 untouched; subagents in the
 foreground on the subscription.
+
+---
+
+# Charter: round 7, part 2 — the build (smooth-app)
+
+**Approved:** the round's orchestrator brief (20 Nov 2026), on the owner's round-7 goal and the council's decisions in
+[SPEC.md](SPEC.md) ("Decisions"). The spec is the approved page; this section only records the scope.
+
+## In
+Part 0 (the contract), Part A (instant tabs on the site), Part B (the app's web view), Part C (the app's chrome on the
+site), measured before and after with `reports/measure.mjs`, checked by a separate verifier at 390 px and 1280 px and in
+the store app's web preview. One pull request, not merged.
+
+## Out (the council, 20 Nov)
+- Part D (a native tab bar): waits for the owner's phone test of TestFlight 4.
+- The experimental Next.js tab cache (`experimental.staleTimes`): not turned on. Spec Part A's "reuse visited tabs for
+  30 seconds" and its check 3 (a revisit with no page request) are dropped with it; a revisit shows the outline at once.
+- Store builds and publishing.
