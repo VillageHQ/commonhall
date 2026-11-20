@@ -74,8 +74,9 @@ export function AnswerForm({ askId }: { askId: string }) {
   );
 }
 
-// "I can help" (round 6: the one way to respond to someone else's open ask): an optional note, then the button. A
-// member the ask was routed through a path offers the person they know; anyone else offers what they've done.
+// "I can help" (the one way to respond to someone else's open ask): a note only the asker sees, then the button.
+// Everyone else sees the fixed line. A member routed through a path offers the person they know; anyone else offers
+// what they've done.
 export function HelpForm({ askId, authorFirstName, knownPerson }: { askId: string; authorFirstName: string; knownPerson: string | null }) {
   const { error, isPending, run } = useAction();
   const kind = knownPerson ? ASK_HELP_KINDS.knowSomeone : ASK_HELP_KINDS.doneMyself;
@@ -94,9 +95,9 @@ export function HelpForm({ askId, authorFirstName, knownPerson }: { askId: strin
       <form method="post" className="fh-decide" onSubmit={submit}>
         <div className="fh-field">
           <label className="fh-label fh-small" htmlFor="h-note">
-            A note for {authorFirstName} <span className="fh-muted">(optional)</span>
+            A note only {authorFirstName} sees
           </label>
-          <Textarea id="h-note" name="note" rows={3} maxLength={ASK_LIMITS.answerLength} style={{ minHeight: 84 }} placeholder="How you know them, or what worked for you" />
+          <Textarea id="h-note" name="note" rows={3} maxLength={ASK_LIMITS.noteLength} style={{ minHeight: 84 }} placeholder="How you know them, or what worked for you" />
         </div>
         <div className="fh-btn-row" style={{ marginTop: 12 }}>
           <Button type="submit" disabled={isPending}>

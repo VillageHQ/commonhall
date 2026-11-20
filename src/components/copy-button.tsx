@@ -13,11 +13,13 @@ async function copyText(text: string, setWasCopied: (wasCopied: boolean) => void
   setTimeout(() => setWasCopied(false), COPIED_RESET_MS);
 }
 
-export function CopyButton({ text, label }: { text: string; label: string }) {
+type CopyButtonProps = { text: string; label: string; variant?: "primary" | "outline" | "quiet"; size?: "default" | "sm" };
+
+export function CopyButton({ text, label, variant = "outline", size = "sm" }: CopyButtonProps) {
   const [wasCopied, setWasCopied] = useState(false);
 
   return (
-    <Button type="button" variant="outline" size="sm" onClick={() => copyText(text, setWasCopied)}>
+    <Button type="button" variant={variant} size={size} onClick={() => copyText(text, setWasCopied)}>
       {wasCopied ? <Check aria-hidden="true" /> : <Copy aria-hidden="true" />}
       <span aria-live="polite">{wasCopied ? "Copied" : label}</span>
     </Button>

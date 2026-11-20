@@ -11,7 +11,7 @@ import { shownFaceColumns, toShownFaceUrl } from "../members/reads-pictures.ts";
 import { ASK_HELPER_REASONS, ASK_KINDS, describeAskWho, describeWhyYou } from "./contract.ts";
 import { helpableAskSchema, type HelpableAsk } from "./contract-today.ts";
 import { hasNoBlockBetween, isOpenAsk } from "./reads.ts";
-import { findMatchedWords, readWords } from "./rules-help-match.ts";
+import { findMatchedWords, readAskMatchText, readWords } from "./rules-help-match.ts";
 import { ask, askHelper, askOffer } from "./schema.ts";
 import { askSkip } from "./schema-skip.ts";
 
@@ -111,7 +111,7 @@ export async function readAsksYouCouldHelp(database: Database, memberId: string,
   const rows = new Map<string, CandidateRow>([...recent, ...routed].map((row) => [row.id, row]));
 
   return [...rows.values()]
-    .map((row) => ({ row, matchedWords: findMatchedWords(`${row.title} ${row.detail ?? ""}`, helperWords.words) }))
+    .map((row) => ({ row, matchedWords: findMatchedWords(readAskMatchText(row), helperWords.words) }))
     // Commonhall's rule: Today and the weekly email show the asks this member was routed to when they were posted.
     .filter(({ row }) => row.why !== null)
     .toSorted((first, second) => second.row.listedAt.getTime() - first.row.listedAt.getTime() || second.row.id.localeCompare(first.row.id))
@@ -126,6 +126,7 @@ export async function readAsksYouCouldHelp(database: Database, memberId: string,
         matchedWords,
         why: row.why,
         who: describeAskWho(row) || null,
+        knownPerson: row.reason === ASK_HELPER_REASONS.path ? row.personName : null,
         whyYou:
           row.why !== null && row.reason !== null
             ? describeWhyYou({ reason: row.reason, why: row.why, personName: row.personName, personTitle: row.personTitle, warmth: row.warmth })

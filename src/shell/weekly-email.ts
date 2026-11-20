@@ -230,6 +230,7 @@ export function buildSampleItems(now = new Date()): TodayItems {
         why: null,
         who: "a fractional CFO",
         whyYou: "Your profile says you can help with “finance for seed-stage startups.”",
+        knownPerson: null,
       },
     ],
     introsToAnswer: [intro],

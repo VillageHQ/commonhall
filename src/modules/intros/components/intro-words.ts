@@ -201,22 +201,3 @@ export function readWithdrawHint(intro: Intro) {
   const who = intro.state === INTRO_STATES.askingTarget ? `${connectorFirst} and ${targetFirst}` : connectorFirst;
   return `${who} won’t be asked again, and the ask comes back to you.`;
 }
-
-// The connector's three choices. A no of either kind tells the asker only that it can't happen, never why.
-export function readConnectorChoices(intro: Pick<Intro, "requester" | "introducer" | "target">) {
-  const { askerFirst } = readNames(intro);
-  return [
-    { value: "yes", title: "Yes, introduce them" },
-    { value: "not_now", title: "Not this time", description: `${askerFirst} is never told why.` },
-    { value: "dont_know", title: "I don’t know them well", description: `Same for ${askerFirst}: never told why.` },
-  ] as const;
-}
-
-export function readTargetEmailHint(intro: Pick<Intro, "requester" | "introducer" | "target">) {
-  const { askerFirst, targetFirst } = readNames(intro);
-  return `${targetFirst} sees ${poss(askerFirst)} address only after saying yes.`;
-}
-
-export function readTargetEmailLabel(intro: Pick<Intro, "requester" | "introducer" | "target">) {
-  return `${poss(readNames(intro).targetFirst)} email`;
-}

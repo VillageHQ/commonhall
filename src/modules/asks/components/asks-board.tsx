@@ -62,7 +62,7 @@ export function AsksBoard({ tab, search, posts, counts, allowance, flash, draft,
       )}
       <div className="fh-posts">
         {posts.length > 0 ? (
-          posts.map((post) => <PostCard key={post.id} post={post} isYoursTab={tab === ASK_PAGE_TABS.yours} />)
+          posts.map((post) => <PostCard key={post.id} post={post} isYoursTab={tab === ASK_PAGE_TABS.yours} isForYouTab={!search && tab === ASK_PAGE_TABS.forYou} />)
         ) : (
           <p className="fh-empty" style={{ marginTop: 12 }}>
             {search ? `No ask matches “${search}”.` : EMPTY_TABS[tab]}

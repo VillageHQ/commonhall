@@ -34,11 +34,11 @@ export type IntroConnectorCard = {
 
 export async function readAskerProfile(database: Database, memberId: string): Promise<AskerProfile> {
   const [row] = await database
-    .select({ name: user.name, title: memberProfile.title, company: shownCompanyColumn(user.id), bio: memberProfile.bio, needs: memberProfile.needs })
+    .select({ name: user.name, title: memberProfile.title, company: shownCompanyColumn(user.id), bio: memberProfile.bio })
     .from(user)
     .leftJoin(memberProfile, eq(memberProfile.userId, user.id))
     .where(eq(user.id, memberId));
-  return row ?? { name: "", title: null, company: null, bio: null, needs: null };
+  return row ?? { name: "", title: null, company: null, bio: null };
 }
 
 export async function readIntroConnectorCard(database: Database, connectorId: string, viewerId: string): Promise<IntroConnectorCard | null> {

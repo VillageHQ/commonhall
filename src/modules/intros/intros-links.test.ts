@@ -8,10 +8,12 @@ import { POST as postLinkAnswer } from "@/app/api/intros/link/answer/route";
 import { INTRO_LINK_PURPOSES, INTRO_OUTCOMES, INTRO_STATES } from "@/modules/intros/contract";
 import { issueAnswerLink } from "@/modules/intros/answer-links";
 import { introsManifest } from "@/modules/intros/manifest";
+import { answerAsConnector } from "@/modules/intros/service-answers";
 import { CLOSED_REASONS, LINK_VIEWS, readIntroLinkView } from "@/modules/intros/reads-links";
 import { introConsentLink, introOptOut, introRequest } from "@/modules/intros/schema";
 import { user } from "@/platform/database/auth-schema";
 import { emailOutbox } from "@/platform/email/schema";
+import { createRequestContext } from "@/platform/http/request-context";
 import { saveModuleState } from "@/platform/modules/enablement";
 import { clearDatabase, createTestDatabase } from "@/test/database";
 import { FAKE_RESEND_API_KEY, startFakeResendServer } from "@/test/fake-resend-server";
@@ -114,6 +116,19 @@ describe("intro links from emails", () => {
       expect(response.status).toBe(422);
       expect(await response.json()).toMatchObject({ message: "Add Rosa’s email, so we can ask them." });
       expect((await readRow(intro.id)).state).toBe(INTRO_STATES.requested);
+    });
+
+    it("needs no address for a yes in the app: the connector gets the link to copy, and nobody is emailed yet", async () => {
+      const { intro, marcus } = await seedIntro({ suggestedTargetEmail: TARGET_EMAIL });
+      const [connector] = await database.select({ id: user.id, email: user.email, role: user.role }).from(user).where(eq(user.id, marcus));
+      if (!connector) throw new Error("Expected the connector.");
+
+      const answered = await answerAsConnector(createRequestContext(database, process.env, connector), { introId: intro.id, choice: "yes", targetEmail: null, note: null, reason: null });
+
+      expect(answered.state).toBe(INTRO_STATES.askingTarget);
+      expect(answered.consentIssue).toMatchObject({ canEmailTarget: true });
+      expect(answered.consentIssue?.link).toContain(answered.consentIssue?.token);
+      expect(sent().filter(({ to }) => to.includes(TARGET_EMAIL))).toEqual([]);
     });
 
     it("refuses the asker's own address", async () => {

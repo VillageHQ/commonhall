@@ -36,40 +36,49 @@ function EmailLinkForm({ intro, consentIssue, onSent }: EmailLinkFormProps) {
 
   if (send.data) return <Alert variant="success">{send.data.message} They can answer from the email.</Alert>;
 
+  // "Email it to Rosa": a second, optional way to send the link, folded until it's wanted.
   return (
-    <form onSubmit={submit} className="grid gap-2 rounded-field bg-card p-4">
-      <p className="type-label">Or let us email {targetFirst} for you</p>
-      <Label htmlFor={emailId}>{targetFirst}&apos;s email</Label>
-      <Input
-        id={emailId}
-        type="email"
-        required
-        autoComplete="off"
-        value={targetEmail}
-        aria-describedby={hintId}
-        onChange={(event) => setTargetEmail(event.target.value)}
-      />
-      <p id={hintId} className="type-small text-muted-foreground">
-        {intro.suggestedTargetEmail ? `${requesterFirst} gave this address. Check it before you send. ` : null}
-        We use this address to ask {targetFirst} once, and to join them if they say yes. Then we delete it. Nobody else sees it.
-      </p>
-      <FormError message={send.error?.message ?? null} />
-      <Button type="submit" size="lg" variant="soft" disabled={send.isPending}>
-        <Mail aria-hidden="true" />
-        {send.isPending ? "Sending…" : `Email ${targetFirst}`}
-      </Button>
-    </form>
+    <details className="fh-fold">
+      <summary>
+        <Mail aria-hidden="true" className="fh-i fh-xs" strokeWidth={1.5} />
+        Email it to {targetFirst}
+      </summary>
+      <form onSubmit={submit} className="mt-2 grid gap-2 rounded-field bg-card p-4">
+        <Label htmlFor={emailId}>{targetFirst}&apos;s email</Label>
+        <Input
+          id={emailId}
+          type="email"
+          required
+          autoComplete="off"
+          value={targetEmail}
+          aria-describedby={hintId}
+          onChange={(event) => setTargetEmail(event.target.value)}
+        />
+        <p id={hintId} className="type-small text-muted-foreground">
+          {intro.suggestedTargetEmail ? `${requesterFirst} gave this address. Check it before you send. ` : null}
+          We use this address to ask {targetFirst} once, and to join them if they say yes. Then we delete it. Nobody else sees it.
+        </p>
+        <FormError message={send.error?.message ?? null} />
+        <div>
+          <Button type="submit" variant="secondary" disabled={send.isPending}>
+            <Mail aria-hidden="true" />
+            {send.isPending ? "Sending…" : `Email ${targetFirst}`}
+          </Button>
+        </div>
+      </form>
+    </details>
   );
 }
 
+// The link first, with "Copy link" as the one main action; a ready message around it is a quiet second copy.
 function IssuedConsent({ intro, consentIssue, onSent }: EmailLinkFormProps) {
   const consentNote = composeConsentNote(intro, consentIssue.link);
   return (
     <>
-      <p className="type-body rounded-field bg-card p-4 wrap-anywhere whitespace-pre-wrap text-foreground">{consentNote}</p>
-      <div className="flex flex-wrap gap-2">
-        <CopyButton text={consentNote} label="Copy the note" />
-        <CopyButton text={consentIssue.link} label="Copy just the link" />
+      <p className="type-body rounded-field bg-card p-4 wrap-anywhere text-foreground">{consentIssue.link}</p>
+      <div className="flex flex-wrap items-center gap-2">
+        <CopyButton text={consentIssue.link} label="Copy link" variant="primary" size="default" />
+        <CopyButton text={consentNote} label="Copy with a message" variant="quiet" />
       </div>
       <p className="type-small text-foreground-soft">This link is only for them. We only show it now, because we keep a scrambled copy.</p>
       {consentIssue.canEmailTarget ? <EmailLinkForm intro={intro} consentIssue={consentIssue} onSent={onSent} /> : null}

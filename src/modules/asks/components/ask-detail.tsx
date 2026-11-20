@@ -1,4 +1,4 @@
-import { Pin, Search } from "lucide-react";
+import { Lock, Pin, Search } from "lucide-react";
 import Link from "next/link";
 
 import { FlashNote } from "@/components/flash";
@@ -13,7 +13,7 @@ import { AskConsent, CompanyMark, describeAbout, ICON, MemberAvatar, PostStatusP
 
 const ANSWER_KIND_LABELS: Record<string, string | null> = {
   [ASK_ANSWER_KINDS.knowSomeone]: "Knows someone",
-  [ASK_ANSWER_KINDS.doneMyself]: "Has done this",
+  [ASK_ANSWER_KINDS.doneMyself]: "Can help",
   [ASK_ANSWER_KINDS.answer]: null,
 };
 
@@ -111,6 +111,16 @@ function AnswerRow({ answer, now, canReport }: { answer: PostAnswer; now: Date; 
         </div>
       </div>
       <p>{answer.body}</p>
+      {answer.privateNote ? (
+        <p className="fh-privnote">
+          <Lock {...ICON} />
+          <span>
+            <span className="fh-small fh-muted">{answer.isMine ? "Your note, only the asker sees it" : "A note only you see"}</span>
+            <br />
+            {answer.privateNote}
+          </span>
+        </p>
+      ) : null}
       {canReport ? <ReportLink target="answer" id={answer.id} noun="answer" /> : null}
     </div>
   );

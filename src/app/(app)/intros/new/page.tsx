@@ -16,7 +16,6 @@ import { readPrivacyLine } from "@/modules/intros/components/intro-words";
 import { introsManifest } from "@/modules/intros/manifest";
 import { readAskAllowance } from "@/shell/ask-helpers";
 import { readAskerProfile, readIntroConnectorCard } from "@/shell/intro-ask";
-import { draftNoteParts, joinNoteParts } from "@/shell/intro-ask-note";
 
 import { IntroAskForm } from "./intro-ask-form";
 
@@ -30,7 +29,7 @@ function describeNextAsk(backAt: string | null) {
 }
 
 // "Ask Ada for an intro": the ask from a member's profile (/intros/new?via=…). In view: the allowance once, who, and a
-// note drafted from the asker's profile. How an intro works stays under its fold. Needs no Village.
+// note drafted from the asker's card and the person they name. How an intro works stays under its fold. Needs no Village.
 export default modulePage(introsManifest, async function NewIntroPage({ searchParams }: NewIntroPageProps) {
   const member = await requireMember();
   const database = getDatabase();
@@ -58,7 +57,7 @@ export default modulePage(introsManifest, async function NewIntroPage({ searchPa
       </div>
       <IntroAskForm
         connector={{ id: connector.id, name: connector.name }}
-        draftNote={joinNoteParts(draftNoteParts(asker, { targetName: "", targetCompany: null }))}
+        asker={asker}
         blockedReason={blockedReason}
       />
       <details className="fh-section">

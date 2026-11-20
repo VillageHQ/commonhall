@@ -43,15 +43,17 @@ function fieldError(code: string, message: string) {
   return new RequestError(UNPROCESSABLE_STATUS, code, message);
 }
 
-// The address the connector gives must be the person's: not empty while the community sends email, a real address,
-// and not the asker's or the connector's own.
-async function readCheckedTargetEmail(database: Database, environment: Environment, introId: string, viewerId: string, typed: string | null) {
+// The address the connector gives must be the person's: a real address, and not the asker's or the connector's own.
+// In the app (round 7) a yes needs no address: it shows the link to copy, and "Email it to …" is a second step. A yes
+// from the connector's email has no link to copy, so there the address is still needed, the asker's if they gave one.
+async function readCheckedTargetEmail(database: Database, environment: Environment, introId: string, viewerId: string, typed: string | null, fromLink: boolean) {
   const intro = await readIntroForViewer(database, viewerId, introId);
   if (!intro || intro.viewerRole !== INTRO_ROLES.introducer) throw introGoneError();
   const canEmail = readResendConfig(environment) !== null;
-  const address = typed ?? intro.suggestedTargetEmail;
+  const address = typed ?? (fromLink ? intro.suggestedTargetEmail : null);
   if (!canEmail || intro.state !== INTRO_STATES.requested) return { intro, address: canEmail ? address : null };
   const targetFirst = readFirstName(intro.target.name);
+  if (!address && !fromLink) return { intro, address: null };
   if (!address) throw fieldError(INTRO_ERROR_CODES.targetEmailMissing, `Add ${targetFirst}’s email, so we can ask them.`);
   if (!targetEmailSchema.safeParse(address).success) throw fieldError(INTRO_ERROR_CODES.targetEmailMissing, "Enter an email address, like name@company.example.");
   const [own] = await database
@@ -62,16 +64,16 @@ async function readCheckedTargetEmail(database: Database, environment: Environme
   return { intro, address };
 }
 
-// The connector answers in one step, as on Commonhall: yes (with the person's email, and the note as they edited
-// it), not this time, or "I don't know them well enough". A yes asks the person by email at once; with no email in
-// this community, the connector gets the link to send themselves (Community's way).
-export async function answerAsConnector(context: RequestContext, { introId, choice, targetEmail, note, reason }: ConnectorAnswerBody) {
+// The connector answers in one step: yes (the note as they edited it), not this time, or "I don't know them well
+// enough" (the email's third link; the app has one "No thanks"). A yes returns the link for the connector to send; with
+// an address (typed, or the asker's on a yes from the email) it also asks the person by email at once.
+export async function answerAsConnector(context: RequestContext, { introId, choice, targetEmail, note, reason }: ConnectorAnswerBody, { fromLink = false } = {}) {
   if (choice !== CONNECTOR_CHOICES.yes) {
     const kind = choice === CONNECTOR_CHOICES.notNow ? INTRO_DECLINE_KINDS.notThisTime : INTRO_DECLINE_KINDS.doNotKnowThem;
     return transitionIntro(context, { introId, action: INTRO_ACTIONS.decline, reason, kind });
   }
   const { database, environment, member } = context;
-  const { intro, address } = await readCheckedTargetEmail(database, environment, introId, member.id, targetEmail);
+  const { intro, address } = await readCheckedTargetEmail(database, environment, introId, member.id, targetEmail, fromLink);
 
   const edited = normaliseNote(note);
   if (edited && edited !== intro.note.trim() && intro.state === INTRO_STATES.requested) {
@@ -124,7 +126,7 @@ export async function answerByLink({ database, environment, request }: LinkConte
   if (body.purpose === INTRO_LINK_PURPOSES.connector) {
     if (intro.state !== INTRO_STATES.requested) throw closedLinkError();
     const context = createRequestContext(database, environment, await readLinkMember(database, intro.introducerId));
-    const answered = await answerAsConnector(context, { introId: link.introId, choice: body.choice, targetEmail: body.targetEmail, note: body.note, reason: body.reason });
+    const answered = await answerAsConnector(context, { introId: link.introId, choice: body.choice, targetEmail: body.targetEmail, note: body.note, reason: body.reason }, { fromLink: true });
     return { result: answered.state === INTRO_STATES.declined ? LINK_RESULTS.declined : LINK_RESULTS.askedTarget };
   }
 

@@ -83,8 +83,8 @@ function readAnsweredOn(intro: Intro) {
   return answeredAt ? `You answered on ${formatDayMonth(answeredAt)}.` : null;
 }
 
-function ConnectorMain({ intro, canEmail, hasThread }: IntroPageProps) {
-  if (intro.state === INTRO_STATES.requested) return <ConnectorAnswer intro={intro} canEmail={canEmail} />;
+function ConnectorMain({ intro, hasThread }: IntroPageProps) {
+  if (intro.state === INTRO_STATES.requested) return <ConnectorAnswer intro={intro} />;
   const pill = readStatusPill(intro);
   const answeredOn = readAnsweredOn(intro);
   return (
@@ -106,7 +106,8 @@ function ConnectorMain({ intro, canEmail, hasThread }: IntroPageProps) {
 }
 
 // One intro: back link, title and pill, who the person is, then two columns: the asker's tracker or the connector's
-// answer, and the note. A connector with an ask to answer sees the question as the title and yes or no first.
+// answer, and the note. A connector with an ask to answer sees the question as the title, the asker's note first
+// (`fh-note-first`), then Introduce and No thanks.
 export function IntroPage(props: IntroPageProps) {
   const { intro } = props;
   const pill = readStatusPill(intro);
@@ -126,7 +127,7 @@ export function IntroPage(props: IntroPageProps) {
         </div>
         {lede ? <p className="fh-lede">{lede}</p> : null}
       </div>
-      <div className="fh-flow">
+      <div className={isAskingConnector ? "fh-flow fh-note-first" : "fh-flow"}>
         <div>{isConnector ? <ConnectorMain {...props} /> : <AskerMain {...props} />}</div>
         <section className="fh-sheet">
           <div className="fh-source">

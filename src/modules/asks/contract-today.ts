@@ -20,6 +20,8 @@ export const helpableAskSchema = z.object({
   // Commonhall's lines: "Trying to reach: …" and "Why you: …".
   who: z.string().nullable(),
   whyYou: z.string(),
+  // The person a path helper knows, so "I can help" on Today offers them in one tap; null for a words match.
+  knownPerson: z.string().nullable(),
 });
 
 export type HelpableAsk = z.infer<typeof helpableAskSchema>;

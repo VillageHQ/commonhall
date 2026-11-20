@@ -1,7 +1,7 @@
 // The forwardable note, drafted from the asker's own profile (Commonhall's intros/flow.mjs draftNote and shortNote).
 // The asker changes anything before it goes.
 
-export type AskerProfile = { name: string; title: string | null; company: string | null; bio: string | null; needs: string | null };
+export type AskerProfile = { name: string; title: string | null; company: string | null; bio: string | null };
 
 export const NOTE_MAXIMUM = 700;
 
@@ -17,35 +17,26 @@ function readRoleAt({ title, company }: Pick<AskerProfile, "title" | "company">)
   return [title, company].filter(Boolean).join(" at ");
 }
 
-// One paragraph for the one-step ask from search: "I’m Sam, Co-founder & CEO at Tallyhealth. Prior-authorisation
-// automation for outpatient clinics. An intro to procurement at a US hospital group. Could you introduce me to Rosa at
-// Halcyon Health?"
-export function draftShortNote(asker: AskerProfile, { targetName, targetCompany }: { targetName: string; targetCompany: string | null }) {
-  const ask = `Could you introduce me to ${readFirst(targetName) || "them"}${targetCompany ? ` at ${targetCompany}` : ""}?`;
+// One paragraph, built only from the asker's own card and the person asked for (round 7: never from an earlier need
+// on the profile, which may be about someone else). "I’m Sam, Co-founder & CEO at Tallyhealth: prior-authorisation
+// automation for outpatient clinics. Could you introduce me to Rosa Lindqvist (VP Procurement, Halcyon Health)?"
+export type IntroTarget = { name: string; about: string | null };
+
+export function draftIntroNote(asker: AskerProfile, { name, about }: IntroTarget) {
+  const targetName = name.trim();
+  const ask = `Could you introduce me to ${targetName || "them"}${about?.trim() ? ` (${about.trim()})` : ""}?`;
   const roleAt = readRoleAt(asker);
   const work = readFirstSentence(asker.bio);
   const what = !work ? "" : /^(a|an|the)\s/i.test(work) ? `: ${work.charAt(0).toLowerCase()}${work.slice(1)}` : `. ${work}`;
-  const want = readFirstSentence(asker.needs);
-  return [`I’m ${readFirst(asker.name)}${roleAt ? `, ${roleAt}` : ""}${what}.`, want ? `${want}.` : "", ask]
-    .filter(Boolean)
-    .join(" ")
-    .slice(0, NOTE_MAXIMUM);
+  return [`I’m ${readFirst(asker.name)}${roleAt ? `, ${roleAt}` : ""}${what}.`, ask].join(" ").slice(0, NOTE_MAXIMUM);
+}
+
+// "VP Procurement at Halcyon Health" from the two boxes of the ask form.
+export function describeTargetAbout(role: string, company: string) {
+  return [role.trim(), company.trim()].filter(Boolean).join(" at ") || null;
 }
 
 export type NoteParts = { who: string; why: string; proof: string };
-
-// The three parts of the note from a profile: who I am and what I do, why this person, why now; one proof point.
-export function draftNoteParts(asker: AskerProfile, { targetName, targetCompany }: { targetName: string; targetCompany: string | null }): NoteParts {
-  const roleAt = readRoleAt(asker);
-  const work = (asker.bio ?? "").trim();
-  const who = `I’m ${readFirst(asker.name)}${roleAt ? `, ${roleAt}` : ""}.${work ? ` ${work}` : ""}`;
-  const targetFirst = readFirst(targetName) || "them";
-  const needs = (asker.needs ?? "").trim().replace(/\.$/, "");
-  const why = needs
-    ? `${needs}. I’d value 20 minutes with ${targetFirst}${targetCompany ? ` on how ${targetCompany} decides` : ""}.`
-    : `I’d value 20 minutes with ${targetFirst}${targetCompany ? ` about ${targetCompany}` : ""}.`;
-  return { who, why, proof: "" };
-}
 
 export function joinNoteParts({ who, why, proof }: NoteParts) {
   return [who, why, proof].map((part) => part.trim()).filter(Boolean).join("\n\n");

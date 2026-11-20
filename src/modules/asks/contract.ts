@@ -289,7 +289,7 @@ export const helpAskBodySchema = z.object({
     .overwrite(removeNullBytes)
     .overwrite(removeBidiControls)
     .overwrite((value) => value.replaceAll("\r\n", "\n").trim())
-    .refine((value) => value.length <= ASK_LIMITS.answerLength, `Keep it to ${ASK_LIMITS.answerLength} characters.`)
+    .refine((value) => value.length <= ASK_LIMITS.noteLength, `Keep it to ${ASK_LIMITS.noteLength} characters.`)
     .default(""),
 });
 export const askStatusBodySchema = z.object({ askId: z.uuid(), action: z.enum(ASK_STATUS_ACTIONS) });
