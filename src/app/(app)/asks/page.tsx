@@ -8,9 +8,11 @@ import { isHiringRequestFree } from "@/modules/asks/reads";
 import { readAsksPage } from "@/modules/asks/reads-board";
 import { parseAskDraftParts } from "@/modules/asks/rules-board-url";
 import { requireMember } from "@/platform/auth/session";
-import { getDatabase } from "@/platform/database/client";
+import { getDatabase, type Database } from "@/platform/database/client";
 import { modulePage } from "@/platform/modules/module-page";
+import type { SessionMember } from "@/platform/http/request-context";
 import { readAskAllowance } from "@/shell/ask-helpers";
+import { readCheckedHiringJobId } from "@/shell/find-candidates";
 
 export const metadata: Metadata = { title: ASKS_PAGE_TITLE };
 
@@ -29,6 +31,12 @@ function readTab(value: string | null): AskTab {
   return value && TAB_VALUES.has(value) ? (value as AskTab) : ASK_PAGE_TABS.open;
 }
 
+async function readFreeHiringJob(database: Database, member: SessionMember, jobId: string | null, now: Date) {
+  if (!jobId) return false;
+  const checkedJobId = await readCheckedHiringJobId(database, member, jobId);
+  return checkedJobId !== null && (await isHiringRequestFree(database, checkedJobId, now));
+}
+
 export default modulePage(asksManifest, async function AsksPage({ searchParams }: AsksPageProps) {
   const params = await searchParams;
   // The old "Your asks" view and the Closed tab are tabs of the one board now.
@@ -44,10 +52,10 @@ export default modulePage(asksManifest, async function AsksPage({ searchParams }
   const [allowance, { posts, counts }, isFreeHiring] = await Promise.all([
     readAskAllowance(database, member.id, now),
     readAsksPage(database, { viewerId: member.id, tab, search }, now),
-    parsedDraft?.hiringJobId ? isHiringRequestFree(database, parsedDraft.hiringJobId, now) : false,
+    readFreeHiringJob(database, member, parsedDraft?.hiringJobId ?? null, now),
   ]);
-  // An old link (Back, a bookmark) to a job whose free request is used this week drafts an ordinary hiring ask, so the
-  // composer never says "free" when the post would spend an ask.
+  // An old or hand-made link (Back, a bookmark, a job since removed or not the member's) drafts an ordinary hiring ask,
+  // so the composer never says "free" when the post would spend an ask or be refused.
   const draft = parsedDraft?.hiringJobId && !isFreeHiring ? { ...parsedDraft, hiringJobId: null } : parsedDraft;
 
   return (

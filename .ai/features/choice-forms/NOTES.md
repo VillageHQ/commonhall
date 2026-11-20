@@ -26,7 +26,8 @@ How it works today. Charter: [CHARTER.md](CHARTER.md). Spec: [less-choice SPEC](
 ## Hiring request from a job
 - Find candidates' "Post a hiring request" carries the job (`toAskDraftHref(…, { jobId })`) only while the job's free
   request is unused this week (`isHiringRequestFree` in `src/modules/asks/reads.ts`); the button and the composer say
-  "uses no weekly ask" only then.
+  "uses no weekly ask" only then. `/asks` checks a draft's job again (old, hand-made or removed-job links draft an
+  ordinary hiring ask), so the composer never says free when the post would spend an ask or be refused.
 - `POST /api/asks/create` checks the job (`readCheckedHiringJobId`: listed, and one the member may find candidates
   for); a job that fails is a 404. `createAsk` stores `ask.hiring_job_id` only on the free request, and the allowance
   (`readPostedAskTimes`) skips asks with a job. So a repost or other words for the same job count like any ask, and a
