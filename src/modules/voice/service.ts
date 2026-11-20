@@ -1,9 +1,8 @@
 import "server-only";
 
-import { and, asc, count, eq, gt, gte, inArray, isNotNull, isNull, lt, lte, min, sql, type SQL } from "drizzle-orm";
+import { and, asc, count, eq, gt, gte, inArray, isNotNull, isNull, lt, lte, ne, sql, type SQL } from "drizzle-orm";
 
 import { isAdminMember } from "@/platform/auth/roles";
-import { isActiveMember } from "@/platform/auth/member-status";
 import { user } from "@/platform/database/auth-schema";
 import type { Database, DatabaseOrTransaction, Transaction } from "@/platform/database/client";
 import type { Environment } from "@/platform/environment";
@@ -23,32 +22,31 @@ import {
   ROOM_ROLES,
   ROOM_STATUSES,
   STAGE_ROLES,
+  toAutoRoomTitle,
   VOICE_ERROR_CODES,
   VOICE_LIMITS,
   VOICE_MESSAGES,
-  NOTIFY_AUDIENCES,
-  NOTIFY_OFF,
   type CreateRoomInput,
-  type FollowBody,
   type HandBody,
-  type NotifyAllowance,
-  type NotifyAudience,
-  type NotifyBody,
-  type NotifyChoice,
-  type InviteBody,
   type RemindBody,
+  type RenameBody,
   type RoleBody,
   type RoomJoin,
   type RoomRole,
 } from "./contract";
 import { readVoiceConfig, requireVoiceConfig } from "./service-settings";
-import { voiceBroadcast, voiceFollow, voiceNotifyChoice, voiceNotifyReceipt, voiceRoom, voiceRoomMember, voiceRoomReminder } from "./schema";
+import { voiceBroadcast, voiceNotifyReceipt, voiceRoom, voiceRoomMember, voiceRoomReminder } from "./schema";
+
+// Who a start alerts. Every room made now alerts everyone. Rooms made before round 7 keep their host's choice: a
+// scheduled room saved for its host's followers or people picked alerts them, and an invite-only room only its
+// invited. Server-only: no screen offers a choice any more.
+export const NOTIFY_AUDIENCES = { followers: "followers", picked: "picked", everyone: "everyone" } as const;
+export type NotifyAudience = (typeof NOTIFY_AUDIENCES)[keyof typeof NOTIFY_AUDIENCES];
 
 const FORBIDDEN_STATUS = 403;
 const NOT_FOUND_STATUS = 404;
 const CONFLICT_STATUS = 409;
 const UNPROCESSABLE_STATUS = 422;
-const TOO_MANY_STATUS = 429;
 const DAY_MS = 24 * 60 * 60_000;
 // A scheduled room nobody started is closed a day after its time.
 const STALE_SCHEDULE_MS = DAY_MS;
@@ -119,14 +117,7 @@ function readSchedule(scheduledFor: string | null, now: Date) {
   return at;
 }
 
-// Only active members can be invited.
-async function readActiveIds(connection: DatabaseOrTransaction, memberIds: string[], now: Date) {
-  if (memberIds.length === 0) return [];
-  const rows = await connection.select({ id: user.id }).from(user).where(and(inArray(user.id, memberIds), isActiveMember(now)));
-  return rows.map(({ id }) => id);
-}
-
-type RoomValues = { title: string; access: string; scheduledAt: Date | null; notify: { audience: NotifyAudience; memberIds: string[] } | null };
+type RoomValues = { title: string; scheduledAt: Date | null };
 
 async function insertRoom(transaction: Transaction, hostId: string, values: RoomValues, now: Date) {
   const isLive = values.scheduledAt === null;
@@ -136,12 +127,13 @@ async function insertRoom(transaction: Transaction, hostId: string, values: Room
       title: values.title,
       hostId,
       createdById: hostId,
-      access: values.access,
+      // Every new room is open to every member; invite-only rooms made before round 7 keep their rule.
+      access: ROOM_ACCESS.open,
       status: isLive ? ROOM_STATUSES.live : ROOM_STATUSES.scheduled,
       scheduledFor: values.scheduledAt,
-      // A scheduled room keeps its Notify until it starts.
-      notifyAudience: isLive ? null : (values.notify?.audience ?? null),
-      notifyMemberIds: isLive ? null : (values.notify?.memberIds ?? null),
+      // A scheduled room alerts everyone when it starts. Saved as "everyone" so Start now tells it apart from a room
+      // scheduled before round 7 with nobody to alert (null), until those columns go.
+      notifyAudience: isLive ? null : NOTIFY_AUDIENCES.everyone,
       startedAt: isLive ? now : null,
     })
     .returning({ id: voiceRoom.id });
@@ -163,26 +155,13 @@ async function findRecentRoom(transaction: Transaction, memberId: string, where:
   const [room] = await transaction
     .select({ id: voiceRoom.id })
     .from(voiceRoom)
-    .where(and(eq(voiceRoom.createdById, memberId), gte(voiceRoom.createdAt, new Date(now.getTime() - REPEAT_WINDOW_MS)), where))
+    .where(and(eq(voiceRoom.createdById, memberId), gte(voiceRoom.createdAt, new Date(now.getTime() - REPEAT_WINDOW_MS)), ne(voiceRoom.status, ROOM_STATUSES.ended), where))
     .limit(1);
   return room?.id ?? null;
 }
 
-// A notify that passed the sender's daily limit, ready to send once its transaction commits.
-export type ClaimedNotify = { broadcastId: string; roomId: string; senderId: string; audience: NotifyAudience; memberIds: string[]; isStart: boolean };
-type PendingNotify = { audience: NotifyAudience; memberIds: string[] };
-
-function pickSomeone() {
-  return new RequestError(UNPROCESSABLE_STATUS, VOICE_ERROR_CODES.badTarget, VOICE_MESSAGES.pickSomeone);
-}
-
-function toPendingNotify(notify: CreateRoomInput["notify"], memberId: string): PendingNotify | null {
-  if (!notify) return null;
-  if (notify.audience !== NOTIFY_AUDIENCES.picked) return { audience: notify.audience, memberIds: [] };
-  const memberIds = [...new Set(notify.memberIds ?? [])].filter((id) => id !== memberId);
-  if (memberIds.length === 0) throw pickSomeone();
-  return { audience: notify.audience, memberIds };
-}
+// A start that alerts people, ready to send once its transaction commits.
+export type ClaimedNotify = { broadcastId: string; roomId: string; senderId: string; audience: NotifyAudience; memberIds: string[] };
 
 export async function countBroadcastsToday(connection: DatabaseOrTransaction, memberId: string, now = new Date()) {
   const [row] = await connection
@@ -192,88 +171,40 @@ export async function countBroadcastsToday(connection: DatabaseOrTransaction, me
   return row?.total ?? 0;
 }
 
-// How many notifies are left today (the last 24 hours), and at the limit, when the oldest one stops counting.
-export async function readNotifyAllowance(connection: DatabaseOrTransaction, memberId: string, now = new Date()): Promise<NotifyAllowance> {
-  const [row] = await connection
-    .select({ total: count(), oldest: min(voiceBroadcast.createdAt) })
-    .from(voiceBroadcast)
-    .where(and(eq(voiceBroadcast.memberId, memberId), gte(voiceBroadcast.createdAt, new Date(now.getTime() - DAY_MS))));
-  const left = Math.max(0, VOICE_LIMITS.broadcastsPerDay - (row?.total ?? 0));
-  const oldest = row?.oldest ? new Date(row.oldest) : null;
-  return { left, resetsAt: left === 0 && oldest ? new Date(oldest.getTime() + DAY_MS).toISOString() : null };
-}
-
-// The member's last Notify choice: off the first time.
-export async function readNotifyChoice(connection: DatabaseOrTransaction, memberId: string): Promise<NotifyChoice> {
-  const [row] = await connection.select({ audience: voiceNotifyChoice.audience }).from(voiceNotifyChoice).where(eq(voiceNotifyChoice.memberId, memberId));
-  return (row?.audience as NotifyChoice | undefined) ?? NOTIFY_OFF;
-}
-
-async function saveNotifyChoice(transaction: Transaction, memberId: string, audience: NotifyChoice, now: Date) {
-  await transaction
-    .insert(voiceNotifyChoice)
-    .values({ memberId, audience, updatedAt: now })
-    .onConflictDoUpdate({ target: voiceNotifyChoice.memberId, set: { audience, updatedAt: now } });
-}
-
-// Counts one notify against the sender's 3 a day. The caller holds the sender's row lock, so two at once take turns.
-async function claimNotify(transaction: Transaction, roomId: string, senderId: string, notify: PendingNotify, isStart: boolean, now: Date): Promise<ClaimedNotify> {
-  if ((await countBroadcastsToday(transaction, senderId, now)) >= VOICE_LIMITS.broadcastsPerDay) {
-    throw new RequestError(TOO_MANY_STATUS, VOICE_ERROR_CODES.broadcastLimit, VOICE_MESSAGES.broadcastLimit);
-  }
-  const [row] = await transaction.insert(voiceBroadcast).values({ memberId: senderId, roomId, audience: notify.audience, createdAt: now }).returning({ id: voiceBroadcast.id });
+// Counts one alerting start against the host's 3 a day, or answers null past them: that room starts quietly. The
+// caller holds the host's row lock, so two starts at once take turns.
+async function claimNotify(transaction: Transaction, roomId: string, senderId: string, audience: NotifyAudience, memberIds: string[], now: Date): Promise<ClaimedNotify | null> {
+  if ((await countBroadcastsToday(transaction, senderId, now)) >= VOICE_LIMITS.broadcastsPerDay) return null;
+  const [row] = await transaction.insert(voiceBroadcast).values({ memberId: senderId, roomId, audience, createdAt: now }).returning({ id: voiceBroadcast.id });
   if (!row) throw notFound();
-  return { broadcastId: row.id, roomId, senderId, audience: notify.audience, memberIds: notify.memberIds, isStart };
+  return { broadcastId: row.id, roomId, senderId, audience, memberIds };
 }
 
-// Start a room now or schedule one. "Notify others" counts against the day's limit when the room starts (now, or
-// when the host starts a scheduled one), and the sheet remembers the choice. The caller sends the alert after commit.
-export async function createRoom({ database, member }: RequestContext, body: CreateRoomInput, now = new Date()): Promise<{ roomId: string; notify: ClaimedNotify | null }> {
-  const scheduledAt = readSchedule(body.scheduledFor, now);
-  const notify = toPendingNotify(body.notify, member.id);
+export type CreatedRoom = { roomId: string; notify: ClaimedNotify | null; isQuiet: boolean };
+
+// Whether the host's start of this room alerted people (one `voice_broadcast` row).
+export async function hasAlerted(connection: DatabaseOrTransaction, roomId: string, hostId: string) {
+  const [row] = await connection.select({ id: voiceBroadcast.id }).from(voiceBroadcast).where(and(eq(voiceBroadcast.roomId, roomId), eq(voiceBroadcast.memberId, hostId))).limit(1);
+  return row !== undefined;
+}
+
+// Start a room now (one tap: an empty title becomes "<first name>'s room") or schedule one (a title is needed, as
+// nobody is in it yet). Starting now alerts everyone, within the host's 3 alerting starts a day; past them the room
+// starts quietly. The caller sends the alert after commit.
+export async function createRoom({ database, member }: RequestContext, body: CreateRoomInput, now = new Date()): Promise<CreatedRoom> {
+  const scheduledAt = readSchedule(body.scheduledFor ?? null, now);
+  const typed = body.title?.trim() ?? "";
+  if (scheduledAt && !typed) throw new RequestError(UNPROCESSABLE_STATUS, VOICE_ERROR_CODES.needsTitle, VOICE_MESSAGES.needsTitle);
   return database.transaction(async (transaction) => {
-    await lockMember(transaction, member.id);
-    const repeat = await findRecentRoom(transaction, member.id, and(eq(voiceRoom.title, body.title), eq(voiceRoom.isBroadcast, false)), now);
-    if (repeat) return { roomId: repeat, notify: null };
-    const roomId = await insertRoom(transaction, member.id, { title: body.title, access: body.access, scheduledAt, notify }, now);
-    const invitees = (await readActiveIds(transaction, body.inviteeIds, now)).filter((id) => id !== member.id);
-    if (invitees.length > 0) {
-      await transaction
-        .insert(voiceRoomMember)
-        .values(invitees.map((memberId) => ({ roomId, memberId, role: ROOM_ROLES.listener, isInvited: true })))
-        .onConflictDoNothing();
-    }
-    await saveNotifyChoice(transaction, member.id, notify?.audience ?? NOTIFY_OFF, now);
-    const claimed = notify && scheduledAt === null ? await claimNotify(transaction, roomId, member.id, notify, true, now) : null;
-    return { roomId, notify: claimed };
-  });
-}
-
-export async function hasNotified(connection: DatabaseOrTransaction, roomId: string, memberId: string) {
-  const [row] = await connection
-    .select({ id: voiceBroadcast.id })
-    .from(voiceBroadcast)
-    .where(and(eq(voiceBroadcast.roomId, roomId), eq(voiceBroadcast.memberId, memberId)))
-    .limit(1);
-  return Boolean(row);
-}
-
-// "Tell people I'm here": once per room, from someone who joined it, to up to 10 people they pick.
-export async function tellPeopleHere({ database, member }: RequestContext, { roomId, memberIds }: NotifyBody, now = new Date()): Promise<ClaimedNotify> {
-  const picked = [...new Set(memberIds)].filter((id) => id !== member.id);
-  if (picked.length === 0) throw pickSomeone();
-  return database.transaction(async (transaction) => {
-    await lockMember(transaction, member.id);
-    const room = await lockRoom(transaction, roomId);
-    if (room.status === ROOM_STATUSES.ended) throw ended();
-    if (room.status !== ROOM_STATUSES.live) throw new RequestError(CONFLICT_STATUS, VOICE_ERROR_CODES.notLive, VOICE_MESSAGES.notLive);
-    const [seat] = await transaction
-      .select({ joinedAt: voiceRoomMember.joinedAt })
-      .from(voiceRoomMember)
-      .where(and(eq(voiceRoomMember.roomId, roomId), eq(voiceRoomMember.memberId, member.id)));
-    if (!seat?.joinedAt) throw new RequestError(FORBIDDEN_STATUS, VOICE_ERROR_CODES.notInRoom, VOICE_MESSAGES.notInRoom);
-    if (await hasNotified(transaction, roomId, member.id)) throw new RequestError(CONFLICT_STATUS, VOICE_ERROR_CODES.notifiedAlready, VOICE_MESSAGES.notifiedAlready);
-    return claimNotify(transaction, roomId, member.id, { audience: NOTIFY_AUDIENCES.picked, memberIds: picked }, false, now);
+    const me = await lockMember(transaction, member.id);
+    const title = typed || toAutoRoomTitle(me.name);
+    const repeat = await findRecentRoom(transaction, member.id, and(eq(voiceRoom.title, title), eq(voiceRoom.isBroadcast, false)), now);
+    // A second tap answers as the first did: a live room that alerted nobody is still quiet.
+    if (repeat) return { roomId: repeat, notify: null, isQuiet: !scheduledAt && !(await hasAlerted(transaction, repeat, member.id)) };
+    const roomId = await insertRoom(transaction, member.id, { title, scheduledAt }, now);
+    if (scheduledAt) return { roomId, notify: null, isQuiet: false };
+    const notify = await claimNotify(transaction, roomId, member.id, NOTIFY_AUDIENCES.everyone, [], now);
+    return { roomId, notify, isQuiet: notify === null };
   });
 }
 
@@ -281,45 +212,37 @@ export async function recordReached(database: Database, broadcastId: string, rea
   await database.update(voiceBroadcast).set({ reached }).where(eq(voiceBroadcast.id, broadcastId));
 }
 
-// Follow or unfollow someone's rooms. Only active members can be followed; following yourself does nothing.
-export async function setFollow({ database, member }: RequestContext, { memberId, isFollowing }: FollowBody, now = new Date()) {
-  if (memberId === member.id) return;
-  if (!isFollowing) {
-    await database.delete(voiceFollow).where(and(eq(voiceFollow.followerId, member.id), eq(voiceFollow.followedId, memberId)));
-    return;
-  }
-  if ((await readActiveIds(database, [memberId], now)).length === 0) throw notFound();
-  await database.insert(voiceFollow).values({ followerId: member.id, followedId: memberId, createdAt: now }).onConflictDoNothing();
-}
-
-export async function readIsFollowing(connection: DatabaseOrTransaction, followerId: string, followedId: string) {
-  const [row] = await connection
-    .select({ followedId: voiceFollow.followedId })
-    .from(voiceFollow)
-    .where(and(eq(voiceFollow.followerId, followerId), eq(voiceFollow.followedId, followedId)));
-  return Boolean(row);
+// The host renames their room, live or coming up (a one-tap room starts as "Sam's room").
+export async function renameRoom({ database, member }: RequestContext, { roomId, title }: RenameBody) {
+  await database.transaction(async (transaction) => {
+    const room = await lockRoom(transaction, roomId);
+    if (room.hostId !== member.id) throw notHost();
+    if (room.status === ROOM_STATUSES.ended) throw ended();
+    await transaction.update(voiceRoom).set({ title }).where(eq(voiceRoom.id, roomId));
+  });
 }
 
 // Starting a scheduled room (early or on time) claims its reminders, so "Remind me" fires when it really starts and
-// the minute job never sends them again. It also claims the Notify chosen when the room was scheduled; one past the
-// host's daily limit is dropped, and the room starts anyway.
+// the minute job never sends them again. It alerts the room's saved audience: everyone for rooms made since round 7,
+// and the host's own choice for older ones (none when they chose nobody). Past the host's 3 alerting starts a day the
+// room starts quietly.
 export async function startScheduledRoom({ database, member }: RequestContext, roomId: string, now = new Date()) {
   return database.transaction(async (transaction) => {
     await lockMember(transaction, member.id);
     const room = await lockRoom(transaction, roomId);
     if (room.hostId !== member.id) throw notHost();
     if (room.status === ROOM_STATUSES.ended) throw ended();
-    if (room.status === ROOM_STATUSES.live) return { reminder: null, notify: null };
+    if (room.status === ROOM_STATUSES.live) return { reminder: null, notify: null, isQuiet: false };
     await transaction
       .update(voiceRoom)
       .set({ status: ROOM_STATUSES.live, startedAt: now, remindersSentAt: room.remindersSentAt ?? now, notifyAudience: null, notifyMemberIds: null })
       .where(eq(voiceRoom.id, roomId));
     const audience = room.notifyAudience as NotifyAudience | null;
-    const isUnderLimit = audience !== null && (await countBroadcastsToday(transaction, member.id, now)) < VOICE_LIMITS.broadcastsPerDay;
-    const notify = audience && isUnderLimit ? await claimNotify(transaction, roomId, member.id, { audience, memberIds: room.notifyMemberIds ?? [] }, true, now) : null;
-    if (room.remindersSentAt) return { reminder: null, notify };
+    const notify = audience ? await claimNotify(transaction, roomId, member.id, audience, room.notifyMemberIds ?? [], now) : null;
+    const isQuiet = audience !== null && notify === null;
+    if (room.remindersSentAt) return { reminder: null, notify, isQuiet };
     const reminders = await transaction.select({ memberId: voiceRoomReminder.memberId }).from(voiceRoomReminder).where(eq(voiceRoomReminder.roomId, roomId));
-    return { reminder: { id: room.id, title: room.title, hostId: room.hostId, memberIds: reminders.map(({ memberId }) => memberId) }, notify };
+    return { reminder: { id: room.id, title: room.title, hostId: room.hostId, memberIds: reminders.map(({ memberId }) => memberId) }, notify, isQuiet };
   });
 }
 
@@ -472,21 +395,6 @@ export async function setReminder({ database, member }: RequestContext, { roomId
   if (room.access === ROOM_ACCESS.invite && !(await readSeat(database, roomId, member.id))?.isInvited) throw notFound();
   if (isOn) await database.insert(voiceRoomReminder).values({ roomId, memberId: member.id }).onConflictDoNothing();
   else await database.delete(voiceRoomReminder).where(and(eq(voiceRoomReminder.roomId, roomId), eq(voiceRoomReminder.memberId, member.id)));
-}
-
-export async function inviteMembers({ database, member }: RequestContext, { roomId, memberIds }: InviteBody, now = new Date()) {
-  await database.transaction(async (transaction) => {
-    const room = await lockRoom(transaction, roomId);
-    if (room.status === ROOM_STATUSES.ended) throw ended();
-    const seat = await readSeat(transaction, roomId, member.id);
-    if (!seat || !isModerator(seat.role)) throw notModerator();
-    const ids = await readActiveIds(transaction, memberIds, now);
-    if (ids.length === 0) return;
-    await transaction
-      .insert(voiceRoomMember)
-      .values(ids.map((memberId) => ({ roomId, memberId, role: ROOM_ROLES.listener, isInvited: true })))
-      .onConflictDoUpdate({ target: [voiceRoomMember.roomId, voiceRoomMember.memberId], set: { isInvited: true } });
-  });
 }
 
 // One live room's upkeep: a co-host takes over from a host who is gone, and a room with nobody on stage for 2 minutes

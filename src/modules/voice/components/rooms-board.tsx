@@ -6,7 +6,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Lock } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 
 import { FlashNote, FLASH_KINDS } from "@/components/flash";
 import { useIsInBrowser } from "@/components/use-is-in-browser";
@@ -14,10 +13,10 @@ import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { isRouteGone } from "@/platform/http/polling";
 
-import { describeRoomPeople, ROOM_ACCESS, toRoomHref, type CardFace, type RoomCard, type RoomsPageData } from "../contract";
+import { describeRoomPeople, ROOM_ACCESS, toRoomHref, toStartedRoomHref, type CardFace, type RoomCard, type RoomsPageData } from "../contract";
 import { ROOMS_POLL_MS, VOICE_QUERY_KEYS, voiceRequests } from "../queries";
-import { FollowToggle } from "./follow-toggle";
-import { RoomComposer } from "./room-composer";
+import { RoomAlertsSwitch, type RoomAlertsState } from "./room-alerts-switch";
+import { StartRoom } from "./room-start";
 
 const TIME_FORMAT: Intl.DateTimeFormatOptions = { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" };
 const CARD_TIME_FORMAT: Intl.DateTimeFormatOptions = { weekday: "short", hour: "numeric", minute: "2-digit" };
@@ -56,11 +55,7 @@ function InviteOnly() {
   );
 }
 
-function FollowHost({ room, viewerId }: { room: RoomCard; viewerId: string }) {
-  return room.hostId === viewerId ? null : <FollowToggle memberId={room.hostId} memberName={room.hostName} isFollowing={room.isFollowingHost} isCompact />;
-}
-
-function LiveCard({ room, viewerId }: { room: RoomCard; viewerId: string }) {
+function LiveCard({ room }: { room: RoomCard }) {
   return (
     <div className="vr-card" data-testid="live-room">
       <span className="vr-card-top">
@@ -75,14 +70,11 @@ function LiveCard({ room, viewerId }: { room: RoomCard; viewerId: string }) {
           <Faces faces={room.faces} />
           <span>{describeRoomPeople(room)}</span>
         </span>
-        <span className="fh-btn-row">
-          <FollowHost room={room} viewerId={viewerId} />
-          <Button asChild size="sm" variant="ink">
-            <Link href={toRoomHref(room.id)} aria-label={`Join ${room.title}`}>
-              Join
-            </Link>
-          </Button>
-        </span>
+        <Button asChild size="sm" variant="ink">
+          <Link href={toRoomHref(room.id)} aria-label={`Join ${room.title}`}>
+            Join
+          </Link>
+        </Button>
       </span>
     </div>
   );
@@ -95,7 +87,7 @@ function ScheduledCard({ room, viewerId }: { room: RoomCard; viewerId: string })
     mutationFn: (isOn: boolean) => voiceRequests.remind({ roomId: room.id, isOn }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: VOICE_QUERY_KEYS.rooms }),
   });
-  const start = useMutation({ mutationFn: () => voiceRequests.start(room.id), onSuccess: () => router.push(toRoomHref(room.id)) });
+  const start = useMutation({ mutationFn: () => voiceRequests.start(room.id), onSuccess: (started) => router.push(toStartedRoomHref(started)) });
   const isHost = room.hostId === viewerId;
   const formatTime = useRoomTimeFormat();
   return (
@@ -112,48 +104,41 @@ function ScheduledCard({ room, viewerId }: { room: RoomCard; viewerId: string })
           <Faces faces={room.faces.slice(0, 1)} />
           <span>{firstName(room.hostName)}</span>
         </span>
-        <span className="fh-btn-row">
-          <FollowHost room={room} viewerId={viewerId} />
-          {isHost ? (
-            <Button size="sm" variant="ink" onClick={() => start.mutate()} disabled={start.isPending}>
-              Start now
-            </Button>
-          ) : (
-            <Button size="sm" variant="secondary" aria-pressed={room.hasReminder} onClick={() => remind.mutate(!room.hasReminder)} disabled={remind.isPending}>
-              {room.hasReminder ? "Reminder on" : "Remind me"}
-            </Button>
-          )}
-        </span>
+        {isHost ? (
+          <Button size="sm" variant="ink" onClick={() => start.mutate()} disabled={start.isPending}>
+            Start now
+          </Button>
+        ) : (
+          <Button size="sm" variant="secondary" aria-pressed={room.hasReminder} onClick={() => remind.mutate(!room.hasReminder)} disabled={remind.isPending}>
+            {room.hasReminder ? "Reminder on" : "Remind me"}
+          </Button>
+        )}
       </span>
       {start.error || remind.error ? <p className="fh-hint fh-err">{(start.error ?? remind.error)?.message}</p> : null}
     </div>
   );
 }
 
-// Rooms: one "Start or schedule a room" (the re-study: 6 of 12 never found Schedule behind "Start a room"), then who is live (faces, Join) and what's coming up (Remind me).
-export function RoomsBoard({ initial, viewerId }: { initial: RoomsPageData; viewerId: string }) {
-  const [isComposing, setIsComposing] = useState(false);
+// Rooms: "Start a room" (one tap, alerts everyone) with "Schedule for later" under it, the member's own Room alerts
+// switch, then who is live (faces, Join) and what's coming up (Remind me).
+export function RoomsBoard({ initial, viewerId, alerts }: { initial: RoomsPageData; viewerId: string; alerts: RoomAlertsState }) {
   const rooms = useQuery({
     queryKey: VOICE_QUERY_KEYS.rooms,
     queryFn: voiceRequests.rooms,
     initialData: initial,
     refetchInterval: (query) => (isRouteGone(query.state.error) ? false : ROOMS_POLL_MS),
   });
-  const { live, scheduled, isConfigured, notify } = rooms.data;
+  const { live, scheduled, isConfigured } = rooms.data;
 
   return (
     <>
-      <div className="fh-btn-row">
-        <Button variant="ink" onClick={() => setIsComposing((value) => !value)} aria-expanded={isComposing} disabled={!isConfigured}>
-          Start or schedule a room
-        </Button>
-      </div>
+      <StartRoom isConfigured={isConfigured} />
       {!isConfigured ? (
         <FlashNote kind={FLASH_KINDS.needs} className="mt-3">
           Rooms need a voice server. An admin sets it up in Set up.
         </FlashNote>
       ) : null}
-      {isComposing ? <RoomComposer notify={notify} onClose={() => setIsComposing(false)} /> : null}
+      <RoomAlertsSwitch state={alerts} />
 
       {live.length > 0 ? (
         <section className="fh-section" aria-labelledby="rooms-live">
@@ -162,7 +147,7 @@ export function RoomsBoard({ initial, viewerId }: { initial: RoomsPageData; view
           </h2>
           <div className="vr-cards">
             {live.map((room) => (
-              <LiveCard key={room.id} room={room} viewerId={viewerId} />
+              <LiveCard key={room.id} room={room} />
             ))}
           </div>
         </section>

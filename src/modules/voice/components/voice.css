@@ -18,11 +18,6 @@ a.vr-card:hover{border-color:var(--graphite)}
 .vr-card-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--graphite)}
 
 .vr-composer{margin-top:16px}
-.vr-choice{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
-.vr-picked{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.vr-results{margin-top:6px;border:1px solid var(--rule);border-radius:var(--r-sm);max-height:220px;overflow:auto;background:var(--leaf)}
-.vr-result{display:flex;align-items:center;gap:10px;width:100%;padding:8px 10px;border:0;background:transparent;color:var(--ink);text-align:left;font:inherit}
-.vr-result:hover,.vr-result:focus-visible{background:var(--vellum)}
 
 /* The room */
 .vr-room{padding-bottom:8px}
@@ -62,9 +57,17 @@ button.vr-person:hover{background:var(--vellum)}
 .vr-chat-list b{font-weight:600}
 .vr-chat form{display:flex;gap:8px}
 
-/* A room control with its word under it (Leave, React, Chat, Raise hand, Tell people). */
+/* A room control with its word under it (Leave, React, Chat, Raise hand). */
 .vr-tool{display:inline-flex;flex-direction:column;align-items:center;gap:4px;min-width:56px;padding:0;border:0;background:transparent;color:var(--ink);font:inherit}
 .vr-tool:disabled{opacity:.45}
 .vr-tool[aria-pressed="true"] .vr-round{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 .vr-tool-label{font-size:12px;line-height:14px;font-weight:500;color:var(--graphite);white-space:nowrap}
 .vr-card-top .vr-card-title{flex:1;min-width:0;color:var(--ink)}
+
+/* Start a room: one button (full width on a phone), "Schedule for later" under it, then the Room alerts switch. */
+.vr-start{display:grid;gap:8px}
+.vr-start-button{width:100%}
+@media (min-width:640px){.vr-start-button{width:auto;justify-self:start}}
+.vr-start-note{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.vr-alerts{display:flex;align-items:center;justify-content:space-between;gap:8px 16px;flex-wrap:wrap;margin-top:16px;padding:10px 14px;border:1px solid var(--rule);border-radius:var(--r);background:var(--leaf)}
+.vr-alerts-label{display:flex;align-items:center;gap:10px;font-size:14px;line-height:20px;font-weight:500;cursor:pointer}

@@ -161,7 +161,7 @@ export const TOUR_STEPS: readonly TourStep[] = [
   {
     id: "rooms",
     label: "Voice rooms",
-    caption: "Live voice rooms, like Clubhouse. Start one and notify who you choose, or drop in and raise a hand. Never recorded.",
+    caption: "Live voice rooms, like Clubhouse. One tap starts a room and alerts everyone; each member decides what reaches them. Never recorded.",
     start: "/rooms",
     still: ROOM_HREF,
     async settle(hands) {
@@ -171,8 +171,8 @@ export const TOUR_STEPS: readonly TourStep[] = [
     },
     async play(hands) {
       await hands.wait(500);
-      // "Start a room" opens the sheet with Notify others: the tour only presses.
-      await hands.tap("main .fh-btn-row button");
+      // "Start a room" starts one at once and alerts everyone: the tour only presses.
+      await hands.tap("[data-testid='start-room']");
       await hands.wait(1200);
       await hands.click("[data-testid='live-room'] a[aria-label^='Join']");
       await hands.wait(1000);

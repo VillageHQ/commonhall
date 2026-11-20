@@ -1,14 +1,14 @@
 import { DisconnectReason, Room, RoomEvent, Track, type Participant, type RemoteTrack } from "livekit-client";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { listenToVoiceService, showVoiceService, stopVoiceService } from "../../modules/voice-service";
 import type { PortalHandle } from "../components/portal-types";
-import { readErrorCode, readFailureMessage, type RoomClosedReason } from "../lib/bridge";
+import { readFailureMessage, type RoomClosedReason } from "../lib/bridge";
 import { SANS, SERIF, useColors, type Colors } from "../theme";
 import { playRemoteAudio, startRoomAudio, stopRemoteAudio, stopRoomAudio } from "./audio";
-import { isModerator, isOnStage, NOTIFIED_ALREADY, readActions, readRole, ROLE_ORDER, ROLE_WORDS, REACTIONS, type RoleAction, type RoomRole } from "./rules";
+import { isModerator, isOnStage, readActions, readRole, ROLE_ORDER, ROLE_WORDS, REACTIONS, type RoleAction, type RoomRole } from "./rules";
 
 // A live voice room, native: LiveKit's client on the phone's own WebRTC, so it keeps playing with the screen locked
 // (Android: the voice service; iOS: the audio background mode). Every role change still goes through the server's
@@ -19,8 +19,6 @@ type Person = { id: string; name: string; role: RoomRole; isHandRaised: boolean;
 type JoinAnswer = { serverUrl: string; token: string };
 
 const REACTION_MS = 2400;
-// "Tell people I'm here": up to this many, once per room (the server's limit too).
-const TELL_MAXIMUM = 10;
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
@@ -54,15 +52,13 @@ type RoomScreenProps = {
   origin: string;
   roomId: string;
   title: string;
-  // The page said the member already told people about this room: no "Tell people I'm here".
-  hasNotified: boolean;
   isShown: boolean;
   onMinimize: () => void;
   onClose: (reason: RoomClosedReason) => void;
   onStatus: (status: string, isLive: boolean) => void;
 };
 
-export function RoomScreen({ portal, origin, roomId, title, hasNotified, isShown, onMinimize, onClose, onStatus }: RoomScreenProps) {
+export function RoomScreen({ portal, origin, roomId, title, isShown, onMinimize, onClose, onStatus }: RoomScreenProps) {
   const colors = useColors();
   const styles = makeStyles(colors);
   const insets = useSafeAreaInsets();
@@ -76,12 +72,6 @@ export function RoomScreen({ portal, origin, roomId, title, hasNotified, isShown
   const [isReacting, setIsReacting] = useState(false);
   const [notice, setNotice] = useState<{ text: string; isProblem: boolean } | null>(null);
   const [isBusy, setIsBusy] = useState(false);
-  const [isTelling, setIsTelling] = useState(false);
-  const [hasTold, setHasTold] = useState(hasNotified);
-  // The same room handed over again by a page that knows better.
-  useEffect(() => {
-    if (hasNotified) setHasTold(true);
-  }, [hasNotified]);
 
   const refresh = useCallback(() => {
     const room = roomRef.current;
@@ -215,17 +205,6 @@ export function RoomScreen({ portal, origin, roomId, title, hasNotified, isShown
     setIsBusy(false);
     if (answer.status !== 200) setNotice({ text: readFailureMessage(answer, fallback), isProblem: true });
     return answer;
-  }
-
-  async function tell(memberIds: string[]) {
-    const answer = await send("/api/voice/notify", { memberIds }, "That didn't send. Try again.");
-    // The server's "you've told people about this room already" (also after a Notify when starting it) closes the
-    // button as a send does: the app doesn't know it before trying.
-    const isToldAlready = answer.status === 200 || readErrorCode(answer) === NOTIFIED_ALREADY;
-    if (!isToldAlready) return;
-    setHasTold(true);
-    setIsTelling(false);
-    setNotice({ text: answer.status === 200 ? "Told them you're here." : readFailureMessage(answer, "You've told people about this room already."), isProblem: false });
   }
 
   async function act(memberId: string, action: RoleAction) {
@@ -371,7 +350,6 @@ export function RoomScreen({ portal, origin, roomId, title, hasNotified, isShown
             ))}
           </View>
         ) : null}
-        {isTelling && !hasTold ? <TellPanel portal={portal} colors={colors} isBusy={isBusy} onSend={(ids) => void tell(ids)} onClose={() => setIsTelling(false)} /> : null}
       </ScrollView>
 
       {isReacting ? (
@@ -401,9 +379,6 @@ export function RoomScreen({ portal, origin, roomId, title, hasNotified, isShown
               onPress={() => void send("/api/voice/hand", { isRaised: !me?.isHandRaised }, "That didn't work. Try again.")}
             />
           )}
-          {hasTold ? null : (
-            <Tool styles={styles} symbol="🔔" label="Tell people" accessibilityLabel="Tell people I'm here" testID="tell-people" isOn={isTelling} isDisabled={phase !== "live"} onPress={() => setIsTelling((value) => !value)} />
-          )}
         </View>
         {myRole === "host" ? (
           <Pressable accessibilityRole="button" disabled={isBusy} onPress={() => void send("/api/voice/end", {}, "That didn't work. Try again.")} style={styles.secondaryButton}>
@@ -426,92 +401,6 @@ function Tool({ styles, symbol, label, onPress, isOn = false, isDisabled = false
       </View>
       <Text style={styles.toolLabel}>{label}</Text>
     </Pressable>
-  );
-}
-
-type Picked = { id: string; name: string };
-
-function readPeopleAnswer(json: unknown): Picked[] {
-  const people = json && typeof json === "object" ? (json as { people?: unknown }).people : null;
-  if (!Array.isArray(people)) return [];
-  return people.flatMap((person) => (person && typeof person.id === "string" && typeof person.name === "string" ? [{ id: person.id, name: person.name }] : []));
-}
-
-// "Tell people I'm here": search by name, pick up to 10, send once.
-function TellPanel({ portal, colors, isBusy, onSend, onClose }: { portal: PortalHandle; colors: Colors; isBusy: boolean; onSend: (ids: string[]) => void; onClose: () => void }) {
-  const styles = makeStyles(colors);
-  const [search, setSearch] = useState("");
-  const [results, setResults] = useState<Picked[]>([]);
-  const [picked, setPicked] = useState<Picked[]>([]);
-
-  useEffect(() => {
-    const words = search.trim();
-    if (!words) {
-      setResults([]);
-      return;
-    }
-    let isCurrent = true;
-    const timer = setTimeout(() => {
-      void portal.call("POST", "/api/voice/people", { search: words }).then((answer) => {
-        if (isCurrent && answer.status === 200) setResults(readPeopleAnswer(answer.json));
-      });
-    }, 250);
-    return () => {
-      isCurrent = false;
-      clearTimeout(timer);
-    };
-  }, [portal, search]);
-
-  const pickedIds = new Set(picked.map(({ id }) => id));
-  const isFull = picked.length >= TELL_MAXIMUM;
-  return (
-    <View style={styles.panel} testID="tell-panel">
-      <Text style={styles.panelTitle}>Tell people I&apos;m here</Text>
-      <TextInput
-        value={search}
-        onChangeText={setSearch}
-        placeholder="Type a name"
-        placeholderTextColor={colors.muted}
-        editable={!isFull}
-        autoCorrect={false}
-        accessibilityLabel="Type a name"
-        style={styles.input}
-      />
-      {results
-        .filter(({ id }) => !pickedIds.has(id))
-        .slice(0, 6)
-        .map((person) => (
-          <Pressable
-            key={person.id}
-            accessibilityRole="button"
-            disabled={isFull}
-            onPress={() => {
-              setPicked((current) => [...current, person]);
-              setSearch("");
-            }}
-            style={styles.resultRow}
-          >
-            <Text style={styles.noticeText}>{person.name}</Text>
-          </Pressable>
-        ))}
-      {picked.length > 0 ? (
-        <View style={styles.wrapRow}>
-          {picked.map((person) => (
-            <Pressable key={person.id} accessibilityRole="button" accessibilityLabel={`Remove ${person.name}`} onPress={() => setPicked((current) => current.filter(({ id }) => id !== person.id))} style={styles.chip}>
-              <Text style={styles.secondaryButtonText}>{person.name} ×</Text>
-            </Pressable>
-          ))}
-        </View>
-      ) : null}
-      <View style={styles.wrapRow}>
-        <Pressable accessibilityRole="button" disabled={isBusy || picked.length === 0} onPress={() => onSend(picked.map(({ id }) => id))} style={[styles.primaryButtonSmall, picked.length === 0 ? styles.dim : null]}>
-          <Text style={styles.primaryButtonText}>Send</Text>
-        </Pressable>
-        <Pressable accessibilityRole="button" onPress={onClose} style={styles.secondaryButton}>
-          <Text style={styles.secondaryButtonText}>Cancel</Text>
-        </Pressable>
-      </View>
-    </View>
   );
 }
 
@@ -573,10 +462,6 @@ function makeStyles(colors: Colors) {
     controls: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 8, borderTopWidth: 1, borderTopColor: colors.line, paddingTop: 12 },
     tool: { alignItems: "center", gap: 4, minWidth: 56 },
     toolLabel: { color: colors.muted, fontFamily: SANS, fontSize: 12, fontWeight: "600" },
-    input: { borderWidth: 1, borderColor: colors.line, borderRadius: 6, paddingHorizontal: 12, paddingVertical: 10, marginTop: 10, color: colors.ink, fontFamily: SANS, fontSize: 15, backgroundColor: colors.paper },
-    resultRow: { paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.line },
-    chip: { borderWidth: 1, borderColor: colors.line, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 6 },
-    dim: { opacity: 0.45 },
     roundButton: { minWidth: 48, height: 48, borderRadius: 24, paddingHorizontal: 14, borderWidth: 1, borderColor: colors.line, backgroundColor: colors.sheet, alignItems: "center", justifyContent: "center" },
     roundButtonOn: { backgroundColor: colors.ink, borderColor: colors.ink },
     roundText: { color: colors.ink, fontFamily: SANS, fontSize: 18, fontWeight: "600" },

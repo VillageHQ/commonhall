@@ -3,9 +3,9 @@ import "server-only";
 import { and, eq, inArray, ne, notExists, notLike, or, sql } from "drizzle-orm";
 
 import { memberBlock } from "@/modules/members/schema";
-import { NOTIFY_AUDIENCES, ROOM_NOTIFY_BODY, toRoomHref, toRoomNotifyTitle, type NotifyAudience } from "@/modules/voice/contract";
+import { ROOM_NOTIFY_BODY, toRoomHref, toRoomNotifyTitle } from "@/modules/voice/contract";
 import { voiceManifest } from "@/modules/voice/manifest";
-import { claimDueReminders, recordReached, type ClaimedNotify } from "@/modules/voice/service";
+import { claimDueReminders, NOTIFY_AUDIENCES, recordReached, type ClaimedNotify, type NotifyAudience } from "@/modules/voice/service";
 import { claimNotifyReceipts, readFollowerIds, readNotifyRoom, resolveAudience } from "@/modules/voice/service-notify";
 import { isActiveMember } from "@/platform/auth/member-status";
 import { RECLAIMED_EMAIL_DOMAIN } from "@/platform/auth/reclaimed-email";
@@ -15,17 +15,20 @@ import type { Environment } from "@/platform/environment";
 import { isModuleEnabled } from "@/platform/modules/enablement";
 import { NOTIFICATION_KINDS } from "@/platform/notifications/contract";
 import { notify, type NotifyResult } from "@/platform/notifications/notify";
+import { readMutersOf, readPreferencesFor } from "@/platform/notifications/reads";
+import { readSkipReason } from "@/platform/notifications/rules";
 import { notificationDevice } from "@/platform/notifications/schema";
 import { runAfterResponse } from "@/platform/observability/after-response";
 import { logError } from "@/platform/observability/route-logging";
 import { removeBidiControls } from "@/platform/text/safe-text";
 
-// Voice rooms' alerts, through notify(): a room notify ("Maya started “Pricing”", to her followers, people she picked
-// or everyone) and "Starting now" to those who tapped Remind me. notify() skips members who turned alerts or that kind
-// off, are in quiet times, or muted the sender (room notifies). Here we also leave out banned and deleted accounts and
-// anyone either side of a block, and a room notify reaches each member once per room and at most 5 times a day.
+// Voice rooms' alerts, through notify(): a room start ("Maya started “Pricing”", to every member) and "Starting now"
+// to those who tapped Remind me. notify() skips members who turned alerts or room alerts off, are in quiet times or a
+// pause, or muted the host. Here we also leave out banned and deleted accounts and anyone either side of a block, and
+// a start reaches each member once per room and at most 5 times a day.
 
-export type RoomNotify = { roomId: string; senderId: string; audience: NotifyAudience; memberIds?: string[]; isStart?: boolean };
+// `audience` is "everyone" for every room made since round 7; older scheduled rooms keep their host's saved choice.
+export type RoomNotify = { roomId: string; senderId: string; audience: NotifyAudience; memberIds?: string[] };
 export type RoomNotifyResult = NotifyResult & { capped: number };
 export type RoomReminder = { id: string; title: string; hostId: string; memberIds: string[] };
 
@@ -60,28 +63,44 @@ async function readReachableMemberIds(database: Database, senderId: string, amon
   return rows.map(({ id }) => id);
 }
 
-// Sends one room notify: the audience resolved for the room (invite-only rooms reach only their invited; nobody in
-// the room gets one), the receipts claimed, then notify(). Returns notify()'s counts plus how many the daily cap skipped.
-export async function sendRoomNotify(database: Database, environment: Environment, { roomId, senderId, audience, memberIds = [], isStart = true }: RoomNotify): Promise<RoomNotifyResult> {
+// The members notify() would hold back now (room alerts off, quiet times, a pause, a mute of the host). They claim no
+// receipt, so a quiet evening never uses up their 5 a day, but notify() still sees them and logs why they were skipped.
+async function readHeldBack(database: Database, memberIds: string[], senderId: string, now: Date) {
+  const [preferences, muters] = await Promise.all([readPreferencesFor(database, memberIds), readMutersOf(database, memberIds, senderId)]);
+  const kind = NOTIFICATION_KINDS.voiceBroadcast;
+  return new Set(
+    memberIds.filter((memberId) => {
+      const state = preferences.get(memberId);
+      return state ? readSkipReason(state, { kind, fromUserId: senderId, mutedUserIds: muters.has(memberId) ? new Set([senderId]) : new Set(), now }) !== null : false;
+    }),
+  );
+}
+
+// Sends one room start alert: the audience resolved for the room (everyone, minus the host, anyone in the room and
+// anyone who tapped Remind me; an older room keeps its saved audience and invite list), the receipts claimed for the
+// members it will really reach, then notify(). Returns notify()'s counts plus how many the daily cap skipped.
+export async function sendRoomNotify(database: Database, environment: Environment, { roomId, senderId, audience, memberIds = [] }: RoomNotify, now = new Date()): Promise<RoomNotifyResult> {
   const room = await readNotifyRoom(database, environment, roomId, senderId);
   if (!room) return { ...NOTHING_SENT, capped: 0 };
   const followerIds = audience === NOTIFY_AUDIENCES.followers ? await readFollowerIds(database, senderId) : [];
-  const { among, exclude } = resolveAudience({ audience, senderId, followerIds, pickedIds: memberIds, invitedIds: room.invitedIds, inRoomIds: room.inRoomIds });
+  const { among, exclude } = resolveAudience({ audience, senderId, followerIds, pickedIds: memberIds, invitedIds: room.invitedIds, inRoomIds: room.inRoomIds, remindedIds: room.remindedIds });
   const reachable = (await readReachableMemberIds(database, senderId, among ?? undefined)).filter((id) => !exclude.has(id));
-  const { claimed, capped } = await claimNotifyReceipts(database, { roomId, senderId, memberIds: reachable });
+  const heldBack = await readHeldBack(database, reachable, senderId, now);
+  const { claimed, capped } = await claimNotifyReceipts(database, { roomId, senderId, memberIds: reachable.filter((id) => !heldBack.has(id)) }, now);
   // Counted in the server log: the members past their 5 a day.
   if (capped > 0) console.log(JSON.stringify({ level: "info", scope: "voice-notify-capped", roomId, capped }));
-  if (claimed.length === 0) return { ...NOTHING_SENT, capped };
+  const userIds = [...claimed, ...heldBack];
+  if (userIds.length === 0) return { ...NOTHING_SENT, capped };
   const result = await notify(
     {
-      userIds: claimed,
+      userIds,
       kind: NOTIFICATION_KINDS.voiceBroadcast,
-      title: toRoomNotifyTitle(removeBidiControls(room.senderName), removeBidiControls(room.title), isStart),
+      title: toRoomNotifyTitle(removeBidiControls(room.senderName), removeBidiControls(room.title)),
       body: ROOM_NOTIFY_BODY,
       url: toRoomHref(roomId),
       fromUserId: senderId,
     },
-    { database, environment },
+    { database, environment, now },
   );
   return { ...result, capped };
 }

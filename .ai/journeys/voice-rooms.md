@@ -10,10 +10,11 @@ installer does it; or LiveKit Cloud keys in Set up › Rooms). How it works: `.a
 3. They raise a hand; the host sees it under "Raised hands" and taps "Invite to speak". The member is on stage,
    muted, and unmutes to talk. The host can move people back to the audience, make a speaker a co-host, or end the
    room. Reactions and the room chat reach everyone, and are never saved. "Leave quietly" leaves.
-4. A member starts a room now or schedules one: a title, Now or Later, everyone or invite only (with people picked by
-   name).
-5. "I'm available to talk" opens a room with them as host and (once notifications lands) alerts the community, at
-   most 3 times a day.
+4. A member taps "Start a room": it starts now as "<first name>'s room" (they rename it inside) and alerts every
+   member, 3 alerting starts a day; or "Schedule for later" with a title and a time (round 7:
+   `.ai/features/room-start-instant/NOTES.md`).
+5. Each member decides what reaches them: the Room alerts switch (on Rooms and Alerts), quiet times, pause, and
+   "Don't notify me about <name>'s rooms" on a profile.
 6. If the host leaves, a co-host takes over; a room with nobody on stage ends after 2 minutes.
 
 Tests: `src/modules/voice/voice.test.ts`; the two-browser check with fake microphones in

@@ -55,3 +55,8 @@ it: with a voice server set up its card shows the host and speakers instead of p
 "Tell people I'm here" once per room, Follow and the export, the install default, and the alerts end to end with the
 fake push server (followers only; muted, quiet, blocked and off skipped; a scheduled room's Notify at start;
 invite-only Everyone; one per room and the 5-a-day cap).
+
+## Superseded (round 7, 20 Nov 2026)
+Notify others, Tell people I'm here and Follow are gone: one tap starts a room and alerts everyone, and members
+choose what reaches them. How it works now: [room-start-instant NOTES](../room-start-instant/NOTES.md). Rooms
+scheduled before keep the audience saved here; the follow and last-choice rows stay until the owner decides.

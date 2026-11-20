@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
-import { AlertsBell } from "@/components/alerts/alerts-bell";
 import { PageHeader } from "@/components/page-header";
+import { readRoomAlertsState } from "@/components/alerts/room-alerts-state";
 import { RoomsBoard } from "@/modules/voice/components/rooms-board";
 import { VOICE_PAGE_TITLE } from "@/modules/voice/contract";
 import { voiceManifest } from "@/modules/voice/manifest";
@@ -12,15 +12,15 @@ import { modulePage } from "@/platform/modules/module-page";
 
 export const metadata: Metadata = { title: VOICE_PAGE_TITLE };
 
-// Rooms: Start a room, who is live now, and rooms coming up. The header's action spot is the Alerts bell's.
+// Rooms: Start a room (one tap, alerts everyone), the member's Room alerts switch, who is live now, and rooms coming up.
 export default modulePage(voiceManifest, async function RoomsPage() {
   const member = await requireMember();
-  const initial = await readRoomsPage(getDatabase(), process.env, member.id);
+  const database = getDatabase();
+  const [initial, alerts] = await Promise.all([readRoomsPage(database, process.env, member.id), readRoomAlertsState(database, member.id)]);
   return (
     <>
       <PageHeader title="Rooms" />
-      <AlertsBell memberId={member.id} />
-      <RoomsBoard initial={initial} viewerId={member.id} />
+      <RoomsBoard initial={initial} viewerId={member.id} alerts={alerts} />
     </>
   );
 });

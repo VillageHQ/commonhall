@@ -23,8 +23,9 @@ type PortalScreenProps = {
   onSwitchCommunity: () => void;
 };
 
-// `hasNotified`: the page says the member already told people about this room, so the app doesn't offer it.
-type OpenRoom = { roomId: string; title: string; hasNotified: boolean };
+// The page still sends `hasNotified` (always true since round 7, for app builds that offered "Tell people I'm here");
+// this build has no Tell people and ignores it.
+type OpenRoom = { roomId: string; title: string };
 
 export function PortalScreen({ community, startPath, openRequest, onSwitchCommunity }: PortalScreenProps) {
   const colors = useColors();
@@ -85,15 +86,12 @@ export function PortalScreen({ community, startPath, openRequest, onSwitchCommun
   }, [room]);
 
   const onOpenRoom = useCallback(
-    (roomId: string, title: string, hasNotified: boolean) => {
+    (roomId: string, title: string) => {
       const current = roomRef.current;
       if (current?.roomId !== roomId) {
         // One room at a time: opening another leaves the one playing.
         if (current) void portal.call("POST", "/api/voice/leave", { roomId: current.roomId });
-        roomRef.current = { roomId, title: title || "Voice room", hasNotified };
-        setRoom(roomRef.current);
-      } else if (hasNotified && !current.hasNotified) {
-        roomRef.current = { ...current, hasNotified };
+        roomRef.current = { roomId, title: title || "Voice room" };
         setRoom(roomRef.current);
       }
       setIsRoomShown(true);
@@ -193,7 +191,6 @@ export function PortalScreen({ community, startPath, openRequest, onSwitchCommun
           origin={community.origin}
           roomId={room.roomId}
           title={room.title}
-          hasNotified={room.hasNotified}
           isShown={isRoomShown}
           onMinimize={() => setIsRoomShown(false)}
           onClose={closeRoom}

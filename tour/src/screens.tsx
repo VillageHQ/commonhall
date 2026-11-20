@@ -67,6 +67,7 @@ import {
   ROOM_ID,
   ROOM_TITLE,
   ROOM_VIEWER_ID,
+  ROOM_ALERTS,
   ROOMS_PAGE,
   SEARCH_QUERY,
   SEARCH_RESULT,
@@ -125,7 +126,7 @@ function RoomsPage() {
   return (
     <>
       <PageHeader title="Rooms" />
-      <RoomsBoard initial={ROOMS_PAGE} viewerId={ROOM_VIEWER_ID} />
+      <RoomsBoard initial={ROOMS_PAGE} viewerId={ROOM_VIEWER_ID} alerts={ROOM_ALERTS} />
     </>
   );
 }
@@ -135,7 +136,7 @@ function RoomPage() {
   return (
     <>
       <PageHeader back={{ href: VOICE_PAGE, label: "Rooms" }} eyebrow="Live · Open to the community · Never recorded" title={ROOM_TITLE} />
-      <LiveRoom roomId={ROOM_ID} title={ROOM_TITLE} isInviteOnly={false} />
+      <LiveRoom roomId={ROOM_ID} title={ROOM_TITLE} />
     </>
   );
 }

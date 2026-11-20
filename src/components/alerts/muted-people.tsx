@@ -14,7 +14,8 @@ import { NOTIFICATION_API_ROUTES } from "@/platform/notifications/contract";
 
 type Person = { id: string; name: string };
 
-// Muted people, folded: a muted member starting or joining a room never alerts you; their messages and intros still do.
+// Muted people, folded: a muted member starting a room never alerts you; their messages and intros still do. A
+// profile's "Don't notify me about <name>'s rooms" adds them here.
 export function MutedPeople({ muted, members }: { muted: readonly Person[]; members: readonly Person[] }) {
   const router = useRouter();
   const flash = useFlash();
@@ -33,7 +34,7 @@ export function MutedPeople({ muted, members }: { muted: readonly Person[]; memb
   return (
     <details className="fh-sheet" data-testid="muted-people">
       <summary className="fh-h3 cursor-pointer">Muted people{muted.length ? ` (${muted.length})` : ""}</summary>
-      <p className="fh-small fh-muted mt-1">You won’t hear when they start or join a room.</p>
+      <p className="fh-small fh-muted mt-1">You won’t hear when they start a room.</p>
       {muted.length ? (
         <ul className="mt-3 grid gap-2">
           {muted.map((person) => (

@@ -86,3 +86,7 @@ permissions; a moved-down member's microphone is unpublished by LiveKit.
 - Two-browser audio: run headless Chromium with `--use-fake-device-for-media-stream --use-fake-ui-for-media-stream`
   (and `--use-file-for-fake-audio-capture=<steady tone wav>` for the talking ring; the default fake mic only beeps);
   read `inbound-rtp` audio stats from the page's RTCPeerConnections to prove sound arrives.
+
+## Since round 7 (20 Nov 2026)
+Starting a room alerts everyone, the host renames a one-tap "<first name>'s room" inside it, and Notify others, Tell
+people and Follow are gone: [room-start-instant NOTES](../room-start-instant/NOTES.md).

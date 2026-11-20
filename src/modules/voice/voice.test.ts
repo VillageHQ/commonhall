@@ -1,27 +1,30 @@
 import { TokenVerifier } from "livekit-server-sdk";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { eq } from "drizzle-orm";
+
+import { POST as postAlerts } from "@/app/api/voice/alerts/route";
 import { POST as postCreate } from "@/app/api/voice/create/route";
 import { POST as postEnd } from "@/app/api/voice/end/route";
-import { POST as postFollow } from "@/app/api/voice/follow/route";
-import { POST as postFollowing } from "@/app/api/voice/following/route";
 import { POST as postHand } from "@/app/api/voice/hand/route";
 import { POST as postJoin } from "@/app/api/voice/join/route";
 import { POST as postRemind } from "@/app/api/voice/remind/route";
 import { POST as postLeave } from "@/app/api/voice/leave/route";
-import { POST as postNotify } from "@/app/api/voice/notify/route";
+import { POST as postRename } from "@/app/api/voice/rename/route";
 import { POST as postRole } from "@/app/api/voice/role/route";
 import { POST as postRooms } from "@/app/api/voice/rooms/route";
 import { POST as postStart } from "@/app/api/voice/start/route";
-import { NOTIFY_AUDIENCES, NOTIFY_OFF, ROLE_ACTIONS, ROOM_NOTIFY_BODY, ROOM_ROLES, VOICE_ERROR_CODES, VOICE_LIMITS, VOICE_MESSAGES, type RoomJoin, type RoomsPageData } from "@/modules/voice/contract";
+import { ROLE_ACTIONS, ROOM_NOTIFY_BODY, ROOM_ROLES, VOICE_ERROR_CODES, VOICE_LIMITS, type RoomJoin, type RoomsPageData, type StartedRoom } from "@/modules/voice/contract";
 import { voiceManifest } from "@/modules/voice/manifest";
-import { voiceBroadcast } from "@/modules/voice/schema";
-import { checkRoom, toLiveKitRoomName } from "@/modules/voice/service";
+import { voiceBroadcast, voiceFollow, voiceNotifyReceipt, voiceRoom, voiceRoomMember } from "@/modules/voice/schema";
+import { checkRoom, NOTIFY_AUDIENCES, toLiveKitRoomName } from "@/modules/voice/service";
 import { resolveAudience } from "@/modules/voice/service-notify";
 import { memberBlock } from "@/modules/members/schema";
+import { user } from "@/platform/database/auth-schema";
 import { isModuleEnabled, saveModuleState } from "@/platform/modules/enablement";
-import { DEFAULT_PREFERENCES, DEVICE_TYPES, NOTIFICATION_KINDS } from "@/platform/notifications/contract";
-import { registerDevice, savePreferences, setMute } from "@/platform/notifications/service";
+import { DEFAULT_PREFERENCES, DEVICE_TYPES, NOTIFICATION_KINDS, ROOM_ALERT_KINDS } from "@/platform/notifications/contract";
+import { readPreferences } from "@/platform/notifications/reads";
+import { pauseAlerts, registerDevice, savePreferences, setMute } from "@/platform/notifications/service";
 import { readMemberExport } from "@/shell/member-export";
 import { runVoiceReminders, sendRoomNotify } from "@/shell/voice-alerts";
 import { clearDatabase, createTestDatabase } from "@/test/database";
@@ -71,12 +74,48 @@ describe("voice rooms", () => {
     return handler(new Request(`${APP_URL}/api/voice`, { method: "POST", headers, body: JSON.stringify(body) }));
   }
 
-  type Notify = { audience: "followers" | "picked" | "everyone"; memberIds?: string[] } | null;
-
-  async function openRoom(host: Member, access: "open" | "invite" = "open", inviteeIds: string[] = [], notify: Notify = null, title = "Pricing for seed founders") {
-    const response = await call(postCreate, host.cookie, { title, access, scheduledFor: null, inviteeIds, notify });
+  // One tap: no title gives "<first name>'s room". Starting alerts everyone (after the response).
+  async function startRoom(host: Member, title?: string) {
+    const response = await call(postCreate, host.cookie, title === undefined ? {} : { title });
     expect(response.status).toBe(200);
-    return ((await response.json()) as { roomId: string }).roomId;
+    return (await response.json()) as StartedRoom;
+  }
+
+  async function openRoom(host: Member, title = "Pricing for seed founders") {
+    return (await startRoom(host, title)).roomId;
+  }
+
+  async function scheduleRoom(host: Member, title: string, hoursAhead = 1) {
+    const response = await call(postCreate, host.cookie, { title, scheduledFor: new Date(Date.now() + hoursAhead * 60 * 60_000).toISOString() });
+    expect(response.status).toBe(200);
+    return ((await response.json()) as StartedRoom).roomId;
+  }
+
+  // A room written straight to the database: a live open room, or one as hosts made them before round 7 (invite only,
+  // or scheduled with a saved audience; null is nobody).
+  async function insertRoom(host: Member, values: { access?: "open" | "invite"; invitedIds?: string[]; notifyAudience?: "followers" | "picked" | "everyone" | null; notifyMemberIds?: string[] }) {
+    const isScheduled = values.notifyAudience !== undefined;
+    const [room] = await database
+      .insert(voiceRoom)
+      .values({
+        title: "Older room",
+        hostId: host.userId,
+        createdById: host.userId,
+        access: values.access ?? "open",
+        status: isScheduled ? "scheduled" : "live",
+        scheduledFor: isScheduled ? new Date(Date.now() + 60 * 60_000) : null,
+        startedAt: isScheduled ? null : new Date(),
+        notifyAudience: values.notifyAudience ?? null,
+        notifyMemberIds: values.notifyMemberIds ?? null,
+        createdAt: new Date(Date.now() - 60 * 60_000),
+      })
+      .returning({ id: voiceRoom.id });
+    const roomId = room!.id;
+    await database.insert(voiceRoomMember).values([
+      { roomId, memberId: host.userId, role: ROOM_ROLES.host, isInvited: true },
+      ...(values.invitedIds ?? []).map((memberId) => ({ roomId, memberId, role: ROOM_ROLES.listener, isInvited: true })),
+    ]);
+    return roomId;
   }
 
   async function readRooms(member: Member) {
@@ -109,9 +148,9 @@ describe("voice rooms", () => {
     }
   });
 
-  it("issues tokens only to signed-in members, and an invite-only room only to its list", async () => {
+  it("issues tokens only to signed-in members, and an older invite-only room only to its list", async () => {
     const [host, invited, stranger] = await Promise.all([createSignedInMember(database), createSignedInMember(database), createSignedInMember(database)]);
-    const roomId = await openRoom(host, "invite", [invited.userId]);
+    const roomId = await insertRoom(host, { access: "invite", invitedIds: [invited.userId] });
 
     expect((await call(postJoin, null, { roomId })).status).toBe(401);
     const refused = await call(postJoin, stranger.cookie, { roomId });
@@ -123,19 +162,37 @@ describe("voice rooms", () => {
     expect(strangerRooms.live).toEqual([]);
 
     // A reminder on an invite-only scheduled room would carry its title to someone off the list.
-    const later = new Date(Date.now() + 60 * 60_000).toISOString();
-    const scheduled = await call(postCreate, host.cookie, { title: "Board prep", access: "invite", scheduledFor: later, inviteeIds: [invited.userId] });
-    const scheduledId = ((await scheduled.json()) as { roomId: string }).roomId;
+    const scheduledId = await insertRoom(host, { access: "invite", invitedIds: [invited.userId], notifyAudience: null });
     expect((await call(postRemind, stranger.cookie, { roomId: scheduledId, isOn: true })).status).toBe(404);
     expect((await call(postRemind, invited.cookie, { roomId: scheduledId, isOn: true })).status).toBe(200);
   });
 
-  it("opens one room when Start the room is tapped twice", async () => {
+  it("opens one room when Start a room is tapped twice", async () => {
     const host = await createSignedInMember(database);
-    const body = { title: "Hiring a first designer", access: "open", scheduledFor: null, inviteeIds: [] };
-    const answers = await Promise.all([call(postCreate, host.cookie, body), call(postCreate, host.cookie, body)]);
-    const [first, second] = (await Promise.all(answers.map((answer) => answer.json()))) as { roomId: string }[];
+    const answers = await Promise.all([call(postCreate, host.cookie, {}), call(postCreate, host.cookie, {})]);
+    const [first, second] = (await Promise.all(answers.map((answer) => answer.json()))) as StartedRoom[];
     expect(first?.roomId).toBe(second?.roomId);
+  });
+
+  it("starts a room with one tap as '<first name>'s room', open to everyone, and lets only its host rename it", async () => {
+    const [host, guest] = await Promise.all([createSignedInMember(database), createSignedInMember(database)]);
+    await database.update(user).set({ name: "Sam Lee" }).where(eq(user.id, host.userId));
+    const { roomId, isQuiet } = await startRoom(host);
+    expect(isQuiet).toBe(false);
+    const [room] = await database.select({ title: voiceRoom.title, access: voiceRoom.access, status: voiceRoom.status }).from(voiceRoom).where(eq(voiceRoom.id, roomId));
+    expect(room).toEqual({ title: "Sam's room", access: "open", status: "live" });
+
+    // The old choices are refused, not ignored.
+    expect((await call(postCreate, host.cookie, { title: "Old sheet", access: "invite", scheduledFor: null, inviteeIds: [] })).status).toBe(422);
+    // A room for later needs a title.
+    const untitled = await call(postCreate, host.cookie, { scheduledFor: new Date(Date.now() + 60 * 60_000).toISOString() });
+    expect(untitled.status).toBe(422);
+    expect(await untitled.json()).toMatchObject({ code: VOICE_ERROR_CODES.needsTitle });
+
+    expect((await call(postRename, guest.cookie, { roomId, title: "Mine now" })).status).toBe(403);
+    expect((await call(postRename, host.cookie, { roomId, title: "  " })).status).toBe(422);
+    expect((await call(postRename, host.cookie, { roomId, title: "Closing a seed round" })).status).toBe(200);
+    expect((await readRooms(guest)).live[0]?.title).toBe("Closing a seed round");
   });
 
   it("runs the stage: raise hand, invite up, co-host, move down, and pushes each change live", async () => {
@@ -217,63 +274,41 @@ describe("voice rooms", () => {
     expect((await call(postJoin, listener.cookie, { roomId })).status).toBe(409);
   });
 
-  it("counts Notify against 3 a day, refuses a 4th with when it resets, and remembers the last choice", async () => {
+  it("alerts on 3 starts a day; a 4th starts quietly and says so", async () => {
     const member = await createSignedInMember(database);
-    expect((await readRooms(member)).notify).toEqual({ left: VOICE_LIMITS.broadcastsPerDay, resetsAt: null, choice: NOTIFY_OFF });
-
     for (let room = 0; room < VOICE_LIMITS.broadcastsPerDay; room += 1) {
-      const roomId = await openRoom(member, "open", [], { audience: NOTIFY_AUDIENCES.followers }, `Room ${room}`);
-      await call(postEnd, member.cookie, { roomId });
+      const started = await startRoom(member, `Room ${room}`);
+      expect(started.isQuiet).toBe(false);
+      await call(postEnd, member.cookie, { roomId: started.roomId });
     }
-    const page = await readRooms(member);
-    expect(page.notify).toMatchObject({ left: 0, choice: NOTIFY_AUDIENCES.followers });
-    expect(page.notify.resetsAt).not.toBeNull();
-
-    const fourth = await call(postCreate, member.cookie, { title: "One more", access: "open", scheduledFor: null, inviteeIds: [], notify: { audience: NOTIFY_AUDIENCES.everyone } });
-    expect(fourth.status).toBe(429);
-    expect(await fourth.json()).toMatchObject({ code: VOICE_ERROR_CODES.broadcastLimit, message: VOICE_MESSAGES.broadcastLimit });
-    // Starting without notifying still works, and is remembered as off.
-    await openRoom(member, "open", [], null, "Quiet room");
-    expect((await readRooms(member)).notify.choice).toBe(NOTIFY_OFF);
-    // "People I pick" needs someone picked.
-    const nobody = await call(postCreate, member.cookie, { title: "Picked", access: "open", scheduledFor: null, inviteeIds: [], notify: { audience: NOTIFY_AUDIENCES.picked, memberIds: [] } });
-    expect(nobody.status).toBe(422);
+    // Tapped twice: one room, and both answers say it was quiet.
+    const answers = await Promise.all([call(postCreate, member.cookie, { title: "One more" }), call(postCreate, member.cookie, { title: "One more" })]);
+    const [fourth, again] = (await Promise.all(answers.map((answer) => answer.json()))) as StartedRoom[];
+    expect(again).toEqual(fourth);
+    expect(fourth!.isQuiet).toBe(true);
+    const rows = await database.select({ roomId: voiceBroadcast.roomId, audience: voiceBroadcast.audience }).from(voiceBroadcast);
+    expect(rows).toHaveLength(VOICE_LIMITS.broadcastsPerDay);
+    expect(rows.every(({ audience }) => audience === NOTIFY_AUDIENCES.everyone)).toBe(true);
+    expect(rows.some(({ roomId }) => roomId === fourth!.roomId)).toBe(false);
   });
 
-  it("lets someone who joined tell up to 10 people they're here, once per room", async () => {
-    const [host, guest, friend] = await Promise.all([createSignedInMember(database), createSignedInMember(database), createSignedInMember(database)]);
-    const roomId = await openRoom(host);
-
-    const early = await call(postNotify, guest.cookie, { roomId, memberIds: [friend.userId] });
-    expect(early.status).toBe(403);
-    expect(await early.json()).toMatchObject({ code: VOICE_ERROR_CODES.notInRoom });
-
-    await join(guest, roomId);
-    expect((await call(postNotify, guest.cookie, { roomId, memberIds: Array.from({ length: VOICE_LIMITS.pickedOnJoin + 1 }, () => friend.userId) })).status).toBe(422);
-    expect((await call(postNotify, guest.cookie, { roomId, memberIds: [friend.userId] })).status).toBe(200);
-    const again = await call(postNotify, guest.cookie, { roomId, memberIds: [friend.userId] });
-    expect(again.status).toBe(409);
-    expect(await again.json()).toMatchObject({ code: VOICE_ERROR_CODES.notifiedAlready });
-    const rows = await database.select({ audience: voiceBroadcast.audience }).from(voiceBroadcast);
-    expect(rows).toEqual([{ audience: NOTIFY_AUDIENCES.picked }]);
-  });
-
-  it("follows and unfollows from a room card or profile, and lists follows in Your data's export", async () => {
+  it("keeps the follows made before round 7 in Your data's export", async () => {
     const [fan, host] = await Promise.all([createSignedInMember(database), createSignedInMember(database)]);
-    await openRoom(host);
-    expect((await readRooms(fan)).live[0]?.isFollowingHost).toBe(false);
-
-    expect((await call(postFollow, fan.cookie, { memberId: host.userId, isFollowing: true })).status).toBe(200);
-    expect((await call(postFollow, fan.cookie, { memberId: host.userId, isFollowing: true })).status).toBe(200);
-    expect((await readRooms(fan)).live[0]?.isFollowingHost).toBe(true);
-    expect(await (await call(postFollowing, fan.cookie, { memberId: host.userId })).json()).toEqual({ isFollowing: true, isSelf: false });
-    expect(await (await call(postFollowing, fan.cookie, { memberId: fan.userId })).json()).toEqual({ isFollowing: false, isSelf: true });
+    await database.insert(voiceFollow).values({ followerId: fan.userId, followedId: host.userId });
     const exported = await readMemberExport(database, fan.userId);
     expect(exported.roomsYouFollow).toEqual([expect.objectContaining({ memberId: host.userId })]);
+  });
 
-    expect((await call(postFollow, fan.cookie, { memberId: host.userId, isFollowing: false })).status).toBe(200);
-    expect((await readRooms(fan)).live[0]?.isFollowingHost).toBe(false);
-    expect((await call(postFollow, fan.cookie, { memberId: "no-such-member", isFollowing: true })).status).toBe(404);
+  it("turns both room alert kinds on or off with the Rooms page's switch, keeping the other choices", async () => {
+    const member = await createSignedInMember(database);
+    await savePreferences(database, member.userId, { ...DEFAULT_PREFERENCES, offKinds: [NOTIFICATION_KINDS.voiceRoom, NOTIFICATION_KINDS.library], timeZone: "Europe/Paris" });
+    expect((await call(postAlerts, member.cookie, { isOn: false, timeZone: "Asia/Tokyo" })).status).toBe(200);
+    const off = await readPreferences(database, member.userId);
+    expect(off.offKinds.toSorted()).toEqual([NOTIFICATION_KINDS.library, ...ROOM_ALERT_KINDS].toSorted());
+    // A member who saved keeps their own zone.
+    expect(off.timeZone).toBe("Europe/Paris");
+    expect((await call(postAlerts, member.cookie, { isOn: true })).status).toBe(200);
+    expect((await readPreferences(database, member.userId)).offKinds).toEqual([NOTIFICATION_KINDS.library]);
   });
 
   it("starts on with a fresh install's ROOMS_ON_BY_DEFAULT, and an admin's stored choice always wins", async () => {
@@ -292,28 +327,24 @@ describe("voice rooms", () => {
     }
   });
 
-  describe("who a notify reaches", () => {
+  describe("who a start reaches", () => {
     const base = { senderId: "sender", followerIds: ["a", "b", "sender"], pickedIds: ["c", "d"], invitedIds: null, inRoomIds: [] };
 
-    it("resolves followers, people picked and everyone, never the sender", () => {
+    it("reaches everyone but the host, anyone in the room and anyone who tapped Remind me", () => {
+      const everyone = resolveAudience({ ...base, audience: NOTIFY_AUDIENCES.everyone, inRoomIds: ["a"], remindedIds: ["b"] });
+      expect(everyone.among).toBeNull();
+      expect([...everyone.exclude].toSorted()).toEqual(["a", "b", "sender"]);
+    });
+
+    it("keeps an older scheduled room's saved followers or people picked, never the sender", () => {
       expect(resolveAudience({ ...base, audience: NOTIFY_AUDIENCES.followers }).among).toEqual(["a", "b"]);
       expect(resolveAudience({ ...base, audience: NOTIFY_AUDIENCES.picked }).among).toEqual(["c", "d"]);
-      const everyone = resolveAudience({ ...base, audience: NOTIFY_AUDIENCES.everyone });
-      expect(everyone.among).toBeNull();
-      expect(everyone.exclude.has("sender")).toBe(true);
     });
 
-    it("narrows an invite-only room to its invited, Everyone included", () => {
+    it("narrows an older invite-only room to its invited", () => {
       const invitedIds = ["b", "d", "e"];
       expect(resolveAudience({ ...base, invitedIds, audience: NOTIFY_AUDIENCES.followers }).among).toEqual(["b"]);
-      expect(resolveAudience({ ...base, invitedIds, audience: NOTIFY_AUDIENCES.picked }).among).toEqual(["d"]);
       expect(resolveAudience({ ...base, invitedIds, audience: NOTIFY_AUDIENCES.everyone }).among).toEqual(["b", "d", "e"]);
-    });
-
-    it("leaves out anyone already in the room", () => {
-      const resolved = resolveAudience({ ...base, inRoomIds: ["a"], audience: NOTIFY_AUDIENCES.followers });
-      expect(resolved.among).toEqual(["b"]);
-      expect(resolved.exclude.has("a")).toBe(true);
     });
   });
 
@@ -338,16 +369,32 @@ describe("voice rooms", () => {
       return { ...DEFAULT_PREFERENCES, quietTimes: [{ from: at(-1), to: at(2), allDay: false, days: [0, 1, 2, 3, 4, 5, 6] }] };
     }
 
-    it("Notify → My followers alerts followers only, but not those muting, in quiet hours, blocked or with it off", async () => {
-      const [host, follower, stranger, sleeping, muting, off, blocking] = await members(7);
-      for (const member of [host, follower, stranger, sleeping, muting, off, blocking]) await withPhone(member!);
-      for (const member of [follower, sleeping, muting, off, blocking]) expect((await call(postFollow, member!.cookie, { memberId: host!.userId, isFollowing: true })).status).toBe(200);
+    it("a start alerts every member with a device, but not the host, anyone in the room, or those muting, quiet, paused, blocked or with room alerts off", async () => {
+      // One more member has no device: nothing to send to.
+      const [host, other, inRoom, sleeping, paused, muting, off, blocking] = await members(9);
+      for (const member of [host, other, inRoom, sleeping, paused, muting, off, blocking]) await withPhone(member!);
       await savePreferences(database, sleeping!.userId, quietNow());
+      await pauseAlerts(database, paused!.userId, { until: "1h" }, new Date());
       await setMute(database, muting!.userId, host!.userId, true);
-      await savePreferences(database, off!.userId, { ...DEFAULT_PREFERENCES, offKinds: [NOTIFICATION_KINDS.voiceBroadcast] });
+      await savePreferences(database, off!.userId, { ...DEFAULT_PREFERENCES, offKinds: [...ROOM_ALERT_KINDS] });
       await database.insert(memberBlock).values({ blockerId: host!.userId, blockedId: blocking!.userId });
 
-      const roomId = await openRoom(host!, "open", [], { audience: NOTIFY_AUDIENCES.followers }, "Agents in production");
+      // Someone already in another of the host's rooms is still told; someone in this one is not (LiveKit's list).
+      const roomId = await insertRoom(host!, {});
+      livekit.connect(toLiveKitRoomName(roomId), host!.userId, inRoom!.userId);
+      const result = await sendRoomNotify(database, process.env, { roomId, senderId: host!.userId, audience: NOTIFY_AUDIENCES.everyone });
+      expect(result).toMatchObject({ sent: 1, capped: 0 });
+      expect(push.state.expoMessages).toHaveLength(1);
+
+      // Only the member who got it holds a receipt: the quiet, paused, muting and off members keep their 5 for later.
+      const receipts = await database.select({ memberId: voiceNotifyReceipt.memberId }).from(voiceNotifyReceipt);
+      expect(receipts).toEqual([{ memberId: other!.userId }]);
+    });
+
+    it("one tap alerts everyone after the response, in the alert's words", async () => {
+      const [host, other] = await members(2);
+      for (const member of [host, other]) await withPhone(member!);
+      const { roomId } = await startRoom(host!, "Agents in production");
 
       await vi.waitFor(() => expect(push.state.expoMessages).toHaveLength(1), EVENTUALLY);
       expect(push.state.expoMessages[0]).toMatchObject({
@@ -358,28 +405,54 @@ describe("voice rooms", () => {
       await vi.waitFor(async () => expect(await database.select({ reached: voiceBroadcast.reached }).from(voiceBroadcast)).toEqual([{ reached: 1 }]), EVENTUALLY);
     });
 
-    it("sends nothing with Notify off, and a scheduled room's Notify when the host starts it", async () => {
-      const [host, follower] = await members(2);
-      for (const member of [host, follower]) await withPhone(member!);
-      await call(postFollow, follower!.cookie, { memberId: host!.userId, isFollowing: true });
+    it("a member in a quiet time gets nothing and holds no receipt; once it ends, the next start reaches them", async () => {
+      const [host, sleeper] = await members(2);
+      for (const member of [host, sleeper]) await withPhone(member!);
+      await savePreferences(database, sleeper!.userId, quietNow());
+      const first = await insertRoom(host!, {});
+      expect(await sendRoomNotify(database, process.env, { roomId: first, senderId: host!.userId, audience: NOTIFY_AUDIENCES.everyone })).toMatchObject({ sent: 0, skipped: 1 });
+      expect(await database.select().from(voiceNotifyReceipt)).toEqual([]);
 
-      await openRoom(host!, "open", [], null, "No alert");
-      const scheduledFor = new Date(Date.now() + 60 * 60_000).toISOString();
-      const scheduled = await call(postCreate, host!.cookie, { title: "Later", access: "open", scheduledFor, inviteeIds: [], notify: { audience: NOTIFY_AUDIENCES.followers } });
-      const { roomId } = (await scheduled.json()) as { roomId: string };
-      await new Promise((resolve) => setTimeout(resolve, 200));
-      expect(push.state.expoMessages).toHaveLength(0);
-      expect((await readRooms(host!)).notify.left).toBe(VOICE_LIMITS.broadcastsPerDay);
-
-      expect((await call(postStart, host!.cookie, { roomId })).status).toBe(200);
-      await vi.waitFor(() => expect(push.state.expoMessages).toHaveLength(1), EVENTUALLY);
-      expect(push.state.expoMessages[0]).toMatchObject({ title: "Test Member started \u201cLater\u201d", data: { url: `/rooms/${roomId}` } });
+      await savePreferences(database, sleeper!.userId, DEFAULT_PREFERENCES);
+      const second = await insertRoom(host!, {});
+      expect(await sendRoomNotify(database, process.env, { roomId: second, senderId: host!.userId, audience: NOTIFY_AUDIENCES.everyone })).toMatchObject({ sent: 1 });
     });
 
-    it("in an invite-only room, Everyone reaches only the invited, and nobody already in the room", async () => {
+    it("Start now on a new scheduled room alerts everyone, and a member who tapped Remind me gets only the reminder", async () => {
+      const [host, keen, other] = await members(3);
+      for (const member of [host, keen, other]) await withPhone(member!);
+      const roomId = await scheduleRoom(host!, "Later");
+      expect((await call(postRemind, keen!.cookie, { roomId, isOn: true })).status).toBe(200);
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      expect(push.state.expoMessages).toHaveLength(0);
+
+      const started = await call(postStart, host!.cookie, { roomId });
+      expect(await started.json()).toEqual({ roomId, isQuiet: false });
+      await vi.waitFor(() => expect(push.state.expoMessages).toHaveLength(2), EVENTUALLY);
+      expect(push.state.expoMessages.map(({ title }) => title).toSorted()).toEqual(["Starting now: Later", "Test Member started \u201cLater\u201d"]);
+    });
+
+    it("a room scheduled before round 7 alerts the audience its host saved: followers, or nobody", async () => {
+      const [host, follower, stranger] = await members(3);
+      for (const member of [host, follower, stranger]) await withPhone(member!);
+      await database.insert(voiceFollow).values({ followerId: follower!.userId, followedId: host!.userId });
+
+      const silent = await insertRoom(host!, { notifyAudience: null });
+      expect(await (await call(postStart, host!.cookie, { roomId: silent })).json()).toEqual({ roomId: silent, isQuiet: false });
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      expect(push.state.expoMessages).toHaveLength(0);
+
+      const forFollowers = await insertRoom(host!, { notifyAudience: "followers" });
+      expect((await call(postStart, host!.cookie, { roomId: forFollowers })).status).toBe(200);
+      await vi.waitFor(() => expect(push.state.expoMessages).toHaveLength(1), EVENTUALLY);
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      expect(push.state.expoMessages).toHaveLength(1);
+    });
+
+    it("an older invite-only room alerts only its invited, and nobody already in the room", async () => {
       const [host, invited, listening, outsider] = await members(4);
       for (const member of [host, invited, listening, outsider]) await withPhone(member!);
-      const roomId = await openRoom(host!, "invite", [invited!.userId, listening!.userId]);
+      const roomId = await insertRoom(host!, { access: "invite", invitedIds: [invited!.userId, listening!.userId] });
       livekit.connect(toLiveKitRoomName(roomId), host!.userId, listening!.userId);
 
       const result = await sendRoomNotify(database, process.env, { roomId, senderId: host!.userId, audience: NOTIFY_AUDIENCES.everyone });
@@ -387,32 +460,30 @@ describe("voice rooms", () => {
       expect(push.state.expoMessages).toHaveLength(1);
     });
 
-    it("alerts a member once per room, and at most 5 a day from others' notifies (the 6th is skipped and counted)", async () => {
+    it("alerts a member once per room, and at most 5 starts a day (the 6th is skipped and counted)", async () => {
       const [receiver, ...senders] = await members(VOICE_LIMITS.notifiesReceivedPerDay + 2);
       await withPhone(receiver!);
-      const send = (roomId: string, senderId: string, isStart = true) => sendRoomNotify(database, process.env, { roomId, senderId, audience: NOTIFY_AUDIENCES.picked, memberIds: [receiver!.userId], isStart });
+      const send = (roomId: string, senderId: string) => sendRoomNotify(database, process.env, { roomId, senderId, audience: NOTIFY_AUDIENCES.everyone });
 
-      const first = await openRoom(senders[0]!);
+      const first = await insertRoom(senders[0]!, {});
       expect(await send(first, senders[0]!.userId)).toMatchObject({ sent: 1 });
-      // Someone else in the same room telling them too: still one alert for that room.
-      await join(senders[1]!, first);
-      expect(await send(first, senders[1]!.userId, false)).toMatchObject({ sent: 0, capped: 0 });
+      // The same room again: still one alert for it.
+      expect(await send(first, senders[0]!.userId)).toMatchObject({ sent: 0, capped: 0 });
 
       for (const sender of senders.slice(1, VOICE_LIMITS.notifiesReceivedPerDay)) {
-        expect(await send(await openRoom(sender!, "open", [], null, `Room of ${sender!.userId}`), sender!.userId)).toMatchObject({ sent: 1 });
+        expect(await send(await insertRoom(sender!, {}), sender!.userId)).toMatchObject({ sent: 1 });
       }
       const sixth = senders[VOICE_LIMITS.notifiesReceivedPerDay]!;
-      expect(await send(await openRoom(sixth), sixth.userId)).toMatchObject({ sent: 0, capped: 1 });
+      expect(await send(await insertRoom(sixth, {}), sixth.userId)).toMatchObject({ sent: 0, capped: 1 });
       expect(push.state.expoMessages).toHaveLength(VOICE_LIMITS.notifiesReceivedPerDay);
     });
 
     it("reminds the members who tapped Remind me when the room starts, once, early or on time", async () => {
-      const [host, keen, uninterested] = await members(3);
-      for (const member of [host, keen, uninterested]) await withPhone(member!);
+      // Only the keen member has a device: everyone else's start alert has nowhere to go.
+      const [host, keen] = await members(2);
+      for (const member of [host, keen]) await withPhone(member!);
       const schedule = async (title: string) => {
-        const scheduledFor = new Date(Date.now() + 60 * 60_000).toISOString();
-        const response = await call(postCreate, host!.cookie, { title, access: "open", scheduledFor, inviteeIds: [] });
-        const { roomId } = (await response.json()) as { roomId: string };
+        const roomId = await scheduleRoom(host!, title);
         expect((await call(postRemind, keen!.cookie, { roomId, isOn: true })).status).toBe(200);
         return roomId;
       };

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
 import { AlertSettingsForm } from "@/components/alerts/alert-settings-form";
 import { DeviceAlertsCard } from "@/components/alerts/device-alerts-card";
@@ -18,13 +19,15 @@ import { getDatabase } from "@/platform/database/client";
 import { ROUTES } from "@/platform/http/routes";
 import { modulePage } from "@/platform/modules/module-page";
 import { NOTIFICATION_KINDS, type NotificationKind } from "@/platform/notifications/contract";
+import { isAlertLogOn } from "@/platform/notifications/log";
 import { readMutedPeople, readPreferences, readPreferenceSaved } from "@/platform/notifications/reads";
 import { readVapidKeys } from "@/platform/notifications/vapid";
 import { readEnabledIds } from "@/shell/enabled-modules";
 
 export const metadata: Metadata = { title: PAGE_TITLES.alerts };
 
-// Which kinds a member can switch, by the feature that sends them: a kind whose feature is off gets no row.
+// Which kinds a member can switch, by the feature that sends them: a kind whose feature is off gets no row. The two
+// room kinds show as one "Room alerts" row.
 const KIND_FEATURES: readonly { kind: NotificationKind; featureId: string }[] = [
   { kind: NOTIFICATION_KINDS.intro, featureId: introsManifest.id },
   { kind: NOTIFICATION_KINDS.message, featureId: messagesManifest.id },
@@ -36,8 +39,9 @@ const KIND_FEATURES: readonly { kind: NotificationKind; featureId: string }[] = 
 
 type AlertsPageProps = { searchParams: Promise<{ from?: string }> };
 
-// Alerts: this device, Pause, Quiet times (with Let through), what alerts you, and muted people (folded). Reached from
-// the avatar menu, the bell on Rooms (`?from=rooms` goes back there) and My profile.
+// Alerts: this device, Pause, Quiet times (with Let through), what alerts you, muted people (folded), and where the
+// alert log exists (demo mode and development), a link to it. Reached from the avatar menu, Rooms' "Quiet times"
+// (`?from=rooms` goes back there) and My profile.
 export default modulePage(membersManifest, async function AlertsPage({ searchParams }: AlertsPageProps) {
   const member = await requireMember();
   const database = getDatabase();
@@ -64,6 +68,13 @@ export default modulePage(membersManifest, async function AlertsPage({ searchPar
         <PauseCard pausedUntil={pausedUntil?.toISOString() ?? null} timeZone={preferences.timeZone} isSaved={isSaved} />
         <AlertSettingsForm preferences={choices} kinds={kinds} isSaved={isSaved} />
         <MutedPeople muted={muted} members={members} />
+        {isAlertLogOn(process.env) ? (
+          <p className="fh-small">
+            <Link href={`${ROUTES.alerts}/log`} className="fh-linkbtn" data-testid="alert-log-link">
+              What was sent and skipped
+            </Link>
+          </p>
+        ) : null}
       </div>
     </>
   );

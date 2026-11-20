@@ -1,12 +1,12 @@
 import "server-only";
 
 import { ROOM_ACCESS, ROOM_ROLES, ROOM_STATUSES, type RoomRole } from "@/modules/voice/contract";
-import { voiceFollow, voiceRoom, voiceRoomMember } from "@/modules/voice/schema";
+import { voiceRoom, voiceRoomMember } from "@/modules/voice/schema";
 import type { Transaction } from "@/platform/database/client";
 
 // The demo's Rooms: one room live now, with people on stage and listening, and one coming up. Made-up titles, the
 // demo people only. The upkeep leaves these rooms as they are until the nightly reset (service.ts, demo mode), so the
-// live one stays live. Sam follows two hosts, so "My followers" has someone to reach.
+// live one stays live. Starting a room alerts everyone, so nobody follows anybody.
 
 const MINUTE_MS = 60_000;
 const HOUR_MS = 60 * MINUTE_MS;
@@ -33,13 +33,6 @@ const DEMO_ROOMS: readonly DemoRoom[] = [
     ],
   },
   { title: "Hiring your first salesperson", host: "elena.rossi", startsInHours: 26, people: [["oliver.grant", ROOM_ROLES.speaker]] },
-];
-
-const DEMO_FOLLOWS: readonly (readonly [follower: string, followed: string])[] = [
-  ["sam.lee", "priya.shah"],
-  ["sam.lee", "elena.rossi"],
-  ["marcus.webb", "sam.lee"],
-  ["ada.okafor", "sam.lee"],
 ];
 
 function onTheHour(time: number) {
@@ -77,5 +70,4 @@ export async function seedRooms(transaction: Transaction, ids: ReadonlyMap<strin
       })),
     );
   }
-  await transaction.insert(voiceFollow).values(DEMO_FOLLOWS.map(([follower, followed]) => ({ followerId: idOf(follower), followedId: idOf(followed), createdAt: now })));
 }

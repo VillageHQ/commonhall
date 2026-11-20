@@ -17,15 +17,19 @@ import { acknowledgedResponseSchema } from "@/platform/http/contract";
 import { postRequest } from "@/platform/http/post-request";
 import {
   ALL_DAYS,
+  areRoomAlertsOn,
   DAY_LABELS,
   DEFAULT_TIME_ZONE,
   isDirectKind,
+  isRoomAlertKind,
   MAXIMUM_QUIET_TIMES,
   QUIET_TIMES_FULL,
   NOTIFICATION_API_ROUTES,
   NOTIFICATION_KIND_LABELS,
   QUIET_TIME_PRESETS,
   quietTimeSchema,
+  ROOM_ALERTS_LABEL,
+  withRoomAlerts,
   type AlertPreferences,
   type NotificationKind,
   type QuietTime,
@@ -39,6 +43,8 @@ type AlertSettingsFormProps = {
   // Whether the member ever saved: until then, the page shows (and the first save keeps) the browser's own zone.
   isSaved: boolean;
 };
+
+const ROOM_ROW = "rooms";
 
 const NEW_QUIET_TIME: QuietTime = { from: "09:00", to: "12:00", allDay: false, days: [1, 2, 3, 4, 5] };
 
@@ -95,6 +101,20 @@ export function AlertSettingsForm({ preferences, kinds, isSaved }: AlertSettings
 
   function toggleKind(kind: NotificationKind, isKindOn: boolean) {
     change({ offKinds: isKindOn ? current.offKinds.filter((entry) => entry !== kind) : [...current.offKinds, kind] });
+  }
+
+  // One row per kind, except the two room kinds: one "Room alerts" row turns both on or off together (on while
+  // either is on, so a member who had turned off only one sees it on, and the first tap turns both off).
+  function toRows(groupKinds: readonly NotificationKind[]) {
+    const rows: { key: string; label: string; isOn: boolean; onChange: (isOn: boolean) => void }[] = [];
+    for (const kind of groupKinds) {
+      if (!isRoomAlertKind(kind)) {
+        rows.push({ key: kind, label: NOTIFICATION_KIND_LABELS[kind], isOn: !current.offKinds.includes(kind), onChange: (isKindOn) => toggleKind(kind, isKindOn) });
+      } else if (!rows.some(({ key }) => key === ROOM_ROW)) {
+        rows.push({ key: ROOM_ROW, label: ROOM_ALERTS_LABEL, isOn: areRoomAlertsOn(current.offKinds), onChange: (isOn) => change({ offKinds: withRoomAlerts(current.offKinds, isOn) }) });
+      }
+    }
+    return rows;
   }
 
   function finishEditing(event: FormEvent<HTMLFormElement>) {
@@ -254,12 +274,12 @@ export function AlertSettingsForm({ preferences, kinds, isSaved }: AlertSettings
           {groups.map((group) => (
             <div key={group.title} role="group" aria-label={group.title}>
               <h3 className="fh-small fh-muted mt-3">{group.title}</h3>
-              {group.kinds.map((kind) => (
+              {toRows(group.kinds).map((row) => (
                 <SetRow
-                  key={kind}
-                  htmlFor={`alert-kind-${kind}`}
-                  label={NOTIFICATION_KIND_LABELS[kind]}
-                  control={<Switch id={`alert-kind-${kind}`} checked={!current.offKinds.includes(kind)} disabled={!current.isOn} onCheckedChange={(isKindOn) => toggleKind(kind, isKindOn)} />}
+                  key={row.key}
+                  htmlFor={`alert-kind-${row.key}`}
+                  label={row.label}
+                  control={<Switch id={`alert-kind-${row.key}`} checked={row.isOn} disabled={!current.isOn} onCheckedChange={row.onChange} />}
                 />
               ))}
             </div>
