@@ -34,8 +34,8 @@ export default modulePage(membersManifest, async function AlertLogPage() {
       {entries.length ? (
         <div className="fh-rows max-w-[720px]" data-testid="alert-log">
           {entries.map((entry) => (
-            <div key={entry.id} className="fh-logrow" data-status={entry.status} data-kind={entry.kind}>
-              <div className="fh-m-line">
+            <div key={entry.id} className="grid grid-cols-[minmax(0,1fr)_auto] gap-3 border-b border-[var(--rule)] py-3" data-status={entry.status} data-kind={entry.kind}>
+              <div className="min-w-0 wrap-anywhere">
                 <b>{entry.title}</b>
                 <span className="fh-small fh-muted block">
                   {entry.kind} · {entry.url}

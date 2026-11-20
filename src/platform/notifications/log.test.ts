@@ -1,12 +1,13 @@
-import { afterAll, beforeEach, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
 import { clearDatabase, createTestDatabase } from "@/test/database";
+import { makeFakeSubscription, startFakePushServer } from "@/test/fake-push-server";
 import { seedMember } from "@/test/members";
-import { DEFAULT_PREFERENCES, NOTIFICATION_KINDS } from "./contract";
+import { DEFAULT_PREFERENCES, DEVICE_TYPES, NOTIFICATION_KINDS } from "./contract";
 import { readAlertLog } from "./log";
 import { notify, sendTestAlert } from "./notify";
 import { notificationLog } from "./schema";
-import { savePreferences } from "./service";
+import { registerDevice, savePreferences } from "./service";
 
 // Monday 16 November 2026, 12:00 UTC.
 const NOON_UTC = new Date("2026-11-16T12:00:00Z");
@@ -15,16 +16,23 @@ const PRODUCTION = { APP_URL: "http://localhost:3000", NODE_ENV: "production" };
 
 describe("the alert log", () => {
   const database = createTestDatabase();
+  let push: Awaited<ReturnType<typeof startFakePushServer>>;
 
   function send(userIds: string[], environment: Record<string, string>, now = NOON_UTC) {
     return notify({ userIds, kind: NOTIFICATION_KINDS.message, title: "Message from Ada", body: "Ada sent you a message.", url: "/inbox/1" }, { database, environment, now });
   }
 
+  beforeAll(async () => {
+    push = await startFakePushServer();
+  });
+
   beforeEach(async () => {
     await clearDatabase(database);
+    push.reset();
   });
 
   afterAll(async () => {
+    await push.close();
     await database.$client.end();
   });
 
@@ -39,9 +47,15 @@ describe("the alert log", () => {
     expect(await readAlertLog(database, off)).toEqual([expect.objectContaining({ status: "skipped", reason: "off" })]);
   });
 
-  it("logs the test alert as sent", async () => {
+  it("logs the test alert as sent once the member has a device, and not before", async () => {
+    const environment = { ...DEMO, PUSH_TEST_ORIGIN: push.url };
     const member = await seedMember(database, { name: "Ada Example" });
-    await sendTestAlert(database, DEMO, member, { title: "Demo: a test alert", body: "Alerts work on this device.", url: "/me/alerts" });
+    const alert = { title: "Demo: a test alert", body: "Alerts work on this device.", url: "/me/alerts" };
+    await sendTestAlert(database, environment, member, alert);
+    expect(await readAlertLog(database, member)).toEqual([]);
+
+    await registerDevice(database, environment, member, { type: DEVICE_TYPES.webpush, subscription: makeFakeSubscription(`${push.url}/push/ada`) });
+    await sendTestAlert(database, environment, member, alert);
     expect(await readAlertLog(database, member)).toEqual([expect.objectContaining({ kind: "test", status: "sent" })]);
   });
 

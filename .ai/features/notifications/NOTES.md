@@ -18,7 +18,7 @@ Built 19 Nov 2026 (round 5, part "notifications"). Spec: `SPEC.md`. Proof: `repo
     straight to one member's devices, whatever their choices (it proves the device).
   - `log.ts`: the alert log, for checking who got which alert (round 6, part 0). Only in demo mode and development:
     notify() writes one `notification_log` row per member (sent, or skipped with `readSkipReason`'s reason; "sent"
-    means their choices let it through, not that a device got it), `sendTestAlert` one `test` row. Kept 7 days (older
+    means their choices let it through, not that a device got it), `sendTestAlert` one `test` row when the member has a device. Kept 7 days (older
     rows go on each write). `/me/alerts/log` lists the member's last 20, and is a 404 outside demo and development.
   - `send.ts`: one delivery. Web Push is built by the `web-push` package (`generateRequestDetails`) but sent with
     `fetch`, so demo mode's fetch guard blocks real push services and tests reach a fake. 410 = gone (device

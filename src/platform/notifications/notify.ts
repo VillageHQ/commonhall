@@ -129,7 +129,7 @@ export function notifySoon(input: NotifyInput | (() => Promise<NotifyInput | nul
 export async function sendTestAlert(database: Database, environment: Environment, userId: string, payload: Omit<AlertPayload, "kind">) {
   const now = new Date();
   const devices = await readDevices(database, [userId]);
-  await writeAlertLog(database, environment, [{ userId, kind: "test", title: payload.title, url: payload.url, reason: null }], now);
+  if (devices.length > 0) await writeAlertLog(database, environment, [{ userId, kind: "test", title: payload.title, url: payload.url, reason: null }], now);
   const counts = await settle(database, await deliver(database, environment, devices, { ...payload, kind: "test" }), now);
   return { devices: devices.length, ...counts };
 }
