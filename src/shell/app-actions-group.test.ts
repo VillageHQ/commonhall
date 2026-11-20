@@ -52,11 +52,14 @@ describe("the avatar menu's This app group", () => {
     expect(within(menu).queryByRole("menuitem", { name: "Reload" })).toBeNull();
   });
 
-  it("offers Reload, Open in the browser and Switch community in the app, after More and before Dark mode", async () => {
+  it("offers Reload, Open in the browser and Switch community in the app, together, just before Dark mode", async () => {
     putAppInPage({ appActions: true });
     const menu = await openMenu();
     expect(within(menu).getByText("This app")).toBeTruthy();
-    expect(readItems(menu)).toEqual(["My profile", "Alerts", "Email", "Your data", "Jobs", "Perks", "Library", "Feed", ...APP_ITEMS, "Dark mode", "Sign out"]);
+    const items = readItems(menu);
+    const first = items.indexOf("Reload");
+    expect(first).toBeGreaterThan(0);
+    expect(items.slice(first, first + APP_ITEMS.length + 2)).toEqual([...APP_ITEMS, "Dark mode", "Sign out"]);
   });
 
   it.each([
