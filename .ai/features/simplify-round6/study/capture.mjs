@@ -62,7 +62,8 @@ const DYNAMIC = [
 ];
 const ADMIN_DYNAMIC = [{ from: "/admin/members", re: /^\/admin\/members\/[^/]+$/ }];
 
-function slug(p) { return p.replace(/^\//, "").replace(/\?.*$/, "").replace(/[0-9a-f]{8}-[0-9a-f-]{27}/g, "id").replace(/[^a-zA-Z0-9-]/g, "_").slice(0, 60) || "root"; }
+// A query that picks a person (?via=, ?to=) is dropped; any other (?compose=1, ?show=intros) stays in the name.
+function slug(p) { return p.replace(/^\//, "").replace(/\?(?:via|to)=.*$/, "").replace(/[0-9a-f]{8}-[0-9a-f-]{27}/g, "id").replace(/[^a-zA-Z0-9-]/g, "_").slice(0, 60) || "root"; }
 
 async function measure(page) {
   return page.evaluate(() => {

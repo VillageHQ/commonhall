@@ -153,7 +153,7 @@ export function TodayPage({ today, memberName, dateLabel, liveRoom, replyDay, sh
             <article key={post.id} className="fh-titem td-row">
               <div>
                 <b>{post.body}</b>
-                <span className="fh-small fh-muted">{describeAnswerCount(post.answerCount)}</span>
+                <span className="fh-small fh-muted">Your ask · {describeAnswerCount(post.answerCount)}</span>
               </div>
               <Link className="fh-btn fh-btn-secondary fh-btn-sm" href={toAskPage(post.id)} aria-label={`Read the answers to ${post.body}`}>
                 Read

@@ -659,6 +659,9 @@ async function seedSettings(transaction: Transaction, environment: Environment, 
     // Commonhall's demo logo (made up, public/demo/northwind-logo.svg).
     [INSTANCE_SETTING_KEYS.logoUrl]: DEMO_COMMUNITY_LOGO_URL,
     [INSTANCE_SETTING_KEYS.demoResetAt]: now.toISOString(),
+    // A running community of 22 members: admin Home opens on "This week", not the launch checklist (the round-6
+    // re-study: the fund-side personas landed on "Four steps to launch"). The checklist stays at /admin?checklist=1.
+    [INSTANCE_SETTING_KEYS.consoleLaunchedAt]: now.toISOString(),
     ...toDataHomeSettings(DEMO_DATA_HOME),
     // The public job board and the website widget are on, so the demo can show them.
     [PUBLIC_BOARD_SETTING]: "on",

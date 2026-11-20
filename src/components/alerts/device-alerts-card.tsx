@@ -12,7 +12,7 @@ import { DEVICE_STATES, readDeviceState, sendTestAlert, turnOffAlerts, turnOnAle
 const STATE_WORDS: Record<DeviceState, string> = {
   unsupported: "This browser can’t show alerts.",
   needs_install: "On iPhone, add this app to your home screen first: Share › Add to Home Screen.",
-  blocked: "Alerts are blocked in this browser’s settings.",
+  blocked: "Blocked by this browser. Allow notifications for this site in its settings, then reload.",
   off: "Off on this device.",
   on: "On for this device.",
 };

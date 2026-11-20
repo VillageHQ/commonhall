@@ -130,7 +130,7 @@ function ScheduledCard({ room, viewerId }: { room: RoomCard; viewerId: string })
   );
 }
 
-// Rooms: one "Start a room", then who is live (faces, Join) and what's coming up (Remind me).
+// Rooms: one "Start or schedule a room" (the re-study: 6 of 12 never found Schedule behind "Start a room"), then who is live (faces, Join) and what's coming up (Remind me).
 export function RoomsBoard({ initial, viewerId }: { initial: RoomsPageData; viewerId: string }) {
   const [isComposing, setIsComposing] = useState(false);
   const rooms = useQuery({
@@ -145,7 +145,7 @@ export function RoomsBoard({ initial, viewerId }: { initial: RoomsPageData; view
     <>
       <div className="fh-btn-row">
         <Button variant="ink" onClick={() => setIsComposing((value) => !value)} aria-expanded={isComposing} disabled={!isConfigured}>
-          Start a room
+          Start or schedule a room
         </Button>
       </div>
       {!isConfigured ? (

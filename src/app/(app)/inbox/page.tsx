@@ -72,9 +72,19 @@ export default modulePage(membersManifest, async function InboxPage({ searchPara
       {intros && isIntrosView ? <IntrosList board={intros.board} forYou={intros.forYou} /> : null}
       {intros && !isIntrosView ? <IntrosWaitingForYes board={intros.board} forYou={intros.forYou} /> : null}
       {conversations ? (
-        <HydrationBoundary state={conversations}>
-          <ConversationList />
-        </HydrationBoundary>
+        <section className="fh-section" aria-labelledby={isIntrosOn ? "inbox-messages" : undefined}>
+          {/* With intros on, a heading keeps the messages apart from "Waiting on you" above them. */}
+          {isIntrosOn ? (
+            <div className="fh-section-head">
+              <h2 id="inbox-messages" className="fh-h3">
+                Messages
+              </h2>
+            </div>
+          ) : null}
+          <HydrationBoundary state={conversations}>
+            <ConversationList />
+          </HydrationBoundary>
+        </section>
       ) : null}
     </>
   );
