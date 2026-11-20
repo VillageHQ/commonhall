@@ -8,9 +8,17 @@ Built 19 Nov 2026 (round 5, part "notifications"). Spec: `SPEC.md`. Proof: `repo
     registration and preference schemas, API paths. Client-safe, relative imports (schema.ts imports it).
   - `schema.ts`: `notification_device` (a browser's Web Push subscription or an Expo token; `address` is unique, so a
     device registered again moves to whoever signed in on it), `notification_preference` (no row = alerts on, every
-    kind, no quiet hours; `off_kinds` lists kinds turned off so a new kind starts on), `notification_mute`.
-  - `rules.ts`: pure. `isInQuietHours` (the member's own time zone; an overnight spell's morning belongs to the day
-    it started) and `readSkipReason` (off → kind off → muted (broadcast kinds only, `MUTABLE_KINDS`) → quiet hours).
+    kind, no quiet times, no pause; `off_kinds` lists kinds turned off so a new kind starts on; `paused_until`;
+    `let_direct_through`, on by default; the old `quiet_*` columns are read by nothing and go in a later release),
+    `notification_quiet_time` (up to 3 per member: from, to, all day, days; migration 0045 copied each window that
+    was on), `notification_mute`.
+  - `rules.ts`: pure. `isInQuietTime` (any of the member's quiet times, in their own time zone; an overnight time's
+    morning belongs to the day it started; all day covers its days 00:00–24:00), `readQuietUntil` (when the joined
+    quiet times covering now end), `readLocalMoment` (08:00 tomorrow on the member's clock) and `readSkipReason`
+    (off → kind off → muted (broadcast kinds only, `MUTABLE_KINDS`) → paused → quiet hours). A quiet time holds back
+    portfolio kinds only while Let through is on: `DIRECT_KINDS` (`intro`, `message`, `answer`) still come. A pause
+    holds back every kind. A new kind is a portfolio kind unless it joins `DIRECT_KINDS` (contract.ts). Round 6,
+    part 4: `.ai/features/notify-schedule/SPEC.md`.
   - `notify.ts`: **`notify({ userIds, kind, title, body, url, fromUserId? })`**, the contract voice rooms and the store
     app use. Returns `{ sent, skipped, failed, removed }`: `skipped` counts members, the others count devices. The
     sender never alerts themselves. `notifySoon(input | async () => input)` runs it after the response
@@ -38,7 +46,9 @@ Built 19 Nov 2026 (round 5, part "notifications"). Spec: `SPEC.md`. Proof: `repo
     letter on its brand colour. The mark keeps to the middle 60% (maskable).
   - `browser.ts`: `forgetThisBrowser()` (unsubscribe + forget on the server), used by "Turn off on this device" and
     by every sign-out (`platform/auth/sign-out.ts`).
-- **Routes** (owned by the platform manifest, `/api/notifications`): `POST|DELETE devices`, `POST preferences`,
+- **Routes** (owned by the platform manifest, `/api/notifications`): `POST|DELETE devices`, `PUT|POST preferences`
+  (`{ isOn, offKinds, quietTimes, timeZone, letDirectThrough }`, which replaces the quiet times), `POST pause`
+  (`{ until: "1h" | "tomorrow" | null, timeZone? }`; the browser's zone becomes the member's only before their first save),
   `POST mutes`, `POST test`, `GET icon?size=`. All member routes but the icon.
 - **`src/app/manifest.ts`**: the web app manifest from branding (name, a short name of whole words up to 12
   characters, the brand colour, the icons; opens on `/today`). `page-metadata.ts` adds the iPhone home-screen icon and
@@ -46,10 +56,16 @@ Built 19 Nov 2026 (round 5, part "notifications"). Spec: `SPEC.md`. Proof: `repo
 - **`public/sw.js`** (served `no-cache`, `Service-Worker-Allowed: /`): shows each push, opens the alert's page on a tap
   (an open window first), re-registers on `pushsubscriptionchange`, and answers page loads with `public/offline.html`
   when the network is gone. Nothing else is cached.
-- **Screens**: Settings › Alerts at `/me/alerts` (members manifest; linked from My profile's privacy sheet):
-  `components/alerts/device-alerts-card.tsx` (this device: Turn on alerts is the only place the browser asks for
-  permission; off; test), `alert-settings-form.tsx` (master switch, one switch per kind whose feature is on, quiet
-  hours with from, to, days and time zone, which starts as the browser's own until saved), `muted-people.tsx`.
+- **Screens**: Alerts at `/me/alerts` (members manifest; from the avatar menu, My profile and the bell on Rooms,
+  whose `?from=rooms` makes the back link go to Rooms): `components/alerts/device-alerts-card.tsx` (this device:
+  Turn on is the only place the browser asks for permission; off; test), `pause-card.tsx` (1 hour · Until tomorrow,
+  or Resume), `alert-settings-form.tsx` (Quiet times: the time zone (the browser's until the first save, which keeps it; then the saved one)
+  with Change, each quiet time in one line with Edit and Remove, the presets and Custom; Let through; What alerts
+  you: All alerts, then "Sent to me" and "From the portfolio", one switch per kind whose feature is on). Every change
+  there saves at once; a refused one (a fourth quiet time) shows its line and goes back. `muted-people.tsx` (folded).
+  `alerts-bell.tsx` (server): "Alerts on", "Paused until 14:30", "Quiet until 18:00" or "Alerts off", from
+  `readAlertState(database, userId, now)`; placed in `src/app/(app)/rooms/page.tsx`. `alert-words.ts` holds the shared
+  words (days, until when).
   Today shows `install-card.tsx`: Chrome/Edge's install prompt, or the Share › Add to Home Screen steps on iPhone;
   hidden once installed or dismissed (`localStorage`).
 
@@ -67,8 +83,8 @@ Alerts never carry a message's words, an intro's note or reason, or whose no it 
 (a block) sends no alert. A new kind adds its row to `KIND_FEATURES` in `src/app/(app)/me/alerts/page.tsx`.
 
 ## For the parts that build on this
-- voice-sessions: call `notify()` (or `notifySoon`) with `voice_room` / `voice_broadcast` and `fromUserId`; mutes
-  and quiet hours apply by themselves; add the kinds to `KIND_FEATURES` once the feature exists.
+- voice-sessions: call `notify()` (or `notifySoon`) with `voice_room` / `voice_broadcast` and `fromUserId`; mutes,
+  pauses and quiet times apply by themselves; add the kinds to `KIND_FEATURES` once the feature exists.
 - mobile-app (built): the app registers `{ type: "expo", token }` through the portal page (its cookie and origin), and
   each Expo message carries `data: { url, kind, origin }` (`origin` = the server's address, so a phone with several
   communities opens the right one). See `.ai/features/mobile-app/NOTES.md`.

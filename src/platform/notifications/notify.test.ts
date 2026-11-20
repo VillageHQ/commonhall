@@ -10,10 +10,11 @@ import { clearDatabase, createTestDatabase } from "@/test/database";
 import { makeFakeSubscription, startFakePushServer } from "@/test/fake-push-server";
 import { seedMember } from "@/test/members";
 import { seedConversation } from "@/test/messages";
-import { DEFAULT_PREFERENCES, DEVICE_TYPES, NOTIFICATION_KINDS, registerDeviceBodySchema } from "./contract";
+import { DEFAULT_PREFERENCES, DEVICE_TYPES, NOTIFICATION_KINDS, PAUSE_CHOICES, registerDeviceBodySchema } from "./contract";
 import { notify } from "./notify";
+import { readPreferences } from "./reads";
 import { notificationDevice } from "./schema";
-import { registerDevice, savePreferences, setMute } from "./service";
+import { pauseAlerts, registerDevice, savePreferences, setMute } from "./service";
 import { readVapidKeys } from "./vapid";
 
 const EVENTUALLY = { timeout: 5_000, interval: 50 };
@@ -72,15 +73,46 @@ describe("notify()", () => {
     }
   });
 
-  it("skips a member in quiet hours in their own time zone, and counts them", async () => {
+  it("holds back portfolio alerts in a member's quiet time, in their own time zone, and counts them", async () => {
     const sleeping = await memberWithBrowser("Chloe Example");
     const awake = await memberWithBrowser("Dev Example");
     // Noon UTC is 21:00 in Tokyo: inside 20:00–08:00 there.
-    await savePreferences(database, sleeping, { ...DEFAULT_PREFERENCES, quietHours: { isOn: true, from: "20:00", to: "08:00", days: [0, 1, 2, 3, 4, 5, 6], timeZone: "Asia/Tokyo" } });
-    await savePreferences(database, awake, { ...DEFAULT_PREFERENCES, quietHours: { isOn: true, from: "20:00", to: "08:00", days: [0, 1, 2, 3, 4, 5, 6], timeZone: "Europe/London" } });
+    const nights = { from: "20:00", to: "08:00", allDay: false, days: [0, 1, 2, 3, 4, 5, 6] };
+    await savePreferences(database, sleeping, { ...DEFAULT_PREFERENCES, quietTimes: [nights], timeZone: "Asia/Tokyo" });
+    await savePreferences(database, awake, { ...DEFAULT_PREFERENCES, quietTimes: [nights], timeZone: "Europe/London" });
 
-    expect(await send([sleeping, awake])).toMatchObject({ sent: 1, skipped: 1 });
+    expect(await send([sleeping, awake], { kind: NOTIFICATION_KINDS.voiceRoom })).toMatchObject({ sent: 1, skipped: 1 });
     expect(push.state.webPushes).toHaveLength(1);
+  });
+
+  it("lets an intro ask through a quiet time unless Let through is off, and a pause holds back everything", async () => {
+    const letting = await memberWithBrowser("Iris Example");
+    const strict = await memberWithBrowser("Jon Example");
+    const paused = await memberWithBrowser("Kim Example");
+    // Monday noon UTC is inside Working hours in London.
+    const working = { from: "09:00", to: "18:00", allDay: false, days: [1, 2, 3, 4, 5] };
+    await savePreferences(database, letting, { ...DEFAULT_PREFERENCES, quietTimes: [working], timeZone: "Europe/London" });
+    await savePreferences(database, strict, { ...DEFAULT_PREFERENCES, quietTimes: [working], timeZone: "Europe/London", letDirectThrough: false });
+    expect(await pauseAlerts(database, paused, { until: PAUSE_CHOICES.hour }, NOON_UTC)).toEqual(new Date(NOON_UTC.getTime() + 60 * 60_000));
+
+    expect(await send([letting, strict, paused], { kind: NOTIFICATION_KINDS.intro })).toMatchObject({ sent: 1, skipped: 2 });
+    expect(await send([letting, strict, paused], { kind: NOTIFICATION_KINDS.voiceRoom })).toMatchObject({ sent: 0, skipped: 3 });
+    // Resume ends the pause at once.
+    expect(await pauseAlerts(database, paused, { until: null }, NOON_UTC)).toBeNull();
+    expect(await send([paused], { kind: NOTIFICATION_KINDS.voiceRoom })).toMatchObject({ sent: 1, skipped: 0 });
+  });
+
+  it("pauses until 08:00 tomorrow on the member's clock, taking the browser's zone only before their first save", async () => {
+    const fresh = await seedMember(database, { name: "Lena Example" });
+    const chose = await seedMember(database, { name: "Milo Example" });
+    await savePreferences(database, chose, { ...DEFAULT_PREFERENCES, timeZone: "UTC" });
+
+    // Noon UTC Monday is 21:00 in Tokyo; Tuesday 08:00 there is 23:00 UTC Monday.
+    expect(await pauseAlerts(database, fresh, { until: PAUSE_CHOICES.tomorrow, timeZone: "Asia/Tokyo" }, NOON_UTC)).toEqual(new Date("2026-11-16T23:00:00Z"));
+    expect((await readPreferences(database, fresh)).timeZone).toBe("Asia/Tokyo");
+    // A member who chose UTC keeps it.
+    expect(await pauseAlerts(database, chose, { until: PAUSE_CHOICES.tomorrow, timeZone: "Asia/Tokyo" }, NOON_UTC)).toEqual(new Date("2026-11-17T08:00:00Z"));
+    expect((await readPreferences(database, chose)).timeZone).toBe("UTC");
   });
 
   it("keeps a muted person's broadcasts away, but not their other alerts", async () => {

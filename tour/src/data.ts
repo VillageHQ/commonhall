@@ -17,7 +17,7 @@ import { toPictureSlug } from "@/platform/demo/pictures";
 import { LIBRARY_JOBS, LIBRARY_KINDS, LIBRARY_VISIBILITIES, type LibraryJob, type LibraryKind } from "@/modules/library/contract";
 import type { Leaderboard, LibraryCard, LibraryMember } from "@/modules/library/reads";
 import { ROOM_ACCESS, ROOM_ROLES, ROOM_STATUSES, toRoomHref, type RoomCard, type RoomFace, type RoomJoin, type RoomRole } from "@/modules/voice/contract";
-import { NOTIFICATION_KINDS, type AlertPreferences, type NotificationKind } from "@/platform/notifications/contract";
+import { NOTIFICATION_KINDS, QUIET_TIME_PRESETS, type AlertPreferences, type NotificationKind } from "@/platform/notifications/contract";
 
 // The tour's made-up community: the demo's own people (src/platform/demo/people.ts), their generated portraits and
 // drawn logos. Nothing here is a real person or company. The build copies only the pictures these lines name.
@@ -503,12 +503,15 @@ export const ALERT_KINDS: readonly NotificationKind[] = [
   NOTIFICATION_KINDS.voiceRoom,
 ];
 
-// Sam keeps every alert but rooms opening; quiet hours for the night are switched on in the step.
+// Sam keeps every alert; the step adds Working hours as a quiet time.
 export function readAlertPreferences(isQuietOn: boolean): AlertPreferences {
+  const [workingHours] = QUIET_TIME_PRESETS;
   return {
     isOn: true,
-    offKinds: [NOTIFICATION_KINDS.voiceRoom],
-    quietHours: { isOn: isQuietOn, from: "22:00", to: "07:00", days: [0, 1, 2, 3, 4, 5, 6], timeZone: "America/New_York" },
+    offKinds: [],
+    quietTimes: isQuietOn ? [{ ...workingHours.quietTime, days: [...workingHours.quietTime.days] }] : [],
+    timeZone: "America/New_York",
+    letDirectThrough: true,
   };
 }
 

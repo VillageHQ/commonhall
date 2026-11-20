@@ -19,13 +19,21 @@ export const NOTIFICATION_KIND_VALUES = Object.values(NOTIFICATION_KINDS) as [No
 // Only broadcasts can be muted per person; every other kind still comes from a muted member.
 export const MUTABLE_KINDS: readonly NotificationKind[] = [NOTIFICATION_KINDS.voiceBroadcast];
 
+// Sent straight to the member: these still come during quiet times while "Let through" is on. Every other kind,
+// and any kind added later, is a portfolio kind that quiet times hold back. A pause holds back both.
+export const DIRECT_KINDS: readonly NotificationKind[] = [NOTIFICATION_KINDS.intro, NOTIFICATION_KINDS.message, NOTIFICATION_KINDS.answer];
+
+export function isDirectKind(kind: NotificationKind) {
+  return DIRECT_KINDS.includes(kind);
+}
+
 export const NOTIFICATION_KIND_LABELS: Record<NotificationKind, string> = {
   intro: "Intro asks",
-  answer: "Answers to your asks",
+  answer: "Answers",
   message: "Messages",
-  voice_room: "Voice rooms opening",
-  voice_broadcast: "“I’m available” broadcasts",
-  library: "New in the AI library",
+  voice_room: "Rooms you asked to be reminded of",
+  voice_broadcast: "People starting or joining rooms",
+  library: "New in the library",
 };
 
 // The service worker (public/sw.js) and its offline page (public/offline.html).
@@ -41,6 +49,7 @@ export const NOTIFICATION_API_ROUTES = {
   preferences: "/api/notifications/preferences",
   mutes: "/api/notifications/mutes",
   test: "/api/notifications/test",
+  pause: "/api/notifications/pause",
   icon: "/api/notifications/icon",
 } as const;
 
@@ -67,10 +76,12 @@ export const removeDeviceBodySchema = z.object({ address: z.string().min(1).max(
 
 const clockTimeSchema = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Use a time like 22:00.");
 const DAYS_IN_WEEK = 7;
-const SAME_TIME_MESSAGE = "Pick different times for the start and the end.";
 
 export const ALL_DAYS = [0, 1, 2, 3, 4, 5, 6] as const;
 export const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
+export const MAXIMUM_QUIET_TIMES = 3;
+export const QUIET_TIMES_FULL = `Up to ${MAXIMUM_QUIET_TIMES} quiet times. Remove one first.`;
+export const DEFAULT_TIME_ZONE = "UTC";
 
 export function isKnownTimeZone(timeZone: string) {
   try {
@@ -81,30 +92,50 @@ export function isKnownTimeZone(timeZone: string) {
   }
 }
 
-export const quietHoursSchema = z
+const timeZoneSchema = z.string().min(1).max(100).refine(isKnownTimeZone, "Pick a time zone from the list.");
+
+// A time the portfolio stays quiet: from–to on each chosen day (0 = Sunday), or all day on them. An overnight time
+// started on Friday covers Saturday morning. `from` and `to` are kept, unread, while `allDay` is on.
+export const quietTimeSchema = z
   .object({
-    isOn: z.boolean(),
     from: clockTimeSchema,
     to: clockTimeSchema,
-    // The days a quiet spell starts on (0 = Sunday). An overnight spell started on Friday covers Saturday morning.
-    days: z.array(z.int().min(0).max(DAYS_IN_WEEK - 1)).max(DAYS_IN_WEEK),
-    timeZone: z.string().min(1).max(100).refine(isKnownTimeZone, "Pick a time zone from the list."),
+    allDay: z.boolean(),
+    days: z.array(z.int().min(0).max(DAYS_IN_WEEK - 1)).min(1, "Pick at least one day.").max(DAYS_IN_WEEK),
   })
-  .refine(({ from, to }) => from !== to, { message: SAME_TIME_MESSAGE, path: ["to"] });
+  .refine(({ from, to, allDay }) => allDay || from !== to, { message: "Pick different times for the start and the end.", path: ["to"] });
 
-export type QuietHours = z.infer<typeof quietHoursSchema>;
+export type QuietTime = z.infer<typeof quietTimeSchema>;
 
-export const DEFAULT_QUIET_HOURS: QuietHours = { isOn: false, from: "22:00", to: "07:00", days: [...ALL_DAYS], timeZone: "UTC" };
+export const QUIET_TIME_PRESETS = [
+  { label: "Working hours", quietTime: { from: "09:00", to: "18:00", allDay: false, days: [1, 2, 3, 4, 5] } },
+  { label: "Evenings", quietTime: { from: "19:00", to: "08:00", allDay: false, days: [...ALL_DAYS] } },
+  { label: "Weekends", quietTime: { from: "00:00", to: "00:00", allDay: true, days: [0, 6] } },
+] as const satisfies readonly { label: string; quietTime: QuietTime }[];
 
 export const preferencesBodySchema = z.object({
   isOn: z.boolean(),
   offKinds: z.array(z.enum(NOTIFICATION_KIND_VALUES)).max(NOTIFICATION_KIND_VALUES.length),
-  quietHours: quietHoursSchema,
+  quietTimes: z.array(quietTimeSchema).max(MAXIMUM_QUIET_TIMES, QUIET_TIMES_FULL),
+  timeZone: timeZoneSchema,
+  // During quiet times, alerts sent straight to the member (DIRECT_KINDS) still come.
+  letDirectThrough: z.boolean(),
 });
 
 export type AlertPreferences = z.infer<typeof preferencesBodySchema>;
 
-export const DEFAULT_PREFERENCES: AlertPreferences = { isOn: true, offKinds: [], quietHours: DEFAULT_QUIET_HOURS };
+export const DEFAULT_PREFERENCES: AlertPreferences = { isOn: true, offKinds: [], quietTimes: [], timeZone: DEFAULT_TIME_ZONE, letDirectThrough: true };
+
+// A pause holds back every alert: for an hour, or until 08:00 tomorrow in the member's time zone. null resumes.
+// `timeZone` (the browser's) becomes the member's zone when nothing was saved yet, as a first save does.
+export const PAUSE_CHOICES = { hour: "1h", tomorrow: "tomorrow" } as const;
+
+export const pauseBodySchema = z.object({
+  until: z.enum([PAUSE_CHOICES.hour, PAUSE_CHOICES.tomorrow]).nullable(),
+  timeZone: timeZoneSchema.optional(),
+});
+
+export type PauseBody = z.infer<typeof pauseBodySchema>;
 
 export const muteBodySchema = z.object({ userId: z.string().min(1).max(200), isMuted: z.boolean() });
 

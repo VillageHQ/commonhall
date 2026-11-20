@@ -14,7 +14,7 @@ import { NOTIFICATION_API_ROUTES } from "@/platform/notifications/contract";
 
 type Person = { id: string; name: string };
 
-// "Mute broadcasts from…": a muted member's "I'm available" broadcasts never alert you; their messages and intros still do.
+// Muted people, folded: a muted member starting or joining a room never alerts you; their messages and intros still do.
 export function MutedPeople({ muted, members }: { muted: readonly Person[]; members: readonly Person[] }) {
   const router = useRouter();
   const flash = useFlash();
@@ -31,11 +31,9 @@ export function MutedPeople({ muted, members }: { muted: readonly Person[]; memb
   });
 
   return (
-    <section className="fh-sheet" aria-labelledby="muted-title">
-      <h2 id="muted-title" className="fh-h3">
-        Muted broadcasts
-      </h2>
-      <p className="fh-small fh-muted mt-1">Their “I’m available” broadcasts won’t alert you. Their messages and intro asks still do.</p>
+    <details className="fh-sheet" data-testid="muted-people">
+      <summary className="fh-h3 cursor-pointer">Muted people{muted.length ? ` (${muted.length})` : ""}</summary>
+      <p className="fh-small fh-muted mt-1">You won’t hear when they start or join a room.</p>
       {muted.length ? (
         <ul className="mt-3 grid gap-2">
           {muted.map((person) => (
@@ -71,6 +69,6 @@ export function MutedPeople({ muted, members }: { muted: readonly Person[]; memb
         </Button>
       </form>
       <FormError message={change.error?.message ?? null} />
-    </section>
+    </details>
   );
 }

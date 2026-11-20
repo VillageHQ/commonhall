@@ -259,7 +259,7 @@ describe("voice rooms", () => {
     function quietNow() {
       const hour = new Date().getUTCHours();
       const at = (offset: number) => `${String((hour + offset + 24) % 24).padStart(2, "0")}:00`;
-      return { ...DEFAULT_PREFERENCES, quietHours: { isOn: true, from: at(-1), to: at(2), days: [0, 1, 2, 3, 4, 5, 6], timeZone: "UTC" } };
+      return { ...DEFAULT_PREFERENCES, quietTimes: [{ from: at(-1), to: at(2), allDay: false, days: [0, 1, 2, 3, 4, 5, 6] }] };
     }
 
     it("'I'm available' alerts every member but those in quiet hours, who muted the host, turned it off or blocked", async () => {
