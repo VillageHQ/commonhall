@@ -57,3 +57,24 @@ export const notificationMute = pgTable(
   },
   (table) => [primaryKey({ columns: [table.userId, table.mutedUserId] })],
 );
+
+// For checking only: one row per member and alert notify() handled, sent or skipped and why. Written only in demo
+// mode and development (log.ts), kept 7 days, listed at /me/alerts/log.
+export const notificationLog = pgTable(
+  "notification_log",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    kind: text("kind").notNull(),
+    title: text("title").notNull(),
+    // The app path the alert opens.
+    url: text("url").notNull(),
+    status: text("status").notNull(),
+    // Why it was skipped (rules.ts SKIP_REASONS); null when sent.
+    reason: text("reason"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("notification_log_user_idx").on(table.userId, table.createdAt), check("notification_log_status", sql`${table.status} in ('sent', 'skipped')`)],
+);

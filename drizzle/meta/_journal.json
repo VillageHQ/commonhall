@@ -302,6 +302,13 @@
       "when": 1795100098281,
       "tag": "0043_notifications",
       "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "7",
+      "when": 1795146166426,
+      "tag": "0044_notification_log",
+      "breakpoints": true
     }
   ]
 }

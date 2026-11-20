@@ -9,7 +9,9 @@ How it works, the token API, the ports: `.ai/features/voice-sessions/NOTES.md`.
 - `service-settings.ts`: which LiveKit: the server's env (`LIVEKIT_URL`, `LIVEKIT_API_KEY`, `LIVEKIT_API_SECRET`,
   `LIVEKIT_API_URL`) or keys an admin saved (sealed secret).
 - `service.ts`: create, join (the token), hands, roles, leave, end, reminders, invites, the minute upkeep.
-- `reads.ts`: the Rooms list, one room, people to invite, the "I'm available" count. `components/`: the UI;
+- `reads.ts`: the Rooms list, one room, people to invite, the "I'm available" count. `reads-live.ts`: the live-room
+  reads other screens use (`readLiveRooms`, `countLiveRooms`, `countRoomJoins`), empty or 0 while Rooms is off; screens
+  outside Rooms read rooms only through these. `components/`: the UI;
   `available-to-talk.tsx` is the button in chat, placed by `src/shell/chat-available.tsx`; the phone app
   plays rooms natively (`readNativeApp()`).
 - Alerts ("I'm available", reminders) are sent from `src/shell/voice-alerts.ts` through notify().

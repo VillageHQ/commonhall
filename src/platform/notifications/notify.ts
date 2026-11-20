@@ -5,6 +5,7 @@ import type { Environment } from "../environment.ts";
 import { logError } from "../observability/route-logging.ts";
 import { runAfterResponse } from "../observability/after-response.ts";
 import { DEVICE_TYPES, type NotificationKind } from "./contract.ts";
+import { writeAlertLog } from "./log.ts";
 import { readDevices, readMutersOf, readPreferencesFor } from "./reads.ts";
 import { readSkipReason } from "./rules.ts";
 import { notificationDevice } from "./schema.ts";
@@ -16,7 +17,8 @@ import { readVapidKeys } from "./vapid.ts";
 //
 // Each member's own choices decide. Alerts off, the kind off, a mute of `fromUserId` (broadcasts only) or quiet hours
 // in their time zone skip them, counted in `skipped`. Every device of everyone else gets the alert; a device the push
-// service says is gone (404/410, or Expo's DeviceNotRegistered) is removed.
+// service says is gone (404/410, or Expo's DeviceNotRegistered) is removed. In demo mode and development, each member's
+// outcome also goes in the alert log (log.ts).
 
 const MAXIMUM_TITLE_LENGTH = 120;
 const MAXIMUM_BODY_LENGTH = 240;
@@ -95,13 +97,17 @@ export async function notify(input: NotifyInput, dependencies: NotifyDependencie
     fromUserId ? readMutersOf(database, userIds, fromUserId) : Promise.resolve(new Set<string>()),
   ]);
 
-  const wanted = userIds.filter((userId) => {
-    const mutedUserIds = fromUserId && muters.has(userId) ? new Set([fromUserId]) : new Set<string>();
-    return readSkipReason(preferences.get(userId)!, { kind: input.kind, fromUserId, mutedUserIds, now }) === null;
-  });
+  const reasons = new Map(
+    userIds.map((userId) => {
+      const mutedUserIds = fromUserId && muters.has(userId) ? new Set([fromUserId]) : new Set<string>();
+      return [userId, readSkipReason(preferences.get(userId)!, { kind: input.kind, fromUserId, mutedUserIds, now })] as const;
+    }),
+  );
+  const wanted = userIds.filter((userId) => reasons.get(userId) === null);
 
   const devices = await readDevices(database, wanted);
   const payload = { title: clip(input.title, MAXIMUM_TITLE_LENGTH), body: clip(input.body, MAXIMUM_BODY_LENGTH), url: toAppPath(input.url), kind: input.kind };
+  await writeAlertLog(database, environment, userIds.map((userId) => ({ userId, kind: payload.kind, title: payload.title, url: payload.url, reason: reasons.get(userId) ?? null })), now);
   const counts = await settle(database, await deliver(database, environment, devices, payload), now);
   return { ...counts, skipped: userIds.length - wanted.length };
 }
@@ -121,7 +127,9 @@ export function notifySoon(input: NotifyInput | (() => Promise<NotifyInput | nul
 
 // The test button: straight to this member's own devices, whatever their choices say, to prove the device works.
 export async function sendTestAlert(database: Database, environment: Environment, userId: string, payload: Omit<AlertPayload, "kind">) {
+  const now = new Date();
   const devices = await readDevices(database, [userId]);
-  const counts = await settle(database, await deliver(database, environment, devices, { ...payload, kind: "test" }), new Date());
+  await writeAlertLog(database, environment, [{ userId, kind: "test", title: payload.title, url: payload.url, reason: null }], now);
+  const counts = await settle(database, await deliver(database, environment, devices, { ...payload, kind: "test" }), now);
   return { devices: devices.length, ...counts };
 }
