@@ -123,8 +123,8 @@ function InboxOutline() {
 const STAT_CELLS = [0, 1, 2, 3];
 const NEEDS_ROWS = [0, 1, 2, 3];
 
-// The console's Home: the heading (This week, or the launch checklist's welcome), the week's numbers, what needs the
-// admin.
+// The console's Home: the heading (This week, or the launch checklist's welcome), the week's numbers, the partner
+// report, what needs the admin.
 function AdminHomeOutline() {
   return (
     <PageOutline title={<OutlineTitle label="Home" width="46%" />} description={<OutlineLine width="64%" height={13} className="mt-1" />}>
@@ -137,6 +137,10 @@ function AdminHomeOutline() {
             </div>
           ))}
         </div>
+        <OutlineSheet className="mb-4">
+          <OutlineLine width={110} height={15} />
+          <OutlineLine width="80%" height={11} className="mt-2.5" />
+        </OutlineSheet>
         <OutlineSheet>
           <OutlineLine width={92} height={15} className="mb-4" />
           {NEEDS_ROWS.map((index) => (

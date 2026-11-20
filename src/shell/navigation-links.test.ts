@@ -177,6 +177,21 @@ describe("the phone tab bar", () => {
     expect(getComputedStyle(page()).display).not.toBe("none");
   });
 
+  it("lets go of every press mark, also when the pressed link left the page (a view switch)", () => {
+    location.pathname = ROUTES.today;
+    window.history.replaceState(null, "", ROUTES.today);
+    renderShellPart(TabBar);
+    const bar = screen.getByRole("navigation", { name: "Sections" });
+    const people = within(bar).getByRole("link", { name: /People/ });
+    fireEvent.pointerDown(people, { button: 0 });
+    people.remove();
+
+    endPress();
+
+    expect(bar.hasAttribute("data-pressing")).toBe(false);
+    expect(document.querySelectorAll("[data-pressed]").length).toBe(0);
+  });
+
   it("forgets a press after a while, and a ⌘-click lights nothing", () => {
     vi.useFakeTimers();
     location.pathname = ROUTES.today;

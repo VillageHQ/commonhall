@@ -26,10 +26,12 @@ let timer: ReturnType<typeof setTimeout> | undefined;
 export function endPress() {
   clearTimeout(timer);
   timer = undefined;
-  if (pressedLink) {
-    delete pressedLink.dataset.pressed;
-    pressedLink.closest("nav")?.removeAttribute("data-pressing");
-    pressedLink = null;
+  pressedLink = null;
+  // Wherever they are: switching between the member and console views swaps the menu's links, so the pressed one may
+  // be gone while its menu is still on the page.
+  for (const element of document.querySelectorAll("[data-pressed], [data-pressing]")) {
+    element.removeAttribute("data-pressed");
+    element.removeAttribute("data-pressing");
   }
   document.documentElement.removeAttribute(PENDING_TAB_ATTRIBUTE);
 }
