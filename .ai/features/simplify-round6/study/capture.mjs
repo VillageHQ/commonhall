@@ -1,4 +1,6 @@
-// The simplify-round6 screen inventory. Starts the built app (`pnpm build` first) in demo mode on :3460 against a
+// The simplify-round6 screen inventory (the re-study's copy: CAPTURE_PORT, CAPTURE_ENV, CAPTURE_OUT and
+// CAPTURE_ROUTES=round6 choose the port, the env file, the output folder and round 6's screens; the defaults are the
+// first study's). Starts the built app (`pnpm build` first) in demo mode on :3460 against a
 // throwaway Postgres, signs in as the demo admin and member, turns Rooms on with one live and one scheduled room, and
 // for every screen takes a 390px and a 1280px full-page screenshot, saves the visible text of <main>, and counts words
 // and controls. Kills the server at the end. Writes to .ai/tmp/simplify-study/ (git-ignored).
@@ -18,14 +20,15 @@ const require = createRequire(path.join(process.env.PLAYWRIGHT_CORE ?? process.c
 const { chromium } = require("playwright-core");
 
 const ROOT = process.cwd();
-const OUT = path.join(ROOT, ".ai/tmp/simplify-study");
-const BASE = "http://localhost:3460";
-for (const line of readFileSync(path.join(ROOT, ".ai/tmp/study.env"), "utf8").split("\n")) {
+const OUT = path.join(ROOT, process.env.CAPTURE_OUT ?? ".ai/tmp/simplify-study");
+const PORT = process.env.CAPTURE_PORT ?? "3460";
+const BASE = `http://localhost:${PORT}`;
+for (const line of readFileSync(path.join(ROOT, process.env.CAPTURE_ENV ?? ".ai/tmp/study.env"), "utf8").split("\n")) {
   const m = line.match(/^([A-Z_]+)=(.*)$/);
   if (m) process.env[m[1]] = m[2];
 }
 
-const server = spawn(process.execPath, ["node_modules/next/dist/bin/next", "start", "-p", "3460"], { cwd: ROOT, env: process.env, stdio: ["ignore", "pipe", "pipe"] });
+const server = spawn(process.execPath, ["node_modules/next/dist/bin/next", "start", "-p", PORT], { cwd: ROOT, env: process.env, stdio: ["ignore", "pipe", "pipe"] });
 let serverLog = "";
 server.stdout.on("data", (d) => (serverLog += d));
 server.stderr.on("data", (d) => (serverLog += d));
@@ -40,13 +43,18 @@ async function waitUp() {
   throw new Error("server never came up\n" + serverLog);
 }
 
-const MEMBER = ["/today", "/asks", "/ask", "/search", "/directory", "/jobs", "/jobs/yours", "/intros", "/intros/new", "/inbox", "/messages/new", "/rooms", "/perks", "/library", "/library/leaderboard", "/library/new", "/me", "/me/alerts", "/me/data", "/me/email", "/me/network", "/feed", "/welcome", "/start", "/search/ask"];
+// Round 6's screens (the old addresses too, to show where they land). CAPTURE_ROUTES=round6 picks these.
+const ROUND6 = process.env.CAPTURE_ROUTES === "round6";
+const MEMBER = ROUND6
+  ? ["/today", "/rooms", "/asks", "/asks?compose=1", "/people", "/inbox", "/inbox?show=intros", "/jobs", "/perks", "/library", "/library/new", "/me", "/me/alerts", "/me/privacy", "/me/booking", "/me/data", "/me/email", "/me/network", "/feed", "/directory", "/search", "/intros", "/ask"]
+  : ["/today", "/asks", "/ask", "/search", "/directory", "/jobs", "/jobs/yours", "/intros", "/intros/new", "/inbox", "/messages/new", "/rooms", "/perks", "/library", "/library/leaderboard", "/library/new", "/me", "/me/alerts", "/me/data", "/me/email", "/me/network", "/feed", "/welcome", "/start", "/search/ask"];
 const ADMIN = ["/admin", "/admin/report", "/admin/intros", "/admin/members", "/admin/invites", "/admin/asks", "/admin/digest", "/admin/announcements", "/admin/jobs", "/admin/settings", "/admin/setup", "/admin/start", "/admin/features", "/admin/rooms", "/admin/perks", "/admin/calls", "/admin/weekly-email", "/admin/mail", "/admin/health", "/admin/audit", "/admin/import", "/admin/links", "/admin/reports", "/admin/village"];
+const PEOPLE_FROM = ROUND6 ? "/people" : "/directory";
 const DYNAMIC = [
   { from: "/asks", re: /^\/asks\/[^/]+$/ },
-  { from: "/intros", re: /^\/intros\/[^/]+$/ },
+  { from: ROUND6 ? "/inbox?show=intros" : "/intros", re: /^\/intros\/(?!new)[^/]+$/ },
   { from: "/inbox", re: /^\/inbox\/[^/]+$/ },
-  { from: "/directory", re: /^\/people\/[^/]+$/ },
+  { from: PEOPLE_FROM, re: /^\/people\/[^/]+$/ },
   { from: "/library", re: /^\/library\/(?!new|leaderboard)[^/]+$/ },
   { from: "/rooms", re: /^\/rooms\/[^/]+$/ },
   { from: "PERSON", re: /^\/intros\/new\?/ },
