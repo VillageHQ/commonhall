@@ -9,11 +9,10 @@ import { introsManifest } from "../modules/intros/manifest.ts";
 import { networkManifest } from "../modules/network/manifest.ts";
 import { readInviteCounts } from "../modules/members/service-invites.ts";
 import { readAdminTabFacts, type AdminTabFacts } from "./admin-badges.ts";
-import { SETUP_STEP_NAMES } from "./admin-setup.ts";
 import { VILLAGE_KEYS_ANCHOR } from "./admin-home-anchors.ts";
-import { SETUP_STEPS, type SetupStepId } from "./admin-setup-steps.ts";
+import { SETUP_STEP_NAMES, SETUP_STEPS, type SetupStepId } from "./admin-setup-steps.ts";
 import { readEnabledIds } from "./enabled-modules.ts";
-import { describeLaunchSteps, readIsLaunched, readLaunchFacts } from "./console-launch.ts";
+import { describeLaunchSteps, LAUNCH_LINKS, readIsLaunched, readLaunchFacts } from "./console-launch.ts";
 import { countAsksWithNoHelp, countWaitingIntros, readThisWeek } from "./admin-this-week.ts";
 import { INTRO_WAIT_DAYS } from "./admin-this-week-rules.ts";
 import { asksManifest } from "../modules/asks/manifest.ts";
@@ -45,11 +44,10 @@ function readVillageHref(trouble: string | null, isNetworkOn: boolean) {
 
 // Where each setup step is done.
 const SETUP_STEP_PAGES: Record<SetupStepId, string> = {
-  [SETUP_STEPS.brand]: ROUTES.adminSettings,
-  [SETUP_STEPS.keys]: ROUTES.adminVillage,
-  [SETUP_STEPS.group]: ROUTES.adminVillage,
-  [SETUP_STEPS.invite]: ROUTES.adminInvites,
-  [SETUP_STEPS.report]: ROUTES.adminReport,
+  [SETUP_STEPS.name]: LAUNCH_LINKS.name,
+  [SETUP_STEPS.invite]: LAUNCH_LINKS.invites,
+  [SETUP_STEPS.card]: LAUNCH_LINKS.card,
+  [SETUP_STEPS.mail]: LAUNCH_LINKS.mail,
 };
 
 function plural(count: number, one: string, many: string) {

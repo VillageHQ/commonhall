@@ -1,58 +1,42 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 
 import { StepPills } from "@/components/step-pills";
-import { Note } from "@/components/ui/note";
 import { requireAdmin } from "@/platform/auth/session";
 import { readBranding } from "@/platform/branding/branding";
 import { getDatabase, type Database } from "@/platform/database/client";
 import { readResendConfig } from "@/platform/email/resend";
-import { ROUTES } from "@/platform/http/routes";
 import { modulePage } from "@/platform/modules/module-page";
-import { VILLAGE_KEY_STATUSES } from "@/platform/village/contract";
-import { readVillageAppName, readVillageKeyState } from "@/platform/village/settings";
-import { resolveVillageAppUrl } from "@/platform/village/urls";
 import type { SessionMember } from "@/platform/http/request-context";
 import { InviteSheet } from "@/modules/admin/components/invite-sheet";
 import { adminManifest } from "@/modules/admin/manifest";
-import { readInviterSignature } from "@/modules/admin/reads-members";
+import { readInviterSignature, readIsFillInOffered } from "@/modules/admin/reads-members";
 import { AvatarField } from "@/modules/members/components/avatar-field";
 import { ImportMembersForm } from "@/modules/members/components/import-members-form";
 import { readFillInSettings } from "@/modules/members/service-fill-in";
 import { readAvatarUrl, readMemberProfile } from "@/modules/members/service-profile";
 import { networkManifest } from "@/modules/network/manifest";
 import { readEnabledIds } from "@/shell/enabled-modules";
-import { GUIDED_STEP_PARAM, GUIDED_STEP_TITLES, GUIDED_STEPS, readGuidedSteps, resolveGuidedStep, type GuidedStepKey } from "@/shell/guided-start";
+import { GUIDED_STEP_ORDER, GUIDED_STEP_PARAM, GUIDED_STEP_TITLES, GUIDED_STEPS, resolveGuidedStep, type GuidedStepKey } from "@/shell/guided-start";
 
-import { AboutForm } from "../../welcome/about-form";
-import { FinishGuidedStart, SkipForNow, VillageStep } from "./guided-parts";
+import { FinishGuidedStart, GuidedCardForm, NextStepLink } from "./guided-parts";
 
 export const metadata: Metadata = { title: "Get started" };
 
 // One line per step: what it does for the organizer.
 const STEP_LINES: Record<GuidedStepKey, string> = {
-  look: "",
-  village: "Founders find warm paths through members who know them.",
+  invite: "Paste their emails: each founder gets a one-tap sign-in link.",
   card: "Founders see your card in People and on your intros.",
-  invite: "Each founder gets a one-tap sign-in link.",
 };
 
-async function VillageContent({ database, nextHref }: { database: Database; nextHref: string }) {
-  const [keyState, appName] = await Promise.all([readVillageKeyState(database), readVillageAppName(database)]);
-  const isReadable = keyState.status === VILLAGE_KEY_STATUSES.sealed || keyState.status === VILLAGE_KEY_STATUSES.plain;
-  return <VillageStep appUrl={resolveVillageAppUrl(process.env)} connectedAppName={keyState.keys && isReadable ? (appName ?? "") : null} nextHref={nextHref} />;
-}
-
-// The member welcome an organizer never gets otherwise: their photo and their card's words.
-async function CardContent({ database, admin, nextHref }: { database: Database; admin: SessionMember & { name: string }; nextHref: string }) {
+// The member welcome an organizer never gets otherwise: their photo and their card's words. The last step: saving it
+// finishes the guided start.
+async function CardContent({ database, admin }: { database: Database; admin: SessionMember & { name: string } }) {
   const [community, profile, avatarUrl] = await Promise.all([readBranding(database), readMemberProfile(database, admin.id), readAvatarUrl(database, admin.id)]);
   return (
     <>
       <p className="fh-h3 mb-2">Welcome to {community.name}</p>
       <AvatarField memberId={admin.id} name={admin.name} avatarUrl={avatarUrl} />
-      <AboutForm
-        nextHref={nextHref}
-        secondary={<SkipForNow href={nextHref} />}
+      <GuidedCardForm
         initialValues={{
           name: admin.name === admin.email.split("@")[0] ? "" : admin.name,
           workingOn: profile?.bio ?? "",
@@ -66,22 +50,20 @@ async function CardContent({ database, admin, nextHref }: { database: Database; 
   );
 }
 
-async function InviteContent({ database, admin }: { database: Database; admin: SessionMember }) {
+// The first step: one box and one button ("Create invite links" with mail off, "Send invites" with it on), then a
+// Copy per founder.
+async function InviteContent({ database, admin, nextHref }: { database: Database; admin: SessionMember; nextHref: string }) {
   const [branding, signature, fillIn, enabledIds] = await Promise.all([readBranding(database), readInviterSignature(database, admin.id), readFillInSettings(database), readEnabledIds(database)]);
   const isEmailOn = readResendConfig(process.env) !== null;
+  const isFillInShown = await readIsFillInOffered(database, enabledIds.has(networkManifest.id));
   return (
     <>
-      {isEmailOn ? null : (
-        <Note className="mb-3" role="status">
-          Mail isn&apos;t set up: links wait on <Link href={ROUTES.adminLinks}>Sign-in links</Link> for you to send.
-        </Note>
-      )}
       <InviteSheet
         community={branding.name}
         inviterName={signature.name}
         inviterRole={signature.role}
         isEmailOn={isEmailOn}
-        isFillInShown={enabledIds.has(networkManifest.id)}
+        isFillInShown={isFillInShown}
         savedBasis={fillIn.basis}
         savedTermsDate={fillIn.termsDate}
       />
@@ -92,8 +74,7 @@ async function InviteContent({ database, admin }: { database: Database; admin: S
         </div>
       </details>
       <div className="fh-btn-row mt-4">
-        <FinishGuidedStart label="Finish" />
-        <FinishGuidedStart label="Skip for now" variant="quiet" />
+        <NextStepLink href={nextHref} />
       </div>
     </>
   );
@@ -105,23 +86,18 @@ export default modulePage(adminManifest, async function GuidedStartPage({ search
   const admin = await requireAdmin();
   const database = getDatabase();
   const query = (await searchParams) ?? {};
-  // The branding lives on Set up only (round 6: no branding form repeats), so the guided start begins after it.
-  const steps = readGuidedSteps((await readEnabledIds(database)).has(networkManifest.id)).filter((key) => key !== GUIDED_STEPS.look);
-  const { step, nextHref } = resolveGuidedStep(steps, query[GUIDED_STEP_PARAM]);
-  // Only the last step has no next one, and it finishes instead.
-  const next = nextHref ?? ROUTES.admin;
+  const { step, nextHref } = resolveGuidedStep(GUIDED_STEP_ORDER, query[GUIDED_STEP_PARAM]);
 
   return (
     <div className="fh-narrow">
       <div className="flex items-start justify-between gap-3">
-        <StepPills label="Guided start" steps={steps.map((key) => ({ id: key, label: GUIDED_STEP_TITLES[key] }))} current={step} />
+        <StepPills label="Guided start" steps={GUIDED_STEP_ORDER.map((key) => ({ id: key, label: GUIDED_STEP_TITLES[key] }))} current={step} />
         <FinishGuidedStart label="Skip the guided start" variant="link" />
       </div>
       <h1 className="fh-h1">{GUIDED_STEP_TITLES[step]}</h1>
       <p className="fh-lede mb-4">{STEP_LINES[step]}</p>
-      {step === GUIDED_STEPS.village ? <VillageContent database={database} nextHref={next} /> : null}
-      {step === GUIDED_STEPS.card ? <CardContent database={database} admin={admin} nextHref={next} /> : null}
-      {step === GUIDED_STEPS.invite ? <InviteContent database={database} admin={admin} /> : null}
+      {step === GUIDED_STEPS.invite && nextHref ? <InviteContent database={database} admin={admin} nextHref={nextHref} /> : null}
+      {step === GUIDED_STEPS.card ? <CardContent database={database} admin={admin} /> : null}
     </div>
   );
 });

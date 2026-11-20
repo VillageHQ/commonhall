@@ -10,8 +10,9 @@ import { readAdminTabFacts } from "./admin-badges.ts";
 import { NAVIGATION_BADGES, type NavigationBadgeCounts } from "./navigation-rules.ts";
 
 export async function readNavigationBadges(database: Database, environment: Environment): Promise<NavigationBadgeCounts> {
-  const { setupStepsLeft, membersBadge, reportsBadge, creditsBadge } = await readAdminTabFacts(database, environment);
-  return { [NAVIGATION_BADGES.admin]: setupStepsLeft + membersBadge + reportsBadge + creditsBadge };
+  // Set up's badge counts setup steps left only (round 7): flags, waiting members and Village trouble are on Home.
+  const { setupStepsLeft } = await readAdminTabFacts(database, environment);
+  return { [NAVIGATION_BADGES.admin]: setupStepsLeft };
 }
 
 async function readIntrosWaitingForYes(database: Database, memberId: string) {

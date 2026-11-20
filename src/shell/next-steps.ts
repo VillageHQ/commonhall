@@ -11,7 +11,8 @@ import {
 } from "lucide-react";
 
 import { STEP_STATES, type StepState } from "../components/step-row.tsx";
-import { SETUP_STEP_NAMES, type SetupProgress } from "./admin-setup.ts";
+import { SETUP_STEP_NAMES } from "./admin-setup-steps.ts";
+import type { SetupProgress } from "./admin-setup.ts";
 import type { EmailConfirmationCopy } from "../modules/members/contract-email-confirmation-copy.ts";
 import { ROUTES } from "../platform/http/routes.ts";
 import { NETWORK_PROGRESS, type NetworkProgress } from "../modules/network/contract-progress.ts";

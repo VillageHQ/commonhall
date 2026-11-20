@@ -1,22 +1,27 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { z } from "zod";
 
-import { Button, ButtonRow, buttonVariants } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { postRequest } from "@/platform/http/post-request";
 import { API_ROUTES } from "@/platform/http/routes";
-import { VillageConnect } from "@/modules/network/components/village-connect";
+
+import { AboutForm, type AboutValues } from "../../welcome/about-form";
 
 const finishResponseSchema = z.object({ next: z.string() });
 
-// "Skip for now": on to the next step, nothing saved.
-export function SkipForNow({ href }: { href: string }) {
+async function finishAndOpenConsole() {
+  const { next } = await postRequest(API_ROUTES.adminGuidedStart, {}, finishResponseSchema);
+  window.location.assign(next);
+}
+
+// "Next": on to the next step (the invites are saved as they are made).
+export function NextStepLink({ href }: { href: string }) {
   return (
-    <Link href={href} className={buttonVariants({ variant: "quiet" })}>
-      Skip for now
+    <Link href={href} className={buttonVariants({ variant: "primary" })}>
+      Next
     </Link>
   );
 }
@@ -36,8 +41,7 @@ export function FinishGuidedStart({ label, variant = "primary" }: { label: strin
           setIsPending(true);
           setFailure(null);
           try {
-            const { next } = await postRequest(API_ROUTES.adminGuidedStart, {}, finishResponseSchema);
-            window.location.assign(next);
+            await finishAndOpenConsole();
           } catch (error) {
             setIsPending(false);
             setFailure(error instanceof Error ? error.message : "That didn't work. Try again.");
@@ -55,23 +59,9 @@ export function FinishGuidedStart({ label, variant = "primary" }: { label: strin
   );
 }
 
-type VillageStepProps = { appUrl: string; connectedAppName: string | null; nextHref: string };
+type GuidedCardFormProps = { initialValues: AboutValues };
 
-// Step 2: the Connect Village screen. "Next" turns on once the keys are checked and saved.
-export function VillageStep({ appUrl, connectedAppName, nextHref }: VillageStepProps) {
-  const router = useRouter();
-  const [isConnected, setIsConnected] = useState(connectedAppName !== null);
-  return (
-    <>
-      <section className="fh-sheet">
-        <VillageConnect appUrl={appUrl} connectedAppName={connectedAppName} onConnected={() => setIsConnected(true)} />
-      </section>
-      <ButtonRow className="mt-4">
-        <Button type="button" disabled={!isConnected} onClick={() => router.push(nextHref)}>
-          Next
-        </Button>
-        <SkipForNow href={nextHref} />
-      </ButtonRow>
-    </>
-  );
+// The last step, the admin's card: saving it (or "Skip for now") finishes the guided start and opens the console.
+export function GuidedCardForm({ initialValues }: GuidedCardFormProps) {
+  return <AboutForm initialValues={initialValues} onSaved={finishAndOpenConsole} secondary={<FinishGuidedStart label="Skip for now" variant="quiet" />} />;
 }

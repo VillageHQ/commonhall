@@ -8,12 +8,13 @@ import { Button } from "@/components/ui/button";
 import { useFocusOnFailure } from "@/components/use-focus-on-failure";
 import { MAXIMUM_PASSWORD_LENGTH, MINIMUM_PASSWORD_LENGTH } from "@/platform/auth/password-policy";
 import { authClient } from "@/platform/auth/auth-client";
+import { MAXIMUM_COMMUNITY_NAME_LENGTH } from "@/platform/branding/branding-api";
 import { readResponseMessage } from "@/platform/http/read-response-message";
 import { API_ROUTES, ROUTES } from "@/platform/http/routes";
 
-type SetupState = { errorMessage: string | null; name: string; email: string };
+type SetupState = { errorMessage: string | null; communityName: string; name: string; email: string };
 
-const INITIAL_STATE: SetupState = { errorMessage: null, name: "", email: "" };
+const INITIAL_STATE: SetupState = { errorMessage: null, communityName: "", name: "", email: "" };
 const FALLBACK_ERROR_MESSAGE = "Setup failed. Try again.";
 // The README's "Setup token" section.
 const SETUP_TOKEN_GUIDE_URL = "https://github.com/VillageHQ/commonhall#setup-token";
@@ -27,6 +28,7 @@ async function submitSetup(_previousState: SetupState, formData: FormData): Prom
   if (!response.ok) {
     return {
       errorMessage: await readResponseMessage(response, FALLBACK_ERROR_MESSAGE),
+      communityName: String(formData.get("communityName")),
       name: String(formData.get("name")),
       email: String(formData.get("email")),
     };
@@ -39,8 +41,9 @@ async function submitSetup(_previousState: SetupState, formData: FormData): Prom
   return INITIAL_STATE;
 }
 
-export function SetupForm() {
-  const [state, formAction, isPending] = useActionState(submitSetup, INITIAL_STATE);
+// The community's name and the first admin, on one screen: invitees see the name from their first link.
+export function SetupForm({ communityName = "" }: { communityName?: string }) {
+  const [state, formAction, isPending] = useActionState(submitSetup, { ...INITIAL_STATE, communityName });
   const tokenRef = useFocusOnFailure(state);
 
   return (
@@ -60,6 +63,15 @@ export function SetupForm() {
             </a>
           </>
         }
+        required
+      />
+      <FormField
+        name="communityName"
+        label="Community name"
+        autoComplete="organization"
+        maxLength={MAXIMUM_COMMUNITY_NAME_LENGTH}
+        defaultValue={state.communityName}
+        hint="Founders see it on their invite and every page, e.g. Northwind Founders."
         required
       />
       <FormField

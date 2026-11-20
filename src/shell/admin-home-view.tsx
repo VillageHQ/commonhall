@@ -1,10 +1,12 @@
 import Link from "next/link";
 
 import type { AdminHomeItem } from "@/shell/admin-home";
+import { PartnerReportTile } from "@/shell/console-home-parts";
 import type { ThisWeek } from "@/shell/admin-this-week";
 import { INTRO_WAIT_DAYS, THIS_WEEK_DAYS } from "@/shell/admin-this-week-rules";
 
-// The console's Home after launch (round 6): this week's four numbers, then what needs the admin, each a link.
+// The console's Home after launch (round 6): this week's four numbers, the partner report (round 7), then what needs
+// the admin, each a link.
 
 const NUMBER = new Intl.NumberFormat("en-US");
 
@@ -67,6 +69,7 @@ export function AdminHomeView({ communityName, thisWeek, items }: AdminHomeViewP
       <section className="mb-4" aria-label="This week in numbers" data-testid="admin-home-this-week">
         <ThisWeekTiles tiles={readTiles(thisWeek)} />
       </section>
+      <PartnerReportTile />
       <NeedsYou items={items} />
     </>
   );

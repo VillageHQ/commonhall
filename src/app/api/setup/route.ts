@@ -11,6 +11,7 @@ import { secretsMatch } from "@/platform/secrets/secrets-match";
 import { recordFailedSetupAttempt } from "@/platform/rate-limit/setup-rate-limit";
 import { readSetupToken } from "@/platform/secrets/setup-token";
 import { platformRoutes } from "@/platform/modules/platform-routes";
+import { MAXIMUM_COMMUNITY_NAME_LENGTH } from "@/platform/branding/branding-api";
 
 const CREATED_STATUS = 201;
 const UNAUTHORIZED_STATUS = 401;
@@ -22,6 +23,13 @@ const NOT_CONFIGURED_STATUS = 503;
 const setupTokenSchema = z.object({ token: z.string() });
 
 const firstAdminSchema = z.object({
+  // The form always sends it; `pnpm setup:instance` names the community in its own branding step.
+  communityName: z
+    .string()
+    .trim()
+    .min(1, "Enter your community's name.")
+    .max(MAXIMUM_COMMUNITY_NAME_LENGTH, `Keep the name under ${MAXIMUM_COMMUNITY_NAME_LENGTH} characters.`)
+    .optional(),
   name: z.string().trim().min(1, "Enter a name."),
   email: z.email("Enter a valid email address."),
   password: z

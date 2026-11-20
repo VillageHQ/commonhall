@@ -4,26 +4,23 @@ import { ROUTES } from "../platform/http/routes.ts";
 import { readSettings, saveSettings } from "../platform/settings/store.ts";
 import { INSTANCE_SETTING_KEYS } from "../platform/settings/schema.ts";
 
-// The guided start (/admin/start): a new admin's first steps, one screen each, every one with "Next" and "Skip for
-// now". Connect Village is left out while the network module is off. Finishing or skipping the last step, or "Skip
-// the guided start", marks it done; until then the admin's sign-in lands here (src/shell/landing.ts).
+// The guided start (/admin/start): a new admin's first steps, one screen each. /setup already named the community, so
+// it is the invites first (a copyable link on the first screen after /setup), then the admin's own card. Village is
+// not a step (round 7): it is an optional row on Set up. Finishing or skipping the last step, or "Skip the guided
+// start", marks it done; until then the admin's sign-in lands here (src/shell/landing.ts).
 
-export const GUIDED_STEPS = { look: "look", village: "village", card: "card", invite: "invite" } as const;
+export const GUIDED_STEPS = { invite: "invite", card: "card" } as const;
 
 export type GuidedStepKey = (typeof GUIDED_STEPS)[keyof typeof GUIDED_STEPS];
 
 export const GUIDED_STEP_TITLES: Record<GuidedStepKey, string> = {
-  look: "Your look",
-  village: "Connect Village",
-  card: "Your card",
   invite: "Invite founders",
+  card: "Your card",
 };
 
 export const GUIDED_STEP_PARAM = "step";
 
-export function readGuidedSteps(isNetworkOn: boolean): GuidedStepKey[] {
-  return [GUIDED_STEPS.look, ...(isNetworkOn ? [GUIDED_STEPS.village] : []), GUIDED_STEPS.card, GUIDED_STEPS.invite];
-}
+export const GUIDED_STEP_ORDER: readonly GuidedStepKey[] = [GUIDED_STEPS.invite, GUIDED_STEPS.card];
 
 export function toGuidedStepHref(step: GuidedStepKey) {
   return `${ROUTES.adminStart}?${GUIDED_STEP_PARAM}=${step}`;
