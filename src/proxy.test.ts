@@ -36,7 +36,8 @@ describe("a page of a switched-off module, before it renders", () => {
   });
 
   describe.each(toggleable.map((manifest) => ({ id: manifest.id, manifest })))("$id", ({ manifest }) => {
-    const pages = manifest.paths.pages.filter((page) => page !== "/");
+    // An owned path ending in "/" claims only the pages under it: one of those stands in for it.
+    const pages = manifest.paths.pages.filter((page) => page !== "/").map((page) => (page.endsWith("/") ? `${page}a-page` : page));
 
     it("goes to the not-found page when off", async () => {
       await saveModuleState(database, manifest, false);
@@ -52,6 +53,15 @@ describe("a page of a switched-off module, before it renders", () => {
       await saveModuleState(database, manifest, true);
       for (const page of pages) expect(await rewriteOf(page, { isSignedIn: true }), page).toBeNull();
     });
+  });
+
+  // The Inbox is a shell page holding intros too (round 6): only a conversation closes with Messages.
+  it("keeps the Inbox open while Messages is off, and closes its conversations", async () => {
+    const messages = toggleable.find(({ id }) => id === "messages");
+    if (!messages) throw new Error("no messages module");
+    await saveModuleState(database, messages, false);
+    expect(await rewriteOf("/inbox", { isSignedIn: true })).toBeNull();
+    expect(await rewriteOf("/inbox/abc", { isSignedIn: true })).toContain("/not-here/_module-off");
   });
 
   it("shows a visitor at /jobs the public board, and a member the members' board", async () => {
