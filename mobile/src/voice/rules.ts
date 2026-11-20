@@ -6,6 +6,8 @@ export type RoleAction = "invite_up" | "move_down" | "make_cohost" | "remove_coh
 
 export const ROLE_WORDS: Record<RoomRole, string> = { host: "Host", cohost: "Co-host", speaker: "Speaker", listener: "" };
 export const ROLE_ORDER: Record<RoomRole, number> = { host: 0, cohost: 1, speaker: 2, listener: 3 };
+// The server's answer to a second "Tell people I'm here" in one room (VOICE_ERROR_CODES.notifiedAlready).
+export const NOTIFIED_ALREADY = "voice_notified_already";
 export const REACTIONS = ["👏", "😂", "❤️", "🔥", "💯", "🙏"] as const;
 
 export function readRole(value: string | undefined): RoomRole {

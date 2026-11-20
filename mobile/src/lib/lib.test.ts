@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { runInNewContext } from "node:vm";
 
-import { buildBootstrapScript, buildCallScript, isAllowedCall, parseBridgeMessage, readFailureMessage, toApiAnswer } from "./bridge.ts";
+import { buildBootstrapScript, buildCallScript, isAllowedCall, parseBridgeMessage, readErrorCode, readFailureMessage, toApiAnswer } from "./bridge.ts";
 import { checkCommunity, readAddress, type FetchLike } from "./community.ts";
 import { opensInPortal, readAlertPath, readJoinLink, toPortalUrl } from "./links.ts";
 
@@ -149,6 +149,8 @@ describe("the bridge between the app and the portal page", () => {
   it("turns a failed answer into the server's own words", () => {
     assert.equal(readFailureMessage(toApiAnswer(409, JSON.stringify({ code: "voice_room_ended", message: "This room has ended." })), "x"), "This room has ended.");
     assert.equal(readFailureMessage(toApiAnswer(500, "oops"), "Fallback."), "Fallback.");
+    assert.equal(readErrorCode(toApiAnswer(409, JSON.stringify({ code: "voice_notified_already", message: "x" }))), "voice_notified_already");
+    assert.equal(readErrorCode(toApiAnswer(500, "oops")), null);
     assert.match(readFailureMessage(toApiAnswer(401, ""), "x"), /signed out/);
   });
 });

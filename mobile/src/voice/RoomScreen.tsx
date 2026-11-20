@@ -5,10 +5,10 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { listenToVoiceService, showVoiceService, stopVoiceService } from "../../modules/voice-service";
 import type { PortalHandle } from "../components/portal-types";
-import { readFailureMessage } from "../lib/bridge";
+import { readErrorCode, readFailureMessage } from "../lib/bridge";
 import { SANS, SERIF, useColors, type Colors } from "../theme";
 import { playRemoteAudio, startRoomAudio, stopRemoteAudio, stopRoomAudio } from "./audio";
-import { isModerator, isOnStage, readActions, readRole, ROLE_ORDER, ROLE_WORDS, REACTIONS, type RoleAction, type RoomRole } from "./rules";
+import { isModerator, isOnStage, NOTIFIED_ALREADY, readActions, readRole, ROLE_ORDER, ROLE_WORDS, REACTIONS, type RoleAction, type RoomRole } from "./rules";
 
 // A live voice room, native: LiveKit's client on the phone's own WebRTC, so it keeps playing with the screen locked
 // (Android: the voice service; iOS: the audio background mode). Every role change still goes through the server's
@@ -63,7 +63,7 @@ export function RoomScreen({ portal, origin, roomId, title, isShown, onMinimize,
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [reactions, setReactions] = useState<Record<string, string>>({});
   const [isReacting, setIsReacting] = useState(false);
-  const [notice, setNotice] = useState<string | null>(null);
+  const [notice, setNotice] = useState<{ text: string; isProblem: boolean } | null>(null);
   const [isBusy, setIsBusy] = useState(false);
   const [isTelling, setIsTelling] = useState(false);
   const [hasTold, setHasTold] = useState(false);
@@ -177,7 +177,7 @@ export function RoomScreen({ portal, origin, roomId, title, isShown, onMinimize,
     try {
       await room.localParticipant.setMicrophoneEnabled(!room.localParticipant.isMicrophoneEnabled);
     } catch {
-      setNotice("The phone didn't let Commonhall use the microphone. Allow it in Settings, then try again.");
+      setNotice({ text: "The phone didn't let Commonhall use the microphone. Allow it in Settings, then try again.", isProblem: true });
     }
     refresh();
   }, [refresh]);
@@ -198,20 +198,23 @@ export function RoomScreen({ portal, origin, roomId, title, isShown, onMinimize,
     setNotice(null);
     const answer = await portal.call("POST", path, { roomId, ...body });
     setIsBusy(false);
-    if (answer.status !== 200) setNotice(readFailureMessage(answer, fallback));
-    return answer.status === 200;
+    if (answer.status !== 200) setNotice({ text: readFailureMessage(answer, fallback), isProblem: true });
+    return answer;
   }
 
   async function tell(memberIds: string[]) {
-    if (await send("/api/voice/notify", { memberIds }, "That didn't send. Try again.")) {
-      setHasTold(true);
-      setIsTelling(false);
-      setNotice("Told them you're here.");
-    }
+    const answer = await send("/api/voice/notify", { memberIds }, "That didn't send. Try again.");
+    // The server's "you've told people about this room already" (also after a Notify when starting it) closes the
+    // button as a send does: the app doesn't know it before trying.
+    const isToldAlready = answer.status === 200 || readErrorCode(answer) === NOTIFIED_ALREADY;
+    if (!isToldAlready) return;
+    setHasTold(true);
+    setIsTelling(false);
+    setNotice({ text: answer.status === 200 ? "Told them you're here." : readFailureMessage(answer, "You've told people about this room already."), isProblem: false });
   }
 
   async function act(memberId: string, action: RoleAction) {
-    if (await send("/api/voice/role", { memberId, action }, "That didn't work. Try again.")) setSelectedId(null);
+    if ((await send("/api/voice/role", { memberId, action }, "That didn't work. Try again.")).status === 200) setSelectedId(null);
   }
 
   function react(emoji: string) {
@@ -311,7 +314,7 @@ export function RoomScreen({ portal, origin, roomId, title, isShown, onMinimize,
       ) : null}
       {notice ? (
         <View style={styles.notice}>
-          <Text style={[styles.noticeText, styles.warning]}>{notice}</Text>
+          <Text style={[styles.noticeText, notice.isProblem ? styles.warning : null]}>{notice.text}</Text>
         </View>
       ) : null}
 
