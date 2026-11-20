@@ -1,10 +1,10 @@
 # Charter: simplify-fixpass + re-study (round 6, last part)
 
-Approved by: the round-6 lead (autopilot, the owner's Telegram topic 82148, 20 Nov 2026). The lead's brief, word for word:
+Approved by: the round-6 lead (autopilot, the owner's Telegram topic 82148, 20 Nov 2026). The lead's brief, word for word (the worktree's local path replaced by its name):
 
 # Brief: simplify-fixpass + re-study (Commonhall round 6, last part)
 
-Worktree: C:/Users/absi/.autobuild/worktrees/community__simplify-fixpass (branch absi-agent/simplify-fixpass, repo
+Worktree: the simplify-fixpass worktree (branch absi-agent/simplify-fixpass, repo
 VillageHQ/commonhall, PUBLIC, AGPL). All six round-6 parts are merged on main (PRs #99-#105). Read
 `.ai/features/simplify-round6/SPEC.md` (incl. Decisions), STUDY.md and the part reports first.
 
