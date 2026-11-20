@@ -3,9 +3,11 @@ import { afterAll, beforeEach, describe, expect, it } from "vitest";
 
 import { POST } from "@/app/api/admin/modules/route";
 import { MODULE_ERROR_CODES } from "@/modules/admin/contract-modules";
+import { feedManifest } from "@/modules/feed/manifest";
 import { introsManifest } from "@/modules/intros/manifest";
 import { membersManifest } from "@/modules/members/manifest";
 import { networkManifest } from "@/modules/network/manifest";
+import { voiceManifest } from "@/modules/voice/manifest";
 import { AUDIT_ACTIONS } from "@/platform/audit/actions";
 import { adminAuditEntry } from "@/platform/audit/schema";
 import { isModuleEnabled } from "@/platform/modules/enablement";
@@ -112,10 +114,12 @@ describe("changing a feature", () => {
       expect(network?.dependentLabels).toEqual([]);
     });
 
-    it("lists core modules as always on, not as switches", async () => {
-      const { features, coreModules } = await readFeatureScreen(database);
+    it("lists Rooms first, never a core module, and says what Rooms needs and where Feed sits", async () => {
+      const { features } = await readFeatureScreen(database, {});
 
-      expect(coreModules.map(({ id }) => id)).toContain(membersManifest.id);
+      expect(features[0]?.id).toBe(voiceManifest.id);
+      expect(features[0]?.note).toBe("Needs a voice server");
+      expect(features.find(({ id }) => id === feedManifest.id)?.note).toBe("Under More in the menu");
       expect(features.map(({ id }) => id)).not.toContain(membersManifest.id);
     });
   });

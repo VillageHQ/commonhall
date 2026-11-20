@@ -3,7 +3,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { Download } from "lucide-react";
 import { useRouter } from "next/navigation";
-import type { FormEvent, ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
 
 import { FormError } from "@/components/form-error";
 import { useFlash } from "@/components/flash";
@@ -45,8 +45,10 @@ type NumberSettingProps = {
   className?: string;
 };
 
-// One sheet with one number and Save (Commonhall's `.pair` form). After saving, the flash says so at the top.
+// One number and Save (Commonhall's `.pair`). It sits inside Set up's settings form, so it is no form of its own:
+// Save and Enter send just this number. After saving, the flash says so at the top.
 function NumberSetting({ id, title, label, name, value, minimum, maximum, hint, save, flash, className }: NumberSettingProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const showFlash = useFlash();
   const mutation = useMutation({
@@ -58,9 +60,8 @@ function NumberSetting({ id, title, label, name, value, minimum, maximum, hint, 
     },
   });
   const inputId = `${id}-value`;
-  function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    mutation.mutate(Number(new FormData(event.currentTarget).get(name)));
+  function submit() {
+    mutation.mutate(Number(inputRef.current?.value));
   }
   return (
     <Card id={id} className={className}>
@@ -68,19 +69,35 @@ function NumberSetting({ id, title, label, name, value, minimum, maximum, hint, 
         <h2 id={`${id}-title`} className="fh-h3">
           {title}
         </h2>
-        <form className="fh-pair mt-2.5 items-end" onSubmit={submit} noValidate>
+        <div className="fh-pair mt-2.5 items-end">
           <div>
             <label className="fh-label fh-small" htmlFor={inputId}>
               {label}
             </label>
-            <Input id={inputId} name={name} type="number" inputMode="numeric" min={minimum} max={maximum} step={1} defaultValue={value} aria-invalid={mutation.isError || undefined} />
+            <Input
+              ref={inputRef}
+              id={inputId}
+              name={name}
+              type="number"
+              inputMode="numeric"
+              min={minimum}
+              max={maximum}
+              step={1}
+              defaultValue={value}
+              aria-invalid={mutation.isError || undefined}
+              onKeyDown={(event) => {
+                if (event.key !== "Enter") return;
+                event.preventDefault();
+                submit();
+              }}
+            />
           </div>
           <div>
-            <Button type="submit" variant="secondary" size="sm" disabled={mutation.isPending}>
+            <Button type="button" variant="secondary" size="sm" disabled={mutation.isPending} onClick={submit}>
               Save
             </Button>
           </div>
-        </form>
+        </div>
         {mutation.error ? <FormError message={mutation.error.message} /> : null}
         <p className="fh-hint">{hint}</p>
       </section>
@@ -94,7 +111,7 @@ export function AskAllowanceSetting({ weeklyAllowance }: { weeklyAllowance: numb
       id="limits"
       className="fh-section"
       title="Asks a week"
-      label="Asks per member a week"
+      label="Per member"
       name="weeklyAllowance"
       value={weeklyAllowance}
       minimum={ASK_ALLOWANCE.minimum}
@@ -112,7 +129,7 @@ export function OutcomeDaysSetting({ outcomeDays }: { outcomeDays: number }) {
       id="outcome"
       className="mt-4"
       title="Outcome question"
-      label="Days after each intro"
+      label="Days after an intro"
       name="outcomeDays"
       value={outcomeDays}
       minimum={OUTCOME_DAYS.minimum}

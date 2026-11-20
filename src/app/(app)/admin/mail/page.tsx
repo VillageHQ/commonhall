@@ -127,7 +127,7 @@ function DoNotSendList({ entries }: { entries: MailOverview["suppressions"] }) {
 
 function SendingLog({ mail }: { mail: MailOverview }) {
   return (
-    <section className="fh-sheet fh-c12">
+    <section className="fh-sheet fh-c12" id="log">
       <h2 className="fh-h3">Sending log</h2>
       {mail.log.length === 0 ? (
         <p className="fh-small fh-muted" style={{ marginTop: 6 }}>

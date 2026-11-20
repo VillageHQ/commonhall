@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { ACCEPTED_LOGO_TYPES } from "@/platform/branding/logo-rules";
 import type { CommunityLogo } from "@/platform/branding/branding";
-import { ACCENT_PRESETS, contrastRatio, DEFAULT_ACCENT_COLOR, deriveFundColors, LEAF, parseAccentColor, toAccentVariables } from "@/platform/design/accent";
+import { ACCENT_PRESETS, DEFAULT_ACCENT_COLOR, deriveFundColors, parseAccentColor, toAccentVariables } from "@/platform/design/accent";
 import { postRequest } from "@/platform/http/post-request";
 import { HOSTED_BY, PLANS } from "@/platform/settings/plan-api";
 import { MESSAGE_POLICY_DEFAULTS, SETTINGS_API_ROUTE, settingsResponseSchema, type SettingsField, type SettingsValues } from "@/modules/admin/contract-settings";
@@ -30,19 +30,18 @@ type SettingsFormProps = {
   // Under Advanced, beside the folded fields: the mail checklist, Village, the audit log and the version (rendered on
   // the server).
   aside: ReactNode;
+  // In view beside the branding (Set up's Mail and Features rows, and its two numbers). Nothing in it is a form.
+  beside?: ReactNode;
   // Step 1 of the guided start: the essentials only (no Advanced), the save button says "Next", and a good save moves on.
   guided?: { submitLabel: string; onSaved: () => void; secondary: ReactNode };
 };
 
-// "Buttons, links and the path line. Passes 8.5 : 1 on white.", or the darker shade the fund colour was moved to so
-// text passes.
+// Nothing while the colour reads well on white; else the darker shade it was moved to so text passes.
 // A colour that doesn't parse is measured on the last good one (the picker's).
 function readContrastLine(accent: string, fallback: string) {
-  const use = "Buttons, links and the path line.";
-  if (!accent) return `${use} Empty: the default colour.`;
+  if (!accent) return "Empty: the default colour.";
   const { fund, isAdjusted } = deriveFundColors(parseAccentColor(accent) ?? fallback);
-  const ratio = Math.round(contrastRatio(fund, LEAF) * 10) / 10;
-  return `${use} ${isAdjusted ? `Darkened to ${fund.toUpperCase()} so text passes` : "Passes"} ${ratio} : 1 on white.`;
+  return isAdjusted ? `Darkened to ${fund.toUpperCase()} so text stays readable.` : undefined;
 }
 
 // Every field folded under Advanced: a failed save on one of these opens it, so the error line is never hidden.
@@ -54,7 +53,7 @@ function isPreviewableLogo(url: string) {
 
 // Set up › Settings (Commonhall's settingsPage): one form, one save. In view: the name, the logo file, the colour and
 // the preview; the rest folds under Advanced with its defaults chosen. Changes are written to the audit log.
-export function SettingsForm({ saved, uploadedLogo, isMailOn, serverPlan, managedBy, aside, guided }: SettingsFormProps) {
+export function SettingsForm({ saved, uploadedLogo, isMailOn, serverPlan, managedBy, aside, beside, guided }: SettingsFormProps) {
   const router = useRouter();
   const flash = useFlash();
   const [values, setValues] = useState(saved);
@@ -105,6 +104,7 @@ export function SettingsForm({ saved, uploadedLogo, isMailOn, serverPlan, manage
 
   const previewColor = parseAccentColor(values.accent) ?? parseAccentColor(saved.accent) ?? DEFAULT_ACCENT_COLOR;
   const previewName = values.name.trim() || saved.name;
+  const contrastLine = readContrastLine(values.accent, previewColor);
   const previewLogo = values.logoUrl && isPreviewableLogo(values.logoUrl) ? { url: values.logoUrl, backdrop: "light" as const } : values.logoUrl ? null : uploadedLogo;
   const hostedByLine = `Hosted by ${values.hostingBy === HOSTED_BY.managed ? "Village (managed)" : saved.name}${values.region.trim() ? `, ${values.region.trim()}` : ""}`;
 
@@ -131,7 +131,7 @@ export function SettingsForm({ saved, uploadedLogo, isMailOn, serverPlan, manage
       <div className={guided ? "fh-stack" : "fh-c7 fh-stack"}>
         <section className="fh-sheet">
           <h2 className="fh-h3">Branding</h2>
-          {input("name", "Community name", "Shown at the top of every page and in every email.", { maxLength: 80, required: true })}
+          {input("name", "Community name", null, { maxLength: 80, required: true })}
           <div className="fh-field">
             <span className="fh-label">Logo file</span>
             <ButtonRow>
@@ -154,14 +154,14 @@ export function SettingsForm({ saved, uploadedLogo, isMailOn, serverPlan, manage
                 </Button>
               ) : null}
             </ButtonRow>
-            <p className="fh-hint">PNG, JPEG or WebP, kept on this server. A Logo URL under Advanced is used first.</p>
+            <p className="fh-hint">PNG, JPEG or WebP.</p>
             {logoNote ? (
               <p role="alert" className="fh-hint fh-err">
                 {logoNote}
               </p>
             ) : null}
           </div>
-          <Field htmlFor="s-accent" label="Brand colour" hint={readContrastLine(values.accent, previewColor)} error={errors.accent} className="fh-field">
+          <Field htmlFor="s-accent" label="Brand colour" hint={contrastLine} error={errors.accent} className="fh-field">
             <div className="fh-colorrow">
               <input
                 type="color"
@@ -180,7 +180,7 @@ export function SettingsForm({ saved, uploadedLogo, isMailOn, serverPlan, manage
                 placeholder="e.g. #24525A"
                 onChange={change("accent")}
                 aria-invalid={errors.accent ? true : undefined}
-                aria-describedby={describedBy("accent")}
+                aria-describedby={describedBy("accent", Boolean(contrastLine))}
               />
             </div>
             {/* The ready colours (Ink first): a tap fills the field; the admin still saves with the form. */}
@@ -205,7 +205,6 @@ export function SettingsForm({ saved, uploadedLogo, isMailOn, serverPlan, manage
           <div className="fh-setrow" style={{ marginTop: 12, borderBottom: 0 }}>
             <div>
               <b>Preview</b>
-              <span>The header, as members see it</span>
             </div>
             {/* The colour as members see it in each look: the light one, or the dark one in dark mode. */}
             <span className="fh-fundmark min-w-0 dark:hidden!" style={toAccentVariables(previewColor, "light")}>
@@ -231,8 +230,9 @@ export function SettingsForm({ saved, uploadedLogo, isMailOn, serverPlan, manage
           </p>
         ) : null}
       </div>
+      {guided || !beside ? null : <div className="fh-c5 fh-stack">{beside}</div>}
       {guided ? null : (
-      <AdvancedSection summary="Logo address, sign-in line, mail sender, hosting and data, plan, the mail checklist and the version." openWhen={advancedErrors}>
+      <AdvancedSection summary="For engineers: mail sender, hosting, Village, Rooms, logs." openWhen={advancedErrors}>
         <div className="fh-grid">
           <div className="fh-c7 fh-stack">
             <section className="fh-sheet" id="look">

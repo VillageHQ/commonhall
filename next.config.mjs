@@ -104,6 +104,8 @@ export const nextConfig = {
     // Part 2 (member screens):
     // The library's leaderboard became its "Top" sort (LIBRARY_TOP_PAGE); ?period= is ignored there.
     { source: "/library/leaderboard", destination: "/library?sort=top", permanent: true },
+    // Part 5 (admin console): Set up is one page, at Settings' address.
+    { source: "/admin/setup", destination: "/admin/settings", permanent: false },
   ],
 };
 
