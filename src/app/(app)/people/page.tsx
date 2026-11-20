@@ -80,7 +80,7 @@ export default modulePage(membersManifest, async function PeoplePage({ searchPar
         <h1 className="fh-h1">People</h1>
       </header>
       <HydrationBoundary state={dehydrate(queryClient)}>
-        <PeopleScreen canAskIntro={canAskIntro} network={network} />
+        <PeopleScreen network={network} />
       </HydrationBoundary>
     </>
   );

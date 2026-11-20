@@ -27,20 +27,21 @@ export type TourStep = {
 
 const RESULTS = SEARCH_RESULTS_HREF;
 const ASK_BUTTON = ".fh-result .fh-btn-row a";
-const NETWORK_BUTTON = "[data-slot='people-network'] button";
+// With no member matching the words, the empty state offers "Search their networks for “…”" (round 7).
+const NETWORK_BUTTON = "[data-slot='people-network-offer']";
 const FILTER_BUTTON = "[aria-controls='people-filters']";
 
 export const TOUR_STEPS: readonly TourStep[] = [
   {
     id: "search",
     label: "Search",
-    caption: "Type who you need, then search their networks. See the faces in reach and the member who can introduce you.",
+    caption: "Type who you need, then search their networks in one tap. See the faces in reach and the member who can introduce you.",
     start: "/people",
     still: RESULTS,
     async play(hands) {
       await hands.type("#member-search", SEARCH_QUERY);
-      await hands.wait(250);
-      // The button reads the box and moves the address; the tour presses it and moves its own.
+      await hands.wait(700);
+      // The button moves the address; the tour presses it and moves its own.
       await hands.tap(NETWORK_BUTTON);
       await hands.go(RESULTS);
       await hands.wait(900);
@@ -114,8 +115,8 @@ export const TOUR_STEPS: readonly TourStep[] = [
     still: EXPERTS_VIEW_HREF,
     async play(hands) {
       await hands.wait(500);
-      // "An expert" rewrites the window's address in the app, so the tour presses it and moves its own address.
-      await hands.tap("[data-slot='people-needs'] button:last-child");
+      // "Mentors and experts" rewrites the window's address in the app, so the tour presses it and moves its own address.
+      await hands.tap("[data-slot='people-view-link']");
       await hands.go(EXPERTS_VIEW_HREF);
       await hands.wait(900);
       await hands.point("[data-testid='expert-card'] .fh-who");

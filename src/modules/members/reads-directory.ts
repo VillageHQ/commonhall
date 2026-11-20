@@ -7,7 +7,7 @@ import { user } from "../../platform/database/auth-schema.ts";
 import type { Database } from "../../platform/database/client.ts";
 import { memberAvatar, memberProfile, memberTag } from "./schema.ts";
 import { type Directory, type DirectoryFilters, normalizeTag } from "./contract-profile.ts";
-import { EMPTY_DIRECTORY_FILTERS } from "./rules-directory-url.ts";
+import { EMPTY_DIRECTORY_FILTERS, toSearchWords } from "./rules-directory-url.ts";
 import { isActiveMember } from "../../platform/auth/member-status.ts";
 import { companyLogoColumn, shownFaceColumns, toShownFaceUrl } from "./reads-pictures.ts";
 import { FILL_IN_FIELDS } from "./contract-fill-in.ts";
@@ -41,27 +41,43 @@ export function toContainsPattern(search: string) {
   return `%${search.replace(LIKE_WILDCARDS, "\\$&")}%`;
 }
 
-function matchesSearch(database: Database, search: string) {
-  if (!search) return undefined;
-  const pattern = toContainsPattern(search);
+const SHORT_WORD = /^[\p{L}\p{N}]{1,3}$/u;
+
+// A short word ("ai", "us") matches whole words only, so "us" doesn't find "business"; a longer one matches inside
+// words ("fintech" finds "Fintech Ops").
+function matchesText(column: AnyPgColumn | SQL, word: string) {
+  if (SHORT_WORD.test(word)) return sql`${column} ~* ${String.raw`\m${word}\M`}`;
+  return ilike(column, toContainsPattern(word));
+}
+
+// One word against the member's own words, the shown role, company and city, or a tag.
+function matchesWord(database: Database, word: string) {
   const taggedMember = database
     .select({ userId: memberTag.userId })
     .from(memberTag)
-    .where(and(eq(memberTag.userId, user.id), ilike(memberTag.tag, pattern)));
-  // Commonhall's "Name, company or skill": any of the member's own words, the shown role, company and city, or a tag.
+    .where(and(eq(memberTag.userId, user.id), matchesText(memberTag.tag, word)));
   return or(
-    ilike(user.name, pattern),
-    ilike(shownTitle, pattern),
-    ilike(shownCompany, pattern),
-    ilike(shownLocation, pattern),
-    ilike(memberProfile.bio, pattern),
-    ilike(memberProfile.canHelpWith, pattern),
-    ilike(memberProfile.needs, pattern),
-    ilike(memberProfile.stage, pattern),
-    ilike(memberProfile.sector, pattern),
-    ilike(memberProfile.cohort, pattern),
+    ...[user.name, shownTitle, shownCompany, shownLocation, memberProfile.bio, memberProfile.canHelpWith, memberProfile.needs, memberProfile.stage, memberProfile.sector, memberProfile.cohort].map((column) =>
+      matchesText(column, word),
+    ),
     exists(taggedMember),
   );
+}
+
+// Commonhall's "Name, company or skill": a member matches when any word does (toSearchWords).
+function matchesSearch(database: Database, words: readonly string[]) {
+  if (!words.length) return undefined;
+  return or(...words.map((word) => matchesWord(database, word)));
+}
+
+// How many of the words a member matches, so those matching most come first ("fintech investor": both, then either).
+// One word or none ranks nobody (a bare constant would be read as a column number in ORDER BY).
+function bySearchScore(database: Database, words: readonly string[]) {
+  if (words.length < 2) return [];
+  return [desc(sql<number>`(${sql.join(
+    words.map((word) => sql`case when ${matchesWord(database, word)} then 1 else 0 end`),
+    sql` + `,
+  )})`)];
 }
 
 function matchesTag(database: Database, tag: string) {
@@ -214,9 +230,10 @@ export async function readDirectory(
 ): Promise<Directory> {
   const { search, tag, stage, sector, city, cohort, updatedWithinDays, hiring: onlyHiring, isExpertsView, communityRole, page } = { ...EMPTY_DIRECTORY_FILTERS, ...filters };
   const hiringJobCount = hiring ? hiring.jobCountColumn(shownCompany, user.id) : sql<number>`0`.mapWith(Number);
+  const words = toSearchWords(search);
   const conditions = and(
     isListedInDirectory(now),
-    matchesSearch(database, search),
+    matchesSearch(database, words),
     matchesTag(database, tag),
     matchesValue(memberProfile.stage, stage),
     matchesValue(memberProfile.sector, sector),
@@ -268,7 +285,7 @@ export async function readDirectory(
     .leftJoin(filledFace.line, filledFace.joinCondition)
     .leftJoin(filledLocation.line, filledLocation.joinCondition)
     .where(conditions)
-    .orderBy(asc(user.name), asc(user.id))
+    .orderBy(...bySearchScore(database, words), asc(user.name), asc(user.id))
     .limit(DIRECTORY_PAGE_SIZE)
     .offset((currentPage - 1) * DIRECTORY_PAGE_SIZE);
 

@@ -2,12 +2,14 @@
 
 import { Share, SquarePlus, X } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 
 import { Button } from "@/components/ui/button";
 import { useIsInBrowser } from "@/components/use-is-in-browser";
+import { isInNativeApp, subscribeToNativeApp } from "@/platform/native-app/bridge";
 import { isAppleMobile, isInstalled, registerServiceWorker } from "./push-client";
 
+// Set when the card is closed, and when it was first shown: it shows on one visit only (round 7, less-choice Part 2).
 const DISMISSED_KEY = "commonhall:install-card-dismissed";
 
 type InstallPrompt = Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: "accepted" | "dismissed" }> };
@@ -15,15 +17,27 @@ type InstallPrompt = Event & { prompt: () => Promise<void>; userChoice: Promise<
 const VIEWS = { hidden: "hidden", prompt: "prompt", apple: "apple" } as const;
 type View = (typeof VIEWS)[keyof typeof VIEWS];
 
+function wasShownBefore() {
+  return window.localStorage.getItem(DISMISSED_KEY) !== null;
+}
+
 // Today's "Add <fund> to your home screen": Chrome and Edge's own install prompt, or the Share › Add to Home Screen
-// steps on iPhone. Gone once installed or dismissed (on this browser). It never asks for alert permission.
+// steps on iPhone. It shows on one visit (on this browser), then never again, and never once installed or inside
+// the store app. It never asks for alert permission.
 export function InstallCard({ communityName, alertsHref }: { communityName: string; alertsHref: string }) {
   const isInBrowser = useIsInBrowser();
+  const isApp = useSyncExternalStore(subscribeToNativeApp, isInNativeApp, () => false);
   const [promptView, setView] = useState<View>(VIEWS.hidden);
   const [prompt, setPrompt] = useState<InstallPrompt | null>(null);
   const [isDismissed, setIsDismissed] = useState(false);
-  const isWanted = isInBrowser && !isDismissed && !isInstalled() && !window.localStorage.getItem(DISMISSED_KEY);
+  // Read once per visit: marking the card seen below must not hide it while this visit lasts.
+  const [isSeenBefore] = useState(() => typeof window !== "undefined" && wasShownBefore());
+  const isWanted = isInBrowser && !isApp && !isDismissed && !isSeenBefore && !isInstalled();
   const view = !isWanted ? VIEWS.hidden : isAppleMobile() ? VIEWS.apple : promptView;
+
+  useEffect(() => {
+    if (view !== VIEWS.hidden && !wasShownBefore()) window.localStorage.setItem(DISMISSED_KEY, "1");
+  }, [view]);
 
   useEffect(() => {
     void registerServiceWorker().catch(() => null);

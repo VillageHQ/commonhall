@@ -93,8 +93,9 @@ type TodayPageProps = {
   now: Date;
 };
 
-// Commonhall's Today, round 6: the live room first, then what waits on you, then asks you could help with, then one
-// "More for you" row. Your own asks live on Asks › Yours.
+// Commonhall's Today (round 7, less-choice Part 2): what waits on you first, and the heading counts exactly the
+// items shown; then the live room, the one-time cards, asks you could help with, and one "More for you" row. Your own
+// asks live on Asks › Yours.
 export function TodayPage({ today, memberName, dateLabel, liveRoom, replyDay, showFacts, isAsksOn, nextSteps, lookupQuestion, installCard = null, flash, moreLinks, now }: TodayPageProps) {
   const first = firstWord(memberName);
   const forYou = today.introsForYou ?? [];
@@ -105,7 +106,7 @@ export function TodayPage({ today, memberName, dateLabel, liveRoom, replyDay, sh
   const shownForYou = forYou.slice(0, TODAY_LIMITS.waiting);
   const shownIntros = intros.slice(0, TODAY_LIMITS.waiting - shownForYou.length);
   const shownAnswered = answered.slice(0, TODAY_LIMITS.waiting - shownForYou.length - shownIntros.length);
-  const waitingCount = forYou.length + intros.length + answered.length;
+  const waitingCount = shownForYou.length + shownIntros.length + shownAnswered.length;
   const help = today.helpableAsks.slice(0, TODAY_LIMITS.help);
   const title = waitingCount
     ? `${first}, ${waitingCount === 1 ? "one thing waits" : `${waitingCount} things wait`} for you`
@@ -129,9 +130,6 @@ export function TodayPage({ today, memberName, dateLabel, liveRoom, replyDay, sh
           ) : undefined
         }
       />
-      {liveRoom ? <LiveNowCard room={liveRoom} /> : null}
-      {installCard}
-      {lookupQuestion}
       {waitingCount ? (
         <section className="fh-tsec">
           <SectionHead title="Waiting on you" />
@@ -162,6 +160,9 @@ export function TodayPage({ today, memberName, dateLabel, liveRoom, replyDay, sh
           ))}
         </section>
       ) : null}
+      {liveRoom ? <LiveNowCard room={liveRoom} /> : null}
+      {installCard}
+      {lookupQuestion}
       {help.length ? (
         <section className="fh-tsec">
           <SectionHead title="You could help" link={<Link href={ASKS_PAGE}>All asks</Link>} />

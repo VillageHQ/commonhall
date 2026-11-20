@@ -168,7 +168,6 @@ function PeoplePage() {
         <h1 className="fh-h1">People</h1>
       </header>
       <PeopleScreen
-        canAskIntro
         network={{
           state: "ready",
           search: {

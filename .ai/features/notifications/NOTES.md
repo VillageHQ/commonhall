@@ -67,7 +67,8 @@ Built 19 Nov 2026 (round 5, part "notifications"). Spec: `SPEC.md`. Proof: `repo
   `readAlertState(database, userId, now)`; placed in `src/app/(app)/rooms/page.tsx`. `alert-words.ts` holds the shared
   words (days, until when).
   Today shows `install-card.tsx`: Chrome/Edge's install prompt, or the Share › Add to Home Screen steps on iPhone;
-  hidden once installed or dismissed (`localStorage`).
+  shown on one visit only (round 7: `localStorage` marks it when first shown or closed), never once installed or
+  inside the store app.
 
 ## Events wired today
 | Event | Who | Kind | Where |

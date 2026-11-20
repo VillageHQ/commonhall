@@ -123,6 +123,21 @@ describe("the member directory", () => {
       expect(await searchNames({ search: "pricing" })).toEqual(["Jonas Lindqvist"]);
     });
 
+    it("matches any word, those matching most first (round 7)", async () => {
+      await seedMember(database, { name: "Ada Okafor", company: "Seedcamp Capital", canHelpWith: "Fintech investors" });
+      await seedMember(database, { name: "Bea Investor" });
+
+      expect(await searchNames({ search: "fintech investor" })).toEqual(["Ada Okafor", "Bea Investor", "Jonas Lindqvist"]);
+    });
+
+    it("matches a short word as a whole word only (round 7)", async () => {
+      await seedMember(database, { name: "Lin Wu", company: "Applied AI Labs" });
+      await seedMember(database, { name: "Kai Said", company: "Business Owls" });
+
+      expect(await searchNames({ search: "ai" })).toEqual(["Lin Wu"]);
+      expect(await searchNames({ search: "us" })).toEqual([]);
+    });
+
     it("treats wildcards as plain text", async () => {
       expect(await searchNames({ search: "%" })).toEqual([]);
       expect(await searchNames({ search: "N_or" })).toEqual([]);

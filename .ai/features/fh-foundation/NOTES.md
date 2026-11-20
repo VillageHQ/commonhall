@@ -74,11 +74,11 @@ log, need cards) have their Commonhall classes in `parts.css` and a worked examp
 - Count badges stay on menu items and tabs (Commonhall shows none); the owner decides.
 - Dark mode: a switch in the avatar menu (round 6); its look is in `.ai/features/fh-dark/NOTES.md`.
 - People (`/people`, `shell/people-screen.tsx` around the members module's `MemberDirectory`): the box finds members as
-  you type (no Village search spent), "Filter" folds the view switch and the selects, 30 to a page, and the chips
-  "Who are you looking for?" while Intros is on ("An expert" opens the experts view; the others suggest what to type).
-  "Search their networks" (Network on, Village set up, the member's own network connected) runs only while the address
-  carries `net=1` (`modules/network/components/search-links.ts`); a member not yet connected sees a "Connect your
-  network" line. Old `/directory`, `/search`, `/network` and bare `/search/ask` redirect here (`next.config.mjs`);
+  you type, any word matching, those matching most first (no Village search spent); "Filter" folds the view switch and
+  the selects; "Mentors and experts" under the box; 30 to a page (round 7: `.ai/features/choice-today/NOTES.md`).
+  "Search their networks for “…”" (Network on, Village set up, the member's own network connected) is one tap under
+  the list, or the empty state's main action; it runs only while the address carries `net=1`
+  (`modules/network/components/search-links.ts`). A member not yet connected sees "Connect your network" there. Old `/directory`, `/search`, `/network` and bare `/search/ask` redirect here (`next.config.mjs`);
   `/search/ask?target=…&via=…` stays the one-step intro ask.
 - Inbox (`/inbox`, a shell page owned by members): "Waiting for your yes" on top, then conversations; `?show=intros`
   (where `/intros` lands) lists the intros you asked for. Messages owns only the pages under `/inbox/` (an owned path

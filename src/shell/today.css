@@ -18,3 +18,5 @@
 .td-row{display:flex;align-items:center;gap:10px}
 .td-row > div{flex:1;min-width:0}
 .td-row b{display:block;font:600 15px/21px var(--serif);overflow-wrap:anywhere}
+/* Round 7: what waits comes first, so whatever follows it keeps the sections' gap. */
+.td-page > .fh-tsec + :not(.fh-tsec){margin-top:28px}

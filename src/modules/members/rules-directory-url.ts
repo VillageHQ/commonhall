@@ -76,3 +76,18 @@ export function toDirectoryQueryString({ search, tag, stage, sector, city, cohor
   const queryString = params.toString();
   return queryString ? `?${queryString}` : "";
 }
+
+// Small words that would match nearly everyone ("in" is inside "LinkedIn" and "Berlin").
+const SEARCH_STOP_WORDS: ReadonlySet<string> = new Set(["a", "an", "and", "at", "by", "e.g.", "for", "from", "in", "of", "on", "or", "the", "to", "who", "with"]);
+const PLURAL_MIN_LENGTH = 4;
+
+// People's search (round 7, less-choice Part 2): any word may match, so "fintech investor" finds the fintech members
+// and the investors. Small linking words drop out; a plural looks for its singular too ("investors" finds "investor").
+// A search that is only small words (or a single sign like "%") is looked for as typed.
+export function toSearchWords(search: string): string[] {
+  const typed = [...new Set(search.trim().toLowerCase().split(/\s+/).filter(Boolean))];
+  const words = typed.filter((word) => !SEARCH_STOP_WORDS.has(word)).map((word) => (word.length >= PLURAL_MIN_LENGTH && /[^s]s$/.test(word) ? word.slice(0, -1) : word));
+  if (words.length) return [...new Set(words)];
+  const whole = search.trim();
+  return whole ? [whole] : [];
+}
