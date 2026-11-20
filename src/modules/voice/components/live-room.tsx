@@ -376,7 +376,7 @@ function BrowserRoom({ roomId, title, isInviteOnly, hasNotified = false, notify 
       ) : null}
 
       <h2 className="vr-section-label">On stage</h2>
-      {stage.length === 0 && phase === PHASES.live ? <p className="fh-small fh-muted mt-2">Nobody on stage. The room ends in 2 minutes.</p> : null}
+      {stage.length === 0 && phase === PHASES.live ? <p className="fh-small fh-muted mt-2">Nobody on stage. It ends in 2 minutes.</p> : null}
       <div className="vr-grid" data-stage="true" data-testid="stage">
         {stage.map((person) => (
           <PersonTile key={person.id} person={person} reaction={reactions[person.id] ?? null} isSelected={selectedId === person.id} onSelect={selectFor(person)} size={64} />

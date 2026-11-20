@@ -37,18 +37,18 @@ export async function readRoomsPage(database: Database, environment: Environment
     .where(and(inArray(voiceRoom.status, [ROOM_STATUSES.live, ROOM_STATUSES.scheduled]), visibleTo(viewerId)))
     .orderBy(desc(voiceRoom.startedAt), asc(voiceRoom.scheduledFor))
     .limit(ROOM_LIST_LENGTH);
-  const scheduledIds = rows.filter((row) => row.status === ROOM_STATUSES.scheduled).map(({ id }) => id);
   const [config, liveRooms, stages, allowance, choice] = await Promise.all([
     readVoiceConfig(database, environment),
     readLiveRooms(database, viewerId, ROOM_LIST_LENGTH, environment),
-    readStages(database, scheduledIds),
+    readStages(database, rows.map(({ id }) => id)),
     readNotifyAllowance(database, viewerId, now),
     readNotifyChoice(database, viewerId),
   ]);
   const live = new Map(liveRooms.map((room) => [room.id, room]));
   const cards: RoomCard[] = rows.map((row) => {
     const inRoom = live.get(row.id);
-    const faces = inRoom ? inRoom.faces.map(({ name, image }) => ({ name, faceUrl: image })) : (stages.get(row.id) ?? []).map(({ name, faceUrl }) => ({ name, faceUrl }));
+    // Nobody connected yet (the host is still joining): the room's host and speakers stand in.
+    const faces = inRoom && inRoom.faces.length > 0 ? inRoom.faces.map(({ name, image }) => ({ name, faceUrl: image })) : (stages.get(row.id) ?? []).map(({ name, faceUrl }) => ({ name, faceUrl }));
     return {
       ...row,
       access: row.access as RoomAccess,
