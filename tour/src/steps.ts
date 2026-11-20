@@ -217,6 +217,9 @@ export const TOUR_STEPS: readonly TourStep[] = [
       await hands.wait(300);
       await hands.type("#a-body", ANNOUNCEMENT_BODY);
       await hands.wait(400);
+      // The preview sits folded under "Preview and test": open it, then point at the email.
+      await hands.click("details[aria-label='Preview'] > summary");
+      await hands.wait(300);
       await hands.point(".fh-mail");
       await hands.wait(1600);
       await hands.tap("form[aria-label='New announcement'] button[type='submit']");
