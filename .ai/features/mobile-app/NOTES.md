@@ -56,6 +56,10 @@ with the same answers for a wrong code, an expired one and an unknown address.
   (`@livekit/react-native` `registerGlobals()`, its Expo plugin and `@config-plugins/react-native-webrtc`). Stage and
   audience with faces, talking rings, raised hands, invite up / move down / co-hosts for moderators, reactions, mute,
   End room for the host, Leave quietly. Every role change still goes through the server's voice API.
+- **Tell people I'm here** (round 6): picks up to 10 people and posts `/api/voice/notify`. The app learns that the
+  member already told people about this room (once per room, a Notify when starting it included) only from the
+  server's `voice_notified_already` answer; that answer closes the button like a send. Confirmations read in ink,
+  problems in rust. "Start a room" with Notify others is the portal's own sheet, so the app needs nothing for it.
 - **Minimise** keeps the room connected under the portal with a bar ("Pricing AMA · On stage, talking"; the dot greys
   when the room closes). One room at a time: opening another leaves the first (`/api/voice/leave`). No room chat yet.
 - **Locked screen:** Android: `modules/voice-service`, a local Expo module (Kotlin) running a foreground service
@@ -89,6 +93,11 @@ TestFlight internal testing and Android test APKs only: never a public release, 
   `ascApiKeyIssuerId` in the submit profile; they are added for the run and not committed, so the public repo holds no
   key ids. Build numbers count up on EAS (`appVersionSource: remote`, `autoIncrement`).
 - The project archive EAS uploads is the whole repo (about 330 MB), because `mobile/` sits inside it.
+
+- **Builds so far:** iOS build 1 and an APK (19 Nov 2026, round 5); iOS build 2 and an APK (20 Nov 2026, round 6:
+  the five tabs, Notify others, quiet times). The Absi group has every build, so a processed build reaches it on its own.
+- On Windows, `npx eas-cli` inside `mobile/` can fail with npm's "Invalid Version"; run it from another folder, or
+  call the cached copy (`node <npx cache>/node_modules/eas-cli/bin/run …`) from `mobile/`, without `NODE_ENV` set.
 
 ## What was proven, and what wasn't (19 Nov 2026)
 - Proven: unit tests (`npm test`, 13), `tsc`, `expo-doctor` 20/20, `expo prebuild` for Android (config plugins apply,
