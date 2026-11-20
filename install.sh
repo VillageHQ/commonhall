@@ -684,6 +684,8 @@ We stopped so we don't damage your data. Put the file back from your own copy, t
     say "SETUP_TOKEN=$(new_secret)"
     say "BETTER_AUTH_SECRET=$(new_secret)"
     voice_key_lines
+    # A fresh install has its own voice server, so Rooms starts on (an admin can turn it off). Upgrades never add it.
+    say "ROOMS_ON_BY_DEFAULT=true"
     if [ -n "${COMMUNITY_IMAGE:-}" ]; then say "COMMUNITY_IMAGE=$COMMUNITY_IMAGE"; fi
     if is_test_mode; then
       say "CADDY_GLOBAL_OPTIONS=local_certs"

@@ -24,6 +24,7 @@ import { messagesManifest } from "@/modules/messages/manifest";
 import { conversation, conversationReadCursor, directMessage } from "@/modules/messages/schema";
 import { networkManifest } from "@/modules/network/manifest";
 import { perksManifest } from "@/modules/perks/manifest";
+import { voiceManifest } from "@/modules/voice/manifest";
 import { user } from "@/platform/database/auth-schema";
 import type { Transaction } from "@/platform/database/client";
 import { communityBranding } from "@/platform/branding/schema";
@@ -39,6 +40,7 @@ import { INSTANCE_SETTING_KEYS } from "@/platform/settings/schema";
 import { saveVillageKeys } from "@/platform/village/settings";
 
 import { seedLibrary } from "./demo-library";
+import { seedRooms } from "./demo-rooms";
 
 // Fills an empty database with the demo community. Runs inside the caller's transaction: at start on an empty
 // database, and every night after the reset empties it. Every date is relative to `now`, so the demo always looks
@@ -662,8 +664,8 @@ async function seedSettings(transaction: Transaction, environment: Environment, 
     [PUBLIC_BOARD_SETTING]: "on",
   });
   await saveVillageKeys(transaction, DEMO_VILLAGE_KEYS, environment);
-  // The features a fund buys it for are on, with made-up jobs, perks and feed posts; Slack/Discord stay off.
-  for (const manifest of [networkManifest, introsManifest, asksManifest, messagesManifest, jobBoardManifest, perksManifest, feedManifest, libraryManifest]) {
+  // The features a fund buys it for are on, with made-up jobs, perks, feed posts and rooms; Slack/Discord stay off.
+  for (const manifest of [networkManifest, introsManifest, asksManifest, messagesManifest, jobBoardManifest, perksManifest, feedManifest, libraryManifest, voiceManifest]) {
     await saveModuleState(transaction, manifest, true);
   }
   await saveModuleState(transaction, chatManifest, false);
@@ -681,6 +683,7 @@ export async function seedDemo(transaction: Transaction, environment: Environmen
   await seedJobs(transaction, ids, ago, now);
   await seedFeed(transaction, ids, ago);
   await seedLibrary(transaction, ids, ago);
+  await seedRooms(transaction, ids, now);
   await seedCallRequests(transaction, ids, ago);
   return { members: DEMO_PEOPLE.length, invites: DEMO_INVITEES.length, intros: CURRENT_INTROS.length + HISTORY_PAIRS.length, asks: ASKS.length };
 }

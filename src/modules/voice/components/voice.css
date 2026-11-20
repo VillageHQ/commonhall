@@ -61,3 +61,10 @@ button.vr-person:hover{background:var(--vellum)}
 .vr-chat-list{display:flex;flex-direction:column;gap:6px;max-height:260px;overflow:auto;font-size:14px;line-height:20px}
 .vr-chat-list b{font-weight:600}
 .vr-chat form{display:flex;gap:8px}
+
+/* A room control with its word under it (Leave, React, Chat, Raise hand, Tell people). */
+.vr-tool{display:inline-flex;flex-direction:column;align-items:center;gap:4px;min-width:56px;padding:0;border:0;background:transparent;color:var(--ink);font:inherit}
+.vr-tool:disabled{opacity:.45}
+.vr-tool[aria-pressed="true"] .vr-round{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.vr-tool-label{font-size:12px;line-height:14px;font-weight:500;color:var(--graphite);white-space:nowrap}
+.vr-card-top .vr-card-title{flex:1;min-width:0}

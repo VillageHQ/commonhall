@@ -3,9 +3,10 @@ import "server-only";
 import { and, eq, inArray, ne, notExists, notLike, or, sql } from "drizzle-orm";
 
 import { memberBlock } from "@/modules/members/schema";
-import { toRoomHref } from "@/modules/voice/contract";
+import { NOTIFY_AUDIENCES, ROOM_NOTIFY_BODY, toRoomHref, toRoomNotifyTitle, type NotifyAudience } from "@/modules/voice/contract";
 import { voiceManifest } from "@/modules/voice/manifest";
-import { claimDueReminders } from "@/modules/voice/service";
+import { claimDueReminders, recordReached, type ClaimedNotify } from "@/modules/voice/service";
+import { claimNotifyReceipts, readFollowerIds, readNotifyRoom, resolveAudience } from "@/modules/voice/service-notify";
 import { isActiveMember } from "@/platform/auth/member-status";
 import { RECLAIMED_EMAIL_DOMAIN } from "@/platform/auth/reclaimed-email";
 import { user } from "@/platform/database/auth-schema";
@@ -19,11 +20,13 @@ import { runAfterResponse } from "@/platform/observability/after-response";
 import { logError } from "@/platform/observability/route-logging";
 import { removeBidiControls } from "@/platform/text/safe-text";
 
-// Voice rooms' alerts, through notify(): "Maya is available to talk" to every member, and "Starting now" to those
-// who tapped Remind me. notify() skips members who turned alerts or that kind off, are in quiet hours, or muted the
-// sender (broadcasts only). Here we also leave out banned and deleted accounts and anyone either side of a block.
+// Voice rooms' alerts, through notify(): a room notify ("Maya started “Pricing”", to her followers, people she picked
+// or everyone) and "Starting now" to those who tapped Remind me. notify() skips members who turned alerts or that kind
+// off, are in quiet times, or muted the sender (room notifies). Here we also leave out banned and deleted accounts and
+// anyone either side of a block, and a room notify reaches each member once per room and at most 5 times a day.
 
-export type AvailableAlert = { roomId: string; hostId: string; hostName: string };
+export type RoomNotify = { roomId: string; senderId: string; audience: NotifyAudience; memberIds?: string[]; isStart?: boolean };
+export type RoomNotifyResult = NotifyResult & { capped: number };
 export type RoomReminder = { id: string; title: string; hostId: string; memberIds: string[] };
 
 const NOTHING_SENT: NotifyResult = { sent: 0, skipped: 0, failed: 0, removed: 0 };
@@ -57,21 +60,30 @@ async function readReachableMemberIds(database: Database, senderId: string, amon
   return rows.map(({ id }) => id);
 }
 
-export async function sendAvailableAlert(database: Database, environment: Environment, { roomId, hostId, hostName }: AvailableAlert) {
-  const userIds = await readReachableMemberIds(database, hostId);
-  if (userIds.length === 0) return NOTHING_SENT;
-  const name = removeBidiControls(hostName);
-  return notify(
+// Sends one room notify: the audience resolved for the room (invite-only rooms reach only their invited; nobody in
+// the room gets one), the receipts claimed, then notify(). Returns notify()'s counts plus how many the daily cap skipped.
+export async function sendRoomNotify(database: Database, environment: Environment, { roomId, senderId, audience, memberIds = [], isStart = true }: RoomNotify): Promise<RoomNotifyResult> {
+  const room = await readNotifyRoom(database, environment, roomId, senderId);
+  if (!room) return { ...NOTHING_SENT, capped: 0 };
+  const followerIds = audience === NOTIFY_AUDIENCES.followers ? await readFollowerIds(database, senderId) : [];
+  const { among, exclude } = resolveAudience({ audience, senderId, followerIds, pickedIds: memberIds, invitedIds: room.invitedIds, inRoomIds: room.inRoomIds });
+  const reachable = (await readReachableMemberIds(database, senderId, among ?? undefined)).filter((id) => !exclude.has(id));
+  const { claimed, capped } = await claimNotifyReceipts(database, { roomId, senderId, memberIds: reachable });
+  // Counted in the server log: the members past their 5 a day.
+  if (capped > 0) console.log(JSON.stringify({ level: "info", scope: "voice-notify-capped", roomId, capped }));
+  if (claimed.length === 0) return { ...NOTHING_SENT, capped };
+  const result = await notify(
     {
-      userIds,
+      userIds: claimed,
       kind: NOTIFICATION_KINDS.voiceBroadcast,
-      title: `${name} is available to talk`,
-      body: `${name} opened a room. Tap to join them.`,
+      title: toRoomNotifyTitle(removeBidiControls(room.senderName), removeBidiControls(room.title), isStart),
+      body: ROOM_NOTIFY_BODY,
       url: toRoomHref(roomId),
-      fromUserId: hostId,
+      fromUserId: senderId,
     },
     { database, environment },
   );
+  return { ...result, capped };
 }
 
 export async function sendRoomReminders(database: Database, environment: Environment, reminders: RoomReminder[]) {
@@ -106,8 +118,12 @@ function soon(label: string, task: () => Promise<unknown>) {
   });
 }
 
-export function sendAvailableAlertSoon(database: Database, environment: Environment, alert: AvailableAlert) {
-  soon("voice-available-alert", () => sendAvailableAlert(database, environment, alert));
+// A claimed notify, after the response; its row records how many it reached.
+export function sendRoomNotifySoon(database: Database, environment: Environment, claimed: ClaimedNotify) {
+  soon("voice-room-notify", async () => {
+    const result = await sendRoomNotify(database, environment, claimed);
+    await recordReached(database, claimed.broadcastId, result.sent);
+  });
 }
 
 export function sendRoomRemindersSoon(database: Database, environment: Environment, reminders: RoomReminder[]) {

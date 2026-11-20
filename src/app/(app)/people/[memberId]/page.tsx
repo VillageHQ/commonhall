@@ -33,6 +33,7 @@ import { membersManifest } from "@/modules/members/manifest";
 import { modulePage } from "@/platform/modules/module-page";
 import { isModuleEnabled } from "@/platform/modules/enablement";
 import { BookCallButton } from "@/modules/members/components/book-call-button";
+import { FollowButton } from "@/modules/voice/components/follow-button";
 import { COMMUNITY_ROLE_LABELS, COMMUNITY_ROLES } from "@/modules/members/contract-community-roles";
 import { readShownBooking } from "@/modules/members/service-booking";
 import { wereIntroducedForBooking } from "@/shell/booking-access";
@@ -150,7 +151,7 @@ export default modulePage(membersManifest, async function MemberProfilePage({ pa
               )
             ) : null}
             {bookingUrl ? <BookCallButton memberId={profile.id} memberName={profile.name} bookingUrl={bookingUrl} variant="secondary" /> : null}
-            {/* Part 3 (round 6): the Follow button goes here. */}
+            <FollowButton memberId={profile.id} memberName={profile.name} />
           </div>
         )}
       </ProfileHead>

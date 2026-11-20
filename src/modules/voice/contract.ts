@@ -14,7 +14,8 @@ export const VOICE_API_ROUTES = {
   base: "/api/voice",
   rooms: "/api/voice/rooms",
   create: "/api/voice/create",
-  available: "/api/voice/available",
+  notify: "/api/voice/notify",
+  follow: "/api/voice/follow",
   join: "/api/voice/join",
   start: "/api/voice/start",
   hand: "/api/voice/hand",
@@ -57,9 +58,26 @@ export const ROLE_ACTIONS = {
 } as const;
 export type RoleAction = (typeof ROLE_ACTIONS)[keyof typeof ROLE_ACTIONS];
 
+// "Notify others": who gets the alert. Everyone only when starting a room (the starter is its host).
+export const NOTIFY_AUDIENCES = { followers: "followers", picked: "picked", everyone: "everyone" } as const;
+export type NotifyAudience = (typeof NOTIFY_AUDIENCES)[keyof typeof NOTIFY_AUDIENCES];
+// The sheet remembers the member's last choice, off included.
+export const NOTIFY_OFF = "off";
+export type NotifyChoice = NotifyAudience | typeof NOTIFY_OFF;
+
+export const NOTIFY_AUDIENCE_LABELS: Record<NotifyAudience, string> = { followers: "My followers", picked: "People I pick", everyone: "Everyone" };
+
 export const VOICE_LIMITS = {
   titleLength: 120,
+  // Notifies a member may send in 24 hours, starting rooms and "Tell people I'm here" together.
   broadcastsPerDay: 3,
+  // Room alerts a member may get from other people's notifies in 24 hours; past that they're skipped.
+  notifiesReceivedPerDay: 5,
+  // "People I pick": at most this many when joining ("Tell people I'm here"), and when starting.
+  pickedOnJoin: 10,
+  pickedOnStart: 50,
+  // Notify receipts are kept this long.
+  receiptDays: 7,
   inviteesPerRoom: 50,
   searchLength: 80,
   // Room tokens only let a member in for this long; LiveKit refreshes the token of a member already connected.
@@ -85,6 +103,8 @@ export const VOICE_ERROR_CODES = {
   notModerator: "voice_not_moderator",
   notConfigured: "voice_not_configured",
   broadcastLimit: "voice_broadcast_limit",
+  notifiedAlready: "voice_notified_already",
+  notInRoom: "voice_not_in_room",
   notLive: "voice_room_not_live",
   badSchedule: "voice_bad_schedule",
   badTarget: "voice_bad_target",
@@ -97,17 +117,29 @@ export const VOICE_MESSAGES = {
   notModerator: "Only the host or a co-host can do that.",
   notHost: "Only the host can do that.",
   notConfigured: "Voice rooms aren't set up on this server yet. An admin sets them up in Set up › Rooms.",
-  broadcastLimit: `You've said you're available ${VOICE_LIMITS.broadcastsPerDay} times today. Try again tomorrow, or start a room instead.`,
+  broadcastLimit: `You've notified people ${VOICE_LIMITS.broadcastsPerDay} times today. Start without notifying, or try again tomorrow.`,
+  notifiedAlready: "You've told people about this room already.",
+  notInRoom: "Join the room first.",
+  pickSomeone: "Pick someone to notify.",
   notLive: "This room hasn't started yet.",
   badSchedule: "Pick a time in the future, within the next two months.",
   badTarget: "That person isn't in this room.",
 } as const;
 
-// The line under "I'm available to talk", on Rooms and in chat.
-export function describeBroadcastsLeft(broadcastsLeft: number) {
-  if (broadcastsLeft === 0) return `You've said you're available ${VOICE_LIMITS.broadcastsPerDay} times today. Start a room instead, or try again tomorrow.`;
-  return `Opens a room with you as host and alerts the community, except anyone in quiet hours or who muted you. ${broadcastsLeft} of ${VOICE_LIMITS.broadcastsPerDay} left today.`;
+// What a member may still notify today, and when the oldest of today's notifies stops counting.
+export type NotifyAllowance = { left: number; resetsAt: string | null };
+
+// The one line shown at the limit, beside the switched-off Notify.
+export function describeNotifyReset({ left, resetsAt }: NotifyAllowance, formatTime: (iso: string) => string) {
+  if (left > 0) return null;
+  return resetsAt ? `${VOICE_LIMITS.broadcastsPerDay} notifies a day. Back at ${formatTime(resetsAt)}.` : `${VOICE_LIMITS.broadcastsPerDay} notifies a day. Back tomorrow.`;
 }
+
+// The alert's words (the room notify spec).
+export function toRoomNotifyTitle(name: string, title: string, isStart: boolean) {
+  return `${name} ${isStart ? "started" : "is in"} “${title}”`;
+}
+export const ROOM_NOTIFY_BODY = "Tap to listen.";
 
 const roomIdSchema = z.string().uuid();
 
@@ -118,9 +150,27 @@ export const createRoomBodySchema = z
     // ISO time for a scheduled room; null starts it now.
     scheduledFor: z.string().datetime({ offset: true }).nullable(),
     inviteeIds: z.array(z.string().min(1).max(64)).max(VOICE_LIMITS.inviteesPerRoom).default([]),
+    // "Notify others"; null (or left out) notifies nobody.
+    notify: z
+      .object({
+        audience: z.enum([NOTIFY_AUDIENCES.followers, NOTIFY_AUDIENCES.picked, NOTIFY_AUDIENCES.everyone]),
+        memberIds: z.array(z.string().min(1).max(64)).max(VOICE_LIMITS.pickedOnStart).optional(),
+      })
+      .strict()
+      .nullable()
+      .default(null),
   })
   .strict();
-export type CreateRoomBody = z.infer<typeof createRoomBodySchema>;
+export type CreateRoomBody = z.input<typeof createRoomBodySchema>;
+export type CreateRoomInput = z.output<typeof createRoomBodySchema>;
+export type RoomNotify = NonNullable<CreateRoomInput["notify"]>;
+
+// "Tell people I'm here", once per room after joining.
+export const notifyBodySchema = z.object({ roomId: z.string().uuid(), memberIds: z.array(z.string().min(1).max(64)).min(1).max(VOICE_LIMITS.pickedOnJoin) }).strict();
+export type NotifyBody = z.infer<typeof notifyBodySchema>;
+
+export const followBodySchema = z.object({ memberId: z.string().min(1).max(64), isFollowing: z.boolean() }).strict();
+export type FollowBody = z.infer<typeof followBodySchema>;
 
 export const roomBodySchema = z.object({ roomId: roomIdSchema }).strict();
 export type RoomBody = z.infer<typeof roomBodySchema>;
@@ -152,6 +202,8 @@ export type RoomJoin = { serverUrl: string; token: string; roomName: string; rol
 
 export type RoomFace = { id: string; name: string; faceUrl: string | null; role: RoomRole };
 
+export type CardFace = { name: string; faceUrl: string | null };
+
 export type RoomCard = {
   id: string;
   title: string;
@@ -159,14 +211,19 @@ export type RoomCard = {
   status: RoomStatus;
   scheduledFor: string | null;
   startedAt: string | null;
-  isBroadcast: boolean;
   hostId: string;
   hostName: string;
-  stage: RoomFace[];
-  listenerCount: number;
+  // A live room: the people in it now (stage first). A scheduled room: its host and speakers.
+  faces: CardFace[];
+  // A live room: how many are in it now.
+  count: number;
   hasReminder: boolean;
   isInvited: boolean;
+  isFollowingHost: boolean;
 };
+
+// The Rooms page: live rooms, rooms coming up, and what "Start a room"'s Notify needs.
+export type RoomsPageData = { live: RoomCard[]; scheduled: RoomCard[]; isConfigured: boolean; notify: NotifyAllowance & { choice: NotifyChoice } };
 
 export type RoomPeople = { id: string; name: string; faceUrl: string | null }[];
 
