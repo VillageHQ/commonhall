@@ -28,11 +28,10 @@ describe("the feed page", () => {
     expect(await readRedirect("/feed")).toBeNull();
   });
 
-  it("starts on where no admin chose, and keeps an admin's off", async () => {
+  it("starts off where no admin chose (round 6), and keeps an admin's on", async () => {
     await database.delete(instanceSettings).where(eq(instanceSettings.key, `module_state:${feedManifest.id}`));
-    expect(await isModuleEnabled(database, feedManifest)).toBe(true);
-    await saveModuleState(database, feedManifest, false);
     expect(await isModuleEnabled(database, feedManifest)).toBe(false);
     await saveModuleState(database, feedManifest, true);
+    expect(await isModuleEnabled(database, feedManifest)).toBe(true);
   });
 });

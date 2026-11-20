@@ -6,7 +6,9 @@ import { POST as postFeature } from "@/app/api/library/feature/route";
 import { POST as postPublish } from "@/app/api/library/publish/route";
 import { POST as postRemove } from "@/app/api/library/remove/route";
 import { POST as postVote } from "@/app/api/library/vote/route";
+import { feedManifest } from "@/modules/feed/manifest";
 import { post } from "@/modules/feed/schema";
+import { saveModuleState } from "@/platform/modules/enablement";
 import { LIBRARY_VISIBILITIES } from "@/modules/library/contract";
 import { readLeaderboard, readLibraryItem, readLibraryItems, readLibraryViewer, startOfMonth } from "@/modules/library/reads";
 import { libraryFile, libraryItem, libraryVote } from "@/modules/library/schema";
@@ -191,12 +193,13 @@ describe("the library", () => {
   it("lets admins feature and remove, in the audit log; members can't feature", async () => {
     const author = await member();
     const admin = await member({}, "admin");
+    await saveModuleState(database, feedManifest, true);
     const itemId = await publishId(author);
     expect((await postJson(postFeature, "/api/library/feature", author, { itemId, isFeatured: true })).status).toBe(403);
     expect((await postJson(postFeature, "/api/library/feature", admin, { itemId, isFeatured: true })).status).toBe(200);
     const viewer = await readLibraryViewer(database, { id: author.userId, email: "" });
     expect((await readLibraryItem(database, viewer, itemId))?.isFeatured).toBe(true);
-    // The feed (on where no admin chose) got a post announcing it; the removal takes the post too.
+    // The feed (switched on above) got a post announcing it; the removal takes the post too.
     expect((await database.select({ body: post.body }).from(post)).map(({ body }) => body)).toEqual([expect.stringContaining("Shared in the library: Cold email reviewer")]);
     expect((await postJson(postRemove, "/api/library/remove", admin, { itemId })).status).toBe(200);
     expect(await readLibraryItem(database, viewer, itemId)).toBeNull();

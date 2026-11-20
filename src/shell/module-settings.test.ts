@@ -1,4 +1,6 @@
-import { desc } from "drizzle-orm";
+import { readFileSync } from "node:fs";
+
+import { desc, sql } from "drizzle-orm";
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 
 import { POST } from "@/app/api/admin/modules/route";
@@ -121,6 +123,27 @@ describe("changing a feature", () => {
       expect(features[0]?.note).toBe("Needs a voice server");
       expect(features.find(({ id }) => id === feedManifest.id)?.note).toBe("Under More in the menu");
       expect(features.map(({ id }) => id)).not.toContain(membersManifest.id);
+    });
+  });
+
+  describe("Feed's default (round 6)", () => {
+    const MIGRATION = readFileSync(new URL("../../drizzle/0046_feed_off_for_new_communities.sql", import.meta.url), "utf8");
+
+    it("starts a fresh install with Feed off, and keeps it on where members already joined", async () => {
+      await clearDatabase(database);
+      await database.execute(sql.raw(MIGRATION));
+      expect(await isModuleEnabled(database, feedManifest)).toBe(false);
+
+      await createSignedInMember(database);
+      await database.execute(sql.raw(MIGRATION));
+      expect(await isModuleEnabled(database, feedManifest)).toBe(true);
+    });
+
+    it("leaves an admin's own choice alone", async () => {
+      await setState(adminCookie, feedManifest.id, false);
+      await database.execute(sql.raw(MIGRATION));
+
+      expect(await isModuleEnabled(database, feedManifest)).toBe(false);
     });
   });
 });

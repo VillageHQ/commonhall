@@ -7,6 +7,8 @@ import { POST as postFeed } from "@/app/api/feed/posts/route";
 import { fillAnnouncementFields, readUnknownFields } from "@/modules/admin/rules-announcement-fields";
 import { announcement } from "@/modules/admin/schema";
 import { POST_TYPES } from "@/modules/feed/contract";
+import { feedManifest } from "@/modules/feed/manifest";
+import { saveModuleState } from "@/platform/modules/enablement";
 import { COMMUNITY_ROLES } from "@/modules/members/contract-community-roles";
 import { memberProfile } from "@/modules/members/schema";
 import { post } from "@/modules/feed/schema";
@@ -84,6 +86,8 @@ describe("announcements", () => {
     await clearDatabase(database);
     resend.reset();
     for (const [name, value] of Object.entries(readEnvironment())) vi.stubEnv(name, value);
+    // The team's post is pinned in the feed: Feed is off by default for a new community (round 6), so it is on here.
+    await saveModuleState(database, feedManifest, true);
     admin = await createSignedInMember(database, "admin");
     member = await createSignedInMember(database);
     amara = await seedMember(database, { name: "Amara Okafor", company: "Lumen Labs", cohort: "Spring 2026" });
