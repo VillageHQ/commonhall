@@ -40,10 +40,10 @@ function Faces({ faces }: { faces: CardFace[] }) {
   );
 }
 
-// "Maya + 3": the first person in the room and how many more.
+// "Maya + 3": the first person in the room and how many more (the faces shown, when LiveKit counts nobody yet).
 function describeInRoom(room: RoomCard) {
   const first = room.faces[0]?.name ?? room.hostName;
-  const more = Math.max(0, room.count - 1);
+  const more = Math.max(0, Math.max(room.count, room.faces.length) - 1);
   return more > 0 ? `${firstName(first)} + ${more}` : firstName(first);
 }
 
@@ -57,7 +57,7 @@ function InviteOnly() {
 }
 
 function FollowHost({ room, viewerId }: { room: RoomCard; viewerId: string }) {
-  return room.hostId === viewerId ? null : <FollowToggle memberId={room.hostId} memberName={room.hostName} isFollowing={room.isFollowingHost} />;
+  return room.hostId === viewerId ? null : <FollowToggle memberId={room.hostId} memberName={room.hostName} isFollowing={room.isFollowingHost} isCompact />;
 }
 
 function LiveCard({ room, viewerId }: { room: RoomCard; viewerId: string }) {

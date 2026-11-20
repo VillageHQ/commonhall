@@ -317,7 +317,7 @@ export function RoomScreen({ portal, origin, roomId, title, isShown, onMinimize,
 
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
         <Text style={styles.sectionLabel}>On stage</Text>
-        {stage.length === 0 && phase === "live" ? <Text style={styles.muted}>Nobody on stage. It ends in 2 minutes.</Text> : null}
+        {stage.length === 0 && phase === "live" ? <Text style={styles.muted}>Nobody on stage yet.</Text> : null}
         <View style={styles.grid} testID="stage">
           {stage.map((person) => tile(person, 64))}
         </View>

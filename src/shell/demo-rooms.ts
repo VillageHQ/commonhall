@@ -4,7 +4,7 @@ import { ROOM_ACCESS, ROOM_ROLES, ROOM_STATUSES, type RoomRole } from "@/modules
 import { voiceFollow, voiceRoom, voiceRoomMember } from "@/modules/voice/schema";
 import type { Transaction } from "@/platform/database/client";
 
-// The demo's Rooms: one room live now, with people on stage and listening, and two coming up. Made-up titles, the
+// The demo's Rooms: one room live now, with people on stage and listening, and one coming up. Made-up titles, the
 // demo people only. The upkeep leaves these rooms as they are until the nightly reset (service.ts, demo mode), so the
 // live one stays live. Sam follows two hosts, so "My followers" has someone to reach.
 
@@ -33,7 +33,6 @@ const DEMO_ROOMS: readonly DemoRoom[] = [
     ],
   },
   { title: "Hiring your first salesperson", host: "elena.rossi", startsInHours: 26, people: [["oliver.grant", ROOM_ROLES.speaker]] },
-  { title: "Fundraising in a slow market", host: "maya.ortiz", startsInHours: 74, people: [] },
 ];
 
 const DEMO_FOLLOWS: readonly (readonly [follower: string, followed: string])[] = [

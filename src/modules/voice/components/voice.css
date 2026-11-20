@@ -67,4 +67,4 @@ button.vr-person:hover{background:var(--vellum)}
 .vr-tool:disabled{opacity:.45}
 .vr-tool[aria-pressed="true"] .vr-round{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 .vr-tool-label{font-size:12px;line-height:14px;font-weight:500;color:var(--graphite);white-space:nowrap}
-.vr-card-top .vr-card-title{flex:1;min-width:0}
+.vr-card-top .vr-card-title{flex:1;min-width:0;color:var(--ink)}

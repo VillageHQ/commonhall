@@ -1,37 +1,51 @@
 "use client";
 
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Bell, BellRing } from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 
-import { voiceRequests } from "../queries";
+import { VOICE_QUERY_KEYS, voiceRequests } from "../queries";
 
 function firstName(name: string) {
   return name.trim().split(/\s+/)[0] || name;
 }
 
-// Follow on a profile or a room card: "Tell me when Lina starts a room". One tap follows, the same tap unfollows.
-export function FollowToggle({ memberId, memberName, isFollowing: initial, size = "sm" }: { memberId: string; memberName: string; isFollowing: boolean; size?: "sm" | "default" }) {
-  const [isFollowing, setIsFollowing] = useState(initial);
+type FollowToggleProps = { memberId: string; memberName: string; isFollowing: boolean; isCompact?: boolean };
+
+// Follow on a profile or a room card: "Tell me when Lina starts a room". One tap follows, the same tap unfollows. On a
+// room card it is a bell with a tooltip (`isCompact`); every card for the same host follows the change.
+export function FollowToggle({ memberId, memberName, isFollowing: initial, isCompact = false }: FollowToggleProps) {
+  const queryClient = useQueryClient();
+  // The server's answer wins whenever it changes (another card for the same host, the 15-second refresh).
+  const [state, setState] = useState({ initial, value: initial });
+  if (state.initial !== initial) setState({ initial, value: initial });
+  const isFollowing = state.value;
   const follow = useMutation({
     mutationFn: (next: boolean) => voiceRequests.follow({ memberId, isFollowing: next }),
-    onSuccess: (_answer, next) => setIsFollowing(next),
+    onSuccess: (_answer, next) => {
+      setState((current) => ({ ...current, value: next }));
+      void queryClient.invalidateQueries({ queryKey: VOICE_QUERY_KEYS.rooms });
+    },
   });
-  const hint = `Tell me when ${firstName(memberName)} starts a room`;
+  const name = firstName(memberName);
+  const hint = isFollowing ? `Following ${name}: you hear when they start a room` : `Tell me when ${name} starts a room`;
+  const Icon = isFollowing ? BellRing : Bell;
   return (
     <Button
       type="button"
-      size={size}
+      size={isCompact ? "icon" : "sm"}
       variant={isFollowing ? "secondary" : "quiet"}
       aria-pressed={isFollowing}
-      aria-label={isFollowing ? `Following ${memberName}: tap to stop` : hint}
-      title={isFollowing ? `You hear when ${firstName(memberName)} starts a room` : hint}
+      aria-label={isCompact ? hint : undefined}
+      title={hint}
       disabled={follow.isPending}
       onClick={() => follow.mutate(!isFollowing)}
       data-testid="follow"
+      className={isCompact ? "size-8" : undefined}
     >
-      {isFollowing ? "Following" : "Follow"}
+      {isCompact ? <Icon aria-hidden="true" className="fh-i fh-xs" strokeWidth={1.5} /> : isFollowing ? "Following" : "Follow"}
     </Button>
   );
 }

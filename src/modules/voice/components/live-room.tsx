@@ -177,6 +177,8 @@ function BrowserRoom({ roomId, title, isInviteOnly, hasNotified = false, notify 
   const [failure, setFailure] = useState<string | null>(null);
   const [people, setPeople] = useState<Person[]>([]);
   const [canHear, setCanHear] = useState(true);
+  // "Tap for sound" only once there is something to hear: LiveKit reports audio as blocked for a moment while it starts.
+  const [hasAudio, setHasAudio] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [reactions, setReactions] = useState<Record<string, string>>({});
   const [isReacting, setIsReacting] = useState(false);
@@ -215,6 +217,7 @@ function BrowserRoom({ roomId, title, isInviteOnly, hasNotified = false, notify 
         const element = track.attach();
         element.dataset.voice = "remote";
         audioBox?.appendChild(element);
+        setHasAudio(true);
       })
       .on(RoomEvent.TrackUnsubscribed, (track: RemoteTrack) => {
         for (const element of track.detach()) element.remove();
@@ -364,7 +367,7 @@ function BrowserRoom({ roomId, title, isInviteOnly, hasNotified = false, notify 
       <p className="fh-small fh-muted" role="status" data-testid="room-status">
         {phase === PHASES.connecting ? `Joining ${title}…` : `You’re in · ${isOnStage(myRole) ? (me?.isMuted ? "on stage, muted" : "on stage") : "listening"}`}
       </p>
-      {!canHear ? (
+      {!canHear && hasAudio ? (
         <Button variant="ink" className="mt-3" data-testid="tap-for-sound" onClick={() => void roomRef.current?.startAudio().then(() => setCanHear(true))}>
           Tap for sound
         </Button>
@@ -376,7 +379,7 @@ function BrowserRoom({ roomId, title, isInviteOnly, hasNotified = false, notify 
       ) : null}
 
       <h2 className="vr-section-label">On stage</h2>
-      {stage.length === 0 && phase === PHASES.live ? <p className="fh-small fh-muted mt-2">Nobody on stage. It ends in 2 minutes.</p> : null}
+      {stage.length === 0 && phase === PHASES.live ? <p className="fh-small fh-muted mt-2">Nobody on stage yet.</p> : null}
       <div className="vr-grid" data-stage="true" data-testid="stage">
         {stage.map((person) => (
           <PersonTile key={person.id} person={person} reaction={reactions[person.id] ?? null} isSelected={selectedId === person.id} onSelect={selectFor(person)} size={64} />

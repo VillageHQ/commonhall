@@ -12,7 +12,8 @@ Built 20 Nov 2026 as part 3 of round 6 ([SPEC](SPEC.md), [simplify-round6](../si
 - **Tell people I'm here** (the live room's bar, web and store app): once per room, after joining, to up to 10 people
   picked by name. A second try answers 409 "You've told people about this room already."
 - **Follow** ("Tell me when Lina starts a room"): on a member's profile (`FollowButton`, a server component that hides
-  on your own profile and while Rooms is off) and on room cards for the host (`FollowToggle`). One-way, chosen by the
+  on your own profile and while Rooms is off) and on room cards for the host (`FollowToggle`, a bell with a tooltip
+  there; every card for the same host follows the change). One-way, chosen by the
   follower. Your data's export lists it (`roomsYouFollow`).
 - The alert: "<Name> started “<title>”" or "<Name> is in “<title>”", body "Tap to listen.", kind `voice_broadcast`,
   address `/rooms/<id>`. The room page joins on open (a browser that blocks sound shows one "Tap for sound" button);
@@ -43,7 +44,7 @@ admin turns it off, and an existing install keeps its setting. `setup:instance` 
 nothing here.
 
 ## The demo
-The seed turns Rooms on with one live room ("Pricing your first enterprise deal", Priya hosting) and two coming up,
+The seed turns Rooms on with one live room ("Pricing your first enterprise deal", Priya hosting) and one coming up,
 and Sam follows two hosts (`src/shell/demo-rooms.ts`). In demo mode the upkeep never ends a room the seed made
 (`createdAt` up to the demo's `demo_seeded_at`), so the live one stays live until the nightly reset. Nobody real is in
 it: with a voice server set up its card shows the host and speakers instead of people connected.
