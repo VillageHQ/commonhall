@@ -11,10 +11,10 @@ Built 20 Nov 2026 as part 3 of round 6 ([SPEC](SPEC.md), [simplify-round6](../si
   with one line: "3 notifies a day. Back at <time>."
 - **Tell people I'm here** (the live room's bar, web and store app): once per room, after joining, to up to 10 people
   picked by name. A second try answers 409 "You've told people about this room already."
-- **Follow** ("Tell me when Lina starts a room"): on a member's profile (`FollowButton`, a server component that hides
-  on your own profile and while Rooms is off) and on room cards for the host (`FollowToggle`, a bell with a tooltip
-  there; every card for the same host follows the change). One-way, chosen by the
-  follower. Your data's export lists it (`roomsYouFollow`).
+- **Follow** ("Tell me when Lina starts a room"): on a member's profile (`FollowButton`: it reads
+  `POST /api/voice/following` and hides until it knows, on your own profile, and while Rooms is off) and on room cards
+  for the host (`FollowToggle`, a bell with a tooltip there; every card for the same host follows the change).
+  One-way, chosen by the follower. Your data's export lists it (`roomsYouFollow`).
 - The alert: "<Name> started “<title>”" or "<Name> is in “<title>”", body "Tap to listen.", kind `voice_broadcast`,
   address `/rooms/<id>`. The room page joins on open (a browser that blocks sound shows one "Tap for sound" button);
   the store app hands it to the native room screen.
@@ -34,7 +34,8 @@ Built 20 Nov 2026 as part 3 of round 6 ([SPEC](SPEC.md), [simplify-round6](../si
   after 7 days (the minute job).
 - **notify() decides the rest**: alerts off, the kind off, quiet times and pause, a mute of the sender.
 - Routes: `POST /api/voice/create` (`notify: { audience, memberIds? } | null`), `POST /api/voice/notify`
-  (`{ roomId, memberIds }`), `POST /api/voice/follow` (`{ memberId, isFollowing }`), `POST /api/voice/start`. The
+  (`{ roomId, memberIds }`), `POST /api/voice/follow` (`{ memberId, isFollowing }`), `POST /api/voice/following` (`{ memberId }` →
+  `{ isFollowing, isSelf }`), `POST /api/voice/start`. The
   alerts go after the response (`sendRoomNotifySoon`), which then writes `reached`.
 
 ## Rooms on by default for new installs

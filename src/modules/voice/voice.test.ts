@@ -4,6 +4,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vites
 import { POST as postCreate } from "@/app/api/voice/create/route";
 import { POST as postEnd } from "@/app/api/voice/end/route";
 import { POST as postFollow } from "@/app/api/voice/follow/route";
+import { POST as postFollowing } from "@/app/api/voice/following/route";
 import { POST as postHand } from "@/app/api/voice/hand/route";
 import { POST as postJoin } from "@/app/api/voice/join/route";
 import { POST as postRemind } from "@/app/api/voice/remind/route";
@@ -265,6 +266,8 @@ describe("voice rooms", () => {
     expect((await call(postFollow, fan.cookie, { memberId: host.userId, isFollowing: true })).status).toBe(200);
     expect((await call(postFollow, fan.cookie, { memberId: host.userId, isFollowing: true })).status).toBe(200);
     expect((await readRooms(fan)).live[0]?.isFollowingHost).toBe(true);
+    expect(await (await call(postFollowing, fan.cookie, { memberId: host.userId })).json()).toEqual({ isFollowing: true, isSelf: false });
+    expect(await (await call(postFollowing, fan.cookie, { memberId: fan.userId })).json()).toEqual({ isFollowing: false, isSelf: true });
     const exported = await readMemberExport(database, fan.userId);
     expect(exported.roomsYouFollow).toEqual([expect.objectContaining({ memberId: host.userId })]);
 

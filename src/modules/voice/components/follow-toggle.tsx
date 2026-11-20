@@ -27,6 +27,7 @@ export function FollowToggle({ memberId, memberName, isFollowing: initial, isCom
     onSuccess: (_answer, next) => {
       setState((current) => ({ ...current, value: next }));
       void queryClient.invalidateQueries({ queryKey: VOICE_QUERY_KEYS.rooms });
+      void queryClient.invalidateQueries({ queryKey: VOICE_QUERY_KEYS.following(memberId) });
     },
   });
   const name = firstName(memberName);

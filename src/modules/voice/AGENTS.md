@@ -19,7 +19,7 @@ How it works, the token API, the ports: `.ai/features/voice-sessions/NOTES.md`; 
 - `reads.ts`: one room, people to pick. `reads-rooms-page.ts`: the Rooms page (cards with faces, the Notify allowance).
   `reads-live.ts`: the live-room reads other screens use (`readLiveRooms`, `countLiveRooms`, `countRoomJoins`),
   empty or 0 while Rooms is off; screens outside Rooms read rooms only through these.
-- `components/`: the UI. `follow-button.tsx` (server) is the profile's Follow; `follow-toggle.tsx` the button itself.
+- `components/`: the UI. `follow-button.tsx` is the profile's Follow (reads `/api/voice/following`); `follow-toggle.tsx` the button.
   The phone app plays rooms natively (`readNativeApp()`, `mobile/src/voice/RoomScreen.tsx`).
 
 Rules:

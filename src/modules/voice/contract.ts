@@ -16,6 +16,7 @@ export const VOICE_API_ROUTES = {
   create: "/api/voice/create",
   notify: "/api/voice/notify",
   follow: "/api/voice/follow",
+  following: "/api/voice/following",
   join: "/api/voice/join",
   start: "/api/voice/start",
   hand: "/api/voice/hand",
@@ -171,6 +172,10 @@ export type NotifyBody = z.infer<typeof notifyBodySchema>;
 
 export const followBodySchema = z.object({ memberId: z.string().min(1).max(64), isFollowing: z.boolean() }).strict();
 export type FollowBody = z.infer<typeof followBodySchema>;
+
+// Whether the viewer follows a member (the profile's Follow reads it); `isSelf` hides it on your own profile.
+export const followingBodySchema = z.object({ memberId: z.string().min(1).max(64) }).strict();
+export type FollowingState = { isFollowing: boolean; isSelf: boolean };
 
 export const roomBodySchema = z.object({ roomId: roomIdSchema }).strict();
 export type RoomBody = z.infer<typeof roomBodySchema>;
