@@ -173,7 +173,7 @@ export function AskDetail({ detail, viewer, isViewerAdmin, flash, now }: AskDeta
           <RenewButton askId={post.id} />
         </div>
       ) : null}
-      {isAsk && isOpen ? (
+      {isAsk && isOpen && (helpers.length > 0 || answers.length === 0) ? (
         <p className="fh-small fh-muted" style={{ marginTop: 12 }}>
           {helpers.length > 0 ? `${describeCanHelp(helpers.length)}.` : "Nobody has a path yet; anyone can help."}
         </p>

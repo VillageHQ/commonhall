@@ -53,7 +53,7 @@ function SortChips({ filters }: { filters: LibraryBrowseFilters }) {
   );
 }
 
-// The search, with Kind and Role folded behind "Filter" (open while one is set).
+// The search, with Kind and Role folded behind "Filter" (open while one is set). Each label stays on its select's line.
 function SearchAndFilter({ filters }: { filters: LibraryBrowseFilters }) {
   return (
     <form method="get" action={LIBRARY_PAGES.browse} className="fh-lib-filter" role="search">
@@ -65,28 +65,32 @@ function SearchAndFilter({ filters }: { filters: LibraryBrowseFilters }) {
           <SlidersHorizontal {...LIBRARY_ICON} className="fh-i fh-xs inline-block align-[-2px]" /> Filter
         </summary>
         <div className="fh-lib-filter-row mt-2 flex-wrap">
-          <label htmlFor="library-kind" className="fh-small fh-muted">
-            Kind
-          </label>
-          <Select id="library-kind" name="kind" defaultValue={filters.kind ?? ""} className="fh-lib-select">
-            <option value="">Every kind</option>
-            {(Object.entries(LIBRARY_KIND_LABELS) as [LibraryKind, string][]).map(([kind, label]) => (
-              <option key={kind} value={kind}>
-                {label}
-              </option>
-            ))}
-          </Select>
-          <label htmlFor="library-job" className="fh-small fh-muted">
-            Role
-          </label>
-          <Select id="library-job" name="job" defaultValue={filters.job ?? ""} className="fh-lib-select">
-            <option value="">Every role</option>
-            {(Object.entries(LIBRARY_JOB_LABELS) as [LibraryJob, string][]).map(([job, label]) => (
-              <option key={job} value={job}>
-                {label}
-              </option>
-            ))}
-          </Select>
+          <span className="inline-flex min-w-0 items-center gap-2">
+            <label htmlFor="library-kind" className="fh-small fh-muted">
+              Kind
+            </label>
+            <Select id="library-kind" name="kind" defaultValue={filters.kind ?? ""} className="fh-lib-select">
+              <option value="">Every kind</option>
+              {(Object.entries(LIBRARY_KIND_LABELS) as [LibraryKind, string][]).map(([kind, label]) => (
+                <option key={kind} value={kind}>
+                  {label}
+                </option>
+              ))}
+            </Select>
+          </span>
+          <span className="inline-flex min-w-0 items-center gap-2">
+            <label htmlFor="library-job" className="fh-small fh-muted">
+              Role
+            </label>
+            <Select id="library-job" name="job" defaultValue={filters.job ?? ""} className="fh-lib-select">
+              <option value="">Every role</option>
+              {(Object.entries(LIBRARY_JOB_LABELS) as [LibraryJob, string][]).map(([job, label]) => (
+                <option key={job} value={job}>
+                  {label}
+                </option>
+              ))}
+            </Select>
+          </span>
           <Button type="submit" variant="secondary" size="sm">
             Show
           </Button>

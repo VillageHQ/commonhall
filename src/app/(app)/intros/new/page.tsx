@@ -10,10 +10,11 @@ import { PAGE_TITLES } from "@/platform/branding/page-metadata";
 import { getDatabase } from "@/platform/database/client";
 import { ROUTES } from "@/platform/http/routes";
 import { modulePage } from "@/platform/modules/module-page";
+import { formatLongDate } from "@/platform/text/format-date";
 import { INTRO_LIFETIME_DAYS, OUTCOME_PROMPT_AFTER_DAYS } from "@/modules/intros/contract";
 import { readPrivacyLine } from "@/modules/intros/components/intro-words";
 import { introsManifest } from "@/modules/intros/manifest";
-import { describeAllowanceUsed, readAskAllowance } from "@/shell/ask-helpers";
+import { readAskAllowance } from "@/shell/ask-helpers";
 import { readAskerProfile, readIntroConnectorCard } from "@/shell/intro-ask";
 import { draftNoteParts, joinNoteParts } from "@/shell/intro-ask-note";
 
@@ -22,6 +23,11 @@ import { IntroAskForm } from "./intro-ask-form";
 export const metadata: Metadata = { title: PAGE_TITLES.introAsk };
 
 type NewIntroPageProps = { searchParams: Promise<Record<string, string | string[] | undefined>> };
+
+// The pips already say "0 of 5 asks left", so a used-up week adds only when the next ask comes back.
+function describeNextAsk(backAt: string | null) {
+  return backAt ? `Your next ask comes back on ${formatLongDate(backAt)}.` : "Your next ask comes back in a few days.";
+}
 
 // "Ask Ada for an intro": the ask from a member's profile (/intros/new?via=…). In view: the allowance once, who, and a
 // note drafted from the asker's profile. How an intro works stays under its fold. Needs no Village.
@@ -39,7 +45,7 @@ export default modulePage(introsManifest, async function NewIntroPage({ searchPa
   ]);
   if (!connector) notFound();
   const connectorFirst = connector.name.split(" ")[0] ?? connector.name;
-  const blockedReason = !connector.canBeAsked ? `${connector.name} has paused intro asks.` : allowance.left === 0 ? describeAllowanceUsed(allowance) : null;
+  const blockedReason = !connector.canBeAsked ? `${connector.name} has paused intro asks.` : allowance.left === 0 ? describeNextAsk(allowance.backAt) : null;
   const allowanceText = `${allowance.left} of ${allowance.cap} asks left this week`;
   return (
     <>

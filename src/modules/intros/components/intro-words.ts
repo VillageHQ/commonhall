@@ -30,8 +30,6 @@ export const RESULT_LABELS = {
   nothing: "Nothing yet",
 } as const;
 
-export const OUTCOME_DAYS = 14;
-
 const MADE_STATES: readonly string[] = [INTRO_STATES.completed];
 const OPEN_STATES: readonly string[] = [INTRO_STATES.requested, INTRO_STATES.accepted, INTRO_STATES.askingTarget, INTRO_STATES.targetAgreed];
 
@@ -155,6 +153,7 @@ type TrackerStep = { key: string; state: StepperState; title: string; detail: st
 const date = (value: string | null) => (value ? formatDayMonth(value) : "");
 
 // The asker's tracker (Commonhall's tracker()): asked · connector decides · person decides · introduced · helpful.
+// Steps still to come show only their titles; "How intros work" on the ask form holds the rest.
 export function readTrackerSteps(intro: Intro, community: string): TrackerStep[] {
   const { connectorFirst: c, targetFirst: t } = readNames(intro);
   const state = intro.state;
@@ -162,14 +161,14 @@ export function readTrackerSteps(intro: Intro, community: string): TrackerStep[]
   const wasTargetAsked = intro.askedTargetAt !== null;
   const isWaitingOnConnector = state === INTRO_STATES.requested || state === INTRO_STATES.accepted;
 
-  if (isWaitingOnConnector) steps.push({ key: "connector", state: "now", title: `${c} decides`, detail: "By email or in the portal. The ask closes after 7 days with no answer." });
+  if (isWaitingOnConnector) steps.push({ key: "connector", state: "now", title: `${c} decides`, detail: "By email or here. The ask closes after 7 days with no answer." });
   else if (state === INTRO_STATES.declined) steps.push({ key: "connector", state: "no", title: `${readWhoSaidNo(c, true)} can’t make this one`, detail: `${date(intro.closedAt)}. Your ask is back.` });
   else if (state === INTRO_STATES.expired && !wasTargetAsked) steps.push({ key: "connector", state: "no", title: REQUESTER_SEES_WHO_ANSWERED ? `No answer from ${c}` : "No answer", detail: `Closed after 7 days, ${date(intro.closedAt)}. Your ask is back.` });
   else if (state === INTRO_STATES.withdrawn && !wasTargetAsked) steps.push({ key: "connector", state: "no", title: "You withdrew the ask", detail: `${date(intro.closedAt)}. Your ask is back.` });
   else steps.push({ key: "connector", state: "done", title: `${c} said yes and asked ${t}`, detail: date(intro.askedTargetAt) });
 
   if (wasTargetAsked || isWaitingOnConnector) {
-    if (isWaitingOnConnector) steps.push({ key: "target", state: "todo", title: `${t} decides`, detail: "One email, one reminder after 4 days, then it closes at 7." });
+    if (isWaitingOnConnector) steps.push({ key: "target", state: "todo", title: `${t} decides`, detail: "" });
     else if (state === INTRO_STATES.askingTarget) steps.push({ key: "target", state: "now", title: `${t} decides`, detail: `Asked ${date(intro.askedTargetAt)}. One reminder after 4 days, then it closes at 7.` });
     else if (state === INTRO_STATES.targetDeclined) steps.push({ key: "target", state: "no", title: `${t} can’t take this one`, detail: `${date(intro.closedAt)}. Your ask is back.` });
     else if (state === INTRO_STATES.expired) steps.push({ key: "target", state: "no", title: `No answer from ${t}`, detail: `Closed after 7 days, ${date(intro.closedAt)}. Your ask is back.` });
@@ -183,14 +182,14 @@ export function readTrackerSteps(intro: Intro, community: string): TrackerStep[]
       key: "introduced",
       state: made ? "done" : "todo",
       title: `Introduced by email from ${community}`,
-      detail: made ? date(intro.closedAt) : "Only when both have said yes",
+      detail: made ? date(intro.closedAt) : "",
     });
     const outcomeState: StepperState = intro.outcome ? "done" : intro.isOutcomeDue ? "now" : "todo";
     const outcomeDetail = intro.outcome
       ? `You said: ${OUTCOME_LABELS[CHOICE_BY_OUTCOME[intro.outcome]].toLowerCase()}`
       : intro.isOutcomeDue
         ? "Asked by email; answer below"
-        : `Asked ${OUTCOME_DAYS} days after the intro`;
+        : "";
     steps.push({ key: "outcome", state: outcomeState, title: "Was it helpful?", detail: outcomeDetail });
   }
   return steps;
