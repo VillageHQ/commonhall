@@ -27,23 +27,24 @@ function TodayOutline() {
   );
 }
 
-// Laid out as room-start-instant makes the page: the alerts switch, the "What's it about?" box over a full-width
-// "Start a room" button and the "Schedule for later" link, then Live now and Coming up.
+// The full-width "Start a room" button and its line, the Room alerts switch, then Live now and Coming up.
 function RoomsOutline() {
   return (
     <PageOutline title="Rooms">
       <div aria-hidden="true">
-        <OutlineBox width={132} height={32} className="mb-4" />
-        <OutlineBox height={44} />
-        <OutlineBox height={40} className="mt-2" />
-        <OutlineLine width={118} className="mt-3.5" />
+        <OutlineBox height={40} />
+        <OutlineLine width="62%" className="mt-3" />
+        <div className="mt-5 flex items-center justify-between">
+          <OutlineBox width={150} height={24} radius={9999} />
+          <OutlineLine width={84} />
+        </div>
         <section className="fh-section">
           <OutlineSectionHead width={110} />
           <OutlineCard lines={2} hasButton />
         </section>
         <section className="fh-section">
           <OutlineSectionHead width={130} />
-          <OutlineCard lines={3} />
+          <OutlineCard lines={3} hasButton />
         </section>
       </div>
     </PageOutline>
@@ -52,18 +53,15 @@ function RoomsOutline() {
 
 const ASK_ITEMS = [0, 1];
 
-// The composer, the search, the tabs, then asks.
+// The one-box composer, the search, the tabs, then asks.
 function AsksOutline() {
   return (
     <PageOutline title="Asks" className="fh-narrow">
       <OutlineSheet>
-        <OutlineBox width={168} height={38} />
-        <div className="mt-3 flex gap-2">
-          <OutlineBox height={44} className="flex-1" />
-          <OutlineBox width={64} height={44} />
+        <div className="flex items-start gap-2">
+          <OutlineBox height={72} className="flex-1" />
+          <OutlineBox width={56} height={36} />
         </div>
-        <OutlineLine width="62%" className="mt-4" />
-        <OutlineLine width="54%" className="mt-3.5" />
       </OutlineSheet>
       <OutlineBox height={52} radius={10} className="mt-4" />
       <OutlineChips widths={[60, 88, 72]} className="mt-4 mb-4" />
@@ -86,7 +84,7 @@ function AsksOutline() {
   );
 }
 
-// The search and Filter, the "Who are you looking for?" chips, then members.
+// The search and Filter, the Mentors and experts link, the count, then members.
 function PeopleOutline() {
   return (
     <PageOutline title="People">
@@ -95,11 +93,9 @@ function PeopleOutline() {
           <OutlineBox height={52} radius={10} className="flex-1" />
           <OutlineBox width={97} height={40} />
         </div>
-        <OutlineLine width={150} className="mt-5" />
-        <OutlineChips widths={[94, 64, 98, 86]} className="mt-2.5 mb-4" />
-        <OutlineBox width={194} height={32} />
-        <OutlineLine width={84} className="mt-6 mb-2" />
-        <OutlineRows count={5} />
+        <OutlineLine width={140} className="mt-4" />
+        <OutlineLine width={84} className="mt-5 mb-2" />
+        <OutlineRows count={6} />
       </div>
     </PageOutline>
   );
