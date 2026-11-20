@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { createElement } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -11,6 +11,7 @@ import { API_ROUTES, ROUTES } from "@/platform/http/routes";
 import { buildShellNavigation } from "./navigation";
 import { readSettingsLinks } from "./settings-links";
 import { FounderViewStrip, SidebarNavigation, TabBar } from "./navigation-links";
+import { PendingTabPage, PRESSED_TIMEOUT_MS, PressedTabProvider } from "./pressed-tab";
 import { PhoneAccountButton } from "./user-menu";
 
 const location = vi.hoisted(() => ({ pathname: "/" }));
@@ -95,6 +96,68 @@ describe("the phone tab bar", () => {
 
     expect(readNames("Sections")).toEqual(["Home", "Asks", "Members", "Announce", "Set up"]);
     expect(screen.getByRole("link", { name: "Members" }).getAttribute("aria-current")).toBe("page");
+  });
+
+  it("lights a tapped tab at once, while aria-current stays on the page shown until the address changes", () => {
+    location.pathname = ROUTES.today;
+    renderShellPart(TabBar);
+    const bar = screen.getByRole("navigation", { name: "Sections" });
+    const people = within(bar).getByRole("link", { name: /People/ });
+
+    fireEvent.pointerDown(people, { button: 0 });
+
+    expect(people.getAttribute("data-pressed")).toBe("true");
+    expect(people.getAttribute("aria-current")).toBeNull();
+    expect(within(bar).getByRole("link", { name: /Today/ }).getAttribute("aria-current")).toBe("page");
+    expect(bar.getAttribute("data-pressing")).toBe("true");
+  });
+
+  it("shows the tapped tab's outline in place of the page until the new page comes, and only after a tap", () => {
+    location.pathname = ROUTES.today;
+    stubCounts(0);
+    const navigation = buildShellNavigation(undefined, false);
+    const shell = () =>
+      createElement(
+        PressedTabProvider,
+        null,
+        createElement(PendingTabPage, null, createElement("h1", null, "Today's page")),
+        createElement(TabBar, { navigation, isAdmin: false, badges: {} }),
+      );
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Number.POSITIVE_INFINITY } } });
+    const view = render(createElement(QueryClientProvider, { client: queryClient }, shell()));
+    const people = within(screen.getByRole("navigation", { name: "Sections" })).getByRole("link", { name: /People/ });
+
+    // A finger on the tab lights it, but the page stays until the tap.
+    fireEvent.pointerDown(people, { button: 0 });
+    expect(screen.queryByRole("heading", { name: "People" })).toBeNull();
+
+    fireEvent.click(people, { button: 0 });
+    expect(screen.getByRole("heading", { name: "People" })).toBeTruthy();
+    expect(screen.getByRole("status").textContent).toBe("Loading…");
+    expect((screen.getByText("Today's page").parentElement as HTMLElement).style.display).toBe("none");
+
+    // The address changes in the same frame as the new page: the outline is gone, nothing stays pressed.
+    location.pathname = ROUTES.people;
+    view.rerender(createElement(QueryClientProvider, { client: queryClient }, shell()));
+    expect(screen.queryByRole("status")).toBeNull();
+    expect(people.getAttribute("data-pressed")).toBeNull();
+  });
+
+  it("forgets a press after a while, and a ⌘-click lights nothing", () => {
+    vi.useFakeTimers();
+    location.pathname = ROUTES.today;
+    renderShellPart(TabBar);
+    const people = within(screen.getByRole("navigation", { name: "Sections" })).getByRole("link", { name: /People/ });
+
+    fireEvent.pointerDown(people, { button: 0 });
+    act(() => vi.advanceTimersByTime(PRESSED_TIMEOUT_MS));
+
+    expect(people.getAttribute("data-pressed")).toBeNull();
+
+    fireEvent.click(people, { button: 0, metaKey: true });
+
+    expect(people.getAttribute("data-pressed")).toBeNull();
+    vi.useRealTimers();
   });
 
   it("lights nothing on My profile or the job board", () => {

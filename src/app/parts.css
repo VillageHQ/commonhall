@@ -32,7 +32,7 @@ img.fh-avatar{object-fit:cover;background:var(--vellum)}
 .fh-jl{display:inline-flex;width:20px;justify-content:center;align-items:center}
 .fh-jl .fh-colog{margin:0}
 .fh-iconbtn{display:inline-grid;place-items:center;width:40px;height:40px;border:0;border-radius:8px;background:transparent;color:var(--ink)}
-.fh-iconbtn:hover{background:var(--vellum)}
+@media (hover:hover){.fh-iconbtn:hover{background:var(--vellum)}}
 svg.fh-i{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;flex:none}
 svg.fh-i.fh-s{width:18px;height:18px}
 svg.fh-i.fh-xs{width:16px;height:16px}
@@ -42,8 +42,13 @@ svg.fh-i.fh-xs{width:16px;height:16px}
 .fh-main{padding:20px 16px calc(var(--tab-h) + 32px);max-width:1180px}
 .fh-tabbar{position:fixed;left:0;right:0;bottom:0;z-index:40;display:grid;grid-template-columns:repeat(5,1fr);height:var(--tab-h);padding-bottom:env(safe-area-inset-bottom);background:var(--leaf);border-top:1px solid var(--rule)}
 .fh-tabbar a{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--graphite);text-decoration:none;font:500 11px/14px var(--sans)}
-.fh-tabbar a[aria-current="page"]{color:var(--fund)}
-.fh-tabbar a[aria-current="page"]::before{content:'';position:absolute;top:-1px;left:28%;right:28%;height:2px;background:var(--fund);border-radius:0 0 2px 2px}
+.fh-tabbar a[aria-current="page"],.fh-tabbar a[data-pressed="true"]{color:var(--fund)}
+.fh-tabbar a[aria-current="page"]::before,.fh-tabbar a[data-pressed="true"]::before{content:'';position:absolute;top:-1px;left:28%;right:28%;height:2px;background:var(--fund);border-radius:0 0 2px 2px}
+/* smooth-app Part A: a tapped tab lights at once (data-pressed) and the page's own tab lets go until the new page comes. */
+.fh-tabbar[data-pressing] a[aria-current="page"]:not([data-pressed="true"]){color:var(--graphite)}
+.fh-tabbar[data-pressing] a[aria-current="page"]:not([data-pressed="true"])::before{content:none}
+.fh-tabbar a svg{transition:transform .12s var(--ease)}
+.fh-tabbar a:active svg{transform:scale(.9)}
 .fh-tabbar .fh-badge{position:absolute;top:7px;left:calc(50% + 6px);min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:var(--ink);color:var(--paper);font:600 10px/16px var(--sans);text-align:center}
 .fh-tabbar a.fh-switch{color:var(--ink)}
 .fh-tabbar a span{max-width:100%;white-space:nowrap}
@@ -58,7 +63,7 @@ svg.fh-i.fh-xs{width:16px;height:16px}
 .fh-pagehead{margin-bottom:20px}
 .fh-pagehead .fh-row{display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap}
 .fh-back{display:inline-flex;align-items:center;gap:4px;margin:-4px 0 12px -6px;padding:4px 6px;border-radius:6px;font-weight:500;color:var(--graphite);text-decoration:none}
-.fh-back:hover{background:var(--vellum);color:var(--ink)}
+@media (hover:hover){.fh-back:hover{background:var(--vellum);color:var(--ink)}}
 .fh-section{margin-top:28px}
 .fh-section > .fh-h3,.fh-section-head{margin-bottom:12px}
 .fh-section-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
@@ -66,13 +71,13 @@ svg.fh-i.fh-xs{width:16px;height:16px}
 .fh-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:40px;padding:0 16px;border-radius:var(--r-sm);border:1px solid transparent;font:600 15px/20px var(--sans);text-decoration:none;white-space:nowrap;transition:background .18s var(--ease),border-color .18s var(--ease),transform .12s var(--ease)}
 .fh-btn:active{transform:translateY(1px)}
 .fh-btn-primary{background:var(--fund);color:var(--leaf)}
-.fh-btn-primary:hover{background:var(--fund-deep);color:var(--leaf)}
+@media (hover:hover){.fh-btn-primary:hover{background:var(--fund-deep);color:var(--leaf)}}
 .fh-btn-ink{background:var(--ink);color:var(--paper)}
-.fh-btn-ink:hover{background:#000;color:var(--paper)}
+@media (hover:hover){.fh-btn-ink:hover{background:#000;color:var(--paper)}}
 .fh-btn-secondary{background:var(--leaf);color:var(--ink);border-color:var(--graphite)}
-.fh-btn-secondary:hover{background:var(--vellum);color:var(--ink)}
+@media (hover:hover){.fh-btn-secondary:hover{background:var(--vellum);color:var(--ink)}}
 .fh-btn-quiet{background:transparent;color:var(--fund);padding:0 8px}
-.fh-btn-quiet:hover{background:var(--fund-tint);color:var(--fund-deep)}
+@media (hover:hover){.fh-btn-quiet:hover{background:var(--fund-tint);color:var(--fund-deep)}}
 .fh-btn-sm{height:32px;padding:0 12px;font-size:14px}
 .fh-btn-block{width:100%}
 .fh-btn[disabled],.fh-btn[aria-disabled="true"]{opacity:.45;cursor:not-allowed;transform:none}
@@ -89,7 +94,7 @@ svg.fh-i.fh-xs{width:16px;height:16px}
 /* A short row of page tabs (the console's Members, Invites, Import…) wraps on a phone instead of scrolling out of view. */
 .fh-chips.fh-chips-wrap{flex-wrap:wrap;overflow:visible;margin:0;padding:2px 0}
 .fh-chip{flex:none;display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 12px;border:0;border-radius:var(--r-sm);background:var(--vellum);color:var(--ink);font:500 14px/18px var(--sans);white-space:nowrap}
-.fh-chip:hover{background:#E6E5DF}
+@media (hover:hover){.fh-chip:hover{background:#E6E5DF}}
 .fh-chip[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
 .fh-chip .fh-n{font-variant-numeric:tabular-nums;color:inherit;opacity:.72}
 .fh-seg{display:inline-flex;padding:3px;gap:2px;background:var(--vellum);border-radius:8px}
@@ -127,7 +132,7 @@ svg.fh-i.fh-xs{width:16px;height:16px}
 details.fh-advanced{margin-top:20px}
 details.fh-advanced > summary{display:flex;align-items:flex-start;gap:10px;cursor:pointer;list-style:none;padding:14px 16px;border:1px dashed var(--rule);border-radius:var(--r);color:var(--ink)}
 details.fh-advanced > summary::-webkit-details-marker{display:none}
-details.fh-advanced > summary:hover{background:var(--leaf)}
+@media (hover:hover){details.fh-advanced > summary:hover{background:var(--leaf)}}
 details.fh-advanced > summary:focus-visible{outline:3px solid var(--ring);outline-offset:2px}
 details.fh-advanced > summary b{display:block;font:600 16px/22px var(--sans)}
 details.fh-advanced > summary small{display:block;margin-top:2px;font-size:13px;line-height:18px;color:var(--graphite)}
@@ -188,7 +193,7 @@ details.fh-advanced .fh-advanced-body > .fh-sheet + .fh-sheet{margin-top:16px}
 .fh-checklist .fh-s{font-size:12.5px;color:var(--graphite);white-space:nowrap;padding-top:1px}
 .fh-rows{border-top:1px solid var(--rule)}
 .fh-r{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--rule);color:inherit;text-decoration:none}
-a.fh-r:hover,.fh-r.fh-click:hover{background:linear-gradient(90deg,transparent,rgba(236,230,216,.7) 8%,rgba(236,230,216,.7) 92%,transparent)}
+@media (hover:hover){a.fh-r:hover,.fh-r.fh-click:hover{background:linear-gradient(90deg,transparent,rgba(236,230,216,.7) 8%,rgba(236,230,216,.7) 92%,transparent)}}
 .fh-r .fh-who{min-width:0}
 .fh-r .fh-who b{display:block;font:600 16px/21px var(--serif);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .fh-r .fh-who span{display:block;font-size:13px;line-height:18px;color:var(--graphite);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -253,14 +258,14 @@ a.fh-r:hover,.fh-r.fh-click:hover{background:linear-gradient(90deg,transparent,r
 .fh-search > svg{position:absolute;left:14px;top:15px;color:var(--graphite)}
 .fh-examples{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
 .fh-examples button{height:32px;padding:0 10px;border:1px dashed #A8A7A0;border-radius:6px;background:transparent;font-size:13.5px;color:var(--ink)}
-.fh-examples button:hover{background:var(--leaf);border-style:solid}
+@media (hover:hover){.fh-examples button:hover{background:var(--leaf);border-style:solid}}
 .fh-strip{display:flex;gap:8px;align-items:center;margin-top:14px;font-size:13px;line-height:18px;color:var(--graphite)}
 .fh-result{padding:16px 0;border-bottom:1px solid var(--rule)}
 .fh-result:first-child{padding-top:4px}
 .fh-result .fh-top{display:flex;gap:12px;align-items:flex-start}
 .fh-result .fh-top .fh-who{min-width:0;flex:1}
 .fh-result .fh-who a{color:inherit;text-decoration:none}
-.fh-result .fh-who a:hover .fh-name{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}
+@media (hover:hover){.fh-result .fh-who a:hover .fh-name{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}}
 .fh-result .fh-who p{font-size:14px;line-height:20px;color:var(--graphite)}
 .fh-path{position:relative;display:flex;align-items:center;margin:12px 0 8px;padding-left:2px}
 .fh-path .fh-seg-line{flex:1;height:2px;background:var(--fund);min-width:18px;transform-origin:left center}
@@ -286,7 +291,7 @@ a.fh-r:hover,.fh-r.fh-click:hover{background:linear-gradient(90deg,transparent,r
 .fh-mcard .fh-who span{display:block;font-size:13.5px;line-height:19px;color:var(--graphite)}
 .fh-mcard .fh-wo{grid-column:2;font-size:14px;line-height:20px;color:var(--ink)}
 .fh-mcard .fh-meta{grid-column:2;display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:4px}
-a.fh-mcard:hover .fh-who b{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}
+@media (hover:hover){a.fh-mcard:hover .fh-who b{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}}
 .fh-profile-head{display:grid;grid-template-columns:auto minmax(0,1fr);gap:14px;align-items:center}
 .fh-profile-head .fh-h1{font-size:26px;line-height:32px}
 .fh-profile-head p{color:var(--graphite);font-size:14.5px}
@@ -346,7 +351,7 @@ a.fh-mcard:hover .fh-who b{text-decoration:underline;text-decoration-thickness:1
 .fh-post .fh-helpers .fh-btn{margin-left:auto}
 .fh-post .fh-acts{display:flex;gap:4px;margin-top:10px;flex-wrap:wrap}
 .fh-react{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 10px;border:0;border-radius:6px;background:transparent;font-size:13.5px;color:var(--graphite)}
-.fh-react:hover{background:var(--vellum);color:var(--ink)}
+@media (hover:hover){.fh-react:hover{background:var(--vellum);color:var(--ink)}}
 .fh-react[aria-pressed="true"]{color:var(--spine);background:var(--spine-tint)}
 .fh-comments{margin:8px 0 0 14px;padding-left:14px;border-left:1px solid var(--rule)}
 .fh-comment{padding:8px 0}
@@ -404,9 +409,12 @@ a.fh-mcard:hover .fh-who b{text-decoration:underline;text-decoration-thickness:1
 .fh-side nav{display:flex;flex-direction:column;gap:2px}
 .fh-side nav .fh-grp{margin:16px 10px 6px;font-size:12px;font-weight:600;color:var(--graphite)}
 .fh-side nav a{position:relative;display:flex;align-items:center;gap:12px;height:40px;padding:0 10px;border-radius:7px;color:var(--ink);text-decoration:none;font-weight:500}
-.fh-side nav a:hover{background:var(--vellum)}
-.fh-side nav a[aria-current="page"]{background:var(--leaf);box-shadow:0 1px 2px rgba(17,17,16,.08);font-weight:600}
-.fh-side nav a[aria-current="page"] svg{color:var(--fund)}
+@media (hover:hover){.fh-side nav a:hover{background:var(--vellum)}}
+.fh-side nav a[aria-current="page"],.fh-side nav a[data-pressed="true"]{background:var(--leaf);box-shadow:0 1px 2px rgba(17,17,16,.08);font-weight:600}
+.fh-side nav a[aria-current="page"] svg,.fh-side nav a[data-pressed="true"] svg{color:var(--fund)}
+.fh-side nav[data-pressing] a[aria-current="page"]:not([data-pressed="true"]){background:transparent;box-shadow:none;font-weight:500}
+.fh-side nav[data-pressing] a[aria-current="page"]:not([data-pressed="true"]) svg{color:inherit}
+.fh-side nav a:active{background:var(--vellum)}
 .fh-side nav a .fh-badge{margin-left:auto;min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:var(--ink);color:var(--paper);font:600 11px/20px var(--sans);text-align:center}
 .fh-side .fh-me{display:flex;align-items:center;gap:10px;margin-top:auto;padding:12px 6px 0;border-top:1px solid var(--rule)}
 .fh-side .fh-me b{display:block;font-size:14px;font-weight:600;line-height:18px}
@@ -484,7 +492,7 @@ details.fh-advanced .fh-advanced-chev{transition:none}
 .fh-seg a.fh-segbtn[aria-current="true"]{background:var(--leaf);color:var(--ink);box-shadow:0 1px 2px rgba(17,17,16,.14)}
 form.fh-inline{display:inline}
 .fh-linkbtn{display:inline-flex;align-items:center;gap:6px;padding:4px 0;border:0;background:none;color:var(--graphite);font:500 13px/18px var(--sans)}
-.fh-linkbtn:hover{color:var(--ink);text-decoration:underline}
+@media (hover:hover){.fh-linkbtn:hover{color:var(--ink);text-decoration:underline}}
 .fh-me-actions{display:none}
 .fh-phone-foot{margin-top:40px}
 .fh-phone-foot .fh-credit{margin-top:12px}
@@ -605,7 +613,7 @@ a.fh-chip{text-decoration:none}
 .fh-pinmark{display:inline-flex;align-items:center;gap:4px;margin-left:auto;font-size:12.5px;color:var(--graphite)}
 .fh-pinmark + .fh-pill{margin-left:8px}
 .fh-post .fh-body a{color:inherit;text-decoration:none}
-.fh-post .fh-body a:hover{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}
+@media (hover:hover){.fh-post .fh-body a:hover{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}}
 .fh-askhead{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:13.5px;color:var(--graphite)}
 .fh-askhead b{font:600 16px/21px var(--serif);color:var(--ink)}
 .fh-askbody{margin-top:14px;font:400 23px/32px var(--serif);letter-spacing:-.005em;text-wrap:pretty}
@@ -631,7 +639,7 @@ a.fh-chip{text-decoration:none}
 .fh-gsteps a{font-size:13.5px;font-weight:600}
 .fh-needs{display:grid;gap:10px;margin-top:18px}
 .fh-needcard{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:14px;align-items:center;padding:16px;border:1px solid var(--rule);border-radius:10px;background:var(--leaf);color:var(--ink);text-decoration:none;transition:border-color .18s var(--ease),transform .12s var(--ease)}
-.fh-needcard:hover{border-color:var(--graphite);color:var(--ink)}
+@media (hover:hover){.fh-needcard:hover{border-color:var(--graphite);color:var(--ink)}}
 .fh-needcard:active{transform:translateY(1px)}
 .fh-needcard .fh-ic{display:grid;place-items:center;width:48px;height:48px;border-radius:10px;background:var(--vellum)}
 .fh-needcard b{display:block;font:600 20px/26px var(--serif)}
@@ -729,7 +737,7 @@ details.fh-fold summary::-webkit-details-marker{display:none}
 .fh-r .fh-who span.fh-errtext,.fh-r .fh-who .fh-errtext{color:var(--ribbon);display:inline;white-space:normal}
 .fh-jobsource + .fh-jobsource{margin-top:18px;padding-top:4px;border-top:1px solid var(--rule)}
 a.fh-tag{text-decoration:none;color:var(--ink)}
-a.fh-tag:hover{background:var(--fund-tint)}
+@media (hover:hover){a.fh-tag:hover{background:var(--fund-tint)}}
 .fh-jobsource .fh-sheet-head .fh-h3{min-width:0}
 .fh-embed-board{padding:4px 2px 8px}
 .fh-embed-mark{display:flex;align-items:center;gap:10px;margin-bottom:10px;font-weight:600}
@@ -754,7 +762,7 @@ a.fh-tag:hover{background:var(--fund-tint)}
 .fh-launch-list .fh-lk.fh-village{border:0;background:var(--vellum);color:var(--ink);font:700 14px/1 var(--sans)}
 .fh-launch-foot{max-width:720px;margin-top:14px}
 .fh-setup-rows .fh-r{grid-template-columns:minmax(0,1fr) auto;text-decoration:none;color:var(--ink)}
-.fh-setup-rows .fh-r:hover b{color:var(--fund)}
+@media (hover:hover){.fh-setup-rows .fh-r:hover b{color:var(--fund)}}
 .fh-setup-rows .fh-end{display:flex;flex-direction:row;align-items:center;gap:10px;color:var(--graphite)}
 .fh-setup-rows .fh-who span{white-space:normal;overflow:visible;text-overflow:clip}
 .fh-note.fh-village-sets{margin-top:12px}
@@ -764,7 +772,7 @@ a.fh-tag:hover{background:var(--fund-tint)}
 .fh-lib-grid > .fh-sheet + .fh-sheet{margin-top:0}
 .fh-lib-card{display:flex;flex-direction:column}
 .fh-lib-title{color:var(--ink);text-decoration:none}
-.fh-lib-title:hover{text-decoration:underline}
+@media (hover:hover){.fh-lib-title:hover{text-decoration:underline}}
 .fh-lib-tags{display:flex;flex-wrap:wrap;gap:6px}
 .fh-lib-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:auto;padding-top:14px;flex-wrap:wrap}
 .fh-lib-member{display:inline-flex;align-items:center;gap:8px;min-width:0;font-size:14px;line-height:20px}
@@ -806,4 +814,4 @@ a.fh-tag:hover{background:var(--fund-tint)}
 @media (min-width:1000px){
 .fh-asks-grid > aside.fh-stack{margin-top:0}
 }
-.fh-lib-today a.fh-lib-today-link:hover b{text-decoration:underline}
+@media (hover:hover){.fh-lib-today a.fh-lib-today-link:hover b{text-decoration:underline}}
