@@ -7,7 +7,7 @@ Village search, sync, the community group and intro paths. Toggleable; the only 
 - `service-departure.ts`: removes a departed member from the group. Never throws.
 - `service-settings.ts`, `contract-village-settings.ts`: group, daily limit, search scope, who can introduce, service email (fill-in and the Village check).
 - `reads-*.ts`: progress, reachable members, credit usage, search's member rows.
-- `contract*.ts`: schemas, constants. `queries.ts`: client requests. `components/`: the UI (`search-*`: /search; `my-network-screen`: /me/network; `village-connect`: Connect Village).
+- `contract*.ts`: schemas, constants. `queries.ts`: client requests. `components/`: the UI (`search-*`: the "Search their networks" step on People and Find candidates; `my-network-screen`: /me/network; `village-connect`: Connect Village).
 - `service-fill-in.ts`, `rules-fill-in.ts`, `integration.ts`: the profile fill-in: email first, then LinkedIn every 30 days; nightly (02:00–05:59 UTC) or on request. Lookups run as the app's public identity, never as a member.
 - `service-nudge.ts`: the connect meter and the admin's reminder to unconnected members, once per 30 days.
 - `components/village-disclosure.tsx`: "What Village receives", on the member's card page. Update it when a call sends Village something new.

@@ -32,7 +32,7 @@ function WaitingRow({ intro }: { intro: Intro }) {
       href={href(intro)}
       start={<Avatar stableId={intro.requester.id} name={intro.requester.name} imageUrl={intro.requester.avatarUrl} />}
       title={`${intro.requester.name} asks you for an intro to ${intro.target.name}`}
-      detail={`asked ${formatDayMonth(intro.createdAt)}`}
+      detail={formatDayMonth(intro.createdAt)}
       end={<Pill tone="needs">Answer</Pill>}
     />
   );

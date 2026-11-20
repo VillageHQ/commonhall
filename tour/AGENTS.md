@@ -8,8 +8,8 @@ of step 1 into `site/index.html` between the tour markers; commit both. `pnpm to
 - `build.mjs`: esbuild (browser script + a Node copy for the still), Tailwind on `src/app/globals.css` scoped to the
   tour's box (`:root`/`html`/`body` → `.tour-app`, window-width `@media` → `@container`, `vh` → `cqh`), the app's
   accent CSS, fonts and `@property` rules in `page.css` (they only work at the page level), only the pictures shown.
-- `src/steps.ts`: the steps. `src/screens.tsx`: the pages by address (`/search`, `/search/ask`, `/asks`,
-  `/directory`, `/jobs`, `/search/candidates`, `/library`, `/library/leaderboard`, `/rooms`, the live room, `/me/alerts`,
+- `src/steps.ts`: the steps. `src/screens.tsx`: the pages by address (`/people`, `/search/ask`, `/asks`,
+  `/jobs`, `/search/candidates`, `/library`, `/library/leaderboard`, `/rooms`, the live room, `/me/alerts`,
   `/admin/announcements`, `/admin`) around the app's real components, and the seeded query cache. `src/data.ts`: the made-up
   data (from `src/platform/demo/`). `src/player.ts`: point, click, tap, type, submit, fill, show, wait. `src/main.tsx`: the
   page controller (modes, tabs, Pause/Play, scaling, theme).

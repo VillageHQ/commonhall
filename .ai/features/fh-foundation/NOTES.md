@@ -51,11 +51,19 @@ log, need cards) have their Commonhall classes in `parts.css` and a worked examp
 (`src/app/parts/parts-gallery.tsx`). The area that owns the screen turns its example into a component.
 
 ## The shell (`src/shell/`)
-- `app-shell.tsx` — Commonhall's `page()`: sidebar (fund mark, the admin's Console | View as a founder switch, menu,
-  member + Sign out, footer line), phone top bar (fund mark + avatar → My profile), founder-view strip, `main` with the
-  flash slot and the phone foot, phone tab bar. No account menu.
-- `navigation.ts` — the two menus (member and console) in Commonhall's order; module entries show only while their
-  module is on, and take their address from the module's manifest, so a renamed route follows.
+- `app-shell.tsx` — Commonhall's `page()`: sidebar (fund mark, menu, the member who opens the avatar menu, footer
+  line), phone top bar (fund mark + avatar → the avatar menu), founder-view strip, `main` with the flash slot and the
+  phone foot (the footer line only), phone tab bar.
+- Round 6 (`.ai/features/simplify-round6/SPEC.md`, part 1): members get five tabs, Rooms · Today · Asks · People ·
+  Inbox, the same on the phone bar and in the sidebar. Rooms shows while it's on, with a dot while a room is live
+  (`countLiveRooms`); Inbox shows while Messages or Intros is on, and counts unread messages plus intro asks waiting
+  for your yes (`navigation-badges.ts` reads the intro part and the dot; the layout passes them). The console lists
+  Home · Members · Asks & intros · Announce · Report · Set up, five of them phone tabs (Report lights Home).
+- `user-menu.tsx` — the avatar menu (Radix DropdownMenu): My profile, Alerts, Email, Your data, "More" (the member
+  menu's `place: "more"` items: Jobs, Perks, Library, Feed while on), the admin's "Admin console" / "See it as a
+  founder", Dark mode and Sign out. `DarkModeRow` stays exported until Your data drops it.
+- `navigation.ts` — the two menus (member and console); module entries show only while one of their modules is on,
+  and take their address from the entry or the module's manifest, so a renamed route follows.
 - `navigation-rules.ts` — which item and which phone tab a page lights (`readMemberKey`, `readConsoleKey`…). The console
   is every page under `/admin` for an admin; elsewhere an admin sees the founder view.
 - `admin-tabs.tsx` — Community-only console pages (Settings, Email, Village check, Credits, Slack and Discord, Perks,
@@ -64,7 +72,17 @@ log, need cards) have their Commonhall classes in `parts.css` and a worked examp
 - Intro log (`/admin/intros`) and Invites (`/admin/invites`) forward to the partner report and Members until area 6
   builds them. Set up points at `/admin/settings` until the Set up list exists.
 - Count badges stay on menu items and tabs (Commonhall shows none); the owner decides.
-- Dark mode: the account menu is gone; its switch is a row on Your data (`DarkModeRow`). The owner kept it; its look is in `.ai/features/fh-dark/NOTES.md`.
+- Dark mode: a switch in the avatar menu (round 6); its look is in `.ai/features/fh-dark/NOTES.md`.
+- People (`/people`, `shell/people-screen.tsx` around the members module's `MemberDirectory`): the box finds members as
+  you type (no Village search spent), "Filter" folds the view switch and the selects, 30 to a page, and the chips
+  "Who are you looking for?" while Intros is on ("An expert" opens the experts view; the others suggest what to type).
+  "Search their networks" (Network on, Village set up, the member's own network connected) runs only while the address
+  carries `net=1` (`modules/network/components/search-links.ts`); a member not yet connected sees a "Connect your
+  network" line. Old `/directory`, `/search`, `/network` and bare `/search/ask` redirect here (`next.config.mjs`);
+  `/search/ask?target=…&via=…` stays the one-step intro ask.
+- Inbox (`/inbox`, a shell page owned by members): "Waiting for your yes" on top, then conversations; `?show=intros`
+  (where `/intros` lands) lists the intros you asked for. Messages owns only the pages under `/inbox/` (an owned path
+  ending in "/" claims just its children). `/ask` answers with `/asks?compose=1`, or People while Asks is off.
 
 ## The parts page
 `/parts`, a test page that answers 404 unless `SHOW_PARTS_PAGE=true`. It reads Commonhall's crops from
