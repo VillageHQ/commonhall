@@ -19,6 +19,7 @@ import { logError } from "../../platform/observability/route-logging.ts";
 import { removeBidiControls } from "../../platform/text/safe-text.ts";
 import { ASK_CONSENT, ASK_HELPER_REASONS, ASK_WARMTHS, describeAskWho, describeWhyYou, toAskPage, type AskHelperReason, type HelperReasonLine } from "./contract.ts";
 import { hasNoBlockBetween, readWordHelpers } from "./reads.ts";
+import { readAskMatchText } from "./rules-help-match.ts";
 import { ask, askHelper } from "./schema.ts";
 
 const WHY_LENGTH = 300;
@@ -196,9 +197,7 @@ export async function routeAskToHelpers(context: RequestContext, askId: string, 
 
   const lookup = await findPathHelpers(context, routed, findPaths);
   if (lookup?.targetName && routed.targetSlug) await database.update(ask).set({ targetName: clip(lookup.targetName) }).where(eq(ask.id, askId));
-  // Commonhall matches profiles on who the ask is trying to reach, or on the ask itself when it names nobody.
-  const matchText = routed.targetText || routed.targetCompany ? [routed.targetText ?? "", routed.targetCompany ?? ""].join(" ") : [routed.title, routed.detail ?? ""].join(" ");
-  const wordHelpers = await readWordHelpers(database, member.id, matchText);
+  const wordHelpers = await readWordHelpers(database, member.id, readAskMatchText(routed));
   const drafts = mergeHelpers(member.id, lookup, wordHelpers);
   const branding = await readEmailBranding(database, environment);
   const helperCount = await database.transaction((transaction) => saveHelpers(transaction, environment, branding, routed, drafts));

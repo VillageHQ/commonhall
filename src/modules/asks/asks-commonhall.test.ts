@@ -4,11 +4,13 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } 
 import { POST as postAnswer } from "@/app/api/asks/answer/route";
 import { POST as postCreate } from "@/app/api/asks/create/route";
 import { POST as postHelp } from "@/app/api/asks/help/route";
+import { POST as postSkip } from "@/app/api/asks/skip/route";
 import { POST as postStatus } from "@/app/api/asks/status/route";
 import { POST as postFactCheck } from "@/app/api/profile/fill-in/check/route";
 import { ASK_ALLOWANCE, ASK_ALLOWANCE_SETTING, ASK_OUTCOMES, createdAskSchema, describeAskWho, describeWhyYou } from "@/modules/asks/contract";
 import { asksManifest } from "@/modules/asks/manifest";
 import { readAskDetail, readAsksPage } from "@/modules/asks/reads-board";
+import { readAsksYouCouldHelp } from "@/modules/asks/reads-could-help";
 import { ask, askAnswer, askHelper } from "@/modules/asks/schema";
 import { renderHelperEmail } from "@/modules/asks/service-helpers";
 import { renderHelpOfferedEmail } from "@/modules/asks/service-status";
@@ -165,7 +167,7 @@ describe("Commonhall's asks and Today", () => {
   });
 
   describe("I can help", () => {
-    it("leaves a public line under the ask and tells the asker by email, once", async () => {
+    it("leaves a fixed public line under the ask, keeps the note for the asker, and tells the asker by email, once", async () => {
       const askId = await post(amara, { title: ASK, targetText: "a plant manager in cement" });
 
       const response = await call(postHelp, priya, { askId, kind: "know_someone", person: "Dana Morris", note: "Dana ran supply chain at Mercy Ridge; we worked together for two years." });
@@ -174,7 +176,7 @@ describe("Commonhall's asks and Today", () => {
 
       const lines = await database.select({ body: askAnswer.body, kind: askAnswer.kind }).from(askAnswer).orderBy(askAnswer.createdAt);
       expect(lines).toEqual([
-        { body: "Dana ran supply chain at Mercy Ridge; we worked together for two years.", kind: "know_someone" },
+        { body: "I know Dana Morris and can introduce you.", kind: "know_someone" },
         { body: "I’ve done this myself. Happy to talk it through.", kind: "done_myself" },
       ]);
       const emails = await database.select({ subject: emailOutbox.subject, to: emailOutbox.toEmail }).from(emailOutbox).where(eq(emailOutbox.kind, "ask_help_offered")).orderBy(emailOutbox.createdAt);
@@ -184,6 +186,26 @@ describe("Commonhall's asks and Today", () => {
 
       const detail = await readAskDetail(database, { viewerId: sam.userId, askId });
       expect(detail?.answers.map(({ kind }) => kind)).toEqual(["know_someone", "done_myself"]);
+      // The note is private: the asker and its writer read it; a third member never does.
+      const note = "Dana ran supply chain at Mercy Ridge; we worked together for two years.";
+      expect(detail?.answers.map(({ privateNote }) => privateNote ?? null)).toEqual([null, null]);
+      expect(JSON.stringify(await readAsksPage(database, { viewerId: sam.userId, tab: "open", search: null }))).not.toContain("Mercy Ridge");
+      expect((await readAskDetail(database, { viewerId: amara.userId, askId }))?.answers[0]?.privateNote).toBe(note);
+      expect((await readAskDetail(database, { viewerId: priya.userId, askId }))?.answers[0]?.privateNote).toBe(note);
+    });
+
+    it("'Not for me' takes the ask off For you and Today, and leaves it on Open", async () => {
+      const askId = await post(amara, { title: ASK });
+      await database.insert(askHelper).values({ askId, helperId: sam.userId, reason: "words", why: "can help with “Cement and ceramics”" });
+      const forYou = async () => (await readAsksPage(database, { viewerId: sam.userId, tab: "for-you", search: null })).posts.map(({ id }) => id);
+      expect(await forYou()).toEqual([askId]);
+
+      expect((await call(postSkip, sam, { askId })).status).toBe(OK_STATUS);
+
+      expect(await forYou()).toEqual([]);
+      expect((await readAsksPage(database, { viewerId: sam.userId, tab: "for-you", search: null })).counts["for-you"]).toBe(0);
+      expect(await readAsksYouCouldHelp(database, sam.userId)).toEqual([]);
+      expect((await readAsksPage(database, { viewerId: sam.userId, tab: "open", search: null })).posts.map(({ id }) => id)).toContain(askId);
     });
 
     it("can't be offered on your own ask", async () => {

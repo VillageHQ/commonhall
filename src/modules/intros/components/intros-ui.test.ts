@@ -185,61 +185,46 @@ describe("the intro screens (Commonhall's)", () => {
   describe("the connector's answer", () => {
     const asked = makeIntro({ viewerRole: INTRO_ROLES.introducer, requester: { ...MARCUS }, introducer: { ...SAM }, target: { name: "Rachel Kim", headline: "CFO at Brightside Clinics", linkedinSlug: null, isNamed: true } });
 
-    it("asks the question first: three choices, the person's email and the note to edit, the consent line once", () => {
-      renderInApp(createElement(IntroPage, { intro: asked, community: COMMUNITY, canEmail: true, hasThread: false }));
+    it("shows the asker's note first, then two buttons: Introduce and No thanks, with no field to fill", () => {
+      const { container } = renderInApp(createElement(IntroPage, { intro: asked, community: COMMUNITY, canEmail: true, hasThread: false }));
 
       expect(screen.getByRole("heading", { level: 1, name: "Introduce Marcus to Rachel?" })).toBeTruthy();
-      expect(screen.getByRole("group", { name: "Introduce Marcus to Rachel?" })).toBeTruthy();
-      expect(screen.getByText("Marcus is never told why.")).toBeTruthy();
-      expect(screen.getByLabelText(/I don’t know them well/)).toBeTruthy();
-      expect(screen.getByLabelText("Rachel’s email")).toBeTruthy();
-      expect(screen.getByText("Rachel sees Marcus’ address only after saying yes.")).toBeTruthy();
-      expect(screen.getByText("Edit the note")).toBeTruthy();
       expect(screen.getByText("Marcus’ note")).toBeTruthy();
+      expect(container.querySelector(".fh-note-first")).toBeTruthy();
+      expect(screen.getByRole("button", { name: "Introduce" })).toBeTruthy();
+      expect(screen.getByRole("button", { name: "No thanks" })).toBeTruthy();
+      expect(screen.getByText("If it’s no thanks, Marcus is never told why.")).toBeTruthy();
+      expect(container.querySelectorAll("input, textarea, select")).toHaveLength(0);
       expect(screen.getAllByText("Nobody is introduced without saying yes.")).toHaveLength(1);
       expect(screen.getByRole("button", { name: "Report this note" })).toBeTruthy();
     });
 
-    it("needs no email typed when the asker gave the person's address, and never shows it", async () => {
-      const withAddress = { ...asked, suggestedTargetEmail: "rachel@brightside.example" };
-      const { container } = renderInApp(createElement(IntroPage, { intro: withAddress, community: COMMUNITY, canEmail: true, hasThread: false }));
-
-      expect(screen.queryByLabelText("Rachel’s email")).toBeNull();
-      expect(container.innerHTML).not.toContain("rachel@brightside.example");
-      fireEvent.click(screen.getByLabelText(/Yes, introduce them/));
-      fireEvent.click(screen.getByRole("button", { name: "Send" }));
-
-      await waitFor(() =>
-        expect(posts).toContainEqual({
-          path: API_ROUTES.introConnectorAnswer,
-          body: { introId: asked.id, choice: "yes", targetEmail: null, note: NOTE, reason: null },
+    it("sends a yes in one tap and keeps the link it gets back for the next screen", async () => {
+      const issued = { link: "https://community.example/meet/abc", token: "abc", canEmailTarget: true };
+      vi.stubGlobal(
+        "fetch",
+        vi.fn(async (_path: string, init: RequestInit) => {
+          posts.push({ path: _path, body: JSON.parse(String(init.body)) });
+          return new Response(JSON.stringify({ ...asked, state: INTRO_STATES.askingTarget, consentIssue: issued }), { headers: { "Content-Type": "application/json" } });
         }),
       );
+      let seen: unknown = null;
+      renderInApp(createElement(IntroPage, { intro: asked, community: COMMUNITY, canEmail: true, hasThread: false }), (queryClient) => {
+        queryClient.getQueryCache().subscribe(() => (seen = queryClient.getQueryData(issuedConsentQuery(asked.id).queryKey) ?? seen));
+      });
+
+      fireEvent.click(screen.getByRole("button", { name: "Introduce" }));
+
+      await waitFor(() => expect(posts).toContainEqual({ path: API_ROUTES.introConnectorAnswer, body: { introId: asked.id, choice: "yes", targetEmail: null, note: null, reason: null } }));
+      await waitFor(() => expect(seen).toEqual(issued));
     });
 
-    it("sends the yes with the address and the edited note in one step", async () => {
-      renderInApp(createElement(IntroPage, { intro: asked, community: COMMUNITY, canEmail: true, hasThread: false }));
-
-      fireEvent.click(screen.getByLabelText(/Yes, introduce them/));
-      fireEvent.change(screen.getByLabelText("Rachel’s email"), { target: { value: "rachel@brightside.example" } });
-      fireEvent.click(screen.getByRole("button", { name: "Send" }));
-
-      await waitFor(() =>
-        expect(posts).toContainEqual({
-          path: API_ROUTES.introConnectorAnswer,
-          body: { introId: asked.id, choice: "yes", targetEmail: "rachel@brightside.example", note: NOTE, reason: null },
-        }),
-      );
-    });
-
-    it("asks for an answer before sending", async () => {
+    it("says no in one tap, one kind of no", async () => {
       renderInApp(createElement(IntroPage, { intro: asked, community: COMMUNITY, canEmail: false, hasThread: false }));
 
-      expect(screen.queryByLabelText("Rachel’s email")).toBeNull();
-      fireEvent.click(screen.getByRole("button", { name: "Send" }));
+      fireEvent.click(screen.getByRole("button", { name: "No thanks" }));
 
-      expect(await screen.findByText("Pick an answer.")).toBeTruthy();
-      expect(posts).toEqual([]);
+      await waitFor(() => expect(posts).toContainEqual({ path: API_ROUTES.introConnectorAnswer, body: { introId: asked.id, choice: "not_now", targetEmail: null, note: null, reason: null } }));
     });
   });
 
@@ -263,6 +248,8 @@ describe("the intro screens (Commonhall's)", () => {
         queryClient.setQueryData(issuedConsentQuery(asking.id).queryKey, issued),
       );
       expect(screen.getByText(/Send Rosa this private link/)).toBeTruthy();
+      expect(screen.getByRole("button", { name: "Copy link" })).toBeTruthy();
+      expect(screen.getByText("Email it to Rosa")).toBeTruthy();
 
       fireEvent.change(screen.getByLabelText("Rosa's email"), { target: { value: "rosa@halcyon.example" } });
       fireEvent.click(screen.getByRole("button", { name: "Email Rosa" }));

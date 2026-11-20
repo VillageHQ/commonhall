@@ -16,7 +16,7 @@ import { ROUTES } from "@/platform/http/routes";
 
 import { NextStepCard } from "./next-step-card";
 import type { NextStep } from "./next-steps";
-import { FactButtons, NotThisWeekButton } from "./today-actions";
+import { FactButtons, HelpAskButtons } from "./today-actions";
 import type { TodayItems } from "./today";
 
 // "Post an ask" opens the Asks box, focused (round 6: the old /ask intro wizard is gone from Today).
@@ -174,13 +174,10 @@ export function TodayPage({ today, memberName, dateLabel, liveRoom, replyDay, sh
                   <b>{ask.author.name}</b>
                 </div>
               </div>
-              <p className="fh-body">{ask.title}</p>
-              <div className="fh-btn-row">
-                <Link className="fh-btn fh-btn-primary" href={`${toAskPage(ask.id)}#help`} title={ask.whyYou}>
-                  I can help
-                </Link>
-                <NotThisWeekButton askId={ask.id} />
-              </div>
+              <p className="fh-body">
+                <Link href={toAskPage(ask.id)}>{ask.title}</Link>
+              </p>
+              <HelpAskButtons askId={ask.id} knownPerson={ask.knownPerson} whyYou={ask.whyYou} />
             </article>
           ))}
         </section>

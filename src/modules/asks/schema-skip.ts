@@ -3,8 +3,8 @@ import { pgTable, primaryKey, text, timestamp, uuid } from "drizzle-orm/pg-core"
 import { user } from "../../platform/database/auth-schema.ts";
 import { ask } from "./schema.ts";
 
-// A member's "not for me" on someone else's ask. It only hides the ask from their Today page and
-// weekly email; the board still shows it.
+// A member's "not for me" on someone else's ask. It hides the ask from their Today page, their For you
+// filter and their weekly email; Open and search still show it.
 export const askSkip = pgTable(
   "ask_skip",
   {

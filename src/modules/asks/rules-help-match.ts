@@ -79,3 +79,9 @@ export function findMatchedWords(askText: string, helperWords: ReadonlySet<strin
   const partsOfMatched = new Set(matched.filter((word) => word.includes("-")).flatMap((word) => word.split("-")));
   return matched.filter((word) => !partsOfMatched.has(word));
 }
+
+// The words an ask is matched on: the ask itself and whom it names, together (round 7). A named target only adds
+// words, so filling the folded box never finds fewer helpers than leaving it empty.
+export function readAskMatchText(ask: { title: string; detail?: string | null; targetText?: string | null; targetCompany?: string | null }) {
+  return [ask.title, ask.detail, ask.targetText, ask.targetCompany].filter(Boolean).join(" ");
+}

@@ -15,7 +15,7 @@ import { networkManifest } from "@/modules/network/manifest";
 import { describeAllowanceUsed, readAskAllowance } from "@/shell/ask-helpers";
 import { readAskerProfile, readIntroConnectorCard, readOneStepAsk } from "@/shell/intro-ask";
 import { OneStepAskForm } from "@/shell/intro-ask-forms";
-import { draftShortNote } from "@/shell/intro-ask-note";
+import { draftIntroNote } from "@/shell/intro-ask-note";
 
 export const metadata: Metadata = { title: PAGE_TITLES.introAsk };
 
@@ -72,7 +72,7 @@ export default modulePage(networkManifest, async function SearchAskPage({ search
           connectorName={connector.name}
           connectorSlug={ask.connectorSlug}
           targetSlug={targetSlug}
-          draftNote={draftShortNote(asker, { targetName: ask.targetName, targetCompany: ask.targetAbout?.split(", ").slice(1).join(", ") || null })}
+          draftNote={draftIntroNote(asker, { name: ask.targetName, about: ask.targetAbout ?? null })}
           cap={allowance.cap}
           communityName={community.name}
           blockedReason={blockedReason}

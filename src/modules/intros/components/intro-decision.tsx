@@ -45,15 +45,13 @@ type DecisionFormProps = {
   // "What came of it?" ticks, for the outcome question.
   withResults?: boolean;
   hasConsentLine?: boolean;
-  // Community's private note when saying no (never shown to the asker); appears only once a "no" is picked.
-  withPrivateNote?: boolean;
   submit: (values: DecisionValues) => Promise<void>;
   after?: ReactNode;
   // The step closed meanwhile (answered in another tab): the page shows "Nothing to do" instead of an error.
   onClosed?: () => void;
 };
 
-export function DecisionForm({ legend, isLegendShown = true, submitLabel = "Send my answer", noteLabel = "Edit the note before it goes on", choices, initialChoice = null, email = null, note = null, withResults = false, hasConsentLine = true, withPrivateNote = false, submit, after, onClosed }: DecisionFormProps) {
+export function DecisionForm({ legend, isLegendShown = true, submitLabel = "Send my answer", noteLabel = "Edit the note before it goes on", choices, initialChoice = null, email = null, note = null, withResults = false, hasConsentLine = true, submit, after, onClosed }: DecisionFormProps) {
   const id = useId();
   const [error, setError] = useState<{ message: string; field: Field | null } | null>(null);
   const [isPending, setIsPending] = useState(false);
@@ -75,7 +73,7 @@ export function DecisionForm({ legend, isLegendShown = true, submitLabel = "Send
         targetEmail: email ? String(form.get(FIELDS.targetEmail) ?? "").trim() || null : null,
         note: note === null ? null : String(form.get(FIELDS.note) ?? ""),
         results: form.getAll("results").map(String),
-        privateNote: withPrivateNote ? String(form.get("reason") ?? "").trim() || null : null,
+        privateNote: null,
       });
     } catch (failure) {
       const message = failure instanceof Error ? failure.message : "This answer didn't come through. Try again.";
@@ -152,15 +150,6 @@ export function DecisionForm({ legend, isLegendShown = true, submitLabel = "Send
           <Textarea name={FIELDS.note} maxLength={INTRO_LIMITS.noteLength} rows={6} defaultValue={note} className="mt-2" />
           {noteError ? <p className="fh-hint fh-err">{noteError}</p> : null}
         </details>
-      ) : null}
-      {withPrivateNote ? (
-        <div className="fh-field hidden [.fh-decide:has(input[name=a][value=dont_know]:checked)_&]:block [.fh-decide:has(input[name=a][value=not_now]:checked)_&]:block">
-          <label className="fh-label" htmlFor={`${id}-reason`}>
-            A note for yourself (optional)
-          </label>
-          <Textarea id={`${id}-reason`} name="reason" rows={3} maxLength={INTRO_LIMITS.declineReasonLength} className="mt-2 min-h-0" />
-          <p className="fh-hint">Private to you. The asker never sees it, and it’s never emailed.</p>
-        </div>
       ) : null}
       <div className="fh-btn-row mt-3.5">
         <Button type="submit" width="block" disabled={isPending}>

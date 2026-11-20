@@ -89,8 +89,8 @@ async function lockAskToHelp(transaction: Transaction, askId: string, helperId: 
   return target;
 }
 
-// "I can help": the helper's line goes under the ask (Knows someone, or Has done this), the asker hears by email,
-// and Community's private offer is kept too, so the asker's offers count stays right. A path helper's person is the
+// "I can help": a fixed public line goes under the ask (Knows someone, or Has done this), the asker hears by email,
+// and the private offer keeps the helper's note, which only the asker (and its writer) sees. A path helper's person is the
 // one they know when they name nobody.
 export async function helpWithAsk(context: RequestContext, { askId, kind, person, note }: HelpAskBody) {
   const { database, environment, member } = context;
@@ -103,12 +103,13 @@ export async function helpWithAsk(context: RequestContext, { askId, kind, person
       .from(askHelper)
       .where(and(eq(askHelper.askId, askId), eq(askHelper.helperId, member.id)));
     const knownPerson = person ?? (kind === ASK_HELP_KINDS.knowSomeone ? (routed?.personName ?? null) : null);
-    const body = note || readDefaultHelpLine(kind, knownPerson);
+    // Round 7: the public line is always the fixed sentence; the helper's note is private to the asker (the offer).
+    const body = readDefaultHelpLine(kind, knownPerson);
     const [created] = await transaction
       .insert(askAnswer)
       .values({ askId, authorId: member.id, body, kind: kind === ASK_HELP_KINDS.knowSomeone ? ASK_ANSWER_KINDS.knowSomeone : ASK_ANSWER_KINDS.doneMyself })
       .returning({ id: askAnswer.id });
-    await transaction.insert(askOffer).values({ askId, helperId: member.id, note: clipLine(body, 500) }).onConflictDoNothing();
+    await transaction.insert(askOffer).values({ askId, helperId: member.id, note: clipLine(note || body, 500) }).onConflictDoNothing();
     if (branding) {
       await queueEmail(transaction, environment, {
         kind: EMAIL_KINDS.askHelpOffered,

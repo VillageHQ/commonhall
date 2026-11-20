@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, asc, desc, eq, ilike, inArray, isNotNull, isNull, ne, or, sql, type SQL } from "drizzle-orm";
+import { and, asc, desc, eq, ilike, inArray, isNotNull, isNull, ne, not, or, sql, type SQL } from "drizzle-orm";
 import { alias, type AnyPgColumn } from "drizzle-orm/pg-core";
 
 import { isActiveMember } from "../../platform/auth/member-status.ts";
@@ -24,6 +24,7 @@ import {
 import { hasNoBlockBetween, isOpenAsk, readSearchWords } from "./reads.ts";
 import { canRenewAsk, readAskState } from "./rules-state.ts";
 import { ask, askAnswer, askHelper, askOffer } from "./schema.ts";
+import { askSkip } from "./schema-skip.ts";
 
 // The Asks page and one ask's page, read on the server. The filters: Open (open asks and updates), For you (open asks
 // routed to the viewer), Yours (the viewer's own), and Answered (closed asks, the archive) at its old address. A search
@@ -62,7 +63,8 @@ export type PostHelper = {
   canAskForIntro: boolean;
 };
 
-export type PostAnswer = { id: string; author: AskMember; body: string; kind: AskAnswerKind; createdAt: string; isMine: boolean };
+// `privateNote`: the note left with "I can help", shown only to the asker and the helper who wrote it.
+export type PostAnswer = { id: string; author: AskMember; body: string; kind: AskAnswerKind; createdAt: string; isMine: boolean; privateNote?: string | null };
 
 export type BoardPost = {
   id: string;
@@ -193,10 +195,12 @@ function toPost(row: PostRow, viewerId: string, helpers: PostHelper[], answers: 
   };
 }
 
-// An open ask from someone else that was routed to the viewer (a path, or their "can help with" words).
+// An open ask from someone else that was routed to the viewer (a path, or their "can help with" words), unless they
+// said "Not for me" on it (round 7: it leaves For you too, not only Today).
 function isForViewer(viewerId: string, now: Date) {
   const routed = sql`exists (select 1 from ${askHelper} where ${askHelper.askId} = ${ask.id} and ${askHelper.helperId} = ${viewerId})`;
-  return and(eq(ask.kind, ASK_KINDS.ask), isOpenAsk(now), ne(ask.authorId, viewerId), routed);
+  const skipped = sql`exists (select 1 from ${askSkip} where ${askSkip.askId} = ${ask.id} and ${askSkip.memberId} = ${viewerId})`;
+  return and(eq(ask.kind, ASK_KINDS.ask), isOpenAsk(now), ne(ask.authorId, viewerId), routed, not(skipped));
 }
 
 function isOnTab(tab: AskTab, viewerId: string, now: Date): SQL | undefined {
@@ -276,7 +280,25 @@ export async function readAskDetail(database: Database, { viewerId, askId }: { v
   const postAnswers = answers.get(askId) ?? [];
   const post = toPost(row, viewerId, postHelpers, postAnswers, now);
   const privateOffers = post.isMine ? await readPrivateOffers(database, askId, viewerId, postAnswers, now) : [];
-  return { post, helpers: post.kind === ASK_KINDS.ask ? postHelpers : [], answers: postAnswers, privateOffers, canReopen: post.state === ASK_STATES.closed, canRenew: post.isMine && canRenewAsk(row, now) };
+  const shownAnswers = await attachPrivateNotes(database, askId, viewerId, post.isMine, postAnswers);
+  return { post, helpers: post.kind === ASK_KINDS.ask ? postHelpers : [], answers: shownAnswers, privateOffers, canReopen: post.state === ASK_STATES.closed, canRenew: post.isMine && canRenewAsk(row, now) };
+}
+
+// The note under an "I can help" line, for the asker (every helper's) and for the helper (their own). Nobody else
+// reads `ask_offer`. A note that only repeats the public line adds nothing, so it isn't shown twice.
+async function attachPrivateNotes(database: Database, askId: string, viewerId: string, isAsker: boolean, answers: PostAnswer[]) {
+  const helpLines = answers.filter(({ kind, isMine }) => kind !== ASK_ANSWER_KINDS.answer && (isAsker || isMine));
+  if (helpLines.length === 0) return answers;
+  const rows = await database
+    .select({ helperId: askOffer.helperId, note: askOffer.note })
+    .from(askOffer)
+    .where(and(eq(askOffer.askId, askId), inArray(askOffer.helperId, helpLines.map(({ author }) => author.id))));
+  const notes = new Map(rows.map(({ helperId, note }) => [helperId, note]));
+  return answers.map((answer) => {
+    if (!helpLines.includes(answer)) return answer;
+    const note = notes.get(answer.author.id)?.trim() ?? "";
+    return note && note !== answer.body.trim() ? { ...answer, privateNote: note } : answer;
+  });
 }
 
 async function readPrivateOffers(database: Database, askId: string, viewerId: string, answers: PostAnswer[], now: Date) {

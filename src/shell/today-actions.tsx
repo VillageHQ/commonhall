@@ -3,14 +3,18 @@
 import { Check, EyeOff } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
+import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ASK_API_ROUTES, ASK_HELP_KINDS } from "@/modules/asks/contract";
 import { ASK_SKIP_ROUTE, skippedAskSchema } from "@/modules/asks/contract-today";
 import { FACT_ANSWERS, FACT_FIX_LENGTH, type CheckedField } from "@/modules/members/contract-fill-in";
 import { acknowledgedResponseSchema } from "@/platform/http/contract";
 import { postRequest } from "@/platform/http/post-request";
 import { API_ROUTES, ROUTES } from "@/platform/http/routes";
+
+const helpedAskSchema = z.object({ answerId: z.string().nullable() });
 
 const ICON = { "aria-hidden": true, className: "fh-i fh-xs", strokeWidth: 1.5 } as const;
 
@@ -42,14 +46,26 @@ function ErrorLine({ error }: { error: string | null }) {
   ) : null;
 }
 
-// "Not this week": the ask leaves Today and the weekly email for this member; its author isn't told.
-export function NotThisWeekButton({ askId }: { askId: string }) {
+// "I can help" and "Not for me" under an ask on Today (round 7). I can help commits on the first tap, with the
+// fixed public line and no note (a note is for the ask's own page). Not for me hides the ask from Today, For you and
+// the weekly email for this member; its author isn't told.
+export function HelpAskButtons({ askId, knownPerson, whyYou }: { askId: string; knownPerson: string | null; whyYou: string }) {
   const { error, isPending, run } = useTodayAction();
+  const kind = knownPerson ? ASK_HELP_KINDS.knowSomeone : ASK_HELP_KINDS.doneMyself;
   return (
     <>
-      <Button variant="secondary" disabled={isPending} onClick={() => void run(() => postRequest(ASK_SKIP_ROUTE, { askId }, skippedAskSchema), "skipped")}>
-        Not this week
-      </Button>
+      <div className="fh-btn-row">
+        <Button
+          disabled={isPending}
+          title={whyYou}
+          onClick={() => void run(() => postRequest(ASK_API_ROUTES.help, { askId, kind, person: knownPerson ?? "", note: "" }, helpedAskSchema), kind === ASK_HELP_KINDS.knowSomeone ? "knows" : "helped")}
+        >
+          I can help
+        </Button>
+        <Button variant="secondary" disabled={isPending} onClick={() => void run(() => postRequest(ASK_SKIP_ROUTE, { askId }, skippedAskSchema), "skipped")}>
+          Not for me
+        </Button>
+      </div>
       <ErrorLine error={error} />
     </>
   );

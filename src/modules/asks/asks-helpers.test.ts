@@ -238,6 +238,17 @@ describe("asks that reach helpers", () => {
       expect((await post(amara, { title: "Need help with freight pricing for Europe" })).helperCount).toBe(1);
     });
 
+    it("matches the ask's own words and whom it names together, so naming someone never finds fewer", async () => {
+      village.state.pathsByUrl.clear();
+      await setCanHelpWith(bystander, "Hospital procurement");
+      const named = { targetLinkedin: null, targetText: "Head of procurement", targetCompany: "Halcyon Health" };
+
+      expect((await post(amara, { targetLinkedin: null })).helperCount).toBe(1);
+      expect((await post(amara, named)).helperCount).toBe(2);
+      const [askToday] = await readAsksYouCouldHelp(database, bystander.userId);
+      expect(askToday?.matchedWords).toEqual(["procurement"]);
+    });
+
     it("refuses a link that isn't a LinkedIn profile, and junk typed as a profile name", async () => {
       for (const targetLinkedin of ["https://example.com/somebody", "javascript:alert(1)", "a b c", "‮evil", "clara%22onmouseover%3Dalert(1)"]) {
         const response = await call(postCreate, amara, { title: FREIGHT_ASK, category: ASK_CATEGORIES.intro, targetLinkedin });

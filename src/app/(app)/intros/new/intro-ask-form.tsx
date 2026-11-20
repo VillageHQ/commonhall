@@ -12,12 +12,12 @@ import { ROUTES } from "@/platform/http/routes";
 import { SHORT_PRIVACY_LINE } from "@/modules/intros/components/intro-words";
 import { createIntroRequest, INTRO_QUERY_KEYS } from "@/modules/intros/queries";
 import { ASKED_FLASH_PARAM, ASKED_FLASH_VALUE } from "@/shell/intro-ask-forms";
-import { NOTE_MAXIMUM } from "@/shell/intro-ask-note";
+import { NOTE_MAXIMUM, describeTargetAbout, draftIntroNote, type AskerProfile } from "@/shell/intro-ask-note";
 
 type IntroAskFormProps = {
   connector: { id: string; name: string };
-  // Drafted from the asker's profile; they change anything before it goes.
-  draftNote: string;
+  // The note is drafted from the asker's card and the person they name, until they edit it themselves.
+  asker: AskerProfile;
   // Why the ask can't go now (the week's asks are used, the member paused asks), or null.
   blockedReason: string | null;
 };
@@ -34,11 +34,13 @@ function PersonField({ id, label, placeholder, value, onChange, isRequired = fal
 }
 
 // The ask from a member's profile (round 6): who, and one short note. How an intro works sits under its own fold.
-export function IntroAskForm({ connector, draftNote, blockedReason }: IntroAskFormProps) {
+export function IntroAskForm({ connector, asker, blockedReason }: IntroAskFormProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [person, setPerson] = useState({ name: "", role: "", company: "" });
-  const [note, setNote] = useState(draftNote);
+  // Null while the asker hasn't touched the note: it follows the person's boxes as they're filled in.
+  const [editedNote, setEditedNote] = useState<string | null>(null);
+  const note = editedNote ?? draftIntroNote(asker, { name: person.name, about: describeTargetAbout(person.role, person.company) });
   const connectorFirst = readFirstName(connector.name);
   const ask = useMutation({
     mutationFn: createIntroRequest,
@@ -72,7 +74,7 @@ export function IntroAskForm({ connector, draftNote, blockedReason }: IntroAskFo
         <label className="fh-label" htmlFor="a-note" style={{ marginTop: 18 }}>
           Your note to {connectorFirst}
         </label>
-        <textarea className="fh-textarea" id="a-note" name="note" rows={7} maxLength={NOTE_MAXIMUM} required value={note} onChange={(event) => setNote(event.target.value)} />
+        <textarea className="fh-textarea" id="a-note" name="note" rows={7} maxLength={NOTE_MAXIMUM} required value={note} onChange={(event) => setEditedNote(event.target.value)} />
         <div style={{ marginTop: 12 }}>
           <ConsentLine />
           {/* The owner decided (2026-11-11): admins see who asked whom, and members are told where they ask. */}

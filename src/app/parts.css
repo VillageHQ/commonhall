@@ -353,6 +353,7 @@ a.fh-mcard:hover .fh-who b{text-decoration:underline;text-decoration-thickness:1
 .fh-comment b{font:600 14px/18px var(--serif)}
 .fh-comment p{font-size:14px;line-height:20px}
 .fh-comment small{color:var(--graphite);font-size:12px}
+.fh-comment .fh-privnote{display:flex;gap:6px;align-items:flex-start;margin-top:6px;padding:8px 10px;border-radius:8px;background:var(--vellum);white-space:pre-wrap}
 .fh-threads .fh-r .fh-who b{font-size:15.5px}
 .fh-threads .fh-r.fh-unread .fh-who b::after{content:'';display:inline-block;width:7px;height:7px;margin-left:8px;border-radius:50%;background:var(--ink);vertical-align:middle}
 .fh-msgs{display:flex;flex-direction:column;gap:12px;margin-top:8px}
@@ -388,6 +389,7 @@ a.fh-mcard:hover .fh-who b{text-decoration:underline;text-decoration-thickness:1
 .fh-toast svg{color:#93C2AC}
 .fh-reveal{display:none}
 .fh-reveal.fh-open{display:block}
+.fh-note-first{display:flex;flex-direction:column}
 @media (min-width:1000px){
 .fh-app{display:grid;grid-template-columns:264px minmax(0,1fr);background:linear-gradient(90deg,var(--side) 263px,var(--rule) 263px,var(--rule) 264px,transparent 264px)}
 .fh-prof.fh-paths-first{display:grid}
@@ -590,7 +592,9 @@ a.fh-chip{text-decoration:none}
 .fh-composer .fh-seg.fh-kind span{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:6px;font:500 14px/18px var(--sans);color:var(--graphite);cursor:pointer}
 .fh-composer .fh-seg.fh-kind input:checked + span{background:var(--leaf);color:var(--ink);box-shadow:0 1px 2px rgba(17,17,16,.14)}
 .fh-composer .fh-seg.fh-kind input:focus-visible + span{outline:2px solid var(--fund);outline-offset:1px}
-.fh-oneline{display:flex;gap:8px}
+.fh-oneline{display:flex;gap:8px;align-items:flex-start}
+.fh-composer .fh-askbox{flex:1;min-width:0;min-height:44px;resize:none;overflow:hidden}
+.fh-composer .fh-winline{margin-top:6px;text-align:right}
 .fh-oneline .fh-input{flex:1;min-width:0}
 .fh-composer .fh-pair{display:grid;gap:10px;margin-top:12px}
 .fh-composer:has(input[name="type"][value="update"]:checked) .fh-askonly{display:none}
@@ -678,8 +682,11 @@ details.fh-others summary{cursor:pointer;font-weight:600;color:var(--fund-deep)}
 .fh-trust .fh-btn-block{white-space:normal;height:auto;min-height:44px;padding-top:10px;padding-bottom:10px}
 .fh-withdraw .fh-btn-quiet{padding-left:0;padding-right:0}
 .fh-flow > section.fh-sheet{margin-top:18px}
+.fh-flow.fh-note-first > section.fh-sheet{order:-1;margin-top:0}
+.fh-flow.fh-note-first > div{margin-top:18px}
 @media (min-width:1000px){
 .fh-flow > section.fh-sheet{margin-top:0}
+.fh-flow.fh-note-first > div{margin-top:0}
 }
 .fh-credit.fh-plain{font-size:12px;color:var(--graphite)}
 .fh-credit.fh-plain a{color:var(--graphite)}

@@ -1,18 +1,19 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 
 import { useFlash } from "@/components/flash";
 import { Button } from "@/components/ui/button";
 import { OptionCard } from "@/components/ui/checkbox-card";
+import { ConsentLine } from "@/components/ui/note";
 import { RequestFailure } from "@/platform/http/post-request";
 import { MemberConversationSlot } from "@/modules/members/slots";
 
-import { INTRO_ACTIONS, INTRO_RESULTS, OUTCOME_BY_CHOICE, OUTCOME_CHOICES, type Intro, type IntroResult, type OutcomeChoice } from "../contract";
-import { answerAsConnectorRequest, recordIntroOutcomeRequest, transitionIntroRequest } from "../queries";
-import { DecisionForm } from "./intro-decision";
-import { CHOICE_BY_OUTCOME, OUTCOME_LABELS, RESULT_LABELS, readConnectorChoices, readConnectorQuestion, readTargetEmailHint, readTargetEmailLabel } from "./intro-words";
+import { CONNECTOR_CHOICES, INTRO_ACTIONS, INTRO_RESULTS, OUTCOME_BY_CHOICE, OUTCOME_CHOICES, type ConnectorChoice, type Intro, type IntroResult, type OutcomeChoice } from "../contract";
+import { answerAsConnectorRequest, issuedConsentQuery, recordIntroOutcomeRequest, transitionIntroRequest } from "../queries";
+import { CHOICE_BY_OUTCOME, OUTCOME_LABELS, RESULT_LABELS, readNames } from "./intro-words";
 
 // Commonhall's flashes after a redirect (`?m=asked`, `?m=withdrawn`, `?m=outcome`).
 const FLASHES: Record<string, string> = {
@@ -43,26 +44,48 @@ function useGoTo() {
   };
 }
 
-// The connector's answer on the intro page: yes or no first. The page's heading asks the question. When the asker
-// already gave the person's email, a yes needs nothing typed: the server uses that address.
-export function ConnectorAnswer({ intro, canEmail }: { intro: Intro; canEmail: boolean }) {
+// The connector's answer on the intro page (round 7): the page's heading asks the question and the asker's note is
+// above, so the answer is two buttons. Introduce shows the private link to copy at once (no field to fill; emailing it
+// is a second, optional step). No thanks is one kind of no: the asker sees that it isn't happening, never why.
+export function ConnectorAnswer({ intro }: { intro: Intro }) {
   const goTo = useGoTo();
-  const needsEmail = canEmail && !intro.suggestedTargetEmail;
+  const queryClient = useQueryClient();
+  const [error, setError] = useState<string | null>(null);
+  const [pending, setPending] = useState<ConnectorChoice | null>(null);
+  const { askerFirst } = readNames(intro);
+  async function answer(choice: ConnectorChoice) {
+    setPending(choice);
+    setError(null);
+    try {
+      const answered = await answerAsConnectorRequest({ introId: intro.id, choice, targetEmail: null, note: null, reason: null });
+      // The link is shown only now (the server keeps a scrambled copy), so the next screen reads it from here.
+      if (answered.consentIssue) queryClient.setQueryData(issuedConsentQuery(intro.id).queryKey, answered.consentIssue);
+      goTo(null);
+    } catch (failure) {
+      setError(failure instanceof Error ? failure.message : "This answer didn't come through. Try again.");
+      setPending(null);
+    }
+  }
   return (
-    <DecisionForm
-      legend={readConnectorQuestion(intro)}
-      isLegendShown={false}
-      submitLabel="Send"
-      noteLabel="Edit the note"
-      choices={readConnectorChoices(intro)}
-      email={needsEmail ? { label: readTargetEmailLabel(intro), hint: readTargetEmailHint(intro), initial: null } : null}
-      note={intro.note}
-      withPrivateNote
-      submit={async ({ choice, targetEmail, note, privateNote }) => {
-        await answerAsConnectorRequest({ introId: intro.id, choice: choice as "yes" | "not_now" | "dont_know", targetEmail, note, reason: privateNote });
-        goTo(null);
-      }}
-    />
+    <div className="fh-decide">
+      {error ? (
+        <div className="fh-note fh-needs mb-3" role="alert">
+          <span>{error}</span>
+        </div>
+      ) : null}
+      <div className="fh-btn-row">
+        <Button type="button" disabled={pending !== null} onClick={() => void answer(CONNECTOR_CHOICES.yes)}>
+          Introduce
+        </Button>
+        <Button type="button" variant="secondary" disabled={pending !== null} onClick={() => void answer(CONNECTOR_CHOICES.notNow)}>
+          No thanks
+        </Button>
+      </div>
+      <p className="fh-hint mt-2">If it’s no thanks, {askerFirst} is never told why.</p>
+      <div className="mt-3">
+        <ConsentLine />
+      </div>
+    </div>
   );
 }
 
