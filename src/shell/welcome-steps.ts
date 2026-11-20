@@ -60,7 +60,7 @@ export type WelcomePrivacyBody = z.infer<typeof welcomePrivacyBodySchema>;
 
 export const welcomeDoneSchema = z.object({ next: z.string() });
 
-export const WELCOME_DONE_FLASH = "You’re in. This is the directory.";
+export const WELCOME_DONE_FLASH = "You’re in. These are the people here.";
 
 type PrivacyChoices = { isHidden: boolean; acceptsIntroAsks: boolean | null };
 type LookupChoice = { consentedAt: Date | null };

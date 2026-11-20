@@ -258,7 +258,7 @@ function RemovalActions({ member, viewerId, manageButtonRef, fallbackFocusId, on
           onDone={({ message }) => onDone(message)}
         >
           <p>
-            {firstName} can sign in again, and shows up in the directory. Posts you chose to keep stay. Posts you deleted don&apos;t come back. They return as a regular member, not
+            {firstName} can sign in again, and shows up in People. Posts you chose to keep stay. Posts you deleted don&apos;t come back. They return as a regular member, not
             an admin.
           </p>
         </ConfirmDialog>

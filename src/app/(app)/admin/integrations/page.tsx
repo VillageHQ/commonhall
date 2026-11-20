@@ -192,7 +192,7 @@ function WhatGetsPosted({ askSample, weekSample, digestDay }: { askSample: strin
       </p>
       <p className="fh-chatpost whitespace-pre-line">{weekSample}</p>
       <p className="fh-small fh-muted mt-2.5">
-        Every post links back to the portal, so answers and intros stay here. Members hidden from the directory are posted as “a member”. Updates and comments are not posted.
+        Every post links back to the portal, so answers and intros stay here. Members hidden from People are posted as “a member”. Updates and comments are not posted.
       </p>
     </Card>
   );

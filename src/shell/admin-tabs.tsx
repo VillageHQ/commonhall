@@ -47,7 +47,7 @@ export function AdminTabs({ facts }: { facts: Pick<AdminTabFacts, "hiddenTabHref
   const tabs = readAdminTabs(pathname, facts.hiddenTabHrefs);
   if (tabs.length === 0) return null;
   return (
-    <nav aria-label="Pages in this part of the console" data-print="hide" className="fh-chips mb-5">
+    <nav aria-label="Pages in this part of the console" data-print="hide" className="fh-chips fh-chips-wrap mb-5">
       {tabs.map(({ label, href }) => (
         <Link key={href} href={href} aria-current={isUnder(pathname, href) ? "page" : undefined} className={CHIP_CLASSES}>
           {label}

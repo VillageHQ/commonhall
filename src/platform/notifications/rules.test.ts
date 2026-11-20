@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { DEFAULT_PREFERENCES, NOTIFICATION_KINDS, preferencesBodySchema, QUIET_TIME_PRESETS, type NotificationKind, type QuietTime } from "./contract";
-import { isInQuietTime, readLocalMoment, readQuietUntil, readSkipReason, SKIP_REASONS, type AlertState } from "./rules";
+import { isInQuietTime, readLocalMoment, readNextLocalMoment, readQuietUntil, readSkipReason, SKIP_REASONS, type AlertState } from "./rules";
 
 const NIGHTS: QuietTime = { from: "22:00", to: "07:00", allDay: false, days: [0, 1, 2, 3, 4, 5, 6] };
 const PRESETS: QuietTime[] = QUIET_TIME_PRESETS.map(({ quietTime }) => ({ ...quietTime, days: [...quietTime.days] }));
@@ -70,6 +70,13 @@ describe("a pause", () => {
     expect(readLocalMoment(new Date("2026-11-16T14:30:00Z"), "Asia/Tokyo", 1, "08:00").toISOString()).toBe("2026-11-16T23:00:00.000Z");
     // Across New York's change to summer time (8 March 2026): Sunday 08:00 is UTC-4.
     expect(readLocalMoment(new Date("2026-03-07T20:00:00Z"), "America/New_York", 1, "08:00").toISOString()).toBe("2026-03-08T12:00:00.000Z");
+  });
+
+  it("until tomorrow, asked before 08:00, ends at 08:00 that same morning", () => {
+    // 02:00 in Berlin (01:00 UTC): the next 08:00 is 07:00 UTC the same day, not the next day's.
+    expect(readNextLocalMoment(new Date("2026-11-17T01:00:00Z"), "Europe/Berlin", "08:00").toISOString()).toBe("2026-11-17T07:00:00.000Z");
+    // At 08:00 sharp and after, it is the next day's.
+    expect(readNextLocalMoment(new Date("2026-11-17T07:00:00Z"), "Europe/Berlin", "08:00").toISOString()).toBe("2026-11-18T07:00:00.000Z");
   });
 });
 

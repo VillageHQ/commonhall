@@ -60,7 +60,7 @@ export function PrivacyForm({ communityName, initial, isIntrosOn, isLookupOn }: 
           {errorMessage}
         </Note>
       ) : null}
-      <p className="fh-label">Show me in the directory to</p>
+      <p className="fh-label">Show me in People to</p>
       <OptionCard
         id="visibility-all"
         name="visibility"
@@ -70,7 +70,7 @@ export function PrivacyForm({ communityName, initial, isIntrosOn, isLookupOn }: 
         title={`Everyone in ${communityName}`}
         description="Members see your profile, never your email address"
       />
-      <OptionCard id="visibility-none" name="visibility" value="none" checked={isHidden} onChange={() => setIsHidden(true)} title="Nobody" description="You can still use the directory" />
+      <OptionCard id="visibility-none" name="visibility" value="none" checked={isHidden} onChange={() => setIsHidden(true)} title="Nobody" description="You can still use People" />
       <div className="mt-2.5">
         {isIntrosOn ? (
           <SetRow

@@ -126,7 +126,7 @@ export type AlertPreferences = z.infer<typeof preferencesBodySchema>;
 
 export const DEFAULT_PREFERENCES: AlertPreferences = { isOn: true, offKinds: [], quietTimes: [], timeZone: DEFAULT_TIME_ZONE, letDirectThrough: true };
 
-// A pause holds back every alert: for an hour, or until 08:00 tomorrow in the member's time zone. null resumes.
+// A pause holds back every alert: for an hour, or until the next 08:00 in the member's time zone. null resumes.
 // `timeZone` (the browser's) becomes the member's zone when nothing was saved yet, as a first save does.
 export const PAUSE_CHOICES = { hour: "1h", tomorrow: "tomorrow" } as const;
 

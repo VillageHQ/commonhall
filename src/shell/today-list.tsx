@@ -10,7 +10,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { ASKS_COMPOSE_PAGE, ASKS_PAGE, describeAgo, describeAnswerCount, toAskPage } from "@/modules/asks/contract";
 import { INTRO_STATES, type Intro } from "@/modules/intros/contract";
 import { TargetMemberAsk } from "@/modules/intros/components/target-member-ask";
-import { toRoomHref } from "@/modules/voice/contract";
+import { describeRoomPeople, toRoomHref } from "@/modules/voice/contract";
 import type { LiveRoom } from "@/modules/voice/reads-live";
 import { ROUTES } from "@/platform/http/routes";
 
@@ -34,13 +34,8 @@ export function possessive(name: string) {
   return name.endsWith("s") ? `${name}’` : `${name}’s`;
 }
 
-// "Maya + 3": the first face's first name and how many more are in.
-export function describeRoomPeople(room: Pick<LiveRoom, "faces" | "count">) {
-  const first = room.faces[0];
-  if (!first) return room.count > 0 ? `${room.count} in` : "Nobody in yet";
-  const others = Math.max(room.count - 1, 0);
-  return others ? `${firstWord(first.name)} + ${others}` : `${firstWord(first.name)} is in`;
-}
+// "Maya + 3": the same words as the Rooms cards (voice/contract.ts).
+export { describeRoomPeople };
 
 function describeIntroLine(intro: Intro) {
   if (intro.state === INTRO_STATES.requested) return `${intro.requester.name} asks you to introduce them to ${intro.target.name}.`;

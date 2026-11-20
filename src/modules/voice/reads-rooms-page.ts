@@ -15,7 +15,7 @@ import { voiceFollow, voiceRoom, voiceRoomMember, voiceRoomReminder } from "./sc
 
 const ROOM_LIST_LENGTH = 50;
 
-// The Rooms page: live rooms (newest first) with the faces of the people in each, rooms coming up (soonest first)
+// The Rooms page: live rooms (busiest first) with the faces of the people in each, rooms coming up (soonest first)
 // with their host, and what "Start a room"'s Notify needs (today's allowance, the last choice).
 export async function readRoomsPage(database: Database, environment: Environment, viewerId: string, now = new Date()): Promise<RoomsPageData> {
   const rows = await database
@@ -47,8 +47,8 @@ export async function readRoomsPage(database: Database, environment: Environment
   const live = new Map(liveRooms.map((room) => [room.id, room]));
   const cards: RoomCard[] = rows.map((row) => {
     const inRoom = live.get(row.id);
-    // Nobody connected yet (the host is still joining): the room's host and speakers stand in.
-    const faces = inRoom && inRoom.faces.length > 0 ? inRoom.faces.map(({ name, image }) => ({ name, faceUrl: image })) : (stages.get(row.id) ?? []).map(({ name, faceUrl }) => ({ name, faceUrl }));
+    // Nobody in yet (the host is still joining): the room's host and speakers stand in, under "Nobody in yet".
+    const faces = inRoom && inRoom.count > 0 ? inRoom.faces.map(({ name, image }) => ({ name, faceUrl: image })) : (stages.get(row.id) ?? []).map(({ name, faceUrl }) => ({ name, faceUrl }));
     return {
       ...row,
       access: row.access as RoomAccess,
@@ -59,8 +59,10 @@ export async function readRoomsPage(database: Database, environment: Environment
       count: inRoom?.count ?? 0,
     };
   });
+  // Live rooms in the reads' order: busiest first, the newest on a tie (the same pick as Today's Live now card).
+  const rank = new Map(liveRooms.map(({ id }, index) => [id, index]));
   return {
-    live: cards.filter((card) => card.status === ROOM_STATUSES.live),
+    live: cards.filter((card) => card.status === ROOM_STATUSES.live).sort((first, second) => (rank.get(first.id) ?? rank.size) - (rank.get(second.id) ?? rank.size)),
     scheduled: cards.filter((card) => card.status === ROOM_STATUSES.scheduled).sort((first, second) => (first.scheduledFor ?? "").localeCompare(second.scheduledFor ?? "")),
     isConfigured: config !== null,
     notify: { ...allowance, choice },

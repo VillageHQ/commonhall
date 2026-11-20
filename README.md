@@ -271,6 +271,7 @@ With no trusted header, sign-in is limited per account instead: 5 wrong password
 | `CRON_SECRET` | On Vercel | The Vercel button asks for it. Vercel sends it with each cron call. 32+ random characters. |
 | `LIVEKIT_URL`, `LIVEKIT_API_KEY`, `LIVEKIT_API_SECRET` | For Rooms | The LiveKit server voice rooms use: the address browsers connect to (`wss://`) and its keys. The `install.sh` server sets them. Without them, an admin can paste LiveKit Cloud keys in **Set up › Rooms**. |
 | `LIVEKIT_API_URL` | No | How the app reaches LiveKit when that differs from `LIVEKIT_URL`, like `http://livekit:7880` inside docker. |
+| `ROOMS_ON_BY_DEFAULT` | No | `true` starts Rooms on for a community whose admin never chose. The installer writes it on a fresh install (it makes the voice server); upgrades never add it. An admin's choice under **Set up › Features** always wins. |
 | `JOBS_SELF_TICK` | No | `true` makes a long-running server run its own timed jobs every minute. The `install.sh` server and the DigitalOcean template set it. |
 | `DATABASE_CA_CERT` | No | PEM CA used to verify database TLS. Escaped `\n` is accepted. |
 | `DATABASE_TLS_ALLOW_UNVERIFIED` | No | `true` encrypts without verifying when no CA is available. No template sets it. |

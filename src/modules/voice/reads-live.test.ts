@@ -101,9 +101,29 @@ describe("the live-room reads", () => {
     await join(sam, roomId);
     livekit.setDown(true);
 
+    // Sam is in too, but sees only who else is there; the count is everyone.
     const [room] = await readLiveRooms(database, sam.userId, 3);
-    expect(room?.faces.map(({ name }) => name)).toEqual(["Maya Example", "Sam Example"]);
+    expect(room?.faces.map(({ name }) => name)).toEqual(["Maya Example"]);
     expect(room?.count).toBe(2);
+  });
+
+  it("ranks the busiest room first among every live room, the newest on a tie", async () => {
+    const people = await Promise.all(["Maya", "Sam", "Lina", "Omar", "Nadia", "Rafael", "Hannah", "Viewer"].map((name) => member(`${name} Example`)));
+    const viewer = people.at(-1)!;
+    // Seven rooms; the oldest one has three people in, every newer one only its host.
+    const roomIds: string[] = [];
+    for (const [index, host] of people.slice(0, 7).entries()) {
+      roomIds.push(await openRoom(host, `Room ${index}`));
+      await join(host, roomIds[index]!);
+    }
+    await join(people[1]!, roomIds[0]!);
+    await join(people[2]!, roomIds[0]!);
+    livekit.setDown(true);
+
+    const [busiest, next] = await readLiveRooms(database, viewer.userId, 2);
+    expect(busiest?.title).toBe("Room 0");
+    expect(busiest?.count).toBe(3);
+    expect(next?.title).toBe("Room 6");
   });
 
   it("counts room joins since a moment, once per member and room", async () => {
