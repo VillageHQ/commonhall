@@ -1,6 +1,6 @@
 ---
 id: room-start-instant
-status: planned
+status: in-review
 waits-on: []
 size: half a day (3 parts side by side after a small first part)
 touches: ["src/modules/voice/", "src/app/api/voice/", "src/platform/notifications/contract.ts", "src/components/alerts/alert-settings-form.tsx", "src/shell/voice-alerts.ts", "src/app/(app)/rooms/", "src/app/(app)/me/alerts/", "src/components/alerts/", "src/app/(app)/people/[memberId]/", "src/shell/demo-rooms.ts", "mobile/src/voice/", "drizzle/"]

@@ -122,3 +122,8 @@ TestFlight internal testing and Android test APKs only: never a public release, 
 - In the web preview a wrong address that is a real site reads "couldn't reach" (the browser's CORS hides the answer);
   on a phone it reads "isn't a Commonhall community" (unit-tested).
 - Faces in the native room load without the session cookie on iOS unless shared cookies carry over; initials show then.
+
+## Since round 7 (20 Nov 2026)
+The room screen has no Tell people (its routes are gone). The room page always sends `hasNotified: true`, which hides
+Tell people in TestFlight 3 and the Android test APK; this build reads the flag and ignores it. Starting a room is one
+tap on the portal's Rooms page: [room-start-instant NOTES](../room-start-instant/NOTES.md).
