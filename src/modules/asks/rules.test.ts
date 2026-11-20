@@ -130,7 +130,14 @@ describe("a prefilled ask from another screen", () => {
       body: "We're hiring a Designer: https://jobs.example.com/1",
       target: "",
       category: ASK_CATEGORIES.hire,
+      hiringJobId: null,
     });
+  });
+
+  it("carries the job of a hiring request made from a job, and drops a job that isn't an id", () => {
+    const jobId = "6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a4b";
+    expect(parseAskDraftParts({ draft: "We're hiring a Designer", category: "hire", job: jobId })?.hiringJobId).toBe(jobId);
+    expect(parseAskDraftParts({ draft: "We're hiring a Designer", category: "hire", job: "not-a-job" })?.hiringJobId).toBeNull();
   });
 
   it("drops an unknown category and opens nothing without a line", () => {

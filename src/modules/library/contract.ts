@@ -86,7 +86,7 @@ export const LIBRARY_JOB_LABELS: Record<LibraryJob, string> = {
 export const LIBRARY_VISIBILITIES = { portfolio: "portfolio", fundTeam: "fund_team", companies: "companies" } as const;
 export type LibraryVisibility = (typeof LIBRARY_VISIBILITIES)[keyof typeof LIBRARY_VISIBILITIES];
 export const LIBRARY_VISIBILITY_LABELS: Record<LibraryVisibility, string> = {
-  portfolio: "The whole portfolio",
+  portfolio: "Whole portfolio",
   fund_team: "Only the fund team",
   companies: "Only people at chosen companies",
 };
@@ -195,9 +195,15 @@ export const libraryItemFieldsSchema = z
     // Set when the author uploads a new version of their own item.
     itemId: z.uuid().optional(),
     title: plainLine("a title", LIBRARY_LIMITS.titleLength),
-    pitch: plainLine("a one-line pitch", LIBRARY_LIMITS.pitchLength),
-    kind: z.enum(LIBRARY_KINDS, { error: "Pick what kind of thing it is." }),
-    job: z.enum(LIBRARY_JOBS, { error: "Pick the job it helps with." }),
+    // Empty: the server takes the first line of what was pasted (derivePitch in rules-share.ts).
+    pitch: optionalText(LIBRARY_LIMITS.pitchLength, "the one-line pitch").refine((text) => !text || !/[\r\n]/.test(text), "Keep the one-line pitch on one line."),
+    // Missing: the server guesses it from the words, files and link (guessLibraryKind), as the form does.
+    kind: z.enum(LIBRARY_KINDS, { error: "Pick what kind of thing it is." }).nullish().transform((kind) => kind ?? null),
+    // Optional: "" or null is no role.
+    job: z
+      .union([z.enum(LIBRARY_JOBS, { error: "Pick the job it helps with." }), z.literal("")])
+      .nullish()
+      .transform((job) => job || null),
     description: optionalText(LIBRARY_LIMITS.descriptionLength, "the description"),
     install: optionalText(LIBRARY_LIMITS.installLength, "the install steps"),
     link: optionalText(LIBRARY_LIMITS.linkLength, "the link").transform((text, context) => {

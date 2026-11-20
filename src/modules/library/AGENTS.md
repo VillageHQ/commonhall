@@ -8,6 +8,7 @@ admin chose, no Village needed. How it works today: `.ai/features/ai-library/NOT
 - `manifest.ts`: identity, the nav entry, owned paths (`/library`, `/api/library`). `integration.ts`: the removal hook.
 - `contract.ts`: kinds, jobs, visibilities, limits (10 MB), allowed file types, paths, Zod schemas. Client-safe.
 - `schema.ts`: `library_item`, `library_item_company`, `library_version`, `library_file` (bytes in Postgres), `library_vote`, `library_review`.
+- `rules-share.ts`: the share form's one box: a lone link, the guessed kind, the pitch, the scan of pasted text.
 - `rules-secrets.ts`: the secret scan (plain patterns). `rules-zip.ts`: reads a zip's files for it. `rules-uploads.ts`: type, size and scan checks, in that order.
 - `reads.ts`: the visibility rule (`isItemVisibleTo`), browse, one item, files, the leaderboard (SQL), Today's new items.
 - `service.ts`: publish and new versions, vote, review, feature, remove, a download's count, the removal hook. Admin's report queue calls `removeLibraryItemWithin` and deletes the item's feed post.

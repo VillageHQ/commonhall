@@ -26,7 +26,6 @@ export const JOB_BOARD_ADMIN_API_PREFIX = "/api/admin/jobs";
 
 export const JOB_BOARD_API_ROUTES = {
   link: "/api/job-board/sources/link",
-  manual: "/api/job-board/sources/manual",
   pull: "/api/job-board/sources/pull",
   hide: "/api/job-board/sources/hide",
   remove: "/api/job-board/sources/remove",
@@ -122,19 +121,44 @@ export const linkSourceBodySchema = z.object({
   link: z.string({ error: "Paste your careers link first." }).trim().min(1, "Paste your careers link first.").max(JOB_BOARD_LIMITS.linkLength),
 });
 
-export const manualSourceBodySchema = z.object({
-  company: feedTextSchema("the company's name", JOB_BOARD_LIMITS.companyLength),
-});
-
 export const sourceBodySchema = z.object({ sourceId: sourceIdSchema });
 
 export const hideSourceBodySchema = z.object({ sourceId: sourceIdSchema, hidden: z.boolean() });
 
+const EMAIL_ADDRESS = /^[^\s@<>()"',;:]+@[^\s@<>()"',;:]+\.[A-Za-z]{2,}$/;
+
+// Where Apply goes for a job added by hand: a link, an email address (saved as a mailto: link), or nothing, and then
+// Apply on the members' board messages the founder (round 7).
+export function parseApplyTarget(value: string): string | null {
+  const text = value.trim();
+  if (!text) return "";
+  if (EMAIL_ADDRESS.test(text)) return `mailto:${text}`;
+  return httpLinkSchema.safeParse(text).success ? text : null;
+}
+
+export function isMailtoLink(url: string) {
+  return url.startsWith("mailto:");
+}
+
+const applyTargetSchema = z
+  .string()
+  .max(JOB_BOARD_LIMITS.linkLength, `Keep the link under ${JOB_BOARD_LIMITS.linkLength} characters.`)
+  .default("")
+  .transform((value, context) => {
+    const target = parseApplyTarget(value);
+    if (target !== null) return target;
+    context.addIssue({ code: "custom", message: "Paste a full link that starts with https://, or an email address." });
+    return z.NEVER;
+  });
+
+// "Add a job": without a source it goes on the member's own company's card (made when there is none).
 export const addJobBodySchema = z.object({
-  sourceId: sourceIdSchema,
+  sourceId: sourceIdSchema.optional(),
+  // Without a source: the company (a founder's is always the one on their card; an admin may name any).
+  company: feedTextSchema("the company's name", JOB_BOARD_LIMITS.companyLength).optional(),
   title: feedTextSchema("the job's title", JOB_BOARD_LIMITS.titleLength),
   location: z.string().trim().max(JOB_BOARD_LIMITS.locationLength, `Keep the location under ${JOB_BOARD_LIMITS.locationLength} characters.`).default(""),
-  url: httpLinkSchema,
+  url: applyTargetSchema,
 });
 
 export const removeJobBodySchema = z.object({ sourceId: sourceIdSchema, jobId: z.uuid({ error: "That job isn't there anymore." }) });

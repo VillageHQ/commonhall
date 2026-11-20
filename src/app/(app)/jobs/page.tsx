@@ -12,7 +12,9 @@ import { readBoardCompanies, readBoardJobs } from "@/modules/job-board/reads";
 import { requireMember } from "@/platform/auth/session";
 import { getDatabase } from "@/platform/database/client";
 import { ROUTES } from "@/platform/http/routes";
+import { isModuleEnabled } from "@/platform/modules/enablement";
 import { modulePage } from "@/platform/modules/module-page";
+import { messagesManifest } from "@/modules/messages/manifest";
 import { readFindCandidatesLink } from "@/shell/find-candidates";
 
 export const metadata: Metadata = { title: JOB_BOARD_PAGE_TITLES.board };
@@ -26,7 +28,14 @@ export default modulePage(jobBoardManifest, async function JobsPage({ searchPara
   const value = (await searchParams)[COMPANY_PARAM];
   const company = typeof value === "string" && value.trim() ? value.trim() : null;
   const database = getDatabase();
-  const [jobs, companies, findCandidatesHref] = await Promise.all([readBoardJobs(database, company), readBoardCompanies(database), readFindCandidatesLink(database, member)]);
+  const [jobs, companies, findCandidatesHref, isMessagingOn] = await Promise.all([
+    readBoardJobs(database, company),
+    readBoardCompanies(database),
+    readFindCandidatesLink(database, member),
+    isModuleEnabled(database, messagesManifest),
+  ]);
+  // A job with no apply link: Apply messages the founder who added it (never yourself).
+  const applyByMessageHref = isMessagingOn ? (memberId: string) => (memberId === member.id ? null : `${ROUTES.newMessage}?${new URLSearchParams({ to: memberId }).toString()}`) : undefined;
   const current = company ? (companies.find(({ slug }) => slug === company) ?? null) : null;
   if (company && !current) notFound();
   const empty = describeEmptyBoard(current);
@@ -46,7 +55,7 @@ export default modulePage(jobBoardManifest, async function JobsPage({ searchPara
       </header>
       <CompanyFilter basePath={JOB_BOARD_PAGES.board} companies={readCompaniesWithJobs(companies)} selected={company} />
       {jobs.length > 0 ? (
-        <JobList jobs={jobs} memberHref={(memberId) => `${ROUTES.people}/${memberId}`} findCandidatesHref={findCandidatesHref ?? undefined} />
+        <JobList jobs={jobs} memberHref={(memberId) => `${ROUTES.people}/${memberId}`} findCandidatesHref={findCandidatesHref ?? undefined} applyByMessageHref={applyByMessageHref} />
       ) : (
         <div className="mt-4">
           <EmptyState title={empty.title} description={empty.description}>

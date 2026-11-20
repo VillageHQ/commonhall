@@ -25,6 +25,7 @@ import {
   type LibraryVoteBody,
 } from "./contract.ts";
 import { readLibraryViewer, readVisibleItemForAction } from "./reads.ts";
+import { derivePitch, describePastedSecret, guessLibraryKind, scanPastedText } from "./rules-share.ts";
 import { checkUploads } from "./rules-uploads.ts";
 import { libraryFile, libraryItem, libraryItemCompany, libraryReview, libraryVersion, libraryVote } from "./schema.ts";
 
@@ -37,7 +38,17 @@ export function libraryItemGoneError() {
 
 export type PublishedItem = { id: string; isNew: boolean; title: string; pitch: string; kind: LibraryKind; visibility: LibraryVisibility };
 
-function itemValues(fields: LibraryItemFields) {
+type ItemValues = Omit<LibraryItemFields, "itemId" | "companies" | "pitch" | "kind"> & { pitch: string; kind: LibraryKind };
+
+// The kind and the one-line pitch the member left to the app: the same guesses the form shows.
+function completeFields(fields: LibraryItemFields, files: readonly LibraryUpload[]): ItemValues {
+  const fileNames = files.map(({ name }) => name);
+  const kind = fields.kind ?? guessLibraryKind({ title: fields.title, text: fields.description ?? "", link: fields.link ?? "", fileNames });
+  const pitch = fields.pitch ?? derivePitch({ title: fields.title, text: fields.description, link: fields.link, fileNames });
+  return { ...fields, kind, pitch };
+}
+
+function itemValues(fields: ItemValues) {
   return {
     title: fields.title,
     pitch: fields.pitch,
@@ -52,11 +63,21 @@ function itemValues(fields: LibraryItemFields) {
 
 // Publishes an item, or a new version of the author's own item. Every file passes the type, size and secret checks
 // before the transaction starts, so a refused upload stores nothing.
-export async function publishLibraryItem({ database, member }: RequestContext, fields: LibraryItemFields, files: readonly LibraryUpload[]): Promise<PublishedItem> {
+export async function publishLibraryItem({ database, member }: RequestContext, given: LibraryItemFields, files: readonly LibraryUpload[]): Promise<PublishedItem> {
   const problem = checkUploads(files);
   if (problem) throw new RequestError(UNPROCESSABLE_STATUS, problem.code, problem.message);
+  // Pasted words get the same scan as files: a key pasted into the box is the likeliest leak.
+  const pasted = scanPastedText([
+    { label: "The title", text: given.title },
+    { label: "The one-line pitch", text: given.pitch },
+    { label: "The pasted text", text: given.description },
+    { label: "How to install", text: given.install },
+    { label: "The link", text: given.link },
+  ]);
+  if (pasted) throw new RequestError(UNPROCESSABLE_STATUS, LIBRARY_ERROR_CODES.secret, describePastedSecret(pasted));
+  const fields = { ...completeFields(given, files), itemId: given.itemId, companies: given.companies };
   if (!fields.itemId && files.length === 0 && !fields.link && !fields.description && !fields.install) {
-    throw new RequestError(UNPROCESSABLE_STATUS, LIBRARY_ERROR_CODES.nothingToShare, "Add files, a link or a description, so others have something to use.");
+    throw new RequestError(UNPROCESSABLE_STATUS, LIBRARY_ERROR_CODES.nothingToShare, "Paste it, link it or attach a file, so others have something to use.");
   }
   return database.transaction(async (transaction) => {
     const now = new Date();

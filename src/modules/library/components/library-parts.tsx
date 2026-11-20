@@ -43,7 +43,7 @@ export function KindTags({ item, showRole = true }: { item: Pick<LibraryCard, "k
         </Tag>
       ) : null}
       <Tag>{LIBRARY_KIND_LABELS[item.kind]}</Tag>
-      {showRole ? <Tag>{LIBRARY_JOB_LABELS[item.job]}</Tag> : null}
+      {showRole && item.job ? <Tag>{LIBRARY_JOB_LABELS[item.job]}</Tag> : null}
       {item.visibility !== LIBRARY_VISIBILITIES.portfolio ? <Tag tone="gold">{item.visibility === LIBRARY_VISIBILITIES.fundTeam ? "Fund team" : "Chosen companies"}</Tag> : null}
     </span>
   );

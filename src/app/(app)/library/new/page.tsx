@@ -33,10 +33,11 @@ export default modulePage(libraryManifest, async function PublishPage({ searchPa
       title: item.title,
       pitch: item.pitch,
       kind: item.kind,
-      job: item.job,
-      description: item.description ?? "",
+      job: item.job ?? "",
+      // The one box shows the pasted text, or the link when there is no text.
+      box: item.description ?? item.link ?? "",
+      link: item.description ? (item.link ?? "") : "",
       install: item.install ?? "",
-      link: item.link ?? "",
       visibility: item.visibility,
       companies: item.visibility === LIBRARY_VISIBILITIES.companies ? item.companies.join(", ") : "",
     };

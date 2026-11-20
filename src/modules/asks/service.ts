@@ -31,7 +31,7 @@ import {
   type OfferHelpBody,
   type PinAskBody,
 } from "./contract.ts";
-import { hasNoBlockBetween, readOpenAskCount } from "./reads.ts";
+import { hasNoBlockBetween, isHiringRequestFree, readOpenAskCount } from "./reads.ts";
 import { canRenewAsk, readAskState } from "./rules-state.ts";
 import { ask, askAnswer, askHelper, askOffer } from "./schema.ts";
 
@@ -72,14 +72,23 @@ function inferCategory({ category, targetText, targetCompany, targetLinkedin }: 
   return targetText || targetCompany || targetLinkedin ? ASK_CATEGORIES.intro : ASK_CATEGORIES.advice;
 }
 
-export async function createAsk({ database, member }: RequestContext, body: CreateAskBody, assertAllowance: AllowanceCheck) {
+// `checkedHiringJobId`: a job the caller checked the member may hire for. That ask is a hiring request; the job's first
+// one in the allowance window uses no weekly ask (round 7). The body's own hiringJobId is never trusted here.
+export async function createAsk(
+  { database, member }: RequestContext,
+  body: CreateAskBody,
+  assertAllowance: AllowanceCheck,
+  { checkedHiringJobId = null }: { checkedHiringJobId?: string | null } = {},
+) {
   const { title, detail, kind } = body;
   const isAsk = kind === ASK_KINDS.ask;
-  const category = isAsk ? inferCategory(body) : (body.category ?? ASK_CATEGORIES.other);
+  const hiringJobId = isAsk ? checkedHiringJobId : null;
+  const category = hiringJobId ? ASK_CATEGORIES.hire : isAsk ? inferCategory(body) : (body.category ?? ASK_CATEGORIES.other);
   return database.transaction(async (transaction) => {
     await lockMemberAsks(transaction, member.id);
     await assertRoomForAnotherOpenAsk(transaction, member.id, new Date());
-    if (isAsk) await assertAllowance(transaction, member.id);
+    const isFree = hiringJobId !== null && (await isHiringRequestFree(transaction, hiringJobId, new Date()));
+    if (isAsk && !isFree) await assertAllowance(transaction, member.id);
     const [created] = await transaction
       .insert(ask)
       .values({
@@ -91,6 +100,8 @@ export async function createAsk({ database, member }: RequestContext, body: Crea
         targetSlug: isAsk ? body.targetLinkedin : null,
         targetText: isAsk ? body.targetText : null,
         targetCompany: isAsk ? body.targetCompany : null,
+        // Only a free request carries its job, so every other ask counts against the allowance.
+        hiringJobId: isFree ? hiringJobId : null,
       })
       .returning({ id: ask.id });
     if (!created) throw askGoneError();

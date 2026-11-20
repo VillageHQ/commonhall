@@ -437,13 +437,24 @@ export async function readWeeklyAllowance(database: DatabaseOrTransaction) {
 }
 
 // When each ask (not update) the member posted in the last week was posted. Closing one doesn't give it back, so
-// the allowance can't be dodged.
+// the allowance can't be dodged. A hiring request made from a job doesn't count (round 7).
 export async function readPostedAskTimes(connection: DatabaseOrTransaction, memberId: string, now: Date) {
   const rows = await connection
     .select({ createdAt: ask.createdAt })
     .from(ask)
-    .where(and(eq(ask.authorId, memberId), eq(ask.kind, ASK_KINDS.ask), gte(ask.createdAt, new Date(now.getTime() - ALLOWANCE_WINDOW_MS))));
+    .where(and(eq(ask.authorId, memberId), eq(ask.kind, ASK_KINDS.ask), isNull(ask.hiringJobId), gte(ask.createdAt, new Date(now.getTime() - ALLOWANCE_WINDOW_MS))));
   return rows.map(({ createdAt }) => createdAt);
+}
+
+// A job's hiring request uses no weekly ask once a week: the first one posted for the job in the allowance window.
+// Later ones (a repost, or the same job's request with other words) count like any ask.
+export async function isHiringRequestFree(connection: DatabaseOrTransaction, jobId: string, now: Date) {
+  const [row] = await connection
+    .select({ id: ask.id })
+    .from(ask)
+    .where(and(eq(ask.hiringJobId, jobId), gte(ask.createdAt, new Date(now.getTime() - ALLOWANCE_WINDOW_MS))))
+    .limit(1);
+  return !row;
 }
 
 export async function readOpenAskCount(connection: DatabaseOrTransaction, memberId: string, now: Date) {

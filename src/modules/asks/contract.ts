@@ -278,6 +278,8 @@ export const createAskBodySchema = z.object({
   targetLinkedin: linkedinTargetSchema,
   targetText: optionalLineSchema(ASK_LIMITS.targetLength),
   targetCompany: optionalLineSchema(ASK_LIMITS.companyLength),
+  // "Post a hiring request" from a job: the job it is for. The route checks the member may hire for it.
+  hiringJobId: z.uuid().nullable().default(null),
 });
 
 export const helpAskBodySchema = z.object({

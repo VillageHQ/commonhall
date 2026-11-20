@@ -142,6 +142,7 @@ once and tell everyone, and the app should ask for fewer decisions. The evidence
   - [ ] Part 1: asks and intros decided in one tap — choice-asks — open pull request — [spec](features/choice-asks/SPEC.md)
   - [ ] Part 2, Today and People lead with what waits (pull request open) — choice-today — [notes](features/choice-today/NOTES.md)
   - [ ] Part 3, member settings in one place — choice-settings — open pull request [#112](https://github.com/VillageHQ/commonhall/pull/112) — [spec](features/choice-settings/SPEC.md) · [notes](features/choice-settings/NOTES.md)
+  - [ ] Part 5, sharing and posting forms (pull request open) — choice-forms — [spec](features/choice-forms/SPEC.md) · [notes](features/choice-forms/NOTES.md)
 ### Follow-ups from the round-7 audit (no spec yet; [audit](features/less-choice/AUDIT.md))
 - [ ] One Notifications page for Alerts and Email (one row per event, push and email side by side, quiet hours for both)
 - [ ] A limit a member sets on intro asks received per week, with this week's count

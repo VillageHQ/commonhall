@@ -220,4 +220,19 @@ describe("the library", () => {
     await database.transaction((transaction) => deleteMemberLibrary(transaction, { memberId: leaving.userId, memberName: "Test Member", actorId: admin.userId, keepsContent: false }));
     expect(await database.select().from(libraryItem)).toEqual([]);
   });
+
+  // Round 7: a title and one paste is enough. The kind is guessed, the pitch is the paste's first line, the role empty.
+  it("shares a pasted prompt with only a title, and refuses a pasted key, storing nothing", async () => {
+    const author = await member();
+    const response = await publish(author, { title: "Cold email opener", pitch: undefined, kind: undefined, job: undefined, description: "Rewrite the opening line.\nKeep it short." });
+    expect(response.status).toBe(200);
+    const [item] = await database.select().from(libraryItem);
+    expect(item).toMatchObject({ title: "Cold email opener", pitch: "Rewrite the opening line.", kind: "prompt", job: null, visibility: "portfolio" });
+
+    await database.delete(libraryItem);
+    const leaked = await publish(author, { pitch: undefined, kind: undefined, job: "", description: `Use my key:\nsk_key=${FAKE_KEY}` });
+    expect(leaked.status).toBe(422);
+    expect(((await leaked.json()) as { message: string }).message).toContain("The pasted text, line 2");
+    expect(await database.select().from(libraryItem)).toEqual([]);
+  });
 });
