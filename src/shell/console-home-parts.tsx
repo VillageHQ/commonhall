@@ -24,9 +24,9 @@ export function TextLink({ className, ...props }: ComponentProps<typeof Link>) {
 
 // Console Home's "Partner report" tile (round 7): always there, before launch and after, because the phone's console has
 // no Report tab.
-export function PartnerReportTile() {
+export function PartnerReportTile({ className }: { className?: string }) {
   return (
-    <Link href={ROUTES.adminReport} className="fh-sheet mb-4 flex items-center justify-between gap-3 no-underline" data-testid="admin-home-report">
+    <Link href={ROUTES.adminReport} className={cn("fh-sheet mb-4 flex items-center justify-between gap-3 no-underline", className)} data-testid="admin-home-report">
       <span>
         <b className="fh-h3 block">Partner report</b>
         <span className="fh-small fh-muted">What your partners see: intros made, asks answered, who helped.</span>

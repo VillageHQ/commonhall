@@ -63,5 +63,5 @@ type GuidedCardFormProps = { initialValues: AboutValues };
 
 // The last step, the admin's card: saving it (or "Skip for now") finishes the guided start and opens the console.
 export function GuidedCardForm({ initialValues }: GuidedCardFormProps) {
-  return <AboutForm initialValues={initialValues} onSaved={finishAndOpenConsole} secondary={<FinishGuidedStart label="Skip for now" variant="quiet" />} />;
+  return <AboutForm initialValues={initialValues} onSaved={finishAndOpenConsole} submitLabel="Save and finish" secondary={<FinishGuidedStart label="Skip for now" variant="quiet" />} />;
 }

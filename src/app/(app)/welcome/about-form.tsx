@@ -28,9 +28,9 @@ function readValues(formData: FormData): AboutValues {
 // Commonhall's step 1 form: the name, the two questions, then "A few details (optional)" in pairs, and Next. The guided
 // start's "Your card" step reuses it with "Skip for now" beside Next, and, as its last step, `onSaved` (it finishes the
 // guided start and opens the console) in place of the next page.
-type AboutFormProps = { initialValues: AboutValues; nextHref?: string; secondary?: ReactNode; onSaved?: () => Promise<void> };
+type AboutFormProps = { initialValues: AboutValues; nextHref?: string; secondary?: ReactNode; onSaved?: () => Promise<void>; submitLabel?: string };
 
-export function AboutForm({ initialValues, nextHref = ROUTES.welcomePrivacy, secondary, onSaved }: AboutFormProps) {
+export function AboutForm({ initialValues, nextHref = ROUTES.welcomePrivacy, secondary, onSaved, submitLabel = "Next" }: AboutFormProps) {
   const router = useRouter();
   const [state, formAction, isPending] = useActionState(
     async (_previous: AboutState, formData: FormData): Promise<AboutState> => {
@@ -104,7 +104,7 @@ export function AboutForm({ initialValues, nextHref = ROUTES.welcomePrivacy, sec
       </div>
       <ButtonRow className="mt-[18px]">
         <Button type="submit" disabled={isPending}>
-          Next
+          {submitLabel}
         </Button>
         {secondary}
       </ButtonRow>

@@ -102,16 +102,14 @@ function SendYourself({ links, signature }: { links: SentLink[]; signature: Sign
             <div className="fh-who">
               {/* One line each, cut with "…" on a narrow phone, as on Commonhall: an address is never split mid-word. */}
               <b title={link.name || link.email}>{link.name || link.email}</b>
-              <span title={link.email}>{link.email}</span>
+              {link.name ? <span title={link.email}>{link.email}</span> : null}
+              {/* The second way, a small link under the person, so the row keeps its room for their name on a phone. */}
+              <a className="fh-small underline decoration-1 underline-offset-[3px]" href={mailtoFor(link, signature)}>
+                Open in your email
+              </a>
             </div>
             <div className="fh-end">
               <CopyButton text={link.link} label="Copy link" />
-              <Button asChild size="sm" variant="quiet">
-                <a href={mailtoFor(link, signature)}>
-                  <Send aria-hidden="true" strokeWidth={1.5} />
-                  Open in your email
-                </a>
-              </Button>
             </div>
           </div>
         ))}

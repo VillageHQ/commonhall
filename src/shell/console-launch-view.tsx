@@ -42,7 +42,8 @@ export function ConsoleLaunchView({ firstName, steps }: { firstName: string; ste
           ))}
         </ol>
       </section>
-      <PartnerReportTile />
+      {/* As wide as the checklist above it. */}
+      <PartnerReportTile className="mt-4 max-w-[720px]" />
       <p className="fh-small fh-muted fh-launch-foot">
         Everything else is in <TextLink href={ROUTES.adminSettings}>Set up</TextLink>.
       </p>
