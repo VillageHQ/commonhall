@@ -14,3 +14,12 @@ Real output, read back from the services after the run.
 
 Not covered: nobody has installed either build on a phone yet, so a real alert on a device, background audio with the
 screen locked and the Android voice service still wait for the owner's phone test.
+
+## Build 3 (20 Nov 2026, after the room hand-off)
+- **iOS:** EAS build `e236a56b-62ff-4755-9ee8-1fc2884ca626` (profile `testflight`, 1.0.0 build 3): FINISHED.
+  EAS submission `6b7c69b0-6127-495b-addb-e1cfc28cd458`. App Store Connect: build 3 `VALID usesNonExemptEncryption=false`,
+  `internalBuildState: IN_BETA_TESTING`, `externalBuildState: READY_FOR_BETA_SUBMISSION` (not submitted: internal only);
+  group "Absi" (internal, all builds).
+- **Android:** EAS build `5ebc6c79-ba40-4eb6-84ac-948cc0aa70c2` (profile `preview`): FINISHED, an APK:
+  https://expo.dev/artifacts/eas/TPMVdOB3W9OE8kQYqKYhyFkkqYrp3sfIIEnwjiLmI-I.apk
+- **Web-preview check:** `build3/README.md`.
