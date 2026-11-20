@@ -79,9 +79,9 @@ function NetworkOffer({ search, words, place }: { search: SearchScreenProps; wor
     );
   }
   return (
-    <p className="fh-small fh-muted mt-3.5" data-slot="people-network-offer">
-      Not who you need?{" "}
-      <button type="button" className="fh-linkbtn wrap-anywhere text-left" onClick={searchNetworks}>
+    <p className="fh-small fh-muted mt-3.5 flex flex-wrap items-center gap-x-1.5" data-slot="people-network-offer">
+      Not who you need?
+      <button type="button" className="fh-linkbtn wrap-anywhere py-0 text-left" onClick={searchNetworks}>
         <Waypoints aria-hidden="true" className="fh-i fh-xs shrink-0" strokeWidth={1.5} />
         {label}
       </button>
