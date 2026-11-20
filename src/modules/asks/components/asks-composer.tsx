@@ -35,12 +35,14 @@ export function AsksComposer({ allowance, draft = null, isComposing = false }: C
     bodyRef.current?.focus();
     bodyRef.current?.scrollIntoView({ block: "center" });
   }, [isComposing]);
+  // The extras appear with the first typed letter and stay until the post is made, so the fold keeps what was typed.
   const [hasText, setHasText] = useState(Boolean(draft?.body));
   const [error, setError] = useState<{ text: string; field: "body" | "cap" } | null>(null);
   const [isPending, setIsPending] = useState(false);
   const isCapUsed = allowance.left === 0;
 
   async function post(element: HTMLFormElement, kind: AskKind) {
+    if (isPending) return;
     const form = new FormData(element);
     const isUpdate = kind === ASK_KINDS.update;
     setIsPending(true);
@@ -59,6 +61,8 @@ export function AsksComposer({ allowance, draft = null, isComposing = false }: C
         createdAskSchema,
       );
       element.reset();
+      setHasText(false);
+      fitToText(bodyRef.current);
       setIsPending(false);
       router.push(isUpdate ? `${ASKS_PAGE}?m=updated` : `${toAskPage(id)}?m=${helperCount > 0 ? "posted" : "posted0"}`);
       router.refresh();
@@ -99,7 +103,7 @@ export function AsksComposer({ allowance, draft = null, isComposing = false }: C
           aria-invalid={error?.field === "body" ? true : undefined}
           onInput={(event) => {
             fitToText(event.currentTarget);
-            setHasText(event.currentTarget.value.trim().length > 0);
+            if (event.currentTarget.value.trim()) setHasText(true);
           }}
           onKeyDown={(event) => {
             // An ask is one line: Enter posts it.

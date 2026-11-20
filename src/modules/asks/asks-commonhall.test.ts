@@ -177,7 +177,7 @@ describe("Commonhall's asks and Today", () => {
       const lines = await database.select({ body: askAnswer.body, kind: askAnswer.kind }).from(askAnswer).orderBy(askAnswer.createdAt);
       expect(lines).toEqual([
         { body: "I know Dana Morris and can introduce you.", kind: "know_someone" },
-        { body: "I’ve done this myself. Happy to talk it through.", kind: "done_myself" },
+        { body: "I can help with this.", kind: "done_myself" },
       ]);
       const emails = await database.select({ subject: emailOutbox.subject, to: emailOutbox.toEmail }).from(emailOutbox).where(eq(emailOutbox.kind, "ask_help_offered")).orderBy(emailOutbox.createdAt);
       // Two offers can land in the same millisecond, so the order of the two emails isn't part of the check.

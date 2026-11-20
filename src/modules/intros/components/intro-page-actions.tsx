@@ -49,6 +49,7 @@ function useGoTo() {
 // is a second, optional step). No thanks is one kind of no: the asker sees that it isn't happening, never why.
 export function ConnectorAnswer({ intro }: { intro: Intro }) {
   const goTo = useGoTo();
+  const router = useRouter();
   const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState<ConnectorChoice | null>(null);
@@ -64,6 +65,8 @@ export function ConnectorAnswer({ intro }: { intro: Intro }) {
     } catch (failure) {
       setError(failure instanceof Error ? failure.message : "This answer didn't come through. Try again.");
       setPending(null);
+      // Answered in another tab meanwhile: the page redraws with where it stands now.
+      router.refresh();
     }
   }
   return (

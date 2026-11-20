@@ -13,7 +13,7 @@ import { AskConsent, CompanyMark, describeAbout, ICON, MemberAvatar, PostStatusP
 
 const ANSWER_KIND_LABELS: Record<string, string | null> = {
   [ASK_ANSWER_KINDS.knowSomeone]: "Knows someone",
-  [ASK_ANSWER_KINDS.doneMyself]: "Has done this",
+  [ASK_ANSWER_KINDS.doneMyself]: "Can help",
   [ASK_ANSWER_KINDS.answer]: null,
 };
 

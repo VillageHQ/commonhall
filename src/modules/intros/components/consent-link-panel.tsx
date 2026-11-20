@@ -38,8 +38,8 @@ function EmailLinkForm({ intro, consentIssue, onSent }: EmailLinkFormProps) {
 
   // "Email it to Rosa": a second, optional way to send the link, folded until it's wanted.
   return (
-    <details className="fh-more">
-      <summary className="fh-small">
+    <details className="fh-fold">
+      <summary>
         <Mail aria-hidden="true" className="fh-i fh-xs" strokeWidth={1.5} />
         Email it to {targetFirst}
       </summary>

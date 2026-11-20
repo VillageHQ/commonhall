@@ -17,7 +17,7 @@ import { resolveAppUrl } from "../../platform/http/app-url.ts";
 import type { RequestContext } from "../../platform/http/request-context.ts";
 import { logError } from "../../platform/observability/route-logging.ts";
 import { removeBidiControls } from "../../platform/text/safe-text.ts";
-import { ASK_CONSENT, ASK_HELPER_REASONS, ASK_WARMTHS, describeAskWho, describeWhyYou, toAskPage, type AskHelperReason, type HelperReasonLine } from "./contract.ts";
+import { ASK_CONSENT, ASK_HELPER_REASONS, ASK_LIMITS, ASK_WARMTHS, describeAskWho, describeWhyYou, toAskPage, type AskHelperReason, type HelperReasonLine } from "./contract.ts";
 import { hasNoBlockBetween, readWordHelpers } from "./reads.ts";
 import { readAskMatchText } from "./rules-help-match.ts";
 import { ask, askHelper } from "./schema.ts";
@@ -72,6 +72,18 @@ async function findPathHelpers(context: RequestContext, target: PathTarget, find
     logError("ask-path-check", error);
     return null;
   }
+}
+
+// Members whose "can help with" words meet the ask (round 7): the ask's own words first, then whom it names fills the
+// places left, so naming someone only ever adds helpers.
+async function readAskWordHelpers(database: RequestContext["database"], authorId: string, routed: Parameters<typeof readAskMatchText>[0]) {
+  const hasTarget = Boolean(routed.targetText || routed.targetCompany);
+  const [own, named] = await Promise.all([
+    readWordHelpers(database, authorId, readAskMatchText({ title: routed.title, detail: routed.detail })),
+    hasTarget ? readWordHelpers(database, authorId, readAskMatchText(routed)) : Promise.resolve([]),
+  ]);
+  const ownIds = new Set(own.map(({ memberId }) => memberId));
+  return [...own, ...named.filter(({ memberId }) => !ownIds.has(memberId))].slice(0, ASK_LIMITS.wordHelpersPerAsk);
 }
 
 function mergeHelpers(authorId: string, lookup: PathLookup | null, wordHelpers: Awaited<ReturnType<typeof readWordHelpers>>) {
@@ -197,7 +209,7 @@ export async function routeAskToHelpers(context: RequestContext, askId: string, 
 
   const lookup = await findPathHelpers(context, routed, findPaths);
   if (lookup?.targetName && routed.targetSlug) await database.update(ask).set({ targetName: clip(lookup.targetName) }).where(eq(ask.id, askId));
-  const wordHelpers = await readWordHelpers(database, member.id, readAskMatchText(routed));
+  const wordHelpers = await readAskWordHelpers(database, member.id, routed);
   const drafts = mergeHelpers(member.id, lookup, wordHelpers);
   const branding = await readEmailBranding(database, environment);
   const helperCount = await database.transaction((transaction) => saveHelpers(transaction, environment, branding, routed, drafts));

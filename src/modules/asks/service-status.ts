@@ -49,7 +49,7 @@ function askGoneError() {
 // The words a helper leaves when they write nothing (Commonhall's help()).
 function readDefaultHelpLine(kind: AskHelpKind, person: string | null) {
   if (kind === ASK_HELP_KINDS.knowSomeone) return `I know ${person ?? "someone"} and can introduce you.`;
-  return "I’ve done this myself. Happy to talk it through.";
+  return "I can help with this.";
 }
 
 type HelpOfferedEmail = { communityName: string; authorName: string; helperName: string; kind: AskHelpKind; note: string; person: string | null; askTitle: string; link: string };
@@ -89,7 +89,7 @@ async function lockAskToHelp(transaction: Transaction, askId: string, helperId: 
   return target;
 }
 
-// "I can help": a fixed public line goes under the ask (Knows someone, or Has done this), the asker hears by email,
+// "I can help": a fixed public line goes under the ask (Knows someone, or Can help), the asker hears by email,
 // and the private offer keeps the helper's note, which only the asker (and its writer) sees. A path helper's person is the
 // one they know when they name nobody.
 export async function helpWithAsk(context: RequestContext, { askId, kind, person, note }: HelpAskBody) {
