@@ -59,37 +59,30 @@ function plural(count: number, one: string, many: string) {
 }
 
 export function describeLaunchSteps(facts: LaunchFacts): LaunchStep[] {
-  const from = facts.mailDomain ?? "your domain";
   // The look is done with a logo: a saved name alone still shows initials on every page.
   const isLookDone = facts.isLookSet && facts.hasLogo;
   const look: LaunchText = isLookDone
-    ? [{ text: `${facts.communityName}, your logo and colour. Done.` }]
+    ? [{ text: "Done." }]
     : facts.isLookSet
-      ? [{ text: `${facts.communityName} is saved; members still see your initials. ` }, { text: "Add your logo →", href: LAUNCH_LINKS.look }]
-      : [{ text: "Your fund’s name, colour and logo on every page and email. " }, { text: "Set your look →", href: LAUNCH_LINKS.look }];
+      ? [{ text: "Members still see your initials. " }, { text: "Add your logo →", href: LAUNCH_LINKS.look }]
+      : [{ text: "Name, colour and logo. " }, { text: "Set your look →", href: LAUNCH_LINKS.look }];
   const unsent = facts.invitesAdded - facts.invitesEmailed;
   const invite: LaunchText = !facts.invitesAdded
-    ? [{ text: "Paste 10–20 emails. They get a one-tap sign-in; nobody needs a password. " }, { text: "Invite founders →", href: LAUNCH_LINKS.invites }]
+    ? [{ text: "Paste 10–20 emails. " }, { text: "Invite founders →", href: LAUNCH_LINKS.invites }]
     : unsent === 0
       ? [{ text: `${facts.invitesAdded} ${plural(facts.invitesAdded, "invite", "invites")} sent. ` }, { text: "Invite more →", href: LAUNCH_LINKS.invites }]
       : [
           { text: facts.invitesEmailed ? `${facts.invitesAdded} added, ${facts.invitesEmailed} emailed. ` : `${facts.invitesAdded} added, no email sent yet. ` },
-          { text: `Send ${plural(unsent, "their link", "their links")} from Sign-in links →`, href: LAUNCH_LINKS.links },
+          { text: `Send ${plural(unsent, "their link", "their links")} →`, href: LAUNCH_LINKS.links },
         ];
   const plumbing: LaunchText =
     facts.isMailSet && facts.isNetworkSet
-      ? [{ text: `Done: invites and digests are emailed from ${from}, and founders can connect their networks.` }]
+      ? [{ text: "Done." }]
       : [
-          ...(facts.isMailSet ? [{ text: "Mail is set up" }] : [{ text: "Set up mail", href: LAUNCH_LINKS.mail }, { text: " so invites and digests are emailed" }]),
-          { text: ". " },
-          ...(facts.isNetworkSet
-            ? [{ text: "Village is connected" }]
-            : [{ text: "Connect Village", href: LAUNCH_LINKS.village }, { text: " so founders can connect their networks and search finds warm paths" }]),
-          { text: "." },
+          ...(facts.isMailSet ? [] : [{ text: "Set up mail", href: LAUNCH_LINKS.mail }, { text: ". " }]),
+          ...(facts.isNetworkSet ? [] : [{ text: "Connect Village", href: LAUNCH_LINKS.village }, { text: "." }]),
         ];
-  const report: LaunchText = facts.hasMadeIntro
-    ? [{ text: "Your first intro is counted. " }, { text: "Open the partner report →", href: LAUNCH_LINKS.report }]
-    : [{ text: "Appears here the day the first intro is counted. You can send it to partners as a PDF." }];
+  const report: LaunchText = facts.hasMadeIntro ? [{ text: "Open the partner report →", href: LAUNCH_LINKS.report }] : [{ text: "Appears with the first intro." }];
   return [
     { key: LAUNCH_STEPS.look, title: "Your fund’s look", isDone: isLookDone, text: look },
     // Done once an invite reached someone: emailed, or used to join (a link sent by hand).

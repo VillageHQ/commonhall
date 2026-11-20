@@ -9,11 +9,8 @@ import { introsManifest } from "@/modules/intros/manifest";
 import { messagesManifest } from "@/modules/messages/manifest";
 import { API_ROUTES, ROUTES } from "@/platform/http/routes";
 
-import { readAdminTabs } from "./admin-tabs";
-import type { AdminTabFacts } from "./admin-badges";
 import { buildShellNavigation } from "./navigation";
 import { FounderViewStrip, ModeSwitch, SidebarNavigation, TabBar } from "./navigation-links";
-import { CONSOLE_KEYS } from "./navigation-rules";
 
 const location = vi.hoisted(() => ({ pathname: "/" }));
 
@@ -189,30 +186,5 @@ describe("the admin's two modes", () => {
     location.pathname = ROUTES.adminReport;
     render(createElement(FounderViewStrip, { name: "Maya Ortiz" }));
     expect(screen.queryByText(/Founder view/)).toBeNull();
-  });
-});
-
-describe("the console's Community-only pages", () => {
-  const FACTS = {
-    setupStepsLeft: 1,
-    membersBadge: 0,
-    reportsBadge: 2,
-    creditsBadge: 0,
-    chatBadge: 0,
-    isSetupComplete: false,
-    hiddenTabHrefs: ["/admin/integrations"],
-    villageTrouble: null,
-  } as unknown as AdminTabFacts;
-
-  it("leaves the plumbing pages to the Set up list", () => {
-    expect(readAdminTabs(CONSOLE_KEYS.setup, FACTS)).toEqual([]);
-  });
-
-  it("keeps the weekly email beside Asks & digest", () => {
-    expect(readAdminTabs(CONSOLE_KEYS.asks, FACTS).map(({ label }) => label)).toEqual(["Asks", "Weekly email"]);
-  });
-
-  it("adds nothing to pages with their own menu item", () => {
-    expect(readAdminTabs(CONSOLE_KEYS.home, FACTS)).toEqual([]);
   });
 });

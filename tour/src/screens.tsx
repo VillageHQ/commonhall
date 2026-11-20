@@ -53,7 +53,7 @@ import {
   CANDIDATE_RESULT,
   CANDIDATE_ROLE,
   COMMUNITY_NAME,
-  CONSOLE_HOME,
+  CONSOLE_THIS_WEEK, CONSOLE_HOME_ITEMS,
   DIRECTORY_SECTOR,
   FOUNDER,
   FOUNDER_VIEWER,
@@ -328,7 +328,7 @@ function AnnouncementsPage() {
 }
 
 function AdminPage() {
-  return <AdminHomeView communityName={COMMUNITY_NAME} home={CONSOLE_HOME} items={[]} />;
+  return <AdminHomeView communityName={COMMUNITY_NAME} thisWeek={CONSOLE_THIS_WEEK} items={CONSOLE_HOME_ITEMS} />;
 }
 
 const PAGES: Record<string, { page: () => React.ReactNode; isAdmin: boolean }> = {

@@ -14,6 +14,6 @@ export const introsManifest = {
   needsVillage: false,
   requires: [],
   navigation: [{ label: "Intros", href: ROUTES.intros, icon: Handshake, section: NAVIGATION_SECTIONS.primary, badge: "intros" }],
-  adminTabs: [],
+  adminTabs: [{ label: "Intro log", href: ROUTES.adminIntroLog }],
   paths: { pages: [ROUTES.intros, ROUTES.introConsent, ROUTES.introOptOut, ROUTES.introConsentOld, ROUTES.guidedAsk], api: [API_ROUTES.intros] },
 } satisfies ToggleableManifest;

@@ -4,48 +4,55 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { CHIP_CLASSES } from "@/components/ui/chip";
-import { CONSOLE_KEYS, readConsoleKey } from "@/shell/navigation-rules";
 import type { AdminTabFacts } from "@/shell/admin-badges";
 import { ROUTES } from "@/platform/http/routes";
+import { ANNOUNCEMENT_PAGE } from "@/modules/admin/contract-announcements";
 import { ASKS_ADMIN_PAGE } from "@/modules/asks/contract";
 
-// The console's own menu is the sidebar (and the phone tabs). Community has pages Commonhall's menu has no item for;
-// each lights a console item. Set up's pages are reached from its list (/admin/setup), as in Commonhall; the Asks
-// item still lists its pages here as a row of chips under the page title, until its area builds Asks & digest.
-type AdminTab = { label: string; href: string; readBadge?: (facts: AdminTabFacts) => number; badgeDescription?: (count: number) => string };
+// The console's merged areas (round 6): each is a row of tabs across its pages' own addresses, so no bookmark breaks.
+// A tab whose module is off is hidden (its href is in hiddenTabHrefs, from the module manifests' adminTabs).
+type AdminTab = { label: string; href: string };
 
-const TABS_BY_ITEM: Partial<Record<string, AdminTab[]>> = {
-  [CONSOLE_KEYS.asks]: [
-    { label: "Asks", href: ASKS_ADMIN_PAGE },
-    { label: "Weekly email", href: ROUTES.adminWeeklyEmail },
+export const ADMIN_AREAS: readonly (readonly AdminTab[])[] = [
+  [
+    { label: "Members", href: ROUTES.adminMembers },
+    { label: "Invites", href: ROUTES.adminInvites },
+    { label: "Import", href: ROUTES.adminImport },
+    { label: "Sign-in links", href: ROUTES.adminLinks },
+    { label: "Calls", href: ROUTES.adminCalls },
   ],
-};
+  [
+    { label: "Asks", href: ASKS_ADMIN_PAGE },
+    { label: "Intro log", href: ROUTES.adminIntroLog },
+  ],
+  [
+    { label: "Announcements", href: ANNOUNCEMENT_PAGE },
+    { label: "Weekly email", href: ROUTES.adminDigest },
+  ],
+];
 
-// Pages whose module is off are hidden (their href is in hiddenTabHrefs).
-export function readAdminTabs(consoleKey: string, facts: AdminTabFacts) {
-  const tabs = TABS_BY_ITEM[consoleKey] ?? [];
-  return tabs.filter(({ href }) => !facts.hiddenTabHrefs.includes(href));
+function isUnder(pathname: string, href: string) {
+  return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export function AdminTabs({ facts }: { facts: AdminTabFacts }) {
+// The tabs of the area a page belongs to; none for a page outside the merged areas. One tab left shows no row.
+export function readAdminTabs(pathname: string, hiddenTabHrefs: readonly string[]) {
+  const area = ADMIN_AREAS.find((tabs) => tabs.some(({ href }) => isUnder(pathname, href))) ?? [];
+  const shown = area.filter(({ href }) => !hiddenTabHrefs.includes(href));
+  return shown.length > 1 ? shown : [];
+}
+
+export function AdminTabs({ facts }: { facts: Pick<AdminTabFacts, "hiddenTabHrefs"> }) {
   const pathname = usePathname();
-  const tabs = readAdminTabs(readConsoleKey(pathname), facts);
+  const tabs = readAdminTabs(pathname, facts.hiddenTabHrefs);
   if (tabs.length === 0) return null;
   return (
     <nav aria-label="Pages in this part of the console" data-print="hide" className="fh-chips mb-5">
-      {tabs.map(({ label, href, readBadge, badgeDescription }) => {
-        const count = readBadge?.(facts) ?? 0;
-        return (
-          <Link key={href} href={href} aria-current={pathname === href ? "page" : undefined} className={CHIP_CLASSES}>
-            {label}
-            {count ? (
-              <span role="img" aria-label={badgeDescription?.(count) ?? `${count} need your attention`} className="fh-n">
-                {count}
-              </span>
-            ) : null}
-          </Link>
-        );
-      })}
+      {tabs.map(({ label, href }) => (
+        <Link key={href} href={href} aria-current={isUnder(pathname, href) ? "page" : undefined} className={CHIP_CLASSES}>
+          {label}
+        </Link>
+      ))}
     </nav>
   );
 }
