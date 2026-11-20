@@ -41,24 +41,25 @@ export function toContainsPattern(search: string) {
   return `%${search.replace(LIKE_WILDCARDS, "\\$&")}%`;
 }
 
+const SHORT_WORD = /^[\p{L}\p{N}]{1,3}$/u;
+
+// A short word ("ai", "us") matches whole words only, so "us" doesn't find "business"; a longer one matches inside
+// words ("fintech" finds "Fintech Ops").
+function matchesText(column: AnyPgColumn | SQL, word: string) {
+  if (SHORT_WORD.test(word)) return sql`${column} ~* ${String.raw`\m${word}\M`}`;
+  return ilike(column, toContainsPattern(word));
+}
+
 // One word against the member's own words, the shown role, company and city, or a tag.
 function matchesWord(database: Database, word: string) {
-  const pattern = toContainsPattern(word);
   const taggedMember = database
     .select({ userId: memberTag.userId })
     .from(memberTag)
-    .where(and(eq(memberTag.userId, user.id), ilike(memberTag.tag, pattern)));
+    .where(and(eq(memberTag.userId, user.id), matchesText(memberTag.tag, word)));
   return or(
-    ilike(user.name, pattern),
-    ilike(shownTitle, pattern),
-    ilike(shownCompany, pattern),
-    ilike(shownLocation, pattern),
-    ilike(memberProfile.bio, pattern),
-    ilike(memberProfile.canHelpWith, pattern),
-    ilike(memberProfile.needs, pattern),
-    ilike(memberProfile.stage, pattern),
-    ilike(memberProfile.sector, pattern),
-    ilike(memberProfile.cohort, pattern),
+    ...[user.name, shownTitle, shownCompany, shownLocation, memberProfile.bio, memberProfile.canHelpWith, memberProfile.needs, memberProfile.stage, memberProfile.sector, memberProfile.cohort].map((column) =>
+      matchesText(column, word),
+    ),
     exists(taggedMember),
   );
 }
