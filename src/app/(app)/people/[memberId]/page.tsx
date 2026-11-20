@@ -33,7 +33,9 @@ import { membersManifest } from "@/modules/members/manifest";
 import { modulePage } from "@/platform/modules/module-page";
 import { isModuleEnabled } from "@/platform/modules/enablement";
 import { BookCallButton } from "@/modules/members/components/book-call-button";
-import { FollowButton } from "@/modules/voice/components/follow-button";
+import { RoomMuteButton } from "@/components/alerts/room-mute-button";
+import { voiceManifest } from "@/modules/voice/manifest";
+import { readMutedPeople } from "@/platform/notifications/reads";
 import { COMMUNITY_ROLE_LABELS, COMMUNITY_ROLES } from "@/modules/members/contract-community-roles";
 import { readShownBooking } from "@/modules/members/service-booking";
 import { wereIntroducedForBooking } from "@/shell/booking-access";
@@ -78,13 +80,16 @@ export default modulePage(membersManifest, async function MemberProfilePage({ pa
   // "Hide me from the directory": members can't open the profile either. Admins still can.
   if (!isOwnProfile && !isAdminMember(viewer) && (await isHiddenMember(database, profile.id))) notFound();
   const isBlockedByViewer = !isOwnProfile && (await isBlockedBy(database, viewer.id, profile.id));
-  const [isIntrosOn, isNetworkOn, isJobBoardOn, lookup, lines] = await Promise.all([
+  const [isIntrosOn, isNetworkOn, isJobBoardOn, isRoomsOn, lookup, lines] = await Promise.all([
     isModuleEnabled(database, introsManifest),
     isModuleEnabled(database, networkManifest),
     isModuleEnabled(database, jobBoardManifest),
+    isModuleEnabled(database, voiceManifest),
     readLookupState(database, profile.id),
     readFilledLines(database, profile.id),
   ]);
+  // "Don't notify me about <first name>'s rooms": the viewer's mute of this member's room starts, while Rooms is on.
+  const isRoomsMuted = isRoomsOn && !isOwnProfile ? (await readMutedPeople(database, viewer.id)).some(({ id }) => id === profile.id) : false;
   // With search on, the admins' "chosen introducers" rule decides who can be asked, as it does on the server.
   const reach = isNetworkOn && !isOwnProfile ? await readMemberReach(database, profile.id) : null;
   const acceptsAsks = await readAcceptsIntroAsks(database, profile.id);
@@ -151,7 +156,7 @@ export default modulePage(membersManifest, async function MemberProfilePage({ pa
               )
             ) : null}
             {bookingUrl ? <BookCallButton memberId={profile.id} memberName={profile.name} bookingUrl={bookingUrl} variant="secondary" /> : null}
-            <FollowButton memberId={profile.id} memberName={profile.name} />
+            {isRoomsOn ? <RoomMuteButton memberId={profile.id} firstName={first} isMuted={isRoomsMuted} /> : null}
           </div>
         )}
       </ProfileHead>

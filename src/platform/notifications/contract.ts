@@ -16,6 +16,26 @@ export type NotificationKind = (typeof NOTIFICATION_KINDS)[keyof typeof NOTIFICA
 
 export const NOTIFICATION_KIND_VALUES = Object.values(NOTIFICATION_KINDS) as [NotificationKind, ...NotificationKind[]];
 
+// The two room kinds ("Starting now" for Remind me, and someone starting a room) are one "Room alerts" switch: it
+// turns both on or off together, and reads on while either is on.
+export const ROOM_ALERT_KINDS: readonly NotificationKind[] = [NOTIFICATION_KINDS.voiceRoom, NOTIFICATION_KINDS.voiceBroadcast];
+export const ROOM_ALERTS_LABEL = "Room alerts";
+
+export function isRoomAlertKind(kind: NotificationKind) {
+  return ROOM_ALERT_KINDS.includes(kind);
+}
+
+// Whether the Room alerts switch reads on: either room kind still on.
+export function areRoomAlertsOn(offKinds: readonly NotificationKind[]) {
+  return ROOM_ALERT_KINDS.some((kind) => !offKinds.includes(kind));
+}
+
+// The off kinds with both room kinds turned on or off.
+export function withRoomAlerts(offKinds: readonly NotificationKind[], isOn: boolean): NotificationKind[] {
+  const others = offKinds.filter((kind) => !isRoomAlertKind(kind));
+  return isOn ? others : [...others, ...ROOM_ALERT_KINDS];
+}
+
 // Only broadcasts can be muted per person; every other kind still comes from a muted member.
 export const MUTABLE_KINDS: readonly NotificationKind[] = [NOTIFICATION_KINDS.voiceBroadcast];
 
@@ -32,7 +52,7 @@ export const NOTIFICATION_KIND_LABELS: Record<NotificationKind, string> = {
   answer: "Answers",
   message: "Messages",
   voice_room: "Rooms you asked to be reminded of",
-  voice_broadcast: "People starting or joining rooms",
+  voice_broadcast: "People starting rooms",
   library: "New in the library",
 };
 

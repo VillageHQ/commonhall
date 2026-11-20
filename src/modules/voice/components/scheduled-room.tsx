@@ -6,12 +6,13 @@ import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 
+import { toStartedRoomHref } from "../contract";
 import { voiceRequests } from "../queries";
 import { useRoomTimeFormat } from "./rooms-board";
 
 const REFRESH_MS = 15_000;
 
-// A room that hasn't started: its time, "Remind me" for members, "Start now" for the host.
+// A room that hasn't started: its time, "Remind me" for members, "Start now" for the host (it alerts everyone).
 export function ScheduledRoom({ roomId, scheduledFor, isHost, hasReminder }: { roomId: string; scheduledFor: string | null; isHost: boolean; hasReminder: boolean }) {
   const router = useRouter();
   // The page turns into the live room once the host starts it.
@@ -21,7 +22,8 @@ export function ScheduledRoom({ roomId, scheduledFor, isHost, hasReminder }: { r
   }, [router]);
   const [isReminding, setIsReminding] = useState(hasReminder);
   const formatTime = useRoomTimeFormat();
-  const start = useMutation({ mutationFn: () => voiceRequests.start(roomId), onSuccess: () => router.refresh() });
+  // Started: the page turns into the live room (its address tells the host once when nobody was alerted).
+  const start = useMutation({ mutationFn: () => voiceRequests.start(roomId), onSuccess: (started) => (started.isQuiet ? router.replace(toStartedRoomHref(started)) : router.refresh()) });
   const remind = useMutation({ mutationFn: (isOn: boolean) => voiceRequests.remind({ roomId, isOn }), onSuccess: (_result, isOn) => setIsReminding(isOn) });
   return (
     <div className="fh-sheet">

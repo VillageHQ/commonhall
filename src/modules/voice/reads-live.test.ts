@@ -5,6 +5,7 @@ import { POST as postCreate } from "@/app/api/voice/create/route";
 import { POST as postJoin } from "@/app/api/voice/join/route";
 import { voiceManifest } from "@/modules/voice/manifest";
 import { countLiveRooms, countRoomJoins, readLiveRooms } from "@/modules/voice/reads-live";
+import { voiceRoom, voiceRoomMember } from "@/modules/voice/schema";
 import { toLiveKitRoomName } from "@/modules/voice/service";
 import { user } from "@/platform/database/auth-schema";
 import { saveModuleState } from "@/platform/modules/enablement";
@@ -53,10 +54,18 @@ describe("the live-room reads", () => {
     return signedIn;
   }
 
-  async function openRoom(host: Member, title: string, access: "open" | "invite" = "open", inviteeIds: string[] = []) {
-    const response = await call(postCreate, host, { title, access, scheduledFor: null, inviteeIds });
+  async function openRoom(host: Member, title: string) {
+    const response = await call(postCreate, host, { title });
     expect(response.status).toBe(200);
     return ((await response.json()) as { roomId: string }).roomId;
+  }
+
+  // New rooms are open to everyone; an invite-only room as hosts made them before round 7.
+  async function openInviteOnlyRoom(host: Member, title: string, inviteeIds: string[]) {
+    const roomId = await openRoom(host, title);
+    await database.update(voiceRoom).set({ access: "invite" }).where(eq(voiceRoom.id, roomId));
+    await database.insert(voiceRoomMember).values(inviteeIds.map((memberId) => ({ roomId, memberId, role: "listener", isInvited: true })));
+    return roomId;
   }
 
   async function join(who: Member, roomId: string) {
@@ -66,7 +75,7 @@ describe("the live-room reads", () => {
   it("returns the faces of the people in a live room, and only the rooms the viewer may see", async () => {
     const [maya, sam, lina] = await Promise.all([member("Maya Example"), member("Sam Example"), member("Lina Example")]);
     const roomId = await openRoom(maya, "Pricing for seed founders");
-    await openRoom(maya, "Board prep", "invite", [sam.userId]);
+    await openInviteOnlyRoom(maya, "Board prep", [sam.userId]);
     await join(maya, roomId);
     await join(sam, roomId);
     livekit.connect(toLiveKitRoomName(roomId), maya.userId, sam.userId);

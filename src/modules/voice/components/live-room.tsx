@@ -4,7 +4,7 @@ import "./voice.css";
 
 import { useMutation } from "@tanstack/react-query";
 import { DisconnectReason, Room, RoomEvent, Track, type Participant, type RemoteTrack } from "livekit-client";
-import { BellRing, Hand, LogOut, MessageSquare, Mic, MicOff, Smile } from "lucide-react";
+import { Hand, LogOut, MessageSquare, Mic, MicOff, Smile } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type FormEvent, type ReactNode } from "react";
@@ -15,24 +15,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { readNativeApp, ROOM_CLOSED_REASONS, subscribeToNativeApp, subscribeToRoomClosed, type RoomClosedReason } from "@/platform/native-app/bridge";
 
-import {
-  describeNotifyReset,
-  isModerator,
-  isOnStage,
-  ROLE_ACTIONS,
-  ROOM_ROLES,
-  VOICE_ATTRIBUTES,
-  VOICE_DATA_TOPICS,
-  VOICE_LIMITS,
-  VOICE_PAGE,
-  VOICE_REACTIONS,
-  type NotifyAllowance,
-  type RoleAction,
-  type RoomPeople,
-  type RoomRole,
-} from "../contract";
+import { isModerator, isOnStage, ROLE_ACTIONS, ROOM_ROLES, VOICE_ATTRIBUTES, VOICE_DATA_TOPICS, VOICE_LIMITS, VOICE_PAGE, VOICE_REACTIONS, type RoleAction, type RoomRole } from "../contract";
 import { voiceRequests } from "../queries";
-import { formatResetTime, PeoplePicker } from "./room-composer";
 
 const ROLE_WORDS: Record<RoomRole, string> = { host: "Host", cohost: "Co-host", speaker: "Speaker", listener: "" };
 const ROLE_ORDER: Record<RoomRole, number> = { host: 0, cohost: 1, speaker: 2, listener: 3 };
@@ -118,8 +102,7 @@ function PersonTile({ person, reaction, isSelected, onSelect, size }: { person: 
   );
 }
 
-// `hasNotified` and `notify` are for "Tell people I'm here": once per room, within the day's notifies.
-type LiveRoomProps = { roomId: string; title: string; isInviteOnly: boolean; hasNotified?: boolean; notify?: NotifyAllowance };
+type LiveRoomProps = { roomId: string; title: string };
 
 const SERVER_SNAPSHOT = "unknown";
 
@@ -132,7 +115,7 @@ function readWhere() {
 export function LiveRoom(props: LiveRoomProps) {
   const where = useSyncExternalStore(subscribeToNativeApp, readWhere, () => SERVER_SNAPSHOT);
   if (where === SERVER_SNAPSHOT) return <p className="fh-small fh-muted">Joining {props.title}…</p>;
-  if (where === "app") return <AppRoomHandoff roomId={props.roomId} title={props.title} hasNotified={props.hasNotified ?? false} />;
+  if (where === "app") return <AppRoomHandoff roomId={props.roomId} title={props.title} />;
   return <BrowserRoom {...props} />;
 }
 
@@ -144,15 +127,17 @@ const APP_CLOSED_WORDS: Record<RoomClosedReason, string> = {
 };
 
 // The app plays the room; this page says so until the app closes its room screen, then says why and offers Join again.
-function AppRoomHandoff({ roomId, title, hasNotified }: { roomId: string; title: string; hasNotified: boolean }) {
+// `hasNotified` is always true: "Tell people I'm here" is gone, and app builds from before round 7 (TestFlight 3, the
+// Android test APK) hide their Tell people button only on that flag.
+function AppRoomHandoff({ roomId, title }: { roomId: string; title: string }) {
   const router = useRouter();
   const [closedReason, setClosedReason] = useState<RoomClosedReason | null>(null);
-  // The latest server answer, without opening the room again when it changes.
-  const notifiedRef = useRef(hasNotified);
+  // The latest title (the host may rename the room), without opening the room again when it changes.
+  const titleRef = useRef(title);
   useEffect(() => {
-    notifiedRef.current = hasNotified;
-  }, [hasNotified]);
-  const handOff = useCallback(() => readNativeApp()?.openRoom(roomId, title, { hasNotified: notifiedRef.current }), [roomId, title]);
+    titleRef.current = title;
+  }, [title]);
+  const handOff = useCallback(() => readNativeApp()?.openRoom(roomId, titleRef.current, { hasNotified: true }), [roomId]);
   function joinAgain() {
     setClosedReason(null);
     handOff();
@@ -166,7 +151,7 @@ function AppRoomHandoff({ roomId, title, hasNotified }: { roomId: string; title:
     () =>
       subscribeToRoomClosed(roomId, (reason) => {
         setClosedReason(reason);
-        // Read the room again: an ended room's head stops saying Live, and Join again carries a fresh hasNotified.
+        // Read the room again: an ended room's head stops saying Live.
         router.refresh();
       }),
     [roomId, router],
@@ -219,7 +204,7 @@ function Tool({ icon, label, onClick, isPressed, isDisabled, testId, accessibleN
   );
 }
 
-function BrowserRoom({ roomId, title, isInviteOnly, hasNotified = false, notify = { left: VOICE_LIMITS.broadcastsPerDay, resetsAt: null } }: LiveRoomProps) {
+function BrowserRoom({ roomId, title }: LiveRoomProps) {
   const router = useRouter();
   const roomRef = useRef<Room | null>(null);
   const audioRef = useRef<HTMLDivElement>(null);
@@ -235,8 +220,6 @@ function BrowserRoom({ roomId, title, isInviteOnly, hasNotified = false, notify 
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chat, setChat] = useState<ChatLine[]>([]);
   const [draft, setDraft] = useState("");
-  const [isInviting, setIsInviting] = useState(false);
-  const [isTelling, setIsTelling] = useState(false);
   const chatId = useRef(0);
 
   const refresh = useCallback(() => {
@@ -340,9 +323,6 @@ function BrowserRoom({ roomId, title, isInviteOnly, hasNotified = false, notify 
   const role = useMutation({ mutationFn: voiceRequests.role, onSuccess: () => setSelectedId(null) });
   const hand = useMutation({ mutationFn: voiceRequests.hand });
   const end = useMutation({ mutationFn: () => voiceRequests.end(roomId) });
-  const invite = useMutation({ mutationFn: (memberIds: string[]) => voiceRequests.invite(roomId, memberIds), onSuccess: () => setIsInviting(false) });
-  const tell = useMutation({ mutationFn: (memberIds: string[]) => voiceRequests.notify({ roomId, memberIds }), onSuccess: () => setIsTelling(false) });
-  const canTell = !hasNotified && !tell.isSuccess;
   const [micError, setMicError] = useState<string | null>(null);
 
   async function toggleMic() {
@@ -473,26 +453,10 @@ function BrowserRoom({ roomId, title, isInviteOnly, hasNotified = false, notify 
         </div>
       ) : null}
 
-      {role.error || hand.error || end.error || invite.error || tell.error ? (
+      {role.error || hand.error || end.error ? (
         <FlashNote kind={FLASH_KINDS.needs} className="mt-3">
-          {(role.error ?? hand.error ?? end.error ?? invite.error ?? tell.error)?.message}
+          {(role.error ?? hand.error ?? end.error)?.message}
         </FlashNote>
-      ) : null}
-      {tell.isSuccess ? (
-        <FlashNote kind={FLASH_KINDS.ok} className="mt-3">
-          Told them you&rsquo;re here.
-        </FlashNote>
-      ) : null}
-      {isTelling && canTell ? <TellPanel notify={notify} isSending={tell.isPending} onSend={(ids) => tell.mutate(ids)} onClose={() => setIsTelling(false)} /> : null}
-
-      {isInviteOnly && isModerator(myRole) ? (
-        isInviting ? (
-          <InvitePanel isSaving={invite.isPending} onInvite={(ids) => invite.mutate(ids)} onClose={() => setIsInviting(false)} />
-        ) : (
-          <Button size="sm" variant="quiet" className="mt-3" onClick={() => setIsInviting(true)}>
-            Invite more people
-          </Button>
-        )
       ) : null}
 
       {isChatOpen ? (
@@ -548,17 +512,6 @@ function BrowserRoom({ roomId, title, isInviteOnly, hasNotified = false, notify 
               testId="hand"
             />
           )}
-          {canTell ? (
-            <Tool
-              icon={<BellRing aria-hidden="true" className="fh-i" strokeWidth={1.5} />}
-              label="Tell people"
-              accessibleName="Tell people I'm here"
-              isPressed={isTelling}
-              isDisabled={phase !== PHASES.live}
-              onClick={() => setIsTelling((value) => !value)}
-              testId="tell-people"
-            />
-          ) : null}
         </div>
         {isOnStage(myRole) ? (
           <div className="vr-bar-group">
@@ -578,44 +531,3 @@ function BrowserRoom({ roomId, title, isInviteOnly, hasNotified = false, notify 
   );
 }
 
-// "Tell people I'm here": up to 10 people, once per room. At the day's limit, one line says when it resets.
-function TellPanel({ notify, isSending, onSend, onClose }: { notify: NotifyAllowance; isSending: boolean; onSend: (ids: string[]) => void; onClose: () => void }) {
-  const [picked, setPicked] = useState<RoomPeople>([]);
-  const resetLine = describeNotifyReset(notify, formatResetTime);
-  return (
-    <div className="vr-panel" data-testid="tell-panel">
-      {resetLine ? (
-        <p className="fh-small fh-muted">{resetLine}</p>
-      ) : (
-        <PeoplePicker id="room-tell" picked={picked} onChange={setPicked} label="Tell people I'm here" max={VOICE_LIMITS.pickedOnJoin} />
-      )}
-      <div className="fh-btn-row mt-3">
-        {resetLine ? null : (
-          <Button size="sm" variant="ink" disabled={isSending || picked.length === 0} onClick={() => onSend(picked.map(({ id }) => id))}>
-            Send
-          </Button>
-        )}
-        <Button size="sm" variant="quiet" onClick={onClose}>
-          Cancel
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-function InvitePanel({ isSaving, onInvite, onClose }: { isSaving: boolean; onInvite: (ids: string[]) => void; onClose: () => void }) {
-  const [picked, setPicked] = useState<{ id: string; name: string; faceUrl: string | null }[]>([]);
-  return (
-    <div className="vr-panel">
-      <PeoplePicker id="room-invite-more" picked={picked} onChange={setPicked} label="Invite more people" max={VOICE_LIMITS.inviteesPerRoom} />
-      <div className="fh-btn-row mt-3">
-        <Button size="sm" variant="ink" disabled={isSaving || picked.length === 0} onClick={() => onInvite(picked.map(({ id }) => id))}>
-          Invite
-        </Button>
-        <Button size="sm" variant="quiet" onClick={onClose}>
-          Cancel
-        </Button>
-      </div>
-    </div>
-  );
-}

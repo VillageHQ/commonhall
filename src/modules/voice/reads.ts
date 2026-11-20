@@ -1,17 +1,14 @@
 import "server-only";
 
-import { and, asc, eq, ilike, inArray, ne, or, sql } from "drizzle-orm";
+import { and, eq, inArray, ne, or, sql } from "drizzle-orm";
 
 import { user } from "@/platform/database/auth-schema";
 import type { Database } from "@/platform/database/client";
-import { isListedInDirectory, toContainsPattern } from "@/modules/members/reads-directory";
 import { shownFaceColumns, toShownFaceUrl } from "@/modules/members/reads-pictures";
 
-import { isOnStage, ROOM_ACCESS, ROOM_ROLES, type NotifyAllowance, type RoomAccess, type RoomFace, type RoomPeople, type RoomRole, type RoomStatus } from "./contract";
-import { hasNotified, readNotifyAllowance } from "./service";
+import { isOnStage, ROOM_ACCESS, ROOM_ROLES, type RoomAccess, type RoomFace, type RoomRole, type RoomStatus } from "./contract";
 import { voiceRoom, voiceRoomMember, voiceRoomReminder } from "./schema";
 
-const SEARCH_RESULTS = 20;
 const ROLE_ORDER: Record<RoomRole, number> = { host: 0, cohost: 1, speaker: 2, listener: 3 };
 
 // A room the viewer may see: open to everyone, or invite only with the viewer on its list.
@@ -55,13 +52,10 @@ export type RoomView = {
   isViewerInvited: boolean;
   hasReminder: boolean;
   stage: RoomFace[];
-  // For "Tell people I'm here": whether the viewer told people about this room already, and what's left today.
-  hasNotified: boolean;
-  notify: NotifyAllowance;
 };
 
 // One room for its page, or null when the viewer may not see it (an invite-only room they're not on).
-export async function readRoomView(database: Database, viewerId: string, roomId: string, now = new Date()): Promise<RoomView | null> {
+export async function readRoomView(database: Database, viewerId: string, roomId: string): Promise<RoomView | null> {
   const [row] = await database
     .select({
       id: voiceRoom.id,
@@ -82,7 +76,7 @@ export async function readRoomView(database: Database, viewerId: string, roomId:
     .from(voiceRoomMember)
     .where(and(eq(voiceRoomMember.roomId, roomId), eq(voiceRoomMember.memberId, viewerId)));
   if (row.access === ROOM_ACCESS.invite && !seat?.isInvited) return null;
-  const [stages, notified, notify] = await Promise.all([readStages(database, [roomId]), hasNotified(database, roomId, viewerId), readNotifyAllowance(database, viewerId, now)]);
+  const stages = await readStages(database, [roomId]);
   const stage = stages.get(roomId) ?? [];
   return {
     ...row,
@@ -92,19 +86,6 @@ export async function readRoomView(database: Database, viewerId: string, roomId:
     viewerRole: (seat?.role as RoomRole | undefined) ?? null,
     isViewerInvited: Boolean(seat?.isInvited),
     stage: stage.filter((face) => isOnStage(face.role)),
-    hasNotified: notified,
-    notify,
   };
 }
 
-// Members to invite, by name, among those the directory lists. Never their email.
-export async function searchRoomPeople(database: Database, viewerId: string, search: string, now = new Date()): Promise<RoomPeople> {
-  const words = search.replace(/[%_\\]/g, "").trim();
-  const rows = await database
-    .select({ id: user.id, name: user.name, ...shownFaceColumns(user.id) })
-    .from(user)
-    .where(and(isListedInDirectory(now), ne(user.id, viewerId), words ? ilike(user.name, toContainsPattern(words)) : undefined))
-    .orderBy(asc(user.name))
-    .limit(SEARCH_RESULTS);
-  return rows.map((row) => ({ id: row.id, name: row.name, faceUrl: toShownFaceUrl(row.id, row.avatarUpdatedAt, row.filledFace) }));
-}
