@@ -112,10 +112,15 @@ export function readPartOfPill(intro: Pick<Intro, "state">): { tone: PillTone; l
   return { tone, label: STATE_WORDS[intro.state] ?? intro.state };
 }
 
-// "CTO, Halcyon Health. Nobody is introduced without saying yes."
+// "CTO, Halcyon Health": who the person asked for is. The consent line shows once, under the answer.
 export function readIntroLede(intro: Pick<Intro, "target">) {
-  const about = readTargetAbout(intro);
-  return about ? `${about}. ${CONSENT_LINE}` : CONSENT_LINE;
+  return readTargetAbout(intro);
+}
+
+// The connector's page asks the question itself: "Introduce Marcus to Rachel?"
+export function readConnectorQuestion(intro: Pick<Intro, "requester" | "introducer" | "target">) {
+  const { askerFirst, targetFirst } = readNames(intro);
+  return `Introduce ${askerFirst} to ${targetFirst}?`;
 }
 
 // Commonhall writes "role, company"; Village's headlines say "role at company".
@@ -133,6 +138,9 @@ export function readTargetCompany(intro: Pick<Intro, "target">) {
 }
 
 // The owner decided (2026-11-11): admins see who asked whom, like Commonhall, and members are told so here.
+// The short form on the intro form and the intro page (round 6's text rule: a promise once, in 12 words or fewer).
+export const SHORT_PRIVACY_LINE = "Admins see names, never the note.";
+
 export function readPrivacyLine(community: string) {
   return `Only the people in this intro see the note. ${poss(community)} admins see names, states and dates.`;
 }
@@ -195,21 +203,21 @@ export function readWithdrawHint(intro: Intro) {
   return `${who} won’t be asked again, and the ask comes back to you.`;
 }
 
-// The connector's three choices, each with its line.
-export function readConnectorChoices(intro: Pick<Intro, "requester" | "introducer" | "target">, community: string) {
-  const { askerFirst, targetFirst } = readNames(intro);
+// The connector's three choices. A no of either kind tells the asker only that it can't happen, never why.
+export function readConnectorChoices(intro: Pick<Intro, "requester" | "introducer" | "target">) {
+  const { askerFirst } = readNames(intro);
   return [
-    { value: "yes", title: "Yes, introduce them", description: `We email ${targetFirst} once, from ${community}, in your name.` },
-    { value: "not_now", title: "Not this time", description: `${askerFirst} is told you can’t make this one. Never why.` },
-    { value: "dont_know", title: "I don’t know them well enough", description: `Same message to ${askerFirst}: you can’t make this one.` },
+    { value: "yes", title: "Yes, introduce them" },
+    { value: "not_now", title: "Not this time", description: `${askerFirst} is never told why.` },
+    { value: "dont_know", title: "I don’t know them well" },
   ] as const;
 }
 
 export function readTargetEmailHint(intro: Pick<Intro, "requester" | "introducer" | "target">) {
   const { askerFirst, targetFirst } = readNames(intro);
-  return `Used for this one ask. ${targetFirst} sees ${poss(askerFirst)} address only if they say yes.`;
+  return `${targetFirst} sees ${poss(askerFirst)} address only after saying yes.`;
 }
 
 export function readTargetEmailLabel(intro: Pick<Intro, "requester" | "introducer" | "target">) {
-  return `${poss(readNames(intro).targetFirst)} email, if you say yes`;
+  return `${poss(readNames(intro).targetFirst)} email`;
 }

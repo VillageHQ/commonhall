@@ -7,13 +7,12 @@ import { useFlash } from "@/components/flash";
 import { Button } from "@/components/ui/button";
 import { OptionCard } from "@/components/ui/checkbox-card";
 import { RequestFailure } from "@/platform/http/post-request";
-import { readFirstName } from "@/platform/design/avatar-identity";
 import { MemberConversationSlot } from "@/modules/members/slots";
 
 import { INTRO_ACTIONS, INTRO_RESULTS, OUTCOME_BY_CHOICE, OUTCOME_CHOICES, type Intro, type IntroResult, type OutcomeChoice } from "../contract";
 import { answerAsConnectorRequest, recordIntroOutcomeRequest, transitionIntroRequest } from "../queries";
 import { DecisionForm } from "./intro-decision";
-import { CHOICE_BY_OUTCOME, OUTCOME_LABELS, RESULT_LABELS, readConnectorChoices, readTargetEmailHint, readTargetEmailLabel } from "./intro-words";
+import { CHOICE_BY_OUTCOME, OUTCOME_LABELS, RESULT_LABELS, readConnectorChoices, readConnectorQuestion, readTargetEmailHint, readTargetEmailLabel } from "./intro-words";
 
 // Commonhall's flashes after a redirect (`?m=asked`, `?m=withdrawn`, `?m=outcome`).
 const FLASHES: Record<string, string> = {
@@ -44,14 +43,19 @@ function useGoTo() {
   };
 }
 
-// The connector's answer on the intro page: the same form as the public page.
-export function ConnectorAnswer({ intro, community, canEmail }: { intro: Intro; community: string; canEmail: boolean }) {
+// The connector's answer on the intro page: yes or no first. The page's heading asks the question. When the asker
+// already gave the person's email, a yes needs nothing typed: the server uses that address.
+export function ConnectorAnswer({ intro, canEmail }: { intro: Intro; canEmail: boolean }) {
   const goTo = useGoTo();
+  const needsEmail = canEmail && !intro.suggestedTargetEmail;
   return (
     <DecisionForm
-      legend="Would you introduce them?"
-      choices={readConnectorChoices(intro, community)}
-      email={canEmail ? { label: readTargetEmailLabel(intro), hint: readTargetEmailHint(intro), initial: intro.suggestedTargetEmail } : null}
+      legend={readConnectorQuestion(intro)}
+      isLegendShown={false}
+      submitLabel="Send"
+      noteLabel="Edit the note"
+      choices={readConnectorChoices(intro)}
+      email={needsEmail ? { label: readTargetEmailLabel(intro), hint: readTargetEmailHint(intro), initial: null } : null}
       note={intro.note}
       withPrivateNote
       submit={async ({ choice, targetEmail, note, privateNote }) => {
@@ -151,13 +155,13 @@ export function OutcomeSheet({ intro, targetFirst }: { intro: Intro; targetFirst
   );
 }
 
-// Community's "Message Marcus" for the connector (quiet, beside Report this note). Shown only while Messages is on.
+// "Message" to the asker for the connector (quiet, beside Report; read out as "Message Marcus Webb"). Shown only while Messages is on.
 export function MessageAsker({ person }: { person: Intro["requester"] }) {
   if (!person.isAvailable) return null;
   return (
     <MemberConversationSlot
       memberId={person.id}
-      label={`Message ${readFirstName(person.name)}`}
+      label="Message"
       accessibleName={`Message ${person.name}`}
       variant="quiet"
       size="sm"

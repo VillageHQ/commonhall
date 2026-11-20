@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ArrowLeftRight, ExternalLink, Pencil, Search } from "lucide-react";
+import { ArrowLeftRight, ExternalLink, Pencil, RefreshCw, Search } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -9,10 +9,9 @@ import { FieldBlock } from "@/components/ui/rows";
 import { Tag, Tags } from "@/components/ui/tag";
 import { getDatabase } from "@/platform/database/client";
 import { PAGE_TITLES } from "@/platform/branding/page-metadata";
-import { formatDayMonth } from "@/platform/text/format-date";
-import { LOOKUP_STATUSES } from "@/modules/members/contract-fill-in";
+import { FILL_IN_FIELDS, readPastRoles, toRoleYears } from "@/modules/members/contract-fill-in";
 import { readExternalHost } from "@/modules/members/rules-external-url";
-import { readFilledEmptyNote, readFirstWord, toPossessive, toRoleLine } from "@/modules/members/rules-words";
+import { readFirstWord, toPossessive, toRoleLine } from "@/modules/members/rules-words";
 import { isBlockedBy } from "@/modules/members/service-blocks";
 import { readFilledLines, readLookupState } from "@/modules/members/service-fill-in";
 import { readMemberProfile } from "@/modules/members/service-profile";
@@ -20,14 +19,12 @@ import { isHiddenMember, readAcceptsIntroAsks } from "@/modules/members/service-
 import { introsManifest } from "@/modules/intros/manifest";
 import { networkManifest } from "@/modules/network/manifest";
 import { readMemberReach } from "@/modules/network/reads-member-reach";
-import { readBrandingForPage } from "@/platform/branding/branding";
 import { ROUTES } from "@/platform/http/routes";
 import { requireMember } from "@/platform/auth/session";
 import { linkedinUrl } from "@villagehq/sdk";
 import { isAdminMember } from "@/platform/auth/roles";
 
 import { BlockMemberButton } from "@/modules/members/components/block-member-button";
-import { FilledLinesSheet } from "@/modules/members/components/filled-lines-sheet";
 import { ProfileHead } from "@/modules/members/components/profile-head";
 import { MemberConversationSlot } from "@/modules/members/slots";
 import { INBOX_QUERY_FILTER } from "@/modules/messages/queries";
@@ -60,16 +57,15 @@ const EXTERNAL_LINK_RELATIONSHIP = "noopener noreferrer nofollow";
 
 function ExternalLinkLine({ href, label }: { href: string; label: string }) {
   return (
-    <a href={href} target="_blank" rel={EXTERNAL_LINK_RELATIONSHIP} className="mr-4 inline-flex items-center gap-1">
+    <a href={href} target="_blank" rel={EXTERNAL_LINK_RELATIONSHIP} aria-label={`${label} (opens in a new tab)`} className="mr-4 inline-flex items-center gap-1">
       {label}
       <ExternalLink aria-hidden="true" className="fh-i fh-xs" strokeWidth={1.5} />
-      <span className="sr-only"> (opens in a new tab)</span>
     </a>
   );
 }
 
-// Commonhall's member profile (member-profile-other): the head on the page, the member's own words, the lines
-// filled in from public profiles, and "Who <first name> can introduce you to" on the right.
+// A member's profile (round 6: buttons first, then the rest): the head with Message, Ask for an intro and Book a call,
+// the member's own words, their past roles from public profiles, and "Who <first name> can introduce you to".
 export default modulePage(membersManifest, async function MemberProfilePage({ params }: ProfilePageProps) {
   const viewer = await requireMember();
   const { memberId } = await params;
@@ -81,11 +77,10 @@ export default modulePage(membersManifest, async function MemberProfilePage({ pa
   // "Hide me from the directory": members can't open the profile either. Admins still can.
   if (!isOwnProfile && !isAdminMember(viewer) && (await isHiddenMember(database, profile.id))) notFound();
   const isBlockedByViewer = !isOwnProfile && (await isBlockedBy(database, viewer.id, profile.id));
-  const [isIntrosOn, isNetworkOn, isJobBoardOn, community, lookup, lines] = await Promise.all([
+  const [isIntrosOn, isNetworkOn, isJobBoardOn, lookup, lines] = await Promise.all([
     isModuleEnabled(database, introsManifest),
     isModuleEnabled(database, networkManifest),
     isModuleEnabled(database, jobBoardManifest),
-    readBrandingForPage(),
     readLookupState(database, profile.id),
     readFilledLines(database, profile.id),
   ]);
@@ -104,13 +99,14 @@ export default modulePage(membersManifest, async function MemberProfilePage({ pa
     { key: "can_help_with", label: "Can help with", value: profile.canHelpWith, isSerif: false },
     { key: "looking_for", label: "Looking for", value: profile.needs, isSerif: false },
   ].filter((field) => field.value);
-  const isRefused = lookup.refusedAt !== null;
-  const visibleLines = lines.filter((line) => !line.isHidden);
+  // Role, company and city already show in the head; only the past roles add something here.
+  const pastRolesLine = lookup.refusedAt === null ? lines.find((line) => line.field === FILL_IN_FIELDS.pastRoles && !line.isHidden) : undefined;
+  const pastRoles = readPastRoles(pastRolesLine?.value);
   const companyJobs = isJobBoardOn ? await readCompanyJobs(database, { company: shown.company, memberId: profile.id }) : null;
 
   return (
     <>
-      <BackLink href={ROUTES.members}>Directory</BackLink>
+      <BackLink href={ROUTES.members}>People</BackLink>
       <ProfileHead
         memberId={profile.id}
         name={profile.name}
@@ -138,12 +134,13 @@ export default modulePage(membersManifest, async function MemberProfilePage({ pa
           </div>
         ) : (
           <div className="fh-btn-row mt-3.5">
+            <MemberConversationSlot memberId={profile.id} label="Message" accessibleName={`Message ${profile.name}`} variant={showsAsk && acceptsAsks ? "secondary" : "primary"} size="sm" showsIcon />
             {showsAsk ? (
               acceptsAsks ? (
                 <Button asChild variant="primary" size="sm">
-                  <Link href={`${ROUTES.intros}/new?via=${encodeURIComponent(profile.id)}`}>
+                  <Link href={`${ROUTES.intros}/new?via=${encodeURIComponent(profile.id)}`} aria-label={`Ask for an intro via ${first}`}>
                     <ArrowLeftRight aria-hidden="true" className="fh-i fh-xs" strokeWidth={1.5} />
-                    Ask for an intro via {first}
+                    Ask for an intro
                   </Link>
                 </Button>
               ) : (
@@ -152,8 +149,8 @@ export default modulePage(membersManifest, async function MemberProfilePage({ pa
                 </span>
               )
             ) : null}
-            {bookingUrl ? <BookCallButton memberId={profile.id} memberName={profile.name} bookingUrl={bookingUrl} variant={showsAsk && acceptsAsks ? "secondary" : "primary"} /> : null}
-            <MemberConversationSlot memberId={profile.id} label="Message" accessibleName={`Message ${profile.name}`} variant="secondary" size="sm" showsIcon />
+            {bookingUrl ? <BookCallButton memberId={profile.id} memberName={profile.name} bookingUrl={bookingUrl} variant="secondary" /> : null}
+            {/* Part 3 (round 6): the Follow button goes here. */}
           </div>
         )}
       </ProfileHead>
@@ -161,10 +158,6 @@ export default modulePage(membersManifest, async function MemberProfilePage({ pa
       <div className="fh-prof fh-section">
         <div>
           <section className="fh-sheet" aria-label={`In ${toPossessive(first)} own words`}>
-            <div className="fh-source">
-              <Pencil aria-hidden="true" className="fh-i fh-xs" strokeWidth={1.5} />
-              In {toPossessive(first)} own words · fresh as of {formatDayMonth(profile.freshAt)}
-            </div>
             {ownWords.length > 0 || profile.tags.length > 0 || profile.linkedinSlug || profile.website ? (
               <>
                 {ownWords.map((field) => (
@@ -192,22 +185,25 @@ export default modulePage(membersManifest, async function MemberProfilePage({ pa
               <p className="fh-muted mt-2">{first} hasn’t written anything yet.</p>
             )}
           </section>
-          {isRefused && !isOwnProfile ? null : (
-            <div className="mt-4">
-              <FilledLinesSheet
-                lines={visibleLines}
-                refreshedAt={lookup.lookedUpAt?.toISOString() ?? null}
-                isOwn={false}
-                isRefused={isRefused}
-                emptyNote={readFilledEmptyNote({
-                  isFillInOn: lookup.basis !== null,
-                  isNotFound: lookup.status === LOOKUP_STATUSES.notFound,
-                  hasLines: visibleLines.length > 0,
-                  communityName: community.name,
-                })}
-              />
-            </div>
-          )}
+          {pastRoles.length > 0 ? (
+            <section className="fh-sheet mt-4" aria-label="Past roles, from public profiles">
+              <div className="fh-source">
+                <RefreshCw aria-hidden="true" className="fh-i fh-xs" strokeWidth={1.5} />
+                Past roles · from public profiles
+              </div>
+              <ul className="fh-hist">
+                {pastRoles.map((role, position) => (
+                  <li key={`${role.title}-${position}`}>
+                    <span>
+                      <b>{role.title}</b>
+                      {role.company ? `, ${role.company}` : ""}
+                    </span>
+                    <span>{toRoleYears(role)}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
         </div>
         <div className="fh-stack">
           {reach ? (
@@ -215,23 +211,20 @@ export default modulePage(membersManifest, async function MemberProfilePage({ pa
               <h2 className="fh-h3">Who {first} can introduce you to</h2>
               {reach.sharesNetwork ? (
                 <>
-                  <p className="fh-small mt-1.5">
-                    {toPossessive(first)} network is shared with {community.name}. Search for the person you need: when {first} knows them, the path shows “via {profile.name}”.
-                  </p>
+                  <p className="fh-small mt-1.5">You see who {first} knows, never the contact list.</p>
                   <div className="fh-btn-row mt-3">
-                    <Button asChild variant="primary" size="sm">
+                    <Button asChild variant="secondary" size="sm">
                       <Link href={ROUTES.network}>
                         <Search aria-hidden="true" className="fh-i fh-xs" strokeWidth={1.5} />
                         Search
                       </Link>
                     </Button>
                   </div>
-                  <p className="fh-small fh-muted mt-2.5">You see that {first} knows a person, never the contact list. Nobody is introduced without saying yes.</p>
                 </>
               ) : reach.isIntroducer ? (
-                <p className="fh-small fh-muted mt-1.5">{first} hasn’t shared a network, so there are no paths through them yet. Nobody is introduced without saying yes.</p>
+                <p className="fh-small fh-muted mt-1.5">{first} hasn’t shared a network yet.</p>
               ) : (
-                <p className="fh-small fh-muted mt-1.5">In this community, intros go through members the admins chose, and {first} isn’t one of them.</p>
+                <p className="fh-small fh-muted mt-1.5">Intros here go through members the admins chose.</p>
               )}
             </section>
           ) : null}

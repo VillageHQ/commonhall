@@ -27,7 +27,8 @@ Rules:
   no network; its `target_linkedin_slug` is a slug or a name-and-company key, never an email.
 - An asker never hears why an ask was withheld, nor (while `REQUESTER_SEES_WHO_ANSWERED` is false) whose no it was.
 - Consent links, live tokens and stop-all: `.ai/features/two-sided-intros/NOTES.md`.
-- The person's email is typed by the connector (prefilled from the asker's), used only with email on, cleared when the
+- The person's email: when the asker gave one, the connector's yes uses it and the page never shows it; otherwise the
+  connector types it after picking yes. Used only with email on, cleared when the
   ask closes (intro threads keep a copy). Nothing here spends Village credits.
 - Admins see who asked whom, states and dates (the owner's decision), never the note or reason. Members never see each other's addresses (the connector's copy of the
   introduction shows none).
