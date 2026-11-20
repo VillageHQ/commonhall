@@ -9,8 +9,8 @@ import { SearchBox } from "@/components/ui/search-box";
 import { Select } from "@/components/ui/select";
 
 import { LIBRARY_JOB_LABELS, LIBRARY_KIND_LABELS, LIBRARY_PAGES, LIBRARY_SORTS, type LibraryJob, type LibraryKind } from "../contract";
-import type { LeaderboardPerson, LibraryCard } from "../reads";
-import { LibraryItemCard, LIBRARY_ICON, MemberLine } from "./library-parts";
+import type { LibraryCard } from "../reads";
+import { LibraryItemCard, LIBRARY_ICON } from "./library-parts";
 
 // `job` is the item's role (Sales, Hiring…); the address keeps the old name. `top`: the "Top" sort.
 export type LibraryBrowseFilters = { kind: LibraryKind | null; job: LibraryJob | null; search: string | null; mine: boolean; top?: boolean };
@@ -19,8 +19,6 @@ type LibraryBrowseProps = {
   communityName: string;
   items: LibraryCard[];
   filters: LibraryBrowseFilters;
-  // The month's top sharers, shown under the "Top" sort.
-  topPeople?: LeaderboardPerson[];
   // "Ask the community" on an empty result: the asks board while Asks is on.
   askHref: string | null;
   flash: string | null;
@@ -103,27 +101,9 @@ function describeFilters({ kind, job, search }: LibraryBrowseFilters) {
   return parts.join(" · ");
 }
 
-function TopSharers({ people }: { people: LeaderboardPerson[] }) {
-  return (
-    <section className="fh-sheet mt-3" aria-labelledby="library-top-sharers">
-      <h2 id="library-top-sharers" className="fh-h3">
-        Top sharers this month
-      </h2>
-      <ol className="fh-lib-top mt-1" data-testid="board-people">
-        {people.slice(0, 5).map(({ member, upvotes }) => (
-          <li key={member.id}>
-            <MemberLine member={member} />
-            <span className="fh-small fh-muted">{`${upvotes} upvote${upvotes === 1 ? "" : "s"}`}</span>
-          </li>
-        ))}
-      </ol>
-    </section>
-  );
-}
-
 // The library: a search (Kind and Role behind "Filter"), All / Top / Yours, then the items in a grid. Under "Top",
-// the items go by upvotes and the month's top sharers sit above them.
-export function LibraryBrowse({ items, filters, topPeople = [], askHref, flash }: LibraryBrowseProps) {
+// the items go by upvotes (the old leaderboard page).
+export function LibraryBrowse({ items, filters, askHref, flash }: LibraryBrowseProps) {
   const isFiltered = Boolean(filters.kind || filters.job || filters.search || filters.mine);
   return (
     <>
@@ -145,7 +125,6 @@ export function LibraryBrowse({ items, filters, topPeople = [], askHref, flash }
       />
       <SearchAndFilter filters={filters} />
       <SortChips filters={filters} />
-      {filters.top && topPeople.length > 0 ? <TopSharers people={topPeople} /> : null}
       {isFiltered ? (
         <p className="fh-small fh-muted mt-2">
           {items.length} item{items.length === 1 ? "" : "s"}

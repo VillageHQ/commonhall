@@ -132,6 +132,21 @@ function SyncSheet({ status, connectedAtLabel }: { status: NetworkStatus } & Pic
     onSettled: () => queryClient.invalidateQueries({ queryKey: networkStatusQuery.queryKey }),
   });
   const isDone = status.stage === NETWORK_STAGES.ready;
+  // Once synced: one line and the search button, no meter.
+  if (isDone) {
+    return (
+      <section className="fh-sheet fh-section" aria-label="Sync">
+        <p className="fh-small" role="status">
+          {connectedAtLabel ? `Synced ${connectedAtLabel}.` : "Synced."}
+        </p>
+        <div className="fh-btn-row" style={{ marginTop: 12 }}>
+          <Button asChild>
+            <Link href={ROUTES.network}>Search your network</Link>
+          </Button>
+        </div>
+      </section>
+    );
+  }
   return (
     <section className="fh-sheet fh-section">
       <div className="fh-sheet-head">
@@ -184,7 +199,7 @@ function NetworkSettings() {
   );
 }
 
-const PRIVACY_LINE = "Members see that you know someone, never your contacts.";
+const PRIVACY_LINE = "Members see whom you know, never your contacts.";
 
 function stopSharing() {
   return postRequest(API_ROUTES.networkLeave, { confirmed: true }, acknowledgedResponseSchema);

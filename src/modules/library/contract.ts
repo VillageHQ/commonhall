@@ -12,7 +12,7 @@ export const LIBRARY_PAGES = {
   leaderboard: `${LIBRARY_PAGE}/leaderboard`,
 } as const;
 
-// The browse page's "Top" sort: items by upvotes, and the month's top sharers above them.
+// The browse page's "Top" sort: items by upvotes (the old leaderboard page).
 export const LIBRARY_SORTS = { top: "top" } as const;
 export const LIBRARY_TOP_PAGE = `${LIBRARY_PAGE}?sort=${LIBRARY_SORTS.top}`;
 

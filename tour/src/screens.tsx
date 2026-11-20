@@ -107,7 +107,6 @@ function LibraryPage() {
       communityName={COMMUNITY_NAME}
       items={LIBRARY_ITEMS}
       filters={{ kind: null, job: null, search: null, mine: false }}
-      topPeople={LIBRARY_BOARD.people}
       askHref={null}
       flash={null}
     />
