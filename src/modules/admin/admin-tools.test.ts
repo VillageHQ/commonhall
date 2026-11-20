@@ -31,6 +31,7 @@ import { readOpenReportCount } from "@/modules/admin/service-reports";
 import { feedPageSchema } from "@/modules/feed/contract";
 import { issuedInviteSchema } from "@/modules/members/contract-invites";
 import { readMemberProfile } from "@/modules/members/service-profile";
+import { readAdminTabFacts } from "@/shell/admin-badges";
 import { readNavigationBadges } from "@/shell/navigation-badges";
 import { readVillageStatus } from "@/modules/network/contract-village-status";
 import { readDailyLookupLimit, saveVillageKeys, readVillageOutOfCreditsAt } from "@/platform/village/settings";
@@ -833,17 +834,20 @@ describe("the admin tools", () => {
         expect(await readAuditActions()).toEqual([AUDIT_ACTIONS.reportDismissed]);
       });
 
-      it("adds open reports to the Admin badge, and drops them when handled", async () => {
+      // Round 7: a flag shows on Home ("1 report waiting"), never on the Set up badge, which counts setup steps only.
+      it("lists open reports on Home, not on the Set up badge, and drops them when handled", async () => {
         const postId = await seedPost(database, { authorId: member.userId });
-        const before = (await readNavigationBadges(database, { APP_URL })).admin ?? 0;
+        const badge = (await readNavigationBadges(database, { APP_URL })).admin ?? 0;
+        const before = (await readAdminTabFacts(database, { APP_URL })).reportsBadge;
         await reportPost(reporter, postId);
 
-        expect((await readNavigationBadges(database, { APP_URL })).admin).toBe(before + 1);
+        expect((await readAdminTabFacts(database, { APP_URL })).reportsBadge).toBe(before + 1);
+        expect((await readNavigationBadges(database, { APP_URL })).admin ?? 0).toBe(badge);
 
         const { reports } = await listReports();
         await send(postReportDismiss, admin, { reportId: reports[0]?.id, targetType: REPORT_TARGETS.post });
 
-        expect((await readNavigationBadges(database, { APP_URL })).admin).toBe(before);
+        expect((await readAdminTabFacts(database, { APP_URL })).reportsBadge).toBe(before);
       });
 
       it("pages open reports across every kind", async () => {
@@ -1074,13 +1078,14 @@ describe("the admin tools", () => {
         expect(body.code).toBe(NETWORK_ERROR_CODES.outOfCredits);
         expect(body.message).toContain("You don't need to do anything");
         expect(await readVillageOutOfCreditsAt(database)).not.toBeNull();
-        const badgeWhileOut = (await readNavigationBadges(database, { APP_URL })).admin ?? 0;
+        // Home says so (round 7: not the Set up badge).
+        expect((await readAdminTabFacts(database, { APP_URL })).creditsBadge).toBe(1);
 
         village.state.failures.clear();
         await search();
 
         expect(await readVillageOutOfCreditsAt(database)).toBeNull();
-        expect((await readNavigationBadges(database, { APP_URL })).admin).toBe(badgeWhileOut - 1);
+        expect((await readAdminTabFacts(database, { APP_URL })).creditsBadge).toBe(0);
       });
 
       it("doesn't count a 402 against the member's lookups", async () => {

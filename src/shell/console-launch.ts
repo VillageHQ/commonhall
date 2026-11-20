@@ -66,7 +66,8 @@ function describeStep(key: SetupStepId, facts: LaunchFacts): LaunchStep {
         // Done once a link is made: with mail off, making it is the step (the admin copies it right there).
         isDone: facts.hasLiveInvite,
         text: facts.invitesAdded
-          ? [{ text: `${facts.invitesAdded} invited. ` }, { text: "Invite more →", href: LAUNCH_LINKS.invites }]
+          ? // "made", never "sent": with mail off nobody was emailed (a demo found "6 invites sent" for an import).
+            [{ text: `${facts.invitesAdded} ${facts.invitesAdded === 1 ? "invite" : "invites"} made${facts.invitesEmailed ? `, ${facts.invitesEmailed} emailed` : ""}. ` }, { text: "Invite more →", href: LAUNCH_LINKS.invites }]
           : [{ text: "Paste their emails. " }, { text: "Invite founders →", href: LAUNCH_LINKS.invites }],
       };
     case SETUP_STEPS.card:

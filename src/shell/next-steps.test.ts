@@ -84,7 +84,7 @@ describe("the next step card", () => {
     doneCount: 1,
     totalCount: 4,
     stepsLeft: 3,
-    currentStepId: SETUP_STEPS.keys,
+    currentStepId: SETUP_STEPS.invite,
     isComplete: false,
   };
 

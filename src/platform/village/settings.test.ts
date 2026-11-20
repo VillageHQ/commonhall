@@ -3,7 +3,7 @@ import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vites
 
 import { POST as readNetworkStatus } from "@/app/api/network/status/route";
 import { NETWORK_STAGES } from "@/modules/network/contract";
-import { readSetupProgress, SETUP_STEPS } from "@/shell/admin-setup";
+import { readSetupPage, SETUP_ROW_STATES } from "@/shell/admin-setup-rows";
 import { createSignedInMember } from "@/test/signed-in-member";
 
 import { clearDatabase, createTestDatabase } from "../../test/database.ts";
@@ -115,10 +115,11 @@ describe("the Village keys at rest", () => {
       expect(await response.json()).toMatchObject({ stage: NETWORK_STAGES.notConfigured });
     });
 
-    it("reopens the keys step of setup", async () => {
-      const { steps } = await readSetupProgress(database);
+    // Village is no setup step (round 7): Set up's optional Network search row says it isn't connected.
+    it("shows network search as not connected on Set up", async () => {
+      const rows = await readSetupPage(database, process.env);
 
-      expect(steps.find(({ id }) => id === SETUP_STEPS.keys)?.isDone).toBe(false);
+      expect(rows.find(({ key }) => key === "village")?.state.kind).not.toBe(SETUP_ROW_STATES.done);
     });
 
     it("works again once they're pasted", async () => {

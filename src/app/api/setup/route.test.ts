@@ -3,6 +3,7 @@ import { randomBytes } from "node:crypto";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { rateLimit, user } from "@/platform/database/auth-schema";
+import { readBranding } from "@/platform/branding/branding";
 import { finishGuidedStart, isGuidedStartPending } from "@/shell/guided-start";
 import { clearDatabase, createTestDatabase } from "@/test/database";
 
@@ -164,6 +165,22 @@ describe("POST /api/setup", () => {
       expect(first.status).toBe(201);
       expect(second.status).toBe(409);
       expect(await database.select().from(user)).toHaveLength(1);
+    });
+
+    // Round 7: /setup asks the community's name with the admin, so invitees never see "Your community".
+    it("names the community with the first admin, and keeps the name if setup fails", async () => {
+      expect((await submitSetup({ ...VALID_SUBMISSION, communityName: "Northwind Founders", password: "short" })).status).toBe(422);
+      expect((await readBranding(database)).isSaved).toBe(false);
+
+      expect((await submitSetup({ ...VALID_SUBMISSION, communityName: "  Northwind Founders " })).status).toBe(201);
+
+      expect(await readBranding(database)).toMatchObject({ name: "Northwind Founders", isSaved: true });
+    });
+
+    it("refuses an empty community name, and leaves it out for setup:instance, which names it later", async () => {
+      expect((await submitSetup({ ...VALID_SUBMISSION, communityName: " " })).status).toBe(422);
+      expect((await submitSetup(VALID_SUBMISSION)).status).toBe(201);
+      expect((await readBranding(database)).isSaved).toBe(false);
     });
 
     it("sends the new admin to the guided start until it is finished", async () => {

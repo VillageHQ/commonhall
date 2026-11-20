@@ -8,6 +8,7 @@ import { INVITE_STATES } from "@/modules/members/contract-invite-state";
 import { readDirectory } from "@/modules/members/reads-directory";
 import { readConfirmationBadgeCount, readWaitingMemberCount } from "@/modules/members/service-admin";
 import { readMemberProfile } from "@/modules/members/service-profile";
+import { readAdminTabFacts } from "@/shell/admin-badges";
 import { readNavigationBadges } from "@/shell/navigation-badges";
 import { readWelcomeNeighbours, readSharingMemberCount } from "@/modules/network/reads-progress";
 import { readInviteByToken, readInviterOfMember } from "@/modules/members/service-invites";
@@ -110,15 +111,18 @@ describe("member admin", () => {
       expect(await readWaitingMemberCount(database)).toBe(0);
     });
 
-    it("badges the Admin menu when only an admin can confirm", async () => {
+    // Round 7: Home lists "1 person waiting for your OK"; the Set up badge counts setup steps only.
+    it("lists the person on Home when only an admin can confirm, not on the Set up badge", async () => {
       const { link } = await createInvite();
       await accept(link);
 
       expect(await readConfirmationBadgeCount(database, {})).toBe(1);
-      const withoutEmail = await readNavigationBadges(database, { APP_URL });
+      const withoutEmail = await readAdminTabFacts(database, { APP_URL });
+      const badgeWithoutEmail = (await readNavigationBadges(database, { APP_URL })).admin ?? 0;
       await database.update(user).set({ emailVerified: true }).where(eq(user.email, INVITEE));
-      const afterConfirm = await readNavigationBadges(database, { APP_URL });
-      expect(withoutEmail.admin).toBe((afterConfirm.admin ?? 0) + 1);
+      const afterConfirm = await readAdminTabFacts(database, { APP_URL });
+      expect(withoutEmail.membersBadge).toBe(afterConfirm.membersBadge + 1);
+      expect((await readNavigationBadges(database, { APP_URL })).admin ?? 0).toBe(badgeWithoutEmail);
     });
 
     it("doesn't badge when the email link can do it", async () => {
