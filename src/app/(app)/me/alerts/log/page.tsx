@@ -12,7 +12,7 @@ import { ALERT_LOG_STATUSES, isAlertLogOn, readAlertLog } from "@/platform/notif
 
 export const metadata: Metadata = { title: "Alert log" };
 
-const REASON_WORDS: Record<string, string> = { off: "alerts off", kind_off: "this kind off", quiet_hours: "quiet hours", muted: "muted" };
+const REASON_WORDS: Record<string, string> = { off: "alerts off", kind_off: "this kind off", quiet_hours: "quiet hours", muted: "muted", paused: "paused" };
 
 function formatMoment(date: Date) {
   return date.toISOString().slice(0, 16).replace("T", " ") + " UTC";
