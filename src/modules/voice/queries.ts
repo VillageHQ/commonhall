@@ -19,7 +19,20 @@ import {
 
 // Client requests for Rooms. The server's answers are trusted shapes; only the fields the screens use are checked.
 const okSchema = z.object({ ok: z.boolean() });
-const followingSchema = z.custom<FollowingState>((value) => typeof value === "object" && value !== null && "isFollowing" in value);
+const followingSchema = z.object({ isFollowing: z.boolean(), isSelf: z.boolean() });
+
+// The profile's Follow asks quietly: while Rooms is off the route answers 404, and that must only hide the button, not
+// tell the whole page that a part of the community is off (postRequest does that for a module_off answer).
+async function readFollowing(memberId: string): Promise<FollowingState | null> {
+  try {
+    const response = await fetch(VOICE_API_ROUTES.following, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ memberId }) });
+    if (!response.ok) return null;
+    const parsed = followingSchema.safeParse(await response.json());
+    return parsed.success ? parsed.data : null;
+  } catch {
+    return null;
+  }
+}
 const roomIdSchema = z.object({ roomId: z.string() });
 const roomsSchema = z.custom<RoomsPageData>((value) => typeof value === "object" && value !== null);
 const joinSchema = z.custom<RoomJoin>((value) => typeof value === "object" && value !== null && "token" in value);
@@ -34,7 +47,7 @@ export const voiceRequests = {
   create: (body: CreateRoomBody) => postRequest(VOICE_API_ROUTES.create, body, roomIdSchema),
   notify: (body: NotifyBody) => postRequest(VOICE_API_ROUTES.notify, body, okSchema),
   follow: (body: FollowBody) => postRequest(VOICE_API_ROUTES.follow, body, okSchema),
-  following: (memberId: string) => postRequest(VOICE_API_ROUTES.following, { memberId }, followingSchema),
+  following: readFollowing,
   join: (roomId: string) => postRequest(VOICE_API_ROUTES.join, { roomId }, joinSchema),
   start: (roomId: string) => postRequest(VOICE_API_ROUTES.start, { roomId }, okSchema),
   hand: (body: HandBody) => postRequest(VOICE_API_ROUTES.hand, body, okSchema),

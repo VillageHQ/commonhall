@@ -31,7 +31,7 @@ export function FollowToggle({ memberId, memberName, isFollowing: initial, isCom
     },
   });
   const name = firstName(memberName);
-  const hint = isFollowing ? `Following ${name}: you hear when they start a room` : `Tell me when ${name} starts a room`;
+  const hint = isFollowing ? `Following ${name}'s rooms` : `Tell me when ${name} starts a room`;
   const Icon = isFollowing ? BellRing : Bell;
   return (
     <Button
