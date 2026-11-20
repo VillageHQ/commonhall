@@ -7,17 +7,22 @@ words, on Community's engine. Commonhall's markup is ported 1:1 with the `fh-` c
 - **Today** — `/today` (`src/app/(app)/today/page.tsx`). `/` sends members there permanently, keeping the query.
   The screen is `src/shell/today-list.tsx` (`TodayPage`); actions are `src/shell/today-actions.tsx` ("Not this week",
   Right / Hide it / Fix it). Data: `src/shell/today.ts` (`readTodayItems`, shared with the weekly email).
-  Sections in Commonhall's order: asks on your paths → Waiting for your yes → Is this right? (main column);
-  Your asks in motion → Perks → Jobs → (Community-only) New this week → "That's everything this week." (rail).
-  Community-only next steps (connect your network, confirm your email) sit under the main column as Today items.
-- **Asks & updates** — `/asks` (`src/app/(app)/asks/page.tsx`): composer (Ask | Update, one line, "Who are you
-  trying to reach?" folded), archive search, tabs Open · Updates · Yours · Answered (`?tab=`), posts, "How asks work"
-  rail. Components: `asks-board.tsx`, `asks-composer.tsx`, `post-parts.tsx`. Reads: `reads-board.ts`.
+  Round 6 (simplify part 2), one column: the full-width "Live now" card (`readLiveRooms`, only while a room is live)
+  → Waiting on you (intros for your yes, intros to make, answers to your open asks; 3 at most) → You could help (2
+  at most) → Is this right? (only in a member's first 14 days) → next steps → one "More for you" row (Jobs, Perks,
+  Library, each while on). "Post an ask" opens `/asks?compose=1`. The reply-by-email line shows only with a reply
+  domain. Your own asks live on Asks › Yours.
+- **Asks** — `/asks` (`src/app/(app)/asks/page.tsx`), round 6: the "What do you need?" box first (Ask | Update, one
+  line, "Who are you trying to reach?" folded; the allowance once, under it). `?compose=1` (`ASKS_COMPOSE_PAGE`) and
+  `#compose` focus it. Then archive search, chips Open (asks and updates) · For you (sent to you) · Yours (`?tab=`);
+  `?tab=answered` still lists answered ones, `?tab=updates` opens Open. "How asks work" is a closed fold at the foot.
+  Components: `asks-board.tsx`, `asks-composer.tsx`, `post-parts.tsx`. Reads: `reads-board.ts`.
   `/asks?view=yours|answered|closed` redirects permanently to the matching tab.
-- **One ask** — `/asks/[askId]` (`ask-detail.tsx`, `ask-detail-forms.tsx`): who can help (path helpers draw the
-  path), answers, the reply box, "I can help" (I know someone / I've done this myself) or the owner's box; Mark
-  answered, Reopen, admin Pin / Close / Remove (`/api/asks/status`, `service-status.ts`). Community-only and kept:
-  Report this ask/answer (quiet link, confirm in place), Renew near 30 days.
+- **One ask** — `/asks/[askId]` (`ask-detail.tsx`, `ask-detail-forms.tsx`): one way to respond: "I can help" with an
+  optional note. The kind is picked for the helper: routed through a person they know offers that person, anyone else
+  offers "I've done this". The author, updates, closed asks and people who already helped get the reply box. Helpers
+  with paths show to the author only. Mark answered, Reopen, admin Pin / Close / Remove (`/api/asks/status`,
+  `service-status.ts`). Community-only and kept: Report this ask/answer (quiet link, confirm in place), Renew near 30 days.
 - **Flash** — `?m=<key>` on the page you land on; words in `ASK_FLASHES` (contract.ts).
 - **Feed** — Community-only, off by default: its own page `/feed`, a menu item only while on.
 

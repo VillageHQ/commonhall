@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Avatar, AvatarStack } from "@/components/ui/avatar";
 import { Pill } from "@/components/ui/pill";
 
-import { ASK_CONSENT, ASK_KINDS, ASK_STATES, describeAgo, describeAnswerCount, describeCanHelp, toAskPage, type AskMember } from "../contract";
+import { ASK_CONSENT, ASK_KINDS, ASK_STATES, describeAnswerCount, describeCanHelp, toAskPage, type AskMember } from "../contract";
 import type { BoardPost } from "../reads-board";
 
 // Commonhall's ask parts (`.post`, the helpers strip, the status pill), shared by the board, the ask's page and Today.
@@ -45,13 +45,14 @@ export function TargetLine({ who }: { who: string }) {
   );
 }
 
-// One ask in a list (Commonhall's postCard).
-export function PostCard({ post, now, isYoursTab = false }: { post: BoardPost; now: Date; isYoursTab?: boolean }) {
+// One ask in a list (round 6): who and their company, the ask, and one line: "You could help" when it was routed to
+// you, the answers, and on your own asks who can help. The reason, the target and the date are on the ask's page.
+export function PostCard({ post, isYoursTab = false }: { post: BoardPost; isYoursTab?: boolean }) {
   const page = toAskPage(post.id);
   const isAsk = post.kind === ASK_KINDS.ask;
   const isOpen = post.state === ASK_STATES.open;
-  const showsHelpers = isAsk && post.helperCount > 0;
   const viewerCanHelp = post.viewerWhyYou !== null && isOpen && !post.viewerHasHelped;
+  const showsHelpers = isYoursTab && isAsk && isOpen && post.helperCount > 0;
   return (
     <article className="fh-post" id={`post-${post.id}`}>
       <div className="fh-ph">
@@ -60,7 +61,7 @@ export function PostCard({ post, now, isYoursTab = false }: { post: BoardPost; n
           <b>{post.author.name}</b>
           <span>
             <CompanyMark url={post.author.companyLogoUrl} />
-            {[describeAbout(post.author), describeAgo(post.createdAt, now)].filter(Boolean).join(" · ")}
+            {post.author.company ?? ""}
           </span>
         </div>
         {post.isPinned ? (
@@ -69,47 +70,40 @@ export function PostCard({ post, now, isYoursTab = false }: { post: BoardPost; n
             Pinned
           </span>
         ) : null}
-        <PostStatusPill kind={post.kind} state={post.state} />
+        {isAsk && isOpen ? null : <PostStatusPill kind={post.kind} state={post.state} />}
       </div>
       <p className="fh-body">
         <Link href={page}>{post.body}</Link>
       </p>
-      {isAsk ? <TargetLine who={post.who} /> : null}
+      {viewerCanHelp ? (
+        <Link className="fh-helpers" href={`${page}#help`}>
+          <Hand {...ICON} />
+          <b>You could help</b>
+        </Link>
+      ) : null}
       {showsHelpers ? (
         <div className="fh-helpers">
           <span className="fh-stack">
             <AvatarStack people={post.helperFaces.map(({ id, name, avatarUrl }) => ({ id, name, imageUrl: avatarUrl }))} />
           </span>
-          <span>
-            {post.viewerWhyYou !== null ? (
-              <>
-                <b>You could help.</b> {post.viewerWhyYou}
-              </>
-            ) : (
-              <>
-                <b>{describeCanHelp(post.helperCount)}</b>
-                {post.pathHelperCount > 0 ? ` · ${post.pathHelperCount} through a warm path` : ""}
-              </>
-            )}
-          </span>
-          {viewerCanHelp ? (
-            <Link className="fh-btn fh-btn-primary fh-btn-sm" href={`${page}#help`}>
-              <Hand {...ICON} />I can help
+          <b>{describeCanHelp(post.helperCount)}</b>
+        </div>
+      ) : null}
+      {post.answerCount > 0 || (isYoursTab && isAsk && isOpen) ? (
+        <div className="fh-acts">
+          {post.answerCount > 0 ? (
+            <Link className="fh-react" href={`${page}#answers`}>
+              <MessageSquare {...ICON} />
+              <span className="underline">{describeAnswerCount(post.answerCount)}</span>
+            </Link>
+          ) : null}
+          {isYoursTab && isAsk && isOpen ? (
+            <Link className="fh-react" href={page}>
+              <span className="underline">Mark answered</span>
             </Link>
           ) : null}
         </div>
       ) : null}
-      <div className="fh-acts">
-        <Link className="fh-react" href={`${page}#answers`}>
-          <MessageSquare {...ICON} />
-          <span className="underline">{describeAnswerCount(post.answerCount)}</span>
-        </Link>
-        {isYoursTab && isAsk && isOpen ? (
-          <Link className="fh-react" href={page}>
-            <span className="underline">Mark answered</span>
-          </Link>
-        ) : null}
-      </div>
     </article>
   );
 }

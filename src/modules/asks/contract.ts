@@ -5,7 +5,9 @@ import { readLinkedinSlug } from "../members/contract-linkedin.ts";
 import { removeBidiControls, removeNullBytes } from "../../platform/text/safe-text.ts";
 
 export const ASKS_PAGE = "/asks";
-export const ASKS_PAGE_TITLE = "Asks & updates";
+export const ASKS_PAGE_TITLE = "Asks";
+// The Asks page with its "What do you need?" box focused (Today's "Post an ask", the old /ask).
+export const ASKS_COMPOSE_PAGE = `${ASKS_PAGE}?compose=1`;
 
 export const ASK_API_ROUTES = {
   board: "/api/asks",
@@ -74,13 +76,15 @@ export const ASK_STATES = { open: "open", expired: "expired", closed: "closed" }
 // The board's tabs, as Commonhall's Asks & updates: Open · Updates · Yours · Answered. Closed asks are the archive,
 // under Answered. "closed" is kept for the older API.
 export const ASK_BOARD_TABS = { open: "open", updates: "updates", yours: "yours", answered: "answered", closed: "closed" } as const;
+// The Asks page's filters (round 6): Open (open asks and updates), For you (asks routed to you), Yours. Answered (the
+// archive) has no chip; its old address still lists it, and the search covers it.
+export const ASK_PAGE_TABS = { open: "open", forYou: "for-you", yours: "yours", answered: "answered" } as const;
 export const ASK_TABS = [
-  [ASK_BOARD_TABS.open, "Open"],
-  [ASK_BOARD_TABS.updates, "Updates"],
-  [ASK_BOARD_TABS.yours, "Yours"],
-  [ASK_BOARD_TABS.answered, "Answered"],
+  [ASK_PAGE_TABS.open, "Open"],
+  [ASK_PAGE_TABS.forYou, "For you"],
+  [ASK_PAGE_TABS.yours, "Yours"],
 ] as const;
-export type AskTab = (typeof ASK_TABS)[number][0];
+export type AskTab = (typeof ASK_PAGE_TABS)[keyof typeof ASK_PAGE_TABS];
 
 // "I can help" on an ask (Commonhall's help form).
 export const ASK_HELP_KINDS = { knowSomeone: "know_someone", doneMyself: "done_myself" } as const;

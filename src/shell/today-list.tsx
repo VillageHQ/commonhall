@@ -7,7 +7,7 @@ import "./today.css";
 import { FlashNote } from "@/components/flash";
 import { PageHeader, SectionHead } from "@/components/page-header";
 import { Avatar } from "@/components/ui/avatar";
-import { ASKS_PAGE, describeAgo, describeAnswerCount, toAskPage } from "@/modules/asks/contract";
+import { ASKS_COMPOSE_PAGE, ASKS_PAGE, describeAgo, describeAnswerCount, toAskPage } from "@/modules/asks/contract";
 import { INTRO_STATES, type Intro } from "@/modules/intros/contract";
 import { TargetMemberAsk } from "@/modules/intros/components/target-member-ask";
 import { toRoomHref } from "@/modules/voice/contract";
@@ -20,7 +20,7 @@ import { FactButtons, NotThisWeekButton } from "./today-actions";
 import type { TodayItems } from "./today";
 
 // "Post an ask" opens the Asks box, focused (round 6: the old /ask intro wizard is gone from Today).
-export const TODAY_COMPOSE_PAGE = `${ASKS_PAGE}?compose=1`;
+export const TODAY_COMPOSE_PAGE = ASKS_COMPOSE_PAGE;
 // At most this many things wait on Today, and this many asks you could help with (the round-6 spec).
 export const TODAY_LIMITS = { waiting: 3, help: 2, faces: 4 } as const;
 const ICON = { "aria-hidden": true, className: "fh-i fh-xs", strokeWidth: 1.5 } as const;

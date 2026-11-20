@@ -2,11 +2,10 @@ import type { Metadata } from "next";
 import { permanentRedirect } from "next/navigation";
 
 import { AsksBoard } from "@/modules/asks/components/asks-board";
-import { ASK_BOARD_TABS, ASK_TABS, ASKS_PAGE, ASKS_PAGE_TITLE, ASK_LIMITS, readAskFlash, type AskTab } from "@/modules/asks/contract";
+import { ASK_PAGE_TABS, ASKS_PAGE, ASKS_PAGE_TITLE, ASK_LIMITS, readAskFlash, type AskTab } from "@/modules/asks/contract";
 import { asksManifest } from "@/modules/asks/manifest";
 import { readAsksPage } from "@/modules/asks/reads-board";
 import { parseAskDraftParts } from "@/modules/asks/rules-board-url";
-import { readBrandingForPage } from "@/platform/branding/branding";
 import { requireMember } from "@/platform/auth/session";
 import { getDatabase } from "@/platform/database/client";
 import { modulePage } from "@/platform/modules/module-page";
@@ -17,14 +16,16 @@ export const metadata: Metadata = { title: ASKS_PAGE_TITLE };
 type SearchParams = Record<string, string | string[] | undefined>;
 type AsksPageProps = { searchParams: Promise<SearchParams> };
 
-const OLD_VIEWS: Record<string, AskTab> = { yours: ASK_BOARD_TABS.yours, answered: ASK_BOARD_TABS.answered, closed: ASK_BOARD_TABS.answered };
+const OLD_VIEWS: Record<string, AskTab> = { yours: ASK_PAGE_TABS.yours, answered: ASK_PAGE_TABS.answered, closed: ASK_PAGE_TABS.answered };
+const TAB_VALUES: ReadonlySet<string> = new Set(Object.values(ASK_PAGE_TABS));
 
 function readFirst(value: string | string[] | undefined) {
   return (Array.isArray(value) ? value[0] : value) ?? null;
 }
 
+// The old Updates tab folds into Open; anything unknown is Open too.
 function readTab(value: string | null): AskTab {
-  return ASK_TABS.find(([key]) => key === value)?.[0] ?? ASK_BOARD_TABS.open;
+  return value && TAB_VALUES.has(value) ? (value as AskTab) : ASK_PAGE_TABS.open;
 }
 
 export default modulePage(asksManifest, async function AsksPage({ searchParams }: AsksPageProps) {
@@ -39,15 +40,13 @@ export default modulePage(asksManifest, async function AsksPage({ searchParams }
   const tab = readTab(readFirst(params.tab));
   const draft = parseAskDraftParts(params);
   const now = new Date();
-  const [community, allowance, { posts, counts }] = await Promise.all([
-    readBrandingForPage(),
+  const [allowance, { posts, counts }] = await Promise.all([
     readAskAllowance(database, member.id, now),
     readAsksPage(database, { viewerId: member.id, tab, search }, now),
   ]);
 
   return (
     <AsksBoard
-      communityName={community.name}
       tab={tab}
       search={search}
       posts={posts}
@@ -55,7 +54,7 @@ export default modulePage(asksManifest, async function AsksPage({ searchParams }
       allowance={allowance}
       flash={readAskFlash(readFirst(params.m))}
       draft={draft}
-      now={now}
+      isComposing={readFirst(params.compose) === "1"}
     />
   );
 });

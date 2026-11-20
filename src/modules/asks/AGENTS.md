@@ -7,7 +7,7 @@ Members post a need or an update (a win); others step in. Toggleable, on by defa
 - `schema.ts`: `ask` (kind `ask` or `update`, one line, optional target words and company, admin pin), `ask_offer`, `ask_helper` (who a path helper knows), `ask_answer` (kind: answer, know_someone, done_myself).
 - `service.ts`: create, offer, answer, close, renew, reopen, pin, remove, the allowance. Admin's report queue calls `removeAskWithin` and `removeAnswerWithin`.
 - `service-helpers.ts`: routing a new ask to helpers and their one email.
-- `reads-board.ts`: Commonhall's board (tabs Open, Updates, Yours, Answered; search), one ask's page, your asks in motion. `service-status.ts`: "I can help", Mark answered, Reopen, Pin, Close, Remove. `components/`: Commonhall's screens (`.ai/features/fh-today-asks/NOTES.md`).
+- `reads-board.ts`: the Asks page (filters Open with updates, For you, Yours; Answered at its old address; search), one ask's page, your asks in motion. `service-status.ts`: "I can help", Mark answered, Reopen, Pin, Close, Remove. `components/`: Commonhall's screens (`.ai/features/fh-today-asks/NOTES.md`).
 - `reads.ts`: the older board API, your own asks, the badge, reportable copies, the allowance inputs. `reads-admin.ts`: Admin › Asks counts and lists (the page is read by `src/shell/admin-asks.ts`).
 - `limits.ts`: rate limits. `rules-*.ts`: pure state, time and URL rules. `queries.ts`: client requests. `components/`: the UI; `components/shared/`: the Today cards.
 - `rules-help-match.ts`: the one word-matching rule. Routing and Today share it.
