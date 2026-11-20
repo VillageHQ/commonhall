@@ -136,7 +136,7 @@ for rooms and member-set quiet times. The study and plan: [study](features/simpl
 From the owner's test of TestFlight build 3: the app isn't smooth (bounce, taps that wait), Start a room should start at
 once and tell everyone, and the app should ask for fewer decisions. The evidence: [diagnosis](features/smooth-app/DIAGNOSIS.md) ·
 [options](features/smooth-app/OPTIONS.md) · [audit](features/less-choice/AUDIT.md). Forks go to the council before the build.
-- [ ] Smooth app: instant tab taps (page outlines, the tab lights on press), the app's web view without bounce or pull-to-refresh, one header; a native tab bar only if a phone still lags — smooth-app — size M — [spec](features/smooth-app/SPEC.md)
+- [ ] Smooth app: instant tab taps (page outlines, the tab lights on press), the app's web view without bounce or pull-to-refresh, one header; a native tab bar only if a phone still lags — smooth-app — size M — [spec](features/smooth-app/SPEC.md) · [notes](features/smooth-app/NOTES.md) (parts 0–C built; D waits for the TestFlight 4 test)
 - [ ] Start a room in one tap, alerting everyone; one Room alerts switch, quiet times, pause and per-person mute for receiving; Tell people, audiences, Follow and Invite only removed — room-start-instant — size M — [spec](features/room-start-instant/SPEC.md)
 - [ ] Defaults instead of choices: asks and intros in one tap, Today and People lead with what waits, settings in one place, the admin's first hour, shorter share and job forms; then the 12 personas again — less-choice — size M — [spec](features/less-choice/SPEC.md)
   - [ ] Part 1: asks and intros decided in one tap — choice-asks — open pull request — [spec](features/choice-asks/SPEC.md)
