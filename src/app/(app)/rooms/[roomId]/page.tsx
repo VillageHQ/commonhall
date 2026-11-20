@@ -19,7 +19,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 // One room: live (the stage, the audience, the controls), coming up (Remind me / Start now), or ended. An invite-only
 // room someone isn't on the list for is not found. A live room names its host on the stage, live, since a co-host can
-// take over.
+// take over. "Never recorded" shows here, once. An alert's address is this page: it joins on open.
 export default modulePage(voiceManifest, async function RoomPage({ params }: RoomPageProps) {
   const member = await requireMember();
   const { roomId } = await params;
@@ -27,15 +27,16 @@ export default modulePage(voiceManifest, async function RoomPage({ params }: Roo
   const room = await readRoomView(getDatabase(), member.id, roomId);
   if (!room) notFound();
   const isInviteOnly = room.access === ROOM_ACCESS.invite;
-  const eyebrow = `${room.status === ROOM_STATUSES.live ? "Live" : room.status === ROOM_STATUSES.scheduled ? "Coming up" : "Ended"} · ${isInviteOnly ? "Invite only" : "Open to the community"} · Never recorded`;
+  const status = room.status === ROOM_STATUSES.live ? "Live" : room.status === ROOM_STATUSES.scheduled ? "Coming up" : "Ended";
+  const eyebrow = [status, isInviteOnly ? "Invite only" : null, "Never recorded"].filter(Boolean).join(" · ");
   return (
     <>
       <PageHeader back={{ href: VOICE_PAGE, label: "Rooms" }} eyebrow={eyebrow} title={room.title} description={room.status === ROOM_STATUSES.live ? undefined : `Hosted by ${room.hostName}`} />
-      {room.status === ROOM_STATUSES.live ? <LiveRoom roomId={room.id} title={room.title} isInviteOnly={isInviteOnly} /> : null}
+      {room.status === ROOM_STATUSES.live ? <LiveRoom roomId={room.id} title={room.title} isInviteOnly={isInviteOnly} hasNotified={room.hasNotified} notify={room.notify} /> : null}
       {room.status === ROOM_STATUSES.scheduled ? (
         <ScheduledRoom roomId={room.id} scheduledFor={room.scheduledFor} isHost={room.hostId === member.id} hasReminder={room.hasReminder} />
       ) : null}
-      {room.status === ROOM_STATUSES.ended ? <p className="fh-small fh-muted">This room has ended. Nothing said in it was recorded.</p> : null}
+      {room.status === ROOM_STATUSES.ended ? <p className="fh-small fh-muted">This room has ended.</p> : null}
     </>
   );
 });

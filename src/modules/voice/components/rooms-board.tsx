@@ -8,63 +8,83 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { EmptyState } from "@/components/empty-state";
 import { FlashNote, FLASH_KINDS } from "@/components/flash";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { isRouteGone } from "@/platform/http/polling";
 
-import { describeBroadcastsLeft, ROOM_ACCESS, toRoomHref, type RoomCard } from "../contract";
+import { ROOM_ACCESS, toRoomHref, type CardFace, type RoomCard, type RoomsPageData } from "../contract";
 import { ROOMS_POLL_MS, VOICE_QUERY_KEYS, voiceRequests } from "../queries";
-import { useAvailableToTalk } from "./available-to-talk";
+import { FollowToggle } from "./follow-toggle";
 import { RoomComposer } from "./room-composer";
 
-type RoomsData = Awaited<ReturnType<typeof voiceRequests.rooms>>;
-
 const TIME_FORMAT: Intl.DateTimeFormatOptions = { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" };
+const CARD_TIME_FORMAT: Intl.DateTimeFormatOptions = { weekday: "short", hour: "numeric", minute: "2-digit" };
+const FACES_SHOWN = 4;
 
 export function formatRoomTime(iso: string) {
   return new Date(iso).toLocaleString(undefined, TIME_FORMAT);
 }
 
-function Faces({ room }: { room: RoomCard }) {
-  const faces = room.stage.slice(0, 4);
+function firstName(name: string) {
+  return name.trim().split(/\s+/)[0] || name;
+}
+
+function Faces({ faces }: { faces: CardFace[] }) {
   return (
     <span className="vr-faces" aria-hidden="true">
-      {faces.map((face) => (
-        <Avatar key={face.id} stableId={face.id} name={face.name} imageUrl={face.faceUrl} sizePx={36} />
+      {faces.slice(0, FACES_SHOWN).map((face, index) => (
+        <Avatar key={`${face.name}-${index}`} stableId={face.name} name={face.name} imageUrl={face.faceUrl} sizePx={32} />
       ))}
     </span>
   );
 }
 
-function stageNames(room: RoomCard) {
-  const names = room.stage.map(({ name }) => name);
-  if (names.length <= 2) return names.join(" and ");
-  return `${names.slice(0, 2).join(", ")} and ${names.length - 2} more`;
+// "Maya + 3": the first person in the room and how many more (the faces shown, when LiveKit counts nobody yet).
+function describeInRoom(room: RoomCard) {
+  const first = room.faces[0]?.name ?? room.hostName;
+  const more = Math.max(0, Math.max(room.count, room.faces.length) - 1);
+  return more > 0 ? `${firstName(first)} + ${more}` : firstName(first);
 }
 
-function LiveCard({ room }: { room: RoomCard }) {
+function InviteOnly() {
   return (
-    <Link href={toRoomHref(room.id)} className="vr-card" data-testid="live-room">
+    <span title="Invite only">
+      <Lock aria-hidden="true" className="fh-i fh-xs" strokeWidth={1.5} />
+      <span className="sr-only">Invite only</span>
+    </span>
+  );
+}
+
+function FollowHost({ room, viewerId }: { room: RoomCard; viewerId: string }) {
+  return room.hostId === viewerId ? null : <FollowToggle memberId={room.hostId} memberName={room.hostName} isFollowing={room.isFollowingHost} isCompact />;
+}
+
+function LiveCard({ room, viewerId }: { room: RoomCard; viewerId: string }) {
+  return (
+    <div className="vr-card" data-testid="live-room">
       <span className="vr-card-top">
-        <span className="vr-live-dot" data-pulse="true" aria-hidden="true" /> Live
-        {room.access === ROOM_ACCESS.invite ? (
-          <>
-            {" · "}
-            <Lock aria-hidden="true" className="fh-i fh-xs" strokeWidth={1.5} /> Invite only
-          </>
-        ) : null}
+        <span className="vr-live-dot" data-pulse="true" aria-hidden="true" />
+        <Link href={toRoomHref(room.id)} className="vr-card-title text-inherit no-underline">
+          {room.title}
+        </Link>
+        {room.access === ROOM_ACCESS.invite ? <InviteOnly /> : null}
       </span>
-      <span className="vr-card-title">{room.title}</span>
       <span className="vr-card-foot">
-        <span className="flex items-center gap-2.5">
-          <Faces room={room} />
-          <span>{stageNames(room)}</span>
+        <span className="flex items-center gap-2.5" data-testid="room-faces">
+          <Faces faces={room.faces} />
+          <span>{describeInRoom(room)}</span>
         </span>
-        <span>{room.listenerCount === 1 ? "1 in the room" : `${room.listenerCount} in the room`}</span>
+        <span className="fh-btn-row">
+          <FollowHost room={room} viewerId={viewerId} />
+          <Button asChild size="sm" variant="ink">
+            <Link href={toRoomHref(room.id)} aria-label={`Join ${room.title}`}>
+              Join
+            </Link>
+          </Button>
+        </span>
       </span>
-    </Link>
+    </div>
   );
 }
 
@@ -80,33 +100,37 @@ function ScheduledCard({ room, viewerId }: { room: RoomCard; viewerId: string })
   return (
     <div className="vr-card" data-testid="scheduled-room">
       <span className="vr-card-top">
-        {room.scheduledFor ? formatRoomTime(room.scheduledFor) : "Soon"}
-        {room.access === ROOM_ACCESS.invite ? " · Invite only" : ""}
+        {room.scheduledFor ? <time dateTime={room.scheduledFor} title={formatRoomTime(room.scheduledFor)}>{new Date(room.scheduledFor).toLocaleString(undefined, CARD_TIME_FORMAT)}</time> : null}
+        {room.access === ROOM_ACCESS.invite ? <InviteOnly /> : null}
       </span>
       <Link href={toRoomHref(room.id)} className="vr-card-title text-inherit no-underline">
         {room.title}
       </Link>
       <span className="vr-card-foot">
         <span className="flex items-center gap-2.5">
-          <Faces room={room} />
-          <span>Hosted by {room.hostName}</span>
+          <Faces faces={room.faces.slice(0, 1)} />
+          <span>{firstName(room.hostName)}</span>
         </span>
-        {isHost ? (
-          <Button size="sm" variant="ink" onClick={() => start.mutate()} disabled={start.isPending}>
-            Start now
-          </Button>
-        ) : (
-          <Button size="sm" variant="secondary" aria-pressed={room.hasReminder} onClick={() => remind.mutate(!room.hasReminder)} disabled={remind.isPending}>
-            {room.hasReminder ? "Reminder on" : "Remind me"}
-          </Button>
-        )}
+        <span className="fh-btn-row">
+          <FollowHost room={room} viewerId={viewerId} />
+          {isHost ? (
+            <Button size="sm" variant="ink" onClick={() => start.mutate()} disabled={start.isPending}>
+              Start now
+            </Button>
+          ) : (
+            <Button size="sm" variant="secondary" aria-pressed={room.hasReminder} onClick={() => remind.mutate(!room.hasReminder)} disabled={remind.isPending}>
+              {room.hasReminder ? "Reminder on" : "Remind me"}
+            </Button>
+          )}
+        </span>
       </span>
       {start.error || remind.error ? <p className="fh-hint fh-err">{(start.error ?? remind.error)?.message}</p> : null}
     </div>
   );
 }
 
-export function RoomsBoard({ initial, viewerId }: { initial: RoomsData; viewerId: string }) {
+// Rooms: one "Start a room", then who is live (faces, Join) and what's coming up (Remind me).
+export function RoomsBoard({ initial, viewerId }: { initial: RoomsPageData; viewerId: string }) {
   const [isComposing, setIsComposing] = useState(false);
   const rooms = useQuery({
     queryKey: VOICE_QUERY_KEYS.rooms,
@@ -114,64 +138,51 @@ export function RoomsBoard({ initial, viewerId }: { initial: RoomsData; viewerId
     initialData: initial,
     refetchInterval: (query) => (isRouteGone(query.state.error) ? false : ROOMS_POLL_MS),
   });
-  // A refusal (the day's limit, used in another tab) refreshes the count beside the button.
-  const available = useAvailableToTalk(() => void rooms.refetch());
-  const { live, scheduled, broadcastsLeft, isConfigured } = rooms.data;
+  const { live, scheduled, isConfigured, notify } = rooms.data;
 
   return (
     <>
-      <div className="fh-btn-row mt-3.5">
-        <Button variant="ink" onClick={() => available.mutate()} disabled={available.isPending || !isConfigured || broadcastsLeft === 0}>
-          I&rsquo;m available to talk
-        </Button>
-        <Button variant="secondary" onClick={() => setIsComposing((value) => !value)} aria-expanded={isComposing} disabled={!isConfigured}>
+      <div className="fh-btn-row">
+        <Button variant="ink" onClick={() => setIsComposing((value) => !value)} aria-expanded={isComposing} disabled={!isConfigured}>
           Start a room
         </Button>
       </div>
-      <p className="fh-hint">{describeBroadcastsLeft(broadcastsLeft)}</p>
-      {available.error ? (
-        <FlashNote kind={FLASH_KINDS.needs} className="mt-3">
-          {available.error.message}
-        </FlashNote>
-      ) : null}
       {!isConfigured ? (
         <FlashNote kind={FLASH_KINDS.needs} className="mt-3">
-          Voice rooms aren&rsquo;t set up on this server yet. An admin sets them up in Set up › Rooms.
+          Rooms need a voice server. An admin sets it up in Set up.
         </FlashNote>
       ) : null}
-      {isComposing ? <RoomComposer onClose={() => setIsComposing(false)} /> : null}
+      {isComposing ? <RoomComposer notify={notify} onClose={() => setIsComposing(false)} /> : null}
 
-      <section className="fh-section" aria-labelledby="rooms-live">
-        <h2 id="rooms-live" className="fh-h2">
-          Live now
-        </h2>
-        {live.length === 0 ? (
-          <div className="mt-3">
-            <EmptyState title="Nobody is talking right now" description="Start a room, or say you're available and see who drops in." />
-          </div>
-        ) : (
+      {live.length > 0 ? (
+        <section className="fh-section" aria-labelledby="rooms-live">
+          <h2 id="rooms-live" className="fh-h2">
+            Live now
+          </h2>
           <div className="vr-cards">
             {live.map((room) => (
-              <LiveCard key={room.id} room={room} />
+              <LiveCard key={room.id} room={room} viewerId={viewerId} />
             ))}
           </div>
-        )}
-      </section>
+        </section>
+      ) : (
+        <p className="fh-small fh-muted mt-4" data-testid="rooms-empty">
+          Nobody is live right now.
+        </p>
+      )}
 
-      <section className="fh-section" aria-labelledby="rooms-scheduled">
-        <h2 id="rooms-scheduled" className="fh-h2">
-          Coming up
-        </h2>
-        {scheduled.length === 0 ? (
-          <p className="fh-small fh-muted mt-2">No rooms scheduled. Schedule one with Start a room › Later.</p>
-        ) : (
+      {scheduled.length > 0 ? (
+        <section className="fh-section" aria-labelledby="rooms-scheduled">
+          <h2 id="rooms-scheduled" className="fh-h2">
+            Coming up
+          </h2>
           <div className="vr-cards">
             {scheduled.map((room) => (
               <ScheduledCard key={room.id} room={room} viewerId={viewerId} />
             ))}
           </div>
-        )}
-      </section>
+        </section>
+      ) : null}
     </>
   );
 }

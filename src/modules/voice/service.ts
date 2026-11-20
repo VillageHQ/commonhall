@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, asc, count, eq, gte, inArray, isNotNull, isNull, lte, sql, type SQL } from "drizzle-orm";
+import { and, asc, count, eq, gt, gte, inArray, isNotNull, isNull, lt, lte, min, sql, type SQL } from "drizzle-orm";
 
 import { isAdminMember } from "@/platform/auth/roles";
 import { isActiveMember } from "@/platform/auth/member-status";
@@ -9,6 +9,9 @@ import type { Database, DatabaseOrTransaction, Transaction } from "@/platform/da
 import type { Environment } from "@/platform/environment";
 import type { RequestContext } from "@/platform/http/request-context";
 import { RequestError } from "@/platform/http/request-error";
+import { isDemoMode } from "@/platform/demo/mode";
+import { readSettings } from "@/platform/settings/store";
+import { INSTANCE_SETTING_KEYS } from "@/platform/settings/schema";
 import { shownFaceColumns, toShownFaceUrl } from "@/modules/members/reads-pictures";
 
 import { closeLiveRoom, createRoomToken, pushParticipantFacts, readConnectedIdentities, type VoiceConfig } from "./client";
@@ -23,8 +26,15 @@ import {
   VOICE_ERROR_CODES,
   VOICE_LIMITS,
   VOICE_MESSAGES,
-  type CreateRoomBody,
+  NOTIFY_AUDIENCES,
+  NOTIFY_OFF,
+  type CreateRoomInput,
+  type FollowBody,
   type HandBody,
+  type NotifyAllowance,
+  type NotifyAudience,
+  type NotifyBody,
+  type NotifyChoice,
   type InviteBody,
   type RemindBody,
   type RoleBody,
@@ -32,7 +42,7 @@ import {
   type RoomRole,
 } from "./contract";
 import { readVoiceConfig, requireVoiceConfig } from "./service-settings";
-import { voiceBroadcast, voiceRoom, voiceRoomMember, voiceRoomReminder } from "./schema";
+import { voiceBroadcast, voiceFollow, voiceNotifyChoice, voiceNotifyReceipt, voiceRoom, voiceRoomMember, voiceRoomReminder } from "./schema";
 
 const FORBIDDEN_STATUS = 403;
 const NOT_FOUND_STATUS = 404;
@@ -63,10 +73,6 @@ function ended() {
 
 export function toLiveKitRoomName(roomId: string) {
   return `room-${roomId}`;
-}
-
-function firstName(name: string) {
-  return name.trim().split(/\s+/)[0] || name;
 }
 
 type Seat = { role: RoomRole; isInvited: boolean; handRaisedAt: Date | null };
@@ -120,7 +126,9 @@ async function readActiveIds(connection: DatabaseOrTransaction, memberIds: strin
   return rows.map(({ id }) => id);
 }
 
-async function insertRoom(transaction: Transaction, hostId: string, values: { title: string; access: string; scheduledAt: Date | null; isBroadcast: boolean }, now: Date) {
+type RoomValues = { title: string; access: string; scheduledAt: Date | null; notify: { audience: NotifyAudience; memberIds: string[] } | null };
+
+async function insertRoom(transaction: Transaction, hostId: string, values: RoomValues, now: Date) {
   const isLive = values.scheduledAt === null;
   const [room] = await transaction
     .insert(voiceRoom)
@@ -130,8 +138,10 @@ async function insertRoom(transaction: Transaction, hostId: string, values: { ti
       createdById: hostId,
       access: values.access,
       status: isLive ? ROOM_STATUSES.live : ROOM_STATUSES.scheduled,
-      isBroadcast: values.isBroadcast,
       scheduledFor: values.scheduledAt,
+      // A scheduled room keeps its Notify until it starts.
+      notifyAudience: isLive ? null : (values.notify?.audience ?? null),
+      notifyMemberIds: isLive ? null : (values.notify?.memberIds ?? null),
       startedAt: isLive ? now : null,
     })
     .returning({ id: voiceRoom.id });
@@ -158,22 +168,20 @@ async function findRecentRoom(transaction: Transaction, memberId: string, where:
   return room?.id ?? null;
 }
 
-export async function createRoom({ database, member }: RequestContext, body: CreateRoomBody, now = new Date()) {
-  const scheduledAt = readSchedule(body.scheduledFor, now);
-  return database.transaction(async (transaction) => {
-    await lockMember(transaction, member.id);
-    const repeat = await findRecentRoom(transaction, member.id, and(eq(voiceRoom.title, body.title), eq(voiceRoom.isBroadcast, false)), now);
-    if (repeat) return { roomId: repeat };
-    const roomId = await insertRoom(transaction, member.id, { title: body.title, access: body.access, scheduledAt, isBroadcast: false }, now);
-    const invitees = (await readActiveIds(transaction, body.inviteeIds, now)).filter((id) => id !== member.id);
-    if (invitees.length > 0) {
-      await transaction
-        .insert(voiceRoomMember)
-        .values(invitees.map((memberId) => ({ roomId, memberId, role: ROOM_ROLES.listener, isInvited: true })))
-        .onConflictDoNothing();
-    }
-    return { roomId };
-  });
+// A notify that passed the sender's daily limit, ready to send once its transaction commits.
+export type ClaimedNotify = { broadcastId: string; roomId: string; senderId: string; audience: NotifyAudience; memberIds: string[]; isStart: boolean };
+type PendingNotify = { audience: NotifyAudience; memberIds: string[] };
+
+function pickSomeone() {
+  return new RequestError(UNPROCESSABLE_STATUS, VOICE_ERROR_CODES.badTarget, VOICE_MESSAGES.pickSomeone);
+}
+
+function toPendingNotify(notify: CreateRoomInput["notify"], memberId: string): PendingNotify | null {
+  if (!notify) return null;
+  if (notify.audience !== NOTIFY_AUDIENCES.picked) return { audience: notify.audience, memberIds: [] };
+  const memberIds = [...new Set(notify.memberIds ?? [])].filter((id) => id !== memberId);
+  if (memberIds.length === 0) throw pickSomeone();
+  return { audience: notify.audience, memberIds };
 }
 
 export async function countBroadcastsToday(connection: DatabaseOrTransaction, memberId: string, now = new Date()) {
@@ -184,43 +192,134 @@ export async function countBroadcastsToday(connection: DatabaseOrTransaction, me
   return row?.total ?? 0;
 }
 
-// "I'm available to talk": an open room with the member as host, counted against 3 a day (the last 24 hours). The
-// member's row lock makes two taps at once count each other; while their last one is still live, a tap returns it
-// (isNew false, so no second alert). The caller sends the alert after this commits.
-export async function startAvailableRoom({ database, member }: RequestContext, now = new Date()) {
+// How many notifies are left today (the last 24 hours), and at the limit, when the oldest one stops counting.
+export async function readNotifyAllowance(connection: DatabaseOrTransaction, memberId: string, now = new Date()): Promise<NotifyAllowance> {
+  const [row] = await connection
+    .select({ total: count(), oldest: min(voiceBroadcast.createdAt) })
+    .from(voiceBroadcast)
+    .where(and(eq(voiceBroadcast.memberId, memberId), gte(voiceBroadcast.createdAt, new Date(now.getTime() - DAY_MS))));
+  const left = Math.max(0, VOICE_LIMITS.broadcastsPerDay - (row?.total ?? 0));
+  const oldest = row?.oldest ? new Date(row.oldest) : null;
+  return { left, resetsAt: left === 0 && oldest ? new Date(oldest.getTime() + DAY_MS).toISOString() : null };
+}
+
+// The member's last Notify choice: off the first time.
+export async function readNotifyChoice(connection: DatabaseOrTransaction, memberId: string): Promise<NotifyChoice> {
+  const [row] = await connection.select({ audience: voiceNotifyChoice.audience }).from(voiceNotifyChoice).where(eq(voiceNotifyChoice.memberId, memberId));
+  return (row?.audience as NotifyChoice | undefined) ?? NOTIFY_OFF;
+}
+
+async function saveNotifyChoice(transaction: Transaction, memberId: string, audience: NotifyChoice, now: Date) {
+  await transaction
+    .insert(voiceNotifyChoice)
+    .values({ memberId, audience, updatedAt: now })
+    .onConflictDoUpdate({ target: voiceNotifyChoice.memberId, set: { audience, updatedAt: now } });
+}
+
+// Counts one notify against the sender's 3 a day. The caller holds the sender's row lock, so two at once take turns.
+async function claimNotify(transaction: Transaction, roomId: string, senderId: string, notify: PendingNotify, isStart: boolean, now: Date): Promise<ClaimedNotify> {
+  if ((await countBroadcastsToday(transaction, senderId, now)) >= VOICE_LIMITS.broadcastsPerDay) {
+    throw new RequestError(TOO_MANY_STATUS, VOICE_ERROR_CODES.broadcastLimit, VOICE_MESSAGES.broadcastLimit);
+  }
+  const [row] = await transaction.insert(voiceBroadcast).values({ memberId: senderId, roomId, audience: notify.audience, createdAt: now }).returning({ id: voiceBroadcast.id });
+  if (!row) throw notFound();
+  return { broadcastId: row.id, roomId, senderId, audience: notify.audience, memberIds: notify.memberIds, isStart };
+}
+
+// Start a room now or schedule one. "Notify others" counts against the day's limit when the room starts (now, or
+// when the host starts a scheduled one), and the sheet remembers the choice. The caller sends the alert after commit.
+export async function createRoom({ database, member }: RequestContext, body: CreateRoomInput, now = new Date()): Promise<{ roomId: string; notify: ClaimedNotify | null }> {
+  const scheduledAt = readSchedule(body.scheduledFor, now);
+  const notify = toPendingNotify(body.notify, member.id);
   return database.transaction(async (transaction) => {
-    const me = await lockMember(transaction, member.id);
-    const [open] = await transaction
-      .select({ id: voiceRoom.id, title: voiceRoom.title })
-      .from(voiceRoom)
-      .where(and(eq(voiceRoom.hostId, member.id), eq(voiceRoom.isBroadcast, true), eq(voiceRoom.status, ROOM_STATUSES.live)))
-      .limit(1);
-    if (open) return { roomId: open.id, title: open.title, hostName: me.name, isNew: false };
-    if ((await countBroadcastsToday(transaction, member.id, now)) >= VOICE_LIMITS.broadcastsPerDay) {
-      throw new RequestError(TOO_MANY_STATUS, VOICE_ERROR_CODES.broadcastLimit, VOICE_MESSAGES.broadcastLimit);
+    await lockMember(transaction, member.id);
+    const repeat = await findRecentRoom(transaction, member.id, and(eq(voiceRoom.title, body.title), eq(voiceRoom.isBroadcast, false)), now);
+    if (repeat) return { roomId: repeat, notify: null };
+    const roomId = await insertRoom(transaction, member.id, { title: body.title, access: body.access, scheduledAt, notify }, now);
+    const invitees = (await readActiveIds(transaction, body.inviteeIds, now)).filter((id) => id !== member.id);
+    if (invitees.length > 0) {
+      await transaction
+        .insert(voiceRoomMember)
+        .values(invitees.map((memberId) => ({ roomId, memberId, role: ROOM_ROLES.listener, isInvited: true })))
+        .onConflictDoNothing();
     }
-    const title = `${firstName(me.name)} is available to talk`;
-    const roomId = await insertRoom(transaction, member.id, { title, access: ROOM_ACCESS.open, scheduledAt: null, isBroadcast: true }, now);
-    await transaction.insert(voiceBroadcast).values({ memberId: member.id, roomId, createdAt: now });
-    return { roomId, title, hostName: me.name, isNew: true };
+    await saveNotifyChoice(transaction, member.id, notify?.audience ?? NOTIFY_OFF, now);
+    const claimed = notify && scheduledAt === null ? await claimNotify(transaction, roomId, member.id, notify, true, now) : null;
+    return { roomId, notify: claimed };
   });
 }
 
+export async function hasNotified(connection: DatabaseOrTransaction, roomId: string, memberId: string) {
+  const [row] = await connection
+    .select({ id: voiceBroadcast.id })
+    .from(voiceBroadcast)
+    .where(and(eq(voiceBroadcast.roomId, roomId), eq(voiceBroadcast.memberId, memberId)))
+    .limit(1);
+  return Boolean(row);
+}
+
+// "Tell people I'm here": once per room, from someone who joined it, to up to 10 people they pick.
+export async function tellPeopleHere({ database, member }: RequestContext, { roomId, memberIds }: NotifyBody, now = new Date()): Promise<ClaimedNotify> {
+  const picked = [...new Set(memberIds)].filter((id) => id !== member.id);
+  if (picked.length === 0) throw pickSomeone();
+  return database.transaction(async (transaction) => {
+    await lockMember(transaction, member.id);
+    const room = await lockRoom(transaction, roomId);
+    if (room.status === ROOM_STATUSES.ended) throw ended();
+    if (room.status !== ROOM_STATUSES.live) throw new RequestError(CONFLICT_STATUS, VOICE_ERROR_CODES.notLive, VOICE_MESSAGES.notLive);
+    const [seat] = await transaction
+      .select({ joinedAt: voiceRoomMember.joinedAt })
+      .from(voiceRoomMember)
+      .where(and(eq(voiceRoomMember.roomId, roomId), eq(voiceRoomMember.memberId, member.id)));
+    if (!seat?.joinedAt) throw new RequestError(FORBIDDEN_STATUS, VOICE_ERROR_CODES.notInRoom, VOICE_MESSAGES.notInRoom);
+    if (await hasNotified(transaction, roomId, member.id)) throw new RequestError(CONFLICT_STATUS, VOICE_ERROR_CODES.notifiedAlready, VOICE_MESSAGES.notifiedAlready);
+    return claimNotify(transaction, roomId, member.id, { audience: NOTIFY_AUDIENCES.picked, memberIds: picked }, false, now);
+  });
+}
+
+export async function recordReached(database: Database, broadcastId: string, reached: number) {
+  await database.update(voiceBroadcast).set({ reached }).where(eq(voiceBroadcast.id, broadcastId));
+}
+
+// Follow or unfollow someone's rooms. Only active members can be followed; following yourself does nothing.
+export async function setFollow({ database, member }: RequestContext, { memberId, isFollowing }: FollowBody, now = new Date()) {
+  if (memberId === member.id) return;
+  if (!isFollowing) {
+    await database.delete(voiceFollow).where(and(eq(voiceFollow.followerId, member.id), eq(voiceFollow.followedId, memberId)));
+    return;
+  }
+  if ((await readActiveIds(database, [memberId], now)).length === 0) throw notFound();
+  await database.insert(voiceFollow).values({ followerId: member.id, followedId: memberId, createdAt: now }).onConflictDoNothing();
+}
+
+export async function readIsFollowing(connection: DatabaseOrTransaction, followerId: string, followedId: string) {
+  const [row] = await connection
+    .select({ followedId: voiceFollow.followedId })
+    .from(voiceFollow)
+    .where(and(eq(voiceFollow.followerId, followerId), eq(voiceFollow.followedId, followedId)));
+  return Boolean(row);
+}
+
 // Starting a scheduled room (early or on time) claims its reminders, so "Remind me" fires when it really starts and
-// the minute job never sends them again. Returns the reminders to send, or null when they went out already.
+// the minute job never sends them again. It also claims the Notify chosen when the room was scheduled; one past the
+// host's daily limit is dropped, and the room starts anyway.
 export async function startScheduledRoom({ database, member }: RequestContext, roomId: string, now = new Date()) {
   return database.transaction(async (transaction) => {
+    await lockMember(transaction, member.id);
     const room = await lockRoom(transaction, roomId);
     if (room.hostId !== member.id) throw notHost();
     if (room.status === ROOM_STATUSES.ended) throw ended();
-    if (room.status === ROOM_STATUSES.live) return null;
+    if (room.status === ROOM_STATUSES.live) return { reminder: null, notify: null };
     await transaction
       .update(voiceRoom)
-      .set({ status: ROOM_STATUSES.live, startedAt: now, remindersSentAt: room.remindersSentAt ?? now })
+      .set({ status: ROOM_STATUSES.live, startedAt: now, remindersSentAt: room.remindersSentAt ?? now, notifyAudience: null, notifyMemberIds: null })
       .where(eq(voiceRoom.id, roomId));
-    if (room.remindersSentAt) return null;
+    const audience = room.notifyAudience as NotifyAudience | null;
+    const isUnderLimit = audience !== null && (await countBroadcastsToday(transaction, member.id, now)) < VOICE_LIMITS.broadcastsPerDay;
+    const notify = audience && isUnderLimit ? await claimNotify(transaction, roomId, member.id, { audience, memberIds: room.notifyMemberIds ?? [] }, true, now) : null;
+    if (room.remindersSentAt) return { reminder: null, notify };
     const reminders = await transaction.select({ memberId: voiceRoomReminder.memberId }).from(voiceRoomReminder).where(eq(voiceRoomReminder.roomId, roomId));
-    return { id: room.id, title: room.title, hostId: room.hostId, memberIds: reminders.map(({ memberId }) => memberId) };
+    return { reminder: { id: room.id, title: room.title, hostId: room.hostId, memberIds: reminders.map(({ memberId }) => memberId) }, notify };
   });
 }
 
@@ -397,9 +496,10 @@ export async function checkRoom(database: Database, environment: Environment, ro
   if (!config) return;
   const connected = await readConnectedIdentities(config, toLiveKitRoomName(roomId));
   if (connected === null) return;
+  const seededAt = await readDemoSeededAt(database, environment);
   const outcome = await database.transaction(async (transaction) => {
     const room = await lockRoom(transaction, roomId);
-    if (room.status !== ROOM_STATUSES.live) return { changed: [] as string[], isEnding: false };
+    if (room.status !== ROOM_STATUSES.live || (seededAt && room.createdAt <= seededAt)) return { changed: [] as string[], isEnding: false };
     const startedLongAgo = room.startedAt !== null && now.getTime() - room.startedAt.getTime() >= CONNECT_GRACE_MS;
     const changed: string[] = [];
     if (startedLongAgo && !connected.includes(room.hostId)) {
@@ -443,14 +543,27 @@ export async function claimDueReminders(database: Database, now = new Date()) {
   return due.map((room) => ({ ...room, memberIds: reminders.filter(({ roomId }) => roomId === room.id).map(({ memberId }) => memberId) }));
 }
 
-// The minute job: every live room's upkeep, and scheduled rooms nobody started closed a day after their time.
+// In demo mode, the rooms the demo seed made stay as they are until the nightly reset: nobody real is in them, so the
+// upkeep would end them within minutes. Rooms that visitors make follow the usual rules.
+async function readDemoSeededAt(database: Database, environment: Environment) {
+  if (!isDemoMode(environment)) return null;
+  const seededAt = (await readSettings(database, [INSTANCE_SETTING_KEYS.demoSeededAt])).get(INSTANCE_SETTING_KEYS.demoSeededAt);
+  return seededAt ? new Date(seededAt) : null;
+}
+
+// The minute job: every live room's upkeep, scheduled rooms nobody started closed a day after their time, and notify
+// receipts older than 7 days dropped.
 export async function tickVoiceRooms(database: Database, environment: Environment, now = new Date()) {
+  const seededAt = await readDemoSeededAt(database, environment);
+  const isNotSeeded = seededAt ? gt(voiceRoom.createdAt, seededAt) : undefined;
   await database
     .update(voiceRoom)
     .set({ status: ROOM_STATUSES.ended, endedAt: now })
-    .where(and(eq(voiceRoom.status, ROOM_STATUSES.scheduled), isNotNull(voiceRoom.scheduledFor), lte(voiceRoom.scheduledFor, new Date(now.getTime() - STALE_SCHEDULE_MS))));
-  const live = await database.select({ id: voiceRoom.id }).from(voiceRoom).where(eq(voiceRoom.status, ROOM_STATUSES.live));
+    .where(and(eq(voiceRoom.status, ROOM_STATUSES.scheduled), isNotNull(voiceRoom.scheduledFor), lte(voiceRoom.scheduledFor, new Date(now.getTime() - STALE_SCHEDULE_MS)), isNotSeeded));
+  const live = await database.select({ id: voiceRoom.id }).from(voiceRoom).where(and(eq(voiceRoom.status, ROOM_STATUSES.live), isNotSeeded));
+  // checkRoom also leaves the demo's seeded rooms alone (someone leaving one runs it too).
   for (const { id } of live) await checkRoom(database, environment, id, now);
+  await database.delete(voiceNotifyReceipt).where(lt(voiceNotifyReceipt.createdAt, new Date(now.getTime() - VOICE_LIMITS.receiptDays * DAY_MS)));
 }
 
 // A removed member's rooms: the ones they host end; their seats go with the cascade when the account is erased.

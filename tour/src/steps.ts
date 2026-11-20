@@ -155,7 +155,7 @@ export const TOUR_STEPS: readonly TourStep[] = [
   {
     id: "rooms",
     label: "Voice rooms",
-    caption: "Live voice rooms, like Clubhouse. Say you're available to talk, or drop into a room and raise a hand. Never recorded.",
+    caption: "Live voice rooms, like Clubhouse. Start one and notify who you choose, or drop in and raise a hand. Never recorded.",
     start: "/rooms",
     still: ROOM_HREF,
     async settle(hands) {
@@ -165,15 +165,15 @@ export const TOUR_STEPS: readonly TourStep[] = [
     },
     async play(hands) {
       await hands.wait(500);
-      // "I'm available to talk" opens a room and alerts the community: the tour only presses.
+      // "Start a room" opens the sheet with Notify others: the tour only presses.
       await hands.tap("main .fh-btn-row button");
       await hands.wait(1200);
-      await hands.click("[data-testid='live-room']");
+      await hands.click("[data-testid='live-room'] a[aria-label^='Join']");
       await hands.wait(1000);
       await hands.point("[data-testid='stage'] [data-role='host']");
       await hands.wait(1600);
       // A reaction stays on the page (the tour's LiveKit sends nothing).
-      await hands.click("button[aria-label='Reactions']");
+      await hands.click("[data-testid='react']");
       await hands.wait(300);
       await hands.click("button[aria-label='React 👏']");
       await hands.wait(1000);

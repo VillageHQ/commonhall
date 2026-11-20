@@ -13,6 +13,7 @@ import { FILL_IN_FIELDS } from "@/modules/members/contract-fill-in";
 import { isFilledLogoShown } from "@/modules/members/rules-fill-in";
 import { readPrivacy } from "@/modules/members/service-privacy";
 import { directMessage } from "@/modules/messages/schema";
+import { voiceFollow } from "@/modules/voice/schema";
 import { adminAuditEntry } from "@/platform/audit/schema";
 import { readBranding } from "@/platform/branding/branding";
 import { user } from "@/platform/database/auth-schema";
@@ -101,6 +102,13 @@ export async function readMemberExport(database: Database, memberId: string) {
   const [avatar] = await database.select().from(memberAvatar).where(eq(memberAvatar.userId, memberId));
   const [network] = await database.select().from(memberNetwork).where(eq(memberNetwork.userId, memberId));
   const [lookup] = await database.select().from(memberLookup).where(eq(memberLookup.userId, memberId));
+  // Whose rooms you follow (Rooms' Follow): their name and since when.
+  const follows = await database
+    .select({ memberId: voiceFollow.followedId, name: user.name, since: voiceFollow.createdAt })
+    .from(voiceFollow)
+    .innerJoin(user, eq(user.id, voiceFollow.followedId))
+    .where(eq(voiceFollow.followerId, memberId))
+    .orderBy(asc(voiceFollow.createdAt));
 
   const [tags, filledIn, blocks, posts, replies, reactions, asks, offers, answers, intros, messages, optOuts, activity, weekly] = await Promise.all([
     database.select({ tag: memberTag.tag }).from(memberTag).where(eq(memberTag.userId, memberId)).orderBy(memberTag.tag),
@@ -170,6 +178,7 @@ export async function readMemberExport(database: Database, memberId: string) {
     },
     network: network ? { linkedinSlug: network.linkedinSlug, linkedinConfirmedSlug: network.linkedinConfirmedSlug, villageMemberNumber: network.villageExternalId } : null,
     blocks,
+    roomsYouFollow: follows,
     posts,
     replies,
     reactions,

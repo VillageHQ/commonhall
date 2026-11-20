@@ -17,7 +17,7 @@ import { isExpertRole, readCommunityRole } from "@/modules/members/contract-comm
 import { toPictureSlug } from "@/platform/demo/pictures";
 import { LIBRARY_JOBS, LIBRARY_KINDS, LIBRARY_VISIBILITIES, type LibraryJob, type LibraryKind } from "@/modules/library/contract";
 import type { Leaderboard, LibraryCard, LibraryMember } from "@/modules/library/reads";
-import { ROOM_ACCESS, ROOM_ROLES, ROOM_STATUSES, toRoomHref, type RoomCard, type RoomFace, type RoomJoin, type RoomRole } from "@/modules/voice/contract";
+import { NOTIFY_OFF, ROOM_ACCESS, ROOM_ROLES, ROOM_STATUSES, toRoomHref, type RoomCard, type RoomFace, type RoomJoin, type RoomRole, type RoomsPageData } from "@/modules/voice/contract";
 import { NOTIFICATION_KINDS, QUIET_TIME_PRESETS, type AlertPreferences, type NotificationKind } from "@/platform/notifications/contract";
 
 // The tour's made-up community: the demo's own people (src/platform/demo/people.ts), their generated portraits and
@@ -433,8 +433,8 @@ export const ROOM_PEOPLE: readonly TourRoomPerson[] = [
 // The pictures the live room shows: it fills in after it "connects", so the build's server render never sees them.
 export const ROOM_PICTURES = ROOM_PEOPLE.map(({ faceUrl: url }) => url).filter((url): url is string => Boolean(url));
 
-function roomCard(id: string, title: string, stage: RoomFace[], extra: Partial<RoomCard> = {}): RoomCard {
-  const host = stage[0]!;
+function roomCard(id: string, title: string, people: RoomFace[], extra: Partial<RoomCard> = {}): RoomCard {
+  const host = people[0]!;
   return {
     id,
     title,
@@ -442,24 +442,25 @@ function roomCard(id: string, title: string, stage: RoomFace[], extra: Partial<R
     status: ROOM_STATUSES.live,
     scheduledFor: null,
     startedAt: new Date(TOUR_NOW.getTime() - 25 * 60_000).toISOString(),
-    isBroadcast: false,
     hostId: host.id,
     hostName: host.name,
-    stage,
-    listenerCount: 0,
+    faces: people.map(({ name, faceUrl: url }) => ({ name, faceUrl: url })),
+    count: people.length,
     hasReminder: false,
     isInvited: false,
+    isFollowingHost: false,
     ...extra,
   };
 }
 
 const ROOM_STAGE: RoomFace[] = ROOM_PEOPLE.filter(({ role }) => role !== ROOM_ROLES.listener).map(({ id, name, faceUrl: url, role }) => ({ id, name, faceUrl: url, role }));
 
-// What the Rooms page reads (readRoomsPage): two live rooms, one coming up, three "I'm available" left today.
-export const ROOMS_PAGE: { live: RoomCard[]; scheduled: RoomCard[]; broadcastsLeft: number; isConfigured: boolean } = {
+// What the Rooms page reads (readRoomsPage): two live rooms with the faces of the people in them, one coming up, and
+// "Start a room"'s Notify (three left today, off the first time).
+export const ROOMS_PAGE: RoomsPageData = {
   live: [
-    roomCard(ROOM_ID, ROOM_TITLE, ROOM_STAGE, { listenerCount: ROOM_PEOPLE.length }),
-    roomCard("00000000-0000-4000-8000-0000000e0002", "Elena is available to talk", [roomFace("elena.rossi", ROOM_ROLES.host)], { isBroadcast: true, listenerCount: 2 }),
+    roomCard(ROOM_ID, ROOM_TITLE, ROOM_STAGE, { count: ROOM_PEOPLE.length }),
+    roomCard("00000000-0000-4000-8000-0000000e0002", "Hiring your first salesperson", [roomFace("elena.rossi", ROOM_ROLES.host), roomFace("kwame.asante", ROOM_ROLES.listener)], { isFollowingHost: true }),
   ],
   scheduled: [
     roomCard("00000000-0000-4000-8000-0000000e0003", "Pricing your first enterprise deal", [roomFace("noah.berg", ROOM_ROLES.host), roomFace("zara.ahmed", ROOM_ROLES.cohost)], {
@@ -469,8 +470,8 @@ export const ROOMS_PAGE: { live: RoomCard[]; scheduled: RoomCard[]; broadcastsLe
       hasReminder: true,
     }),
   ],
-  broadcastsLeft: 3,
   isConfigured: true,
+  notify: { left: 3, resetsAt: null, choice: NOTIFY_OFF },
 };
 
 // What the tour's stand-in for the join request answers (the token goes to the stand-in LiveKit, never a server).

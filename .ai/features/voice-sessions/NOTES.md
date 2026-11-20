@@ -6,38 +6,29 @@ Set up › Features. Rooms are **never recorded**: there is no egress service, n
 `roomRecord` or `roomAdmin`. Chat and reactions are LiveKit data messages, never stored.
 
 ## The pieces
-- **Pages:** `/rooms` (live now, coming up, "I'm available to talk", Start a room), `/rooms/<id>` (the live room,
+- **Pages:** `/rooms` (Start a room, live now with faces and Join, coming up with Remind me), `/rooms/<id>` (the live room,
   a scheduled room's Remind me / Start now, or "ended"), `/admin/rooms` (Set up › Rooms: where LiveKit runs).
   An invite-only room is not found for anyone off its list.
-- **"I'm available to talk" in chat** (built 19 Nov 2026, part chat-available): the same button sits under the head of
-  the Inbox (`/inbox`) and of each conversation (`/inbox/<id>`), only while Rooms is on and LiveKit is set up.
-  `src/shell/chat-available.tsx` (`readChatAvailableAction`) reads `readAvailableToTalk` (the day's count left and
-  whether LiveKit is set up; no room list, no LiveKit call) and renders `components/available-to-talk.tsx`; the
-  pages pass it in (the Inbox under its `PageHeader`, a conversation through `Thread`'s `headerAction`), so messages
-  never imports voice. It posts to the same `/api/voice/available` as Rooms (`useAvailableToTalk`, shared with
-  `rooms-board.tsx`): same 3-a-day limit, same refusal words from the server, same alert; a refused 4th turns the
-  button off with the 0-left line (`describeBroadcastsLeft`, also Rooms' line). The tap opens the room as host.
+- **"I'm available to talk" was retired on 20 Nov 2026** (round 6, part 3): its button on Rooms, in the Inbox and in
+  conversations, `/api/voice/available` and `src/shell/chat-available.tsx` are gone. "Start a room" with **Notify
+  others**, "Tell people I'm here" and Follow replace it: `.ai/features/room-join-notify/NOTES.md`.
 - **Tables** (`schema.ts`, migration `0041_voice_rooms`): `voice_room` (host, access open/invite, status
   scheduled/live/ended, `empty_stage_since`), `voice_room_member` (role host/cohost/speaker/listener, raised hand,
-  invite list), `voice_room_reminder`, `voice_broadcast` (one row per "I'm available", for the limit).
+  invite list), `voice_room_reminder`, `voice_broadcast` (one row per notify sent, for the limit of 3 a day), and
+  since round 6 `voice_follow`, `voice_notify_receipt`, `voice_notify_choice` (room-join-notify's NOTES).
 - **The server owns roles.** Every change (hand, invite up, move down, co-host, hand-over) is a route → `service.ts`
   transaction, then `client.ts` pushes it to LiveKit with `updateParticipant`: participant attributes `role`,
   `hand`, `face` (everyone's screen updates live) and the permission (`canPublish` only on stage, microphone only).
   Members can't change their own attributes (`canUpdateOwnMetadata: false`).
 - **Rules:** only the host changes co-hosts; nobody changes the host; anyone on stage may step down; the host or an
-  admin ends a room. "I'm available to talk" opens an open room with the member as host, at most 3 in the last 24
-  hours (the 4th answers 429 with a plain message).
+  admin ends a room. A member sends at most 3 notifies in the last 24 hours (the 4th answers 429 with a plain message).
 - **Upkeep** (module job `voice-rooms`, every minute; also run right after someone leaves): a host gone for 30 s
   hands the room to the first co-host still connected; a room with nobody connected on stage for 2 minutes ends
   (LiveKit `deleteRoom`, so every browser shows "This room has ended"). Skipped while LiveKit can't be reached,
   so an outage never ends a room. Scheduled rooms nobody started end a day after their time.
 - **Alerts** (`src/shell/voice-alerts.ts`, through `notify()`; built 19 Nov 2026, part voice-broadcast):
-  - "I'm available to talk" → kind `voice_broadcast`, "<Name> is available to talk", opens the room, to every
-    active member with a device on file, but not the sender, banned or deleted accounts, or anyone on either side of
-    a block with the sender. `notify()` then skips members with alerts or that kind off, in quiet hours, or who
-    muted the sender. Sent after the response (`sendAvailableAlertSoon`): a failed alert never fails the tap, and a
-    tap that returns one's own live broadcast room sends nothing. The 3-a-day limit is the room's (`voice_broadcast`
-    rows), so a refused 4th sends nothing either.
+  - A room notify ("Notify others", "Tell people I'm here") → kind `voice_broadcast`: see
+    `.ai/features/room-join-notify/NOTES.md`.
   - "Remind me" → kind `voice_room`, "Starting now: <title>", to the members who tapped it (same account and block
     filters), **once**: when the host taps Start now (`startScheduledRoom` claims `reminders_sent_at`, early or on
     time), or else when the minute job `voice-reminders` finds the room's time has come (`claimDueReminders`). A room
@@ -67,10 +58,11 @@ the store app calls them from inside the portal page, with its cookie and origin
 
 | Route | Body | Answer |
 |---|---|---|
-| `/api/voice/rooms` | `{}` | `{ live: RoomCard[], scheduled: RoomCard[], broadcastsLeft, isConfigured }` |
+| `/api/voice/rooms` | `{}` | `{ live: RoomCard[], scheduled: RoomCard[], isConfigured, notify: { left, resetsAt, choice } }` |
 | `/api/voice/join` | `{ roomId }` | `{ serverUrl, token, roomName, role, identity }`: connect a LiveKit client to `serverUrl` with `token`. 403 `voice_not_invited`, 409 `voice_room_ended` / `voice_room_not_live`, 422 `voice_not_configured`, 401 signed out. |
-| `/api/voice/create` | `{ title, access: "open"\|"invite", scheduledFor: ISO\|null, inviteeIds: [] }` | `{ roomId }` |
-| `/api/voice/available` | `{}` | `{ roomId }`; 429 `voice_broadcast_limit` |
+| `/api/voice/create` | `{ title, access: "open"\|"invite", scheduledFor: ISO\|null, inviteeIds: [], notify: { audience, memberIds? }\|null }` | `{ roomId }`; 429 `voice_broadcast_limit` |
+| `/api/voice/notify` | `{ roomId, memberIds }` (1–10) | `{ ok }`; 403 `voice_not_in_room`, 409 `voice_notified_already`, 429 `voice_broadcast_limit` |
+| `/api/voice/follow` | `{ memberId, isFollowing }` | `{ ok }` |
 | `/api/voice/hand` | `{ roomId, isRaised }` | `{ ok }` |
 | `/api/voice/role` | `{ roomId, memberId, action: "invite_up"\|"move_down"\|"make_cohost"\|"remove_cohost" }` | `{ ok }`; 403 `voice_not_moderator` |
 | `/api/voice/leave`, `/api/voice/end`, `/api/voice/start` | `{ roomId }` | `{ ok }` |

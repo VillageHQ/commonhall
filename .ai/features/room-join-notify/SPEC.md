@@ -1,6 +1,6 @@
 ---
 id: room-join-notify
-status: planned
+status: built
 waits-on: []
 size: half a day
 touches: ["src/modules/voice/", "src/shell/voice-alerts.ts", "src/shell/chat-available.tsx", "src/app/(app)/rooms/", "src/app/(app)/inbox/", "drizzle/"]

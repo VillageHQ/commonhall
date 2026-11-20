@@ -1,6 +1,6 @@
 import { DisconnectReason, Room, RoomEvent, Track, type Participant, type RemoteTrack } from "livekit-client";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { listenToVoiceService, showVoiceService, stopVoiceService } from "../../modules/voice-service";
@@ -19,6 +19,8 @@ type Person = { id: string; name: string; role: RoomRole; isHandRaised: boolean;
 type JoinAnswer = { serverUrl: string; token: string };
 
 const REACTION_MS = 2400;
+// "Tell people I'm here": up to this many, once per room (the server's limit too).
+const TELL_MAXIMUM = 10;
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
@@ -63,6 +65,8 @@ export function RoomScreen({ portal, origin, roomId, title, isShown, onMinimize,
   const [isReacting, setIsReacting] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [isBusy, setIsBusy] = useState(false);
+  const [isTelling, setIsTelling] = useState(false);
+  const [hasTold, setHasTold] = useState(false);
 
   const refresh = useCallback(() => {
     const room = roomRef.current;
@@ -198,6 +202,14 @@ export function RoomScreen({ portal, origin, roomId, title, isShown, onMinimize,
     return answer.status === 200;
   }
 
+  async function tell(memberIds: string[]) {
+    if (await send("/api/voice/notify", { memberIds }, "That didn't send. Try again.")) {
+      setHasTold(true);
+      setIsTelling(false);
+      setNotice("Told them you're here.");
+    }
+  }
+
   async function act(memberId: string, action: RoleAction) {
     if (await send("/api/voice/role", { memberId, action }, "That didn't work. Try again.")) setSelectedId(null);
   }
@@ -287,10 +299,14 @@ export function RoomScreen({ portal, origin, roomId, title, isShown, onMinimize,
           <ActivityIndicator color={colors.ink} />
           <Text style={styles.muted}>Joining…</Text>
         </View>
-      ) : null}
+      ) : (
+        <Text style={styles.muted} accessibilityLiveRegion="polite" testID="room-status">
+          {`You're in · ${isOnStage(myRole) ? (isMuted ? "on stage, muted" : "on stage") : "listening"}`}
+        </Text>
+      )}
       {!canHear ? (
-        <Pressable accessibilityRole="button" style={styles.notice} onPress={() => void roomRef.current?.startAudio().then(() => setCanHear(true))}>
-          <Text style={styles.noticeText}>The sound is paused. Tap to hear the room.</Text>
+        <Pressable accessibilityRole="button" testID="tap-for-sound" style={styles.primaryButton} onPress={() => void roomRef.current?.startAudio().then(() => setCanHear(true))}>
+          <Text style={styles.primaryButtonText}>Tap for sound</Text>
         </Pressable>
       ) : null}
       {notice ? (
@@ -301,7 +317,7 @@ export function RoomScreen({ portal, origin, roomId, title, isShown, onMinimize,
 
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
         <Text style={styles.sectionLabel}>On stage</Text>
-        {stage.length === 0 && phase === "live" ? <Text style={styles.muted}>Nobody is on stage right now. The room ends in 2 minutes unless someone comes back.</Text> : null}
+        {stage.length === 0 && phase === "live" ? <Text style={styles.muted}>Nobody on stage yet.</Text> : null}
         <View style={styles.grid} testID="stage">
           {stage.map((person) => tile(person, 64))}
         </View>
@@ -337,6 +353,7 @@ export function RoomScreen({ portal, origin, roomId, title, isShown, onMinimize,
             ))}
           </View>
         ) : null}
+        {isTelling && !hasTold ? <TellPanel portal={portal} colors={colors} isBusy={isBusy} onSend={(ids) => void tell(ids)} onClose={() => setIsTelling(false)} /> : null}
       </ScrollView>
 
       {isReacting ? (
@@ -350,35 +367,131 @@ export function RoomScreen({ portal, origin, roomId, title, isShown, onMinimize,
       ) : null}
 
       <View style={styles.controls}>
-        <Pressable accessibilityRole="button" testID="leave-room" disabled={isBusy} onPress={() => void leave()} style={styles.leaveButton}>
-          <Text style={styles.leaveText}>✌ Leave quietly</Text>
-        </Pressable>
         <View style={styles.row}>
-          <Pressable accessibilityRole="button" accessibilityLabel="React" onPress={() => setIsReacting((value) => !value)} style={styles.roundButton}>
-            <Text style={styles.roundText}>☺</Text>
-          </Pressable>
+          <Tool styles={styles} symbol="✌" label="Leave" testID="leave-room" isDisabled={isBusy} onPress={() => void leave()} />
+          <Tool styles={styles} symbol="☺" label="React" isOn={isReacting} onPress={() => setIsReacting((value) => !value)} />
           {isOnStage(myRole) ? (
-            <Pressable accessibilityRole="button" testID="mic-toggle" accessibilityLabel={isMuted ? "Unmute" : "Mute"} onPress={() => void toggleMic()} style={[styles.roundButton, !isMuted ? styles.roundButtonOn : null]}>
-              <Text style={[styles.roundText, styles.roundWord, !isMuted ? styles.roundTextOn : null]}>{isMuted ? "Unmute" : "Mute"}</Text>
-            </Pressable>
+            <Tool styles={styles} symbol={isMuted ? "🔇" : "🎙"} label={isMuted ? "Unmute" : "Mute"} testID="mic-toggle" isOn={!isMuted} onPress={() => void toggleMic()} />
           ) : (
-            <Pressable
-              accessibilityRole="button"
+            <Tool
+              styles={styles}
+              symbol="✋"
+              label={me?.isHandRaised ? "Lower hand" : "Raise hand"}
               testID="hand-toggle"
-              accessibilityLabel={me?.isHandRaised ? "Lower your hand" : "Raise your hand"}
-              disabled={isBusy || phase !== "live"}
+              isOn={Boolean(me?.isHandRaised)}
+              isDisabled={isBusy || phase !== "live"}
               onPress={() => void send("/api/voice/hand", { isRaised: !me?.isHandRaised }, "That didn't work. Try again.")}
-              style={[styles.roundButton, me?.isHandRaised ? styles.roundButtonOn : null]}
-            >
-              <Text style={[styles.roundText, me?.isHandRaised ? styles.roundTextOn : null]}>✋</Text>
-            </Pressable>
+            />
           )}
-          {myRole === "host" ? (
-            <Pressable accessibilityRole="button" disabled={isBusy} onPress={() => void send("/api/voice/end", {}, "That didn't work. Try again.")} style={styles.secondaryButton}>
-              <Text style={styles.secondaryButtonText}>End room</Text>
-            </Pressable>
-          ) : null}
+          {hasTold ? null : (
+            <Tool styles={styles} symbol="🔔" label="Tell people" accessibilityLabel="Tell people I'm here" testID="tell-people" isOn={isTelling} isDisabled={phase !== "live"} onPress={() => setIsTelling((value) => !value)} />
+          )}
         </View>
+        {myRole === "host" ? (
+          <Pressable accessibilityRole="button" disabled={isBusy} onPress={() => void send("/api/voice/end", {}, "That didn't work. Try again.")} style={styles.secondaryButton}>
+            <Text style={styles.secondaryButtonText}>End room</Text>
+          </Pressable>
+        ) : null}
+      </View>
+    </View>
+  );
+}
+
+type ToolProps = { styles: ReturnType<typeof makeStyles>; symbol: string; label: string; onPress: () => void; isOn?: boolean; isDisabled?: boolean; testID?: string; accessibilityLabel?: string };
+
+// A room control with its word under it.
+function Tool({ styles, symbol, label, onPress, isOn = false, isDisabled = false, testID, accessibilityLabel }: ToolProps) {
+  return (
+    <Pressable accessibilityRole="button" accessibilityLabel={accessibilityLabel ?? label} accessibilityState={{ selected: isOn, disabled: isDisabled }} testID={testID} disabled={isDisabled} onPress={onPress} style={styles.tool}>
+      <View style={[styles.roundButton, isOn ? styles.roundButtonOn : null]}>
+        <Text style={[styles.roundText, isOn ? styles.roundTextOn : null]}>{symbol}</Text>
+      </View>
+      <Text style={styles.toolLabel}>{label}</Text>
+    </Pressable>
+  );
+}
+
+type Picked = { id: string; name: string };
+
+function readPeopleAnswer(json: unknown): Picked[] {
+  const people = json && typeof json === "object" ? (json as { people?: unknown }).people : null;
+  if (!Array.isArray(people)) return [];
+  return people.flatMap((person) => (person && typeof person.id === "string" && typeof person.name === "string" ? [{ id: person.id, name: person.name }] : []));
+}
+
+// "Tell people I'm here": search by name, pick up to 10, send once.
+function TellPanel({ portal, colors, isBusy, onSend, onClose }: { portal: PortalHandle; colors: Colors; isBusy: boolean; onSend: (ids: string[]) => void; onClose: () => void }) {
+  const styles = makeStyles(colors);
+  const [search, setSearch] = useState("");
+  const [results, setResults] = useState<Picked[]>([]);
+  const [picked, setPicked] = useState<Picked[]>([]);
+
+  useEffect(() => {
+    const words = search.trim();
+    if (!words) {
+      setResults([]);
+      return;
+    }
+    let isCurrent = true;
+    const timer = setTimeout(() => {
+      void portal.call("POST", "/api/voice/people", { search: words }).then((answer) => {
+        if (isCurrent && answer.status === 200) setResults(readPeopleAnswer(answer.json));
+      });
+    }, 250);
+    return () => {
+      isCurrent = false;
+      clearTimeout(timer);
+    };
+  }, [portal, search]);
+
+  const pickedIds = new Set(picked.map(({ id }) => id));
+  const isFull = picked.length >= TELL_MAXIMUM;
+  return (
+    <View style={styles.panel} testID="tell-panel">
+      <Text style={styles.panelTitle}>Tell people I&apos;m here</Text>
+      <TextInput
+        value={search}
+        onChangeText={setSearch}
+        placeholder="Type a name"
+        placeholderTextColor={colors.muted}
+        editable={!isFull}
+        autoCorrect={false}
+        accessibilityLabel="Type a name"
+        style={styles.input}
+      />
+      {results
+        .filter(({ id }) => !pickedIds.has(id))
+        .slice(0, 6)
+        .map((person) => (
+          <Pressable
+            key={person.id}
+            accessibilityRole="button"
+            disabled={isFull}
+            onPress={() => {
+              setPicked((current) => [...current, person]);
+              setSearch("");
+            }}
+            style={styles.resultRow}
+          >
+            <Text style={styles.noticeText}>{person.name}</Text>
+          </Pressable>
+        ))}
+      {picked.length > 0 ? (
+        <View style={styles.wrapRow}>
+          {picked.map((person) => (
+            <Pressable key={person.id} accessibilityRole="button" accessibilityLabel={`Remove ${person.name}`} onPress={() => setPicked((current) => current.filter(({ id }) => id !== person.id))} style={styles.chip}>
+              <Text style={styles.secondaryButtonText}>{person.name} ×</Text>
+            </Pressable>
+          ))}
+        </View>
+      ) : null}
+      <View style={styles.wrapRow}>
+        <Pressable accessibilityRole="button" disabled={isBusy || picked.length === 0} onPress={() => onSend(picked.map(({ id }) => id))} style={[styles.primaryButtonSmall, picked.length === 0 ? styles.dim : null]}>
+          <Text style={styles.primaryButtonText}>Send</Text>
+        </Pressable>
+        <Pressable accessibilityRole="button" onPress={onClose} style={styles.secondaryButton}>
+          <Text style={styles.secondaryButtonText}>Cancel</Text>
+        </Pressable>
       </View>
     </View>
   );
@@ -439,14 +552,17 @@ function makeStyles(colors: Colors) {
     reactionBar: { flexDirection: "row", justifyContent: "space-around", borderWidth: 1, borderColor: colors.line, backgroundColor: colors.sheet, borderRadius: 999, paddingVertical: 6, marginBottom: 8 },
     reactionButton: { padding: 6 },
     reactionEmoji: { fontSize: 24 },
-    controls: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", borderTopWidth: 1, borderTopColor: colors.line, paddingTop: 12 },
-    leaveButton: { paddingVertical: 12, paddingHorizontal: 4 },
-    leaveText: { color: colors.rust, fontFamily: SANS, fontSize: 15, fontWeight: "600" },
+    controls: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 8, borderTopWidth: 1, borderTopColor: colors.line, paddingTop: 12 },
+    tool: { alignItems: "center", gap: 4, minWidth: 56 },
+    toolLabel: { color: colors.muted, fontFamily: SANS, fontSize: 12, fontWeight: "600" },
+    input: { borderWidth: 1, borderColor: colors.line, borderRadius: 6, paddingHorizontal: 12, paddingVertical: 10, marginTop: 10, color: colors.ink, fontFamily: SANS, fontSize: 15, backgroundColor: colors.paper },
+    resultRow: { paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.line },
+    chip: { borderWidth: 1, borderColor: colors.line, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 6 },
+    dim: { opacity: 0.45 },
     roundButton: { minWidth: 48, height: 48, borderRadius: 24, paddingHorizontal: 14, borderWidth: 1, borderColor: colors.line, backgroundColor: colors.sheet, alignItems: "center", justifyContent: "center" },
     roundButtonOn: { backgroundColor: colors.ink, borderColor: colors.ink },
     roundText: { color: colors.ink, fontFamily: SANS, fontSize: 18, fontWeight: "600" },
     roundTextOn: { color: colors.paper },
-    roundWord: { fontSize: 15 },
     primaryButton: { height: 48, borderRadius: 6, backgroundColor: colors.ink, alignItems: "center", justifyContent: "center", marginTop: 8 },
     primaryButtonSmall: { height: 36, borderRadius: 6, backgroundColor: colors.ink, alignItems: "center", justifyContent: "center", paddingHorizontal: 12 },
     primaryButtonText: { color: colors.paper, fontFamily: SANS, fontSize: 14, fontWeight: "600" },
