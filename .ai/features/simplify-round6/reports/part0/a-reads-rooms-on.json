@@ -1,0 +1,130 @@
+{
+  "label": "rooms-on",
+  "maya": "Maya Ortiz",
+  "sam": "Sam Lee",
+  "stranger": "Ada Okafor",
+  "readLiveRooms(maya)": [
+    {
+      "id": "da0e0f9c-8801-433d-9336-9bc35c6707fc",
+      "title": "Verify P0: pricing chat",
+      "hostName": "Maya Ortiz",
+      "faces": [
+        {
+          "name": "Maya Ortiz",
+          "image": "/demo/faces/maya-ortiz.webp"
+        },
+        {
+          "name": "Sam Lee",
+          "image": "/demo/faces/sam-lee.webp"
+        }
+      ],
+      "count": 2
+    },
+    {
+      "id": "cbc38b1f-6a1b-4609-b8ac-24a89eacaf88",
+      "title": "Verify P0: invite-only board prep",
+      "hostName": "Maya Ortiz",
+      "faces": [],
+      "count": 0
+    },
+    {
+      "id": "88cf620a-0268-400b-b072-8ed85f098fc9",
+      "title": "Fundraising in a slow market: open office hours",
+      "hostName": "Maya Ortiz",
+      "faces": [],
+      "count": 0
+    }
+  ],
+  "countLiveRooms(maya)": 3,
+  "readLiveRooms(sam)": [
+    {
+      "id": "da0e0f9c-8801-433d-9336-9bc35c6707fc",
+      "title": "Verify P0: pricing chat",
+      "hostName": "Maya Ortiz",
+      "faces": [
+        {
+          "name": "Maya Ortiz",
+          "image": "/demo/faces/maya-ortiz.webp"
+        },
+        {
+          "name": "Sam Lee",
+          "image": "/demo/faces/sam-lee.webp"
+        }
+      ],
+      "count": 2
+    },
+    {
+      "id": "cbc38b1f-6a1b-4609-b8ac-24a89eacaf88",
+      "title": "Verify P0: invite-only board prep",
+      "hostName": "Maya Ortiz",
+      "faces": [],
+      "count": 0
+    },
+    {
+      "id": "88cf620a-0268-400b-b072-8ed85f098fc9",
+      "title": "Fundraising in a slow market: open office hours",
+      "hostName": "Maya Ortiz",
+      "faces": [],
+      "count": 0
+    }
+  ],
+  "countLiveRooms(sam)": 3,
+  "readLiveRooms(stranger)": [
+    {
+      "id": "da0e0f9c-8801-433d-9336-9bc35c6707fc",
+      "title": "Verify P0: pricing chat",
+      "hostName": "Maya Ortiz",
+      "faces": [
+        {
+          "name": "Maya Ortiz",
+          "image": "/demo/faces/maya-ortiz.webp"
+        },
+        {
+          "name": "Sam Lee",
+          "image": "/demo/faces/sam-lee.webp"
+        }
+      ],
+      "count": 2
+    },
+    {
+      "id": "88cf620a-0268-400b-b072-8ed85f098fc9",
+      "title": "Fundraising in a slow market: open office hours",
+      "hostName": "Maya Ortiz",
+      "faces": [],
+      "count": 0
+    }
+  ],
+  "countLiveRooms(stranger)": 2,
+  "readLiveRooms(stranger, no LiveKit env -> everyone who joined)": [
+    {
+      "id": "da0e0f9c-8801-433d-9336-9bc35c6707fc",
+      "title": "Verify P0: pricing chat",
+      "hostName": "Maya Ortiz",
+      "faces": [
+        {
+          "name": "Maya Ortiz",
+          "image": "/demo/faces/maya-ortiz.webp"
+        },
+        {
+          "name": "Sam Lee",
+          "image": "/demo/faces/sam-lee.webp"
+        }
+      ],
+      "count": 2
+    },
+    {
+      "id": "88cf620a-0268-400b-b072-8ed85f098fc9",
+      "title": "Fundraising in a slow market: open office hours",
+      "hostName": "Maya Ortiz",
+      "faces": [
+        {
+          "name": "Sam Lee",
+          "image": "/demo/faces/sam-lee.webp"
+        }
+      ],
+      "count": 1
+    }
+  ],
+  "countRoomJoins(last hour)": 3,
+  "countRoomJoins(epoch)": 3
+}

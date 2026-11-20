@@ -1,0 +1,17 @@
+before:
+Row 8 days ago
+Maya row 7d1h ago
+Row 6 days ago
+
+trigger: 409 {"devices":1,"sent":0,"failed":1,"removed":0,"message":"This is a demo, so nothing is sent outside this server."}
+
+after:
+Row 6 days ago
+
+all rows:
+Sam Lee|message|Row 6 days ago|sent||2026-11-14 05:24:45.796116+00
+Sam Lee|test|Northwind Founders: a test alert|sent||2026-11-20 05:24:20.536+00
+Sam Lee|test|Northwind Founders: a test alert|sent||2026-11-20 05:24:26.901+00
+Maya Ortiz|message|Message from Sam Lee|sent||2026-11-20 05:24:30.747+00
+Maya Ortiz|message|Message from Sam Lee|skipped|off|2026-11-20 05:24:37.621+00
+Sam Lee|test|Northwind Founders: a test alert|sent||2026-11-20 05:24:46.009+00

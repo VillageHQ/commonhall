@@ -96,6 +96,12 @@ export const nextConfig = {
     { source: "/public/jobs", destination: "/jobs", permanent: true },
     // Search took Commonhall's address; old links and bookmarks (and their ?q=) land on it.
     { source: "/network", destination: "/search", permanent: true },
+    // Round 6 (.ai/features/simplify-round6/SPEC.md, "The redirect pattern"): an unconditional redirect goes here, in
+    // its part's own block below. These run before src/proxy.ts, so an old address redirects even while its module
+    // is off. A redirect whose target depends on which modules are on is a tiny page in src/shell/ instead, its path
+    // in its module's `paths`.
+    // Part 1 (shell and tabs):
+    // Part 2 (member screens):
   ],
 };
 

@@ -19,7 +19,7 @@ const ROOM_LIST_LENGTH = 50;
 const ROLE_ORDER: Record<RoomRole, number> = { host: 0, cohost: 1, speaker: 2, listener: 3 };
 
 // A room the viewer may see: open to everyone, or invite only with the viewer on its list.
-function visibleTo(viewerId: string) {
+export function visibleTo(viewerId: string) {
   return or(
     eq(voiceRoom.access, ROOM_ACCESS.open),
     sql`exists (select 1 from ${voiceRoomMember} where ${voiceRoomMember.roomId} = ${voiceRoom.id} and ${voiceRoomMember.memberId} = ${viewerId} and ${voiceRoomMember.isInvited})`,
