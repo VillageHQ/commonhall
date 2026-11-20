@@ -5,7 +5,7 @@ import { CompanyLogo } from "@/components/company-name";
 import { Button } from "@/components/ui/button";
 import { formatDay } from "@/platform/text/day-month";
 
-import { COMPANY_PARAM, type BoardCompany, type BoardJob, type PublicJob } from "../contract";
+import { COMPANY_PARAM, isMailtoLink, type BoardCompany, type BoardJob, type PublicJob } from "../contract";
 import { CompanySelectSubmit } from "./company-select-submit";
 
 type ListedJob = PublicJob & Partial<Pick<BoardJob, "memberId" | "memberName">>;
@@ -64,14 +64,18 @@ export function CompanyTags({ basePath, companies }: { basePath: string; compani
 // Commonhall's job row (jobRow(), crop rows-jobs.png): the logo, the serif title, "Company · place · team · posted
 // 10 Nov" (+ "· via Name" for members), and Apply.
 // "Find candidates" shows on a job when `findCandidatesHref` gives it a link (its company's members and admins).
+// A job with no apply link (added by hand, round 7): Apply messages the founder who added it, when
+// `applyByMessageHref` gives a link (the members' board, while messages are on); public views show no Apply.
 export function JobList({
   jobs,
   memberHref,
   findCandidatesHref,
+  applyByMessageHref,
 }: {
   jobs: readonly ListedJob[];
   memberHref?: (memberId: string) => string;
   findCandidatesHref?: (job: Pick<BoardJob, "id" | "companySlug" | "memberId">) => string | null;
+  applyByMessageHref?: (memberId: string) => string | null;
 }) {
   return (
     <div className="fh-rows fh-jobrows mt-3.5">
@@ -79,6 +83,7 @@ export function JobList({
         const bits = [job.company, job.location, job.department].filter(Boolean).join(" · ");
         const when = job.postedAt ? ` · posted ${formatDay(job.postedAt)}` : "";
         const candidatesHref = findCandidatesHref && job.memberId ? findCandidatesHref({ id: job.id, companySlug: job.companySlug, memberId: job.memberId }) : null;
+        const messageHref = !job.url && applyByMessageHref && job.memberId ? applyByMessageHref(job.memberId) : null;
         return (
           <div key={job.id} className="fh-r">
             <span className="fh-jl">
@@ -107,9 +112,15 @@ export function JobList({
               ) : null}
               {job.url ? (
                 <Button asChild variant="secondary" size="sm">
-                  <a href={job.url} target="_blank" rel="noopener noreferrer" aria-label={`Apply for ${job.title} at ${job.company}`}>
+                  <a href={job.url} {...(isMailtoLink(job.url) ? {} : { target: "_blank", rel: "noopener noreferrer" })} aria-label={`Apply for ${job.title} at ${job.company}`}>
                     Apply
                   </a>
+                </Button>
+              ) : messageHref ? (
+                <Button asChild variant="secondary" size="sm">
+                  <Link href={messageHref} aria-label={`Apply for ${job.title} at ${job.company}: message ${job.memberName ?? "the founder"}`}>
+                    Apply
+                  </Link>
                 </Button>
               ) : null}
             </div>

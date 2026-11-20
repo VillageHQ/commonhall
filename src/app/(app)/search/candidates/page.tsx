@@ -43,7 +43,7 @@ function HiringRequest({ page, typedRole, communityName, digestDay }: { page: Fi
       </p>
       <div className="fh-btn-row" style={{ marginTop: 12 }}>
         <Button asChild size="sm" variant="secondary">
-          <Link href={page.hiringAskHref}>Post a hiring request</Link>
+          <Link href={page.hiringAskHref}>Post a hiring request · uses no weekly ask</Link>
         </Button>
       </div>
     </div>

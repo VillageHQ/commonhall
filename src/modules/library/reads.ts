@@ -106,7 +106,8 @@ export type LibraryCard = {
   title: string;
   pitch: string;
   kind: LibraryKind;
-  job: LibraryJob;
+  // Empty when the member didn't say.
+  job: LibraryJob | null;
   visibility: LibraryVisibility;
   author: LibraryMember;
   upvotes: number;
@@ -147,7 +148,7 @@ type CardRow = AuthorRow & {
   title: string;
   pitch: string;
   kind: string;
-  job: string;
+  job: string | null;
   visibility: string;
   featuredAt: Date | null;
   updatedAt: Date;
@@ -161,7 +162,7 @@ function toCard(row: CardRow, viewerId: string): LibraryCard {
     title: row.title,
     pitch: row.pitch,
     kind: row.kind as LibraryKind,
-    job: row.job as LibraryJob,
+    job: row.job as LibraryJob | null,
     visibility: row.visibility as LibraryVisibility,
     author: toAuthor(row),
     upvotes: row.upvotes,

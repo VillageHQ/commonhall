@@ -2,8 +2,9 @@ import { deflateRawSync } from "node:zlib";
 
 import { describe, expect, it } from "vitest";
 
-import { LIBRARY_ERROR_CODES, LIBRARY_LIMITS } from "./contract";
+import { LIBRARY_ERROR_CODES, LIBRARY_KINDS, LIBRARY_LIMITS } from "./contract";
 import { scanTextForSecrets } from "./rules-secrets";
+import { derivePitch, describePastedSecret, guessLibraryKind, scanPastedText, splitShareBox } from "./rules-share";
 import { checkUploads } from "./rules-uploads";
 
 // A minimal zip writer for the tests: stored or deflated entries, CRCs left at zero (the reader doesn't check them).
@@ -107,4 +108,42 @@ describe("checking an upload", () => {
     expect(checkUploads([{ name: "a.txt", bytes: half }, { name: "b.txt", bytes: half }])?.code).toBe(LIBRARY_ERROR_CODES.tooLarge);
     expect(checkUploads([{ name: "prompt.md", bytes: Buffer.from("# A prompt") }, { name: "tool.ts", bytes: Buffer.from("export {}") }])).toBeNull();
   });
+
+describe("the share form's defaults (round 7)", () => {
+  it("takes a lone link in the box as the link, and anything else as the text", () => {
+    expect(splitShareBox("  https://github.com/example/reviewer  ")).toEqual({ text: "", link: "https://github.com/example/reviewer" });
+    expect(splitShareBox("Read https://example.com first")).toEqual({ text: "Read https://example.com first", link: "" });
+  });
+
+  it("guesses the kind from the words, then the files, then what the box holds", () => {
+    const empty = { title: "Reviewer", text: "", link: "", fileNames: [] as string[] };
+    expect(guessLibraryKind({ ...empty, text: "You are a sharp editor." })).toBe(LIBRARY_KINDS.prompt);
+    expect(guessLibraryKind({ ...empty, title: "Our sales MCP connector" })).toBe(LIBRARY_KINDS.toolConnection);
+    expect(guessLibraryKind({ ...empty, title: "Inbox triage agent" })).toBe(LIBRARY_KINDS.agent);
+    expect(guessLibraryKind({ ...empty, fileNames: ["skill/SKILL.md"] })).toBe(LIBRARY_KINDS.skill);
+    expect(guessLibraryKind({ ...empty, fileNames: ["reviewer.zip"] })).toBe(LIBRARY_KINDS.skill);
+    expect(guessLibraryKind({ ...empty, fileNames: ["sync.py"] })).toBe(LIBRARY_KINDS.automation);
+    expect(guessLibraryKind({ ...empty, link: "https://example.com/tool" })).toBe(LIBRARY_KINDS.toolConnection);
+    expect(guessLibraryKind(empty)).toBe(LIBRARY_KINDS.prompt);
+  });
+
+  it("makes the pitch from the paste's first line with words, else the link, the files or the title", () => {
+    const none = { title: "Reviewer", text: null, link: null, fileNames: [] as string[] };
+    expect(derivePitch({ ...none, text: "\n# Score a cold email\nYou are…" })).toBe("Score a cold email");
+    expect(derivePitch({ ...none, text: "x".repeat(400) })).toHaveLength(LIBRARY_LIMITS.pitchLength);
+    expect(derivePitch({ ...none, link: "https://github.com/example/reviewer/" })).toBe("github.com/example/reviewer");
+    expect(derivePitch({ ...none, fileNames: ["a.md", "b.md"] })).toBe("a.md, b.md");
+    expect(derivePitch(none)).toBe("Reviewer");
+  });
+
+  it("scans pasted words like files and names the part and the line", () => {
+    const finding = scanPastedText([
+      { label: "The title", text: "Reviewer" },
+      { label: "The pasted text", text: `Use this:\nOPENAI_API_KEY=${FAKE.ai}` },
+    ]);
+    expect(finding).toMatchObject({ file: "The pasted text", line: 2 });
+    expect(describePastedSecret(finding ?? { file: "", line: 0, what: "" })).toBe("The pasted text, line 2, looks like an AI provider key. Take it out and share again. Nothing was saved.");
+    expect(scanPastedText([{ label: "The pasted text", text: "OPENAI_API_KEY=your-key-here" }])).toBeNull();
+  });
+});
 });

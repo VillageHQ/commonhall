@@ -35,6 +35,9 @@ export const ask = pgTable(
     // Commonhall's "Who are you trying to reach?": a person or a role, and a company. Optional; only asks have them.
     targetText: text("target_text"),
     targetCompany: text("target_company"),
+    // A hiring request made from a job on the board (checked when it posted): it uses no weekly ask. No foreign key,
+    // as this module can't name the job board's table.
+    hiringJobId: uuid("hiring_job_id"),
     listedAt: askTimestamp("listed_at").notNull().defaultNow(),
     closedAt: askTimestamp("closed_at"),
     outcome: text("outcome"),

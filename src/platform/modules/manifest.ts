@@ -7,11 +7,14 @@ export const HOME_FEED_MODULE_ID = "feed";
 export const ASKS_MODULE_ID = "asks";
 export const ASK_DRAFT_PARAM = "draft";
 export const ASK_DRAFT_CATEGORY_PARAM = "category";
+// A hiring request made from a job carries the job: the server checks it, and then the ask uses no weekly ask.
+export const ASK_DRAFT_JOB_PARAM = "job";
 
-// The composer opens filled in; nothing posts until the member sends it. The category is optional.
-export function toAskDraftHref(title: string, extra: { category?: string | null } = {}) {
+// The composer opens filled in; nothing posts until the member sends it. The category and the job are optional.
+export function toAskDraftHref(title: string, extra: { category?: string | null; jobId?: string | null } = {}) {
   const params = new URLSearchParams({ [ASK_DRAFT_PARAM]: title });
   if (extra.category) params.set(ASK_DRAFT_CATEGORY_PARAM, extra.category);
+  if (extra.jobId) params.set(ASK_DRAFT_JOB_PARAM, extra.jobId);
   return `/asks?${params.toString()}`;
 }
 

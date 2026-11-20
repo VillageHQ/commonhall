@@ -55,8 +55,9 @@ export function AsksComposer({ allowance, draft = null, isComposing = false }: C
           kind,
           targetText: isUpdate ? null : String(form.get("target") ?? ""),
           targetCompany: isUpdate ? null : String(form.get("company") ?? ""),
-          // A prefilled hiring request ("Find candidates") carries its category.
+          // A prefilled hiring request ("Find candidates") carries its category and its job.
           ...(draft?.category && !isUpdate ? { category: draft.category } : {}),
+          ...(draft?.hiringJobId && !isUpdate ? { hiringJobId: draft.hiringJobId } : {}),
         },
         createdAskSchema,
       );
@@ -151,6 +152,11 @@ export function AsksComposer({ allowance, draft = null, isComposing = false }: C
             </div>
           </details>
         </>
+      ) : null}
+      {draft?.hiringJobId ? (
+        <p className="fh-small fh-muted" style={{ marginTop: 10 }} data-slot="hiring-free">
+          A hiring request for your job doesn’t use one of your weekly asks.
+        </p>
       ) : null}
       {hasText || isCapUsed ? (
         <p className="fh-small fh-muted" style={{ marginTop: 10 }}>

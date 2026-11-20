@@ -53,7 +53,16 @@ export async function readFindCandidatesPage(database: Database, member: Session
     job: { id: job.id, title: job.title, company: job.company, location: job.location, url: job.url },
     role: readRole(job.title),
     query: buildCandidateQuery(job),
-    hiringAskHref: canAskCommunity ? toAskDraftHref(draftHiringAsk({ ...job, role: typedWords ?? "" }), { category: ASK_CATEGORIES.hire }) : null,
+    hiringAskHref: canAskCommunity ? toAskDraftHref(draftHiringAsk({ ...job, role: typedWords ?? "" }), { category: ASK_CATEGORIES.hire, jobId: job.id }) : null,
   };
+}
+
+// A hiring request's job, checked as the post goes in: listed on the board, and one the member may find candidates for
+// (the same rule as the button). Null otherwise, so the ask can't skip the weekly allowance on someone else's job.
+export async function readCheckedHiringJobId(database: Database, member: SessionMember, jobId: string) {
+  if (!(await isModuleEnabled(database, jobBoardManifest))) return null;
+  const job = await readBoardJob(database, jobId);
+  if (!job) return null;
+  return mayFindCandidates(await readCandidateViewer(database, member), job) ? job.id : null;
 }
 

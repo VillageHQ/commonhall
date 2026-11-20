@@ -31,7 +31,8 @@ export const libraryItem = pgTable(
     title: text("title").notNull(),
     pitch: text("pitch").notNull(),
     kind: text("kind").notNull(),
-    job: text("job").notNull(),
+    // The role it helps with; empty when the member didn't say (round 7: optional).
+    job: text("job"),
     description: text("description"),
     install: text("install"),
     link: text("link"),

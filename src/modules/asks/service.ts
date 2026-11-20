@@ -72,14 +72,22 @@ function inferCategory({ category, targetText, targetCompany, targetLinkedin }: 
   return targetText || targetCompany || targetLinkedin ? ASK_CATEGORIES.intro : ASK_CATEGORIES.advice;
 }
 
-export async function createAsk({ database, member }: RequestContext, body: CreateAskBody, assertAllowance: AllowanceCheck) {
+// `checkedHiringJobId`: a job the caller checked the member may hire for. That ask is a hiring request: it uses no
+// weekly ask (round 7). The body's own hiringJobId is never trusted here.
+export async function createAsk(
+  { database, member }: RequestContext,
+  body: CreateAskBody,
+  assertAllowance: AllowanceCheck,
+  { checkedHiringJobId = null }: { checkedHiringJobId?: string | null } = {},
+) {
   const { title, detail, kind } = body;
   const isAsk = kind === ASK_KINDS.ask;
-  const category = isAsk ? inferCategory(body) : (body.category ?? ASK_CATEGORIES.other);
+  const hiringJobId = isAsk ? checkedHiringJobId : null;
+  const category = hiringJobId ? ASK_CATEGORIES.hire : isAsk ? inferCategory(body) : (body.category ?? ASK_CATEGORIES.other);
   return database.transaction(async (transaction) => {
     await lockMemberAsks(transaction, member.id);
     await assertRoomForAnotherOpenAsk(transaction, member.id, new Date());
-    if (isAsk) await assertAllowance(transaction, member.id);
+    if (isAsk && !hiringJobId) await assertAllowance(transaction, member.id);
     const [created] = await transaction
       .insert(ask)
       .values({
@@ -91,6 +99,7 @@ export async function createAsk({ database, member }: RequestContext, body: Crea
         targetSlug: isAsk ? body.targetLinkedin : null,
         targetText: isAsk ? body.targetText : null,
         targetCompany: isAsk ? body.targetCompany : null,
+        hiringJobId,
       })
       .returning({ id: ask.id });
     if (!created) throw askGoneError();

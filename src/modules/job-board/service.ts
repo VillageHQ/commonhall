@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, count, eq, sql } from "drizzle-orm";
+import { and, asc, count, eq, sql } from "drizzle-orm";
 import type { z } from "zod";
 
 import { isAdminMember } from "@/platform/auth/roles";
@@ -21,7 +21,6 @@ import {
   type addJobBodySchema,
   type hideSourceBodySchema,
   type linkSourceBodySchema,
-  type manualSourceBodySchema,
   type removeJobBodySchema,
 } from "./contract";
 import { detectBoard, describeLinkProblem } from "./rules-feeds";
@@ -104,6 +103,19 @@ function describePull(outcome: PullOutcome) {
   return `Linked. We found ${outcome.count} open ${outcome.count === 1 ? "job" : "jobs"}, and check again every hour.`;
 }
 
+// The company's jobs added by hand move onto its new board's card, so linking never leaves two cards for one company.
+// A pull never touches jobs added by hand, wherever they sit.
+async function foldManualCard(transaction: Transaction, memberId: string, board: SourceRow) {
+  const manualCards = await transaction
+    .select({ id: jobSource.id })
+    .from(jobSource)
+    .where(and(eq(jobSource.memberId, memberId), eq(jobSource.companySlug, board.companySlug), eq(jobSource.tool, MANUAL_TOOL)));
+  for (const { id } of manualCards) {
+    await transaction.update(jobPosting).set({ sourceId: board.id }).where(and(eq(jobPosting.sourceId, id), eq(jobPosting.isManual, true)));
+    await transaction.delete(jobSource).where(eq(jobSource.id, id));
+  }
+}
+
 export async function linkSource(context: RequestContext, body: z.infer<typeof linkSourceBodySchema>) {
   const board = detectBoard(body.link);
   if (!board) throw new RequestError(UNPROCESSABLE_STATUS, JOB_BOARD_ERROR_CODES.notALink, describeLinkProblem(body.link));
@@ -117,32 +129,12 @@ export async function linkSource(context: RequestContext, body: z.infer<typeof l
       .insert(jobSource)
       .values({ memberId: context.member.id, company, companySlug: toCompanySlug(company), tool: board.tool, slug: board.slug, sourceUrl: board.link })
       .returning();
+    if (created) await foldManualCard(transaction, context.member.id, created);
     return created;
   });
   if (!source) throw sourceNotFound();
   const outcome = await pullSource(context.database, context.environment, source);
   return { id: source.id, ok: outcome.ok, message: outcome.ok ? describePull(outcome) : `Linked ${FEED_TOOLS[board.tool].label}, but: ${outcome.error}` };
-}
-
-export async function createManualSource(context: RequestContext, body: z.infer<typeof manualSourceBodySchema>) {
-  const company = await readAllowedCompany(context, body.company);
-  const source = await context.database.transaction(async (transaction) => {
-    await lockMember(transaction, context.member.id);
-    // The same company by hand twice (a second click) is the one already there, never a copy that uses up the limit.
-    const [existing] = await transaction
-      .select({ id: jobSource.id })
-      .from(jobSource)
-      .where(and(eq(jobSource.memberId, context.member.id), eq(jobSource.companySlug, toCompanySlug(company)), eq(jobSource.tool, MANUAL_TOOL)));
-    if (existing) return { ...existing, isNew: false };
-    await assertSourceAllowance(transaction, context.member.id);
-    const [created] = await transaction
-      .insert(jobSource)
-      .values({ memberId: context.member.id, company, companySlug: toCompanySlug(company), tool: MANUAL_TOOL, slug: null })
-      .returning({ id: jobSource.id });
-    return created ? { ...created, isNew: true } : null;
-  });
-  if (!source) throw sourceNotFound();
-  return { id: source.id, message: source.isNew ? `Added ${company}. Now add its jobs.` : `${company} is already here. Add its jobs on its card.` };
 }
 
 function assertPullAllowed(source: SourceRow) {
@@ -181,19 +173,50 @@ export async function removeSource(context: RequestContext, sourceId: string) {
   return { message: `Removed ${source.company} and its jobs.` };
 }
 
+// The card a job typed by hand goes on: the member's card for that company, whichever way it was made (a linked board's
+// card too), or a new by-hand card when there is none. Never a second card for one company.
+async function readOrMakeCompanyCard(transaction: Transaction, memberId: string, company: string) {
+  await lockMember(transaction, memberId);
+  const [existing] = await transaction
+    .select({ id: jobSource.id })
+    .from(jobSource)
+    .where(and(eq(jobSource.memberId, memberId), eq(jobSource.companySlug, toCompanySlug(company))))
+    .orderBy(asc(jobSource.createdAt))
+    .limit(1);
+  if (existing) return existing.id;
+  await assertSourceAllowance(transaction, memberId);
+  const [created] = await transaction
+    .insert(jobSource)
+    .values({ memberId, company, companySlug: toCompanySlug(company), tool: MANUAL_TOOL, slug: null })
+    .returning({ id: jobSource.id });
+  if (!created) throw sourceNotFound();
+  return created.id;
+}
+
+async function readCompanyForNewJob(context: RequestContext, company: string | undefined) {
+  const named = company?.trim() || (await readMemberCompany(context.database, context.member.id)).trim();
+  if (!named) {
+    throw new RequestError(FORBIDDEN_STATUS, JOB_BOARD_ERROR_CODES.companyMissing, "Add your company to your card first. Then you can share its jobs here.");
+  }
+  return readAllowedCompany(context, named);
+}
+
+// "Add a job": on a card the member made (sourceId), or on their own company's one card.
 export async function addManualJob(context: RequestContext, body: z.infer<typeof addJobBodySchema>) {
-  const { source } = await readOwnSource(context, body.sourceId, { adminToo: false });
+  const ownSource = body.sourceId ? (await readOwnSource(context, body.sourceId, { adminToo: false })).source : null;
+  const company = ownSource ? null : await readCompanyForNewJob(context, body.company);
   await context.database.transaction(async (transaction) => {
-    await transaction.select({ id: jobSource.id }).from(jobSource).where(eq(jobSource.id, source.id)).for("no key update");
+    const sourceId = ownSource?.id ?? (await readOrMakeCompanyCard(transaction, context.member.id, company ?? ""));
+    await transaction.select({ id: jobSource.id }).from(jobSource).where(eq(jobSource.id, sourceId)).for("no key update");
     const [row] = await transaction
       .select({ total: count() })
       .from(jobPosting)
-      .where(and(eq(jobPosting.sourceId, source.id), eq(jobPosting.isManual, true)));
+      .where(and(eq(jobPosting.sourceId, sourceId), eq(jobPosting.isManual, true)));
     if ((row?.total ?? 0) >= JOB_BOARD_LIMITS.manualJobsPerSource) {
       throw new RequestError(CONFLICT_STATUS, JOB_BOARD_ERROR_CODES.manualLimit, `You can add up to ${JOB_BOARD_LIMITS.manualJobsPerSource} jobs by hand here. Remove one first.`);
     }
     await transaction.insert(jobPosting).values({
-      sourceId: source.id,
+      sourceId,
       externalId: `manual-${crypto.randomUUID()}`,
       title: body.title,
       location: body.location,
@@ -202,7 +225,7 @@ export async function addManualJob(context: RequestContext, body: z.infer<typeof
       isManual: true,
     });
   });
-  return { message: `Added "${body.title}".` };
+  return { message: `Added "${body.title}". It's on the job board now.` };
 }
 
 export async function removeManualJob(context: RequestContext, body: z.infer<typeof removeJobBodySchema>) {

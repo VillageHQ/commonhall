@@ -76,6 +76,7 @@ export function toSlackAskBody(words: string): CreateAskBody {
     targetText: null,
     targetCompany: null,
     targetLinkedin: null,
+    hiringJobId: null,
   };
 }
 

@@ -17,7 +17,6 @@ import { POST as postAddJob } from "@/app/api/job-board/jobs/add/route";
 import { POST as postRemoveJob } from "@/app/api/job-board/jobs/remove/route";
 import { POST as postHide } from "@/app/api/job-board/sources/hide/route";
 import { POST as postLink } from "@/app/api/job-board/sources/link/route";
-import { POST as postManual } from "@/app/api/job-board/sources/manual/route";
 import { POST as postPull } from "@/app/api/job-board/sources/pull/route";
 import { POST as postRemove } from "@/app/api/job-board/sources/remove/route";
 import { GET as getWidgetScript } from "@/app/api/job-board/widget.js/route";
@@ -25,7 +24,7 @@ import { POST as postDirectory } from "@/app/api/members/directory/route";
 import PublicJobsPage from "@/app/public/board/page";
 import { FEED_TOOLS, JOB_BOARD_LIMITS, type FeedTool } from "@/modules/job-board/contract";
 import { jobBoardManifest } from "@/modules/job-board/manifest";
-import { readAllSources, readBoardCompanies, readBoardJobs, readMemberSources } from "@/modules/job-board/reads";
+import { readAllSources, readBoardCompanies, readBoardJobs, readMemberSources, readSourceJobs } from "@/modules/job-board/reads";
 import { readCompanyJobs, readNewJobs } from "@/modules/job-board/reads-hiring";
 import type { Directory } from "@/modules/members/contract-profile";
 import { detectBoard, parseFeed, TOOL_READERS } from "@/modules/job-board/rules-feeds";
@@ -278,9 +277,7 @@ describe("the job board", () => {
 
   it("filters every board by company", async () => {
     await linkGreenhouse();
-    const manual = await call(postManual, other, { company: "Ledgerline" });
-    const { id } = (await manual.json()) as { id: string };
-    await call(postAddJob, other, { sourceId: id, title: "Founding designer", location: "London", url: "https://ledgerline.example/jobs/1" });
+    await call(postAddJob, other, { title: "Founding designer", location: "London", url: "https://ledgerline.example/jobs/1" });
     await call(postPublicSwitch, admin, { isPublic: true });
 
     expect((await readBoardCompanies(database)).map(({ name, jobCount }) => [name, jobCount])).toEqual([
@@ -378,37 +375,54 @@ describe("the job board", () => {
   });
 
   it("removes only hand-added jobs, and only the founder's", async () => {
-    const manual = (await (await call(postManual, founder, { company: "Stripe Example" })).json()) as { id: string };
-    await call(postAddJob, founder, { sourceId: manual.id, title: "Founding designer", url: "https://ledgerline.example/jobs/1" });
+    await call(postAddJob, founder, { title: "Founding designer", url: "https://ledgerline.example/jobs/1" });
+    const [manual] = await readMemberSources(database, founder.userId);
     const [job] = await readBoardJobs(database, null);
-    if (!job) throw new Error("no job");
+    if (!job || !manual) throw new Error("no job");
 
     expect((await call(postRemoveJob, other, { sourceId: manual.id, jobId: job.id })).status).toBe(404);
     expect((await call(postRemoveJob, founder, { sourceId: manual.id, jobId: job.id })).status).toBe(200);
     expect(await readBoardJobs(database, null)).toEqual([]);
   });
 
-  it("refuses a hand-added job whose link isn't a web address", async () => {
-    const manual = (await (await call(postManual, founder, { company: "Stripe Example" })).json()) as { id: string };
+  it("refuses a hand-added job whose link is neither a web address nor an email", async () => {
+    expect((await call(postAddJob, founder, { title: "Designer", url: "javascript:alert(1)" })).status).toBe(422);
+    expect((await call(postAddJob, founder, { title: "Designer", url: "mailto:someone@example.com" })).status).toBe(422);
+  });
 
-    expect((await call(postAddJob, founder, { sourceId: manual.id, title: "Designer", url: "javascript:alert(1)" })).status).toBe(422);
+  // Round 7: the apply link is optional. An email works; with nothing, Apply on the members' board messages the founder.
+  it("takes a job with no link, or an email, as the apply target", async () => {
+    expect((await call(postAddJob, founder, { title: "Founding engineer", location: "Boston" })).status).toBe(200);
+    expect((await call(postAddJob, founder, { title: "Head of sales", url: " jobs@stripe-example.test " })).status).toBe(200);
+
+    const jobs = await readBoardJobs(database, null);
+    expect(Object.fromEntries(jobs.map(({ title, url }) => [title, url]))).toEqual({ "Founding engineer": "", "Head of sales": "mailto:jobs@stripe-example.test" });
+    expect(jobs.every(({ memberId }) => memberId === founder.userId)).toBe(true);
   });
 
   it(`stops at ${JOB_BOARD_LIMITS.sourcesPerMember} sources a member`, async () => {
-    for (let index = 0; index < JOB_BOARD_LIMITS.sourcesPerMember; index += 1) await call(postManual, admin, { company: `Example ${index}` });
+    for (let index = 0; index < JOB_BOARD_LIMITS.sourcesPerMember; index += 1) await call(postAddJob, admin, { company: `Example ${index}`, title: "Engineer" });
 
-    expect((await call(postManual, admin, { company: "Example extra" })).status).toBe(409);
+    expect((await call(postAddJob, admin, { company: "Example extra", title: "Engineer" })).status).toBe(409);
+    expect((await call(postAddJob, admin, { company: "Example 0", title: "Designer" })).status).toBe(200);
   });
 
-  // "Add the jobs by hand instead", clicked twice: the second click finds the company already there, so no copy uses
-  // up the member's limit.
-  it("adds a company by hand once, however often it is asked", async () => {
-    const first = (await (await call(postManual, founder, { company: "Stripe Example" })).json()) as { id: string; message: string };
-    const second = (await (await call(postManual, founder, { company: "stripe example " })).json()) as { id: string; message: string };
-
-    expect(second.id).toBe(first.id);
-    expect(second.message).toBe("Stripe Example is already here. Add its jobs on its card.");
+  // Round 7: "Add a job" never makes a second card for one company, whether the card was made by hand or by linking a
+  // board; and linking a board moves the jobs added by hand onto its card.
+  it("keeps one card per company, whichever way the jobs came", async () => {
+    await call(postAddJob, founder, { title: "Founding designer" });
+    await call(postAddJob, founder, { title: "Founding engineer" });
     expect(await database.select().from(jobSource)).toHaveLength(1);
+
+    const { source } = await linkGreenhouse();
+    const sources = await readMemberSources(database, founder.userId);
+    expect(sources.map(({ id }) => id)).toEqual([source.id]);
+    await call(postAddJob, founder, { title: "Head of sales" });
+    expect(await database.select().from(jobSource)).toHaveLength(1);
+
+    const jobs = await readSourceJobs(database, [source.id]);
+    expect((jobs.get(source.id) ?? []).filter(({ isManual }) => isManual).map(({ title }) => title).sort()).toEqual(["Founding designer", "Founding engineer", "Head of sales"]);
+    expect(await readBoardJobs(database, null)).toHaveLength(6);
   });
 
   it("takes each careers link once, so no job shows twice, even after two quick clicks", async () => {
@@ -429,17 +443,17 @@ describe("the job board", () => {
     const elsewhere = await call(postLink, founder, { company: "Gridwise", link: "https://boards.greenhouse.io/ok-gridwise" });
     expect(elsewhere.status).toBe(403);
     expect(await elsewhere.json()).toMatchObject({ code: "job_company_not_yours", message: expect.stringContaining("Stripe Example") });
-    expect((await call(postManual, founder, { company: "Gridwise" })).status).toBe(403);
+    expect((await call(postAddJob, founder, { company: "Gridwise", title: "Engineer" })).status).toBe(403);
     expect((await call(postLink, founder, { company: "  stripe   EXAMPLE ", link: "https://boards.greenhouse.io/ok-own" })).status).toBe(200);
     expect((await readMemberSources(database, founder.userId)).map(({ company }) => company)).toEqual(["Stripe Example"]);
 
     await database.update(memberProfile).set({ company: null }).where(eq(memberProfile.userId, other.userId));
-    const noCompany = await call(postManual, other, { company: "Ledgerline" });
+    const noCompany = await call(postAddJob, other, { title: "Engineer" });
     expect(noCompany.status).toBe(403);
     expect(await noCompany.json()).toMatchObject({ code: "job_company_missing" });
 
     expect((await call(postLink, admin, { company: "Gridwise", link: "https://boards.greenhouse.io/ok-gridwise" })).status).toBe(200);
-    expect((await call(postManual, admin, { company: "Tallyhealth" })).status).toBe(200);
+    expect((await call(postAddJob, admin, { company: "Tallyhealth", title: "Engineer" })).status).toBe(200);
   });
 
   it("takes a banned founder's jobs off every board", async () => {
@@ -534,9 +548,7 @@ describe("the job board", () => {
     const [first] = await database.select({ id: jobPosting.id }).from(jobPosting).where(eq(jobPosting.sourceId, source.id)).limit(1);
     await database.update(jobPosting).set({ postedAt: new Date(Date.now() - 30 * DAY_MS), firstSeenAt: new Date(Date.now() - 30 * DAY_MS) }).where(eq(jobPosting.sourceId, source.id));
     await database.update(jobPosting).set({ postedAt: null, firstSeenAt: new Date(Date.now() - 2 * DAY_MS) }).where(eq(jobPosting.id, first?.id ?? ""));
-    const manual = await call(postManual, other, { company: "Ledgerline" });
-    const { id } = (await manual.json()) as { id: string };
-    await call(postAddJob, other, { sourceId: id, title: "Founding designer", location: "London", url: "https://ledgerline.example/jobs/1" });
+    await call(postAddJob, other, { title: "Founding designer", location: "London", url: "https://ledgerline.example/jobs/1" });
 
     const newJobs = await readNewJobs(database);
     expect(newJobs.total).toBe(2);

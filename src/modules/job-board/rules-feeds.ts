@@ -369,8 +369,8 @@ export function parseFeed(tool: string, body: string, slug: string) {
 
 export function describeLinkProblem(raw: string) {
   if (isJobvitePage(raw)) {
-    return "Jobvite has a public feed only when the company switches it on (Jobvite › Careers › XML feed). Paste that feed link, or add your jobs by hand.";
+    return "Jobvite has a public feed only when the company switches it on (Jobvite › Careers › XML feed). Paste that feed link, or type your jobs into “Add a job”.";
   }
   const tools = Object.values(FEED_TOOLS).map(({ label }) => label);
-  return `We couldn't find a job board in that link. Paste the careers link from ${tools.slice(0, -1).join(", ")} or ${tools.at(-1) ?? ""}, or add your jobs by hand.`;
+  return `We couldn't find a job board in that link. Paste the careers link from ${tools.slice(0, -1).join(", ")} or ${tools.at(-1) ?? ""}, or type your jobs into “Add a job”.`;
 }

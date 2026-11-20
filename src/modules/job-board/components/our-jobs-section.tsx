@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Pill } from "@/components/ui/pill";
 import { toPossessive } from "@/platform/text/day-month";
+import { ROUTES } from "@/platform/http/routes";
 import { formatDayMonthTimeUtc } from "@/platform/text/format-date";
 
 import { JOB_BOARD_LIMITS, JOB_BOARD_PAGES, type JobSourceView, type SourceJob } from "../contract";
@@ -18,9 +19,7 @@ function plural(count: number, one: string) {
 }
 
 function SourceStatus({ source }: { source: JobSourceView }) {
-  if (!source.slug) {
-    return <p className="fh-small fh-muted mt-2">{`${source.toolLabel} has no public job feed here, so jobs here are the ones you add by hand.`}</p>;
-  }
+  if (!source.slug) return <p className="fh-small fh-muted mt-2">Jobs you add with “Add a job”.</p>;
   const when = source.lastPulledAt ? `${source.lastError ? "Last tried" : "Last pulled"} ${formatDayMonthTimeUtc(source.lastPulledAt)}` : "Not pulled yet";
   return (
     <>
@@ -95,7 +94,6 @@ function SourceBlock({ source, jobs }: { source: JobSourceView; jobs: readonly S
           And {(jobs.length - shown.length).toLocaleString("en-US")} more on <Link href={JOB_BOARD_PAGES.board}>the board</Link>.
         </p>
       ) : null}
-      {source.slug ? null : <AddJobForm sourceId={source.id} isOpen={jobs.length === 0} />}
       <div className="mt-3">
         <SourceActions sourceId={source.id} company={source.company} hidden={source.hidden} canPull={source.slug !== null} canToggleHidden={!isLockedByAdmin} canRemove />
       </div>
@@ -112,11 +110,12 @@ type OurJobsSectionProps = {
   isPublicBoardOn: boolean;
 };
 
-// Commonhall's "Our jobs" sheet on My profile (ourJobsSection): the line, each linked company, then the form to link
-// one (folded under "Add another company or board" once one is linked). Its anchor is #jobs.
+// Commonhall's "Our jobs" sheet on My profile (ourJobsSection), round 7: the line, each company's card, then
+// "Add a job" (title, place, an optional link or email) and, second, "Already on Greenhouse, Lever…? Paste your careers
+// link". Its anchor is #jobs.
 export function OurJobsSection({ sources, jobsBySource, company, isCompanyFixed, communityName, isPublicBoardOn }: OurJobsSectionProps) {
-  const canAddMore = sources.length < JOB_BOARD_LIMITS.sourcesPerMember;
-  const form = <LinkSourceForm defaultCompany={company} isCompanyFixed={isCompanyFixed} />;
+  const canLinkMore = sources.length < JOB_BOARD_LIMITS.sourcesPerMember;
+  const hasNoCompany = isCompanyFixed && company.trim() === "";
   return (
     <section className="fh-sheet fh-section" id="jobs" aria-labelledby="our-jobs-title">
       <div className="fh-sheet-head">
@@ -125,21 +124,28 @@ export function OurJobsSection({ sources, jobsBySource, company, isCompanyFixed,
         </h2>
         <Link href={JOB_BOARD_PAGES.board}>The job board</Link>
       </div>
-      <p className="fh-small">
-        {`Hiring? Members see your open jobs on ${toPossessive(communityName)} job board${isPublicBoardOn ? ", and so does its public jobs page" : ""}. People apply on your own job pages.`}
-      </p>
+      <p className="fh-small">{`Hiring? Members see your open jobs on ${toPossessive(communityName)} job board${isPublicBoardOn ? ", and so does its public jobs page" : ""}.`}</p>
       {sources.map((source) => (
         <SourceBlock key={source.id} source={source} jobs={jobsBySource.get(source.id) ?? []} />
       ))}
-      {!canAddMore ? (
-        <p className="fh-small fh-muted mt-4">{`You’ve linked ${JOB_BOARD_LIMITS.sourcesPerMember} companies or boards, the most one member can. Remove one to link another.`}</p>
-      ) : sources.length > 0 ? (
-        <details className="fh-fix mt-4">
-          <summary className="fh-small cursor-pointer">Add another company or board</summary>
-          <div className="mt-3">{form}</div>
-        </details>
+      {hasNoCompany ? (
+        <p className="fh-small mt-3">
+          Add your company to <Link href={ROUTES.editCard}>your card</Link> first. Then you can share its jobs here.
+        </p>
       ) : (
-        <div className="mt-3">{form}</div>
+        <>
+          <div className="fh-jobsource mt-4">
+            <AddJobForm defaultCompany={company} isCompanyFixed={isCompanyFixed} />
+          </div>
+          {canLinkMore ? (
+            <details className="fh-fix mt-4">
+              <summary className="fh-small cursor-pointer">Already on Greenhouse, Lever…? Paste your careers link</summary>
+              <LinkSourceForm defaultCompany={company} isCompanyFixed={isCompanyFixed} />
+            </details>
+          ) : (
+            <p className="fh-small fh-muted mt-4">{`You’ve linked ${JOB_BOARD_LIMITS.sourcesPerMember} companies or boards, the most one member can. Remove one to link another.`}</p>
+          )}
+        </>
       )}
     </section>
   );
