@@ -158,3 +158,9 @@ nobody (Notify is off the first time).
   (the receipts fix above). Following no longer matters.
 - **An invite-only room still live, or scheduled, when the change ships:** it keeps alerting only its invited, and
   a scheduled room its saved audience.
+
+## Decisions (council pass, 20 Nov 2026 — Rams, Torvalds, Watts, 3 of 3)
+- No title box: one tap starts the room with an automatic name (e.g. "Absi's room"); the host can rename it inside the room.
+- "Everyone" = every active member. Keep the 3-a-day host limit.
+- A member hidden from the directory may start a room that alerts everyone with their name (the room card already shows the host to all members).
+- NOT in this round (owner decision needed, data deletion): deleting old notify-choice / saved-audience / follow data. Stop using it; keep the data.

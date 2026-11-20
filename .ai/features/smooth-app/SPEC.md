@@ -144,3 +144,8 @@ anything, or the owner still calls tab switching slow, or the web tab bar moving
 
 ## Out of scope
 Native Today or Rooms screens; changes to the web's look in a browser; offline mode; a lighter first load.
+
+## Decisions (council pass, 20 Nov 2026 — Rams, Torvalds, Watts, 3 of 3)
+- Path A only now (instant tab feedback, loading screens, bounce/momentum/blur fixes). Do NOT turn on the experimental Next.js tab cache. Part D (native tab bar) waits for the owner's phone test of TestFlight 4.
+- Remove pull-to-refresh; Reload stays in the menu.
+- Kill criterion: owner says taps still feel slow on TestFlight 4 -> build Part D.

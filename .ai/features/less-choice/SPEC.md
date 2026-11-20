@@ -139,3 +139,9 @@ below today's. Anything that fails goes back to its part once; after that it bec
   pointed to on asks.
 - **An admin on a phone only:** the guided start, invites and the report tile all work at 390 px (Part 4's checks run
   on a phone too).
+
+## Decisions (council pass, 20 Nov 2026 — Rams, Torvalds, Watts, 3 of 3)
+- "I can help" note becomes private to the asker: yes.
+- Network search on Enter: no; one tap offers it when no member matches.
+- "Let through" off by default for NEW members only.
+- NOT in this round (owner decision needed: security/privacy): founders from an invite link skipping the second confirm; Copy returning the same invite link (storing the token); merging My network consent with Privacy's intro switch. Keep today's behaviour.
