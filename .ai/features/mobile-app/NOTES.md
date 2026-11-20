@@ -102,7 +102,8 @@ TestFlight internal testing and Android test APKs only: never a public release, 
 - The project archive EAS uploads is the whole repo (about 330 MB), because `mobile/` sits inside it.
 
 - **Builds so far:** iOS build 1 and an APK (19 Nov 2026, round 5); iOS build 2 and an APK (20 Nov 2026, round 6:
-  the five tabs, Notify others, quiet times). The Absi group has every build, so a processed build reaches it on its own.
+  the five tabs, Notify others, quiet times); iOS build 3 and an APK (20 Nov 2026: the room hand-off, so the room page
+  learns you left and the app learns you already told people; check in `reports/build3/`). The Absi group has every build, so a processed build reaches it on its own.
 - On Windows, `npx eas-cli` inside `mobile/` can fail with npm's "Invalid Version"; run it from another folder, or
   call the cached copy (`node <npx cache>/node_modules/eas-cli/bin/run …`) from `mobile/`, without `NODE_ENV` set.
 
