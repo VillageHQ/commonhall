@@ -242,3 +242,11 @@ fewer confusion points and fewer words per screen.
    leaves the tabs either way). Switching it off by default is the owner's call.
 3. Rooms on by default: fresh installs whose installer made a voice server get Rooms on; existing installs keep
    their setting, so nothing switches on silently. My pick: yes.
+
+## Decisions (council pass, 20 Nov 2026)
+- **Opening screen:** the app opens on **Today** every time (never switches by time of day). When a room is live, the
+  top of Today is a full-width "Live now" card with a one-tap **Join**; when nothing is live, the strip is hidden (no
+  placeholder). Rooms stays the **first tab**. Kill criterion: if the re-run study shows more than 3 of 12 personas still
+  miss a live room from Today, revisit (open on Rooms when live).
+- **Feed:** off by default for **new** communities; admins can turn it on (then it sits in the avatar menu). Existing
+  communities keep their current setting.
