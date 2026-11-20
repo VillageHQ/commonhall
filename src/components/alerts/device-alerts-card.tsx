@@ -10,13 +10,13 @@ import { isInNativeApp, subscribeToNativeApp } from "@/platform/native-app/bridg
 import { DEVICE_STATES, readDeviceState, sendTestAlert, turnOffAlerts, turnOnAlerts, type DeviceState } from "./push-client";
 
 const STATE_WORDS: Record<DeviceState, string> = {
-  unsupported: "This browser can’t show alerts. Try Chrome, Edge, Firefox or Safari.",
-  needs_install: "On iPhone and iPad, alerts work once the app is on your home screen: tap Share, then Add to Home Screen, and open it from there.",
-  blocked: "Alerts are blocked for this site in your browser’s settings. Allow them there, then come back.",
-  off: "Alerts are off on this device.",
-  on: "Alerts are on for this device.",
+  unsupported: "This browser can’t show alerts.",
+  needs_install: "On iPhone, add this app to your home screen first: Share › Add to Home Screen.",
+  blocked: "Alerts are blocked in this browser’s settings.",
+  off: "Off on this device.",
+  on: "On for this device.",
 };
-const IN_APP_WORDS = "In the Commonhall app, this phone’s alerts come from the app: allow them when it asks, or in the phone’s settings.";
+const IN_APP_WORDS = "This phone’s alerts come from the app.";
 
 // "This device": turn alerts on (the only place the browser asks for permission), off, or send a test.
 // `isPaused`: the member switched Alerts off below, so this device gets nothing even while subscribed.
@@ -69,26 +69,26 @@ export function DeviceAlertsCard({ vapidPublicKey, isPaused }: { vapidPublicKey:
       </h2>
       <p className="fh-small fh-muted mt-1" role="status">
         {isApp ? IN_APP_WORDS : state ? STATE_WORDS[state] : "Checking this device…"}
-        {(isApp || state === DEVICE_STATES.on) && isPaused ? " Alerts are switched off below, so nothing comes until you switch them back on." : null}
+        {(isApp || state === DEVICE_STATES.on) && isPaused ? " All alerts are off below." : null}
       </p>
-      <div className="fh-btn-row mt-3">
+      <div className="fh-btn-row mt-3 empty:hidden">
         {isApp ? (
           <Button type="button" variant="primary" size="sm" disabled={test.isPending} onClick={() => once(() => test.mutate())}>
-            Send a test alert
+            Send a test
           </Button>
         ) : null}
         {!isApp && state === DEVICE_STATES.off ? (
           <Button type="button" variant="primary" size="sm" disabled={change.isPending} onClick={() => once(() => change.mutate(true))}>
-            {change.isPending ? "Turning on…" : "Turn on alerts"}
+            {change.isPending ? "Turning on…" : "Turn on"}
           </Button>
         ) : null}
         {!isApp && state === DEVICE_STATES.on ? (
           <>
             <Button type="button" variant="primary" size="sm" disabled={test.isPending} onClick={() => once(() => test.mutate())}>
-              Send a test alert
+              Send a test
             </Button>
             <Button type="button" variant="outline" size="sm" disabled={change.isPending} onClick={() => once(() => change.mutate(false))}>
-              Turn off on this device
+              Turn off
             </Button>
           </>
         ) : null}

@@ -188,22 +188,20 @@ export const TOUR_STEPS: readonly TourStep[] = [
   {
     id: "alerts",
     label: "Alerts",
-    caption: "Alerts on your phone and computer, from the app you install. Pick what alerts you, mute people, set quiet hours.",
+    caption: "Alerts on your phone and computer. Pause them for an hour, or keep working hours quiet.",
     start: "/me/alerts",
     still: "/me/alerts?quiet=1",
     async settle(hands) {
-      await hands.show("form[aria-label='Alert settings'] fieldset h3:nth-of-type(2)", "[role='group'][aria-label='Days']");
+      await hands.show("[data-testid='pause-card']", "[data-testid='quiet-times']");
     },
     async play(hands) {
       await hands.wait(500);
-      await hands.point("#alert-kind-voice_broadcast");
+      await hands.point("[data-testid='pause-card'] button");
       await hands.wait(1100);
-      // The switch only changes the screen; Save would send, so the tour only presses it.
-      await hands.click("#quiet-on");
-      await hands.wait(700);
-      await hands.point("[role='group'][aria-label='Days']");
-      await hands.wait(1300);
-      await hands.tap("form[aria-label='Alert settings'] button[type='submit']");
+      // A preset saves at once; the tour's requests never leave the page, so it only shows the new quiet time.
+      await hands.click("[role='group'][aria-label='Add a quiet time'] button");
+      await hands.wait(900);
+      await hands.point("#let-direct-through");
       await hands.wait(1800);
     },
   },

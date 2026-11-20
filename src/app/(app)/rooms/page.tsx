@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { AlertsBell } from "@/components/alerts/alerts-bell";
 import { PageHeader } from "@/components/page-header";
 import { RoomsBoard } from "@/modules/voice/components/rooms-board";
 import { VOICE_PAGE_TITLE } from "@/modules/voice/contract";
@@ -18,6 +19,7 @@ export default modulePage(voiceManifest, async function RoomsPage() {
   return (
     <>
       <PageHeader title="Rooms" description="Talk live with your community: drop into a room, or say you're free to talk. Rooms are never recorded." />
+      <AlertsBell memberId={member.id} />
       <RoomsBoard initial={initial} viewerId={member.id} />
     </>
   );

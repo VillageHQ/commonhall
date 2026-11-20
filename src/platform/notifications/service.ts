@@ -4,12 +4,15 @@ import { user } from "../database/auth-schema.ts";
 import type { Database } from "../database/client.ts";
 import type { Environment } from "../environment.ts";
 import { RequestError } from "../http/request-error.ts";
-import { DEVICE_TYPES, type AlertPreferences, type RegisterDeviceBody } from "./contract.ts";
+import { DEFAULT_TIME_ZONE, DEVICE_TYPES, PAUSE_CHOICES, type AlertPreferences, type PauseBody, type RegisterDeviceBody } from "./contract.ts";
 import { isAllowedPushEndpoint } from "./push-hosts.ts";
-import { notificationDevice, notificationMute, notificationPreference } from "./schema.ts";
+import { readLocalMoment } from "./rules.ts";
+import { notificationDevice, notificationMute, notificationPreference, notificationQuietTime } from "./schema.ts";
 
 const NOT_FOUND_STATUS = 404;
 const UNPROCESSABLE_STATUS = 422;
+const HOUR_MS = 60 * 60_000;
+const PAUSE_TOMORROW_AT = "08:00";
 
 // A device registers once per browser or phone. Registering again (a new sign-in on that device) moves it to the
 // member signed in now, so alerts never reach the previous one.
@@ -31,22 +34,49 @@ export async function forgetDevice(database: Database, userId: string, address: 
   await database.delete(notificationDevice).where(and(eq(notificationDevice.address, address), eq(notificationDevice.userId, userId)));
 }
 
+// The choices and the quiet times (the schema allows at most 3) replace what was saved, in one transaction. A pause
+// stays as it is.
 export async function savePreferences(database: Database, userId: string, preferences: AlertPreferences) {
-  const { quietHours } = preferences;
   const values = {
     isOn: preferences.isOn,
     offKinds: [...new Set(preferences.offKinds)],
-    quietIsOn: quietHours.isOn,
-    quietFrom: quietHours.from,
-    quietTo: quietHours.to,
-    quietDays: [...new Set(quietHours.days)].toSorted(),
-    timeZone: quietHours.timeZone,
+    timeZone: preferences.timeZone,
+    letDirectThrough: preferences.letDirectThrough,
     updatedAt: new Date(),
   };
+  await database.transaction(async (transaction) => {
+    await transaction
+      .insert(notificationPreference)
+      .values({ userId, ...values })
+      .onConflictDoUpdate({ target: notificationPreference.userId, set: values });
+    await transaction.delete(notificationQuietTime).where(eq(notificationQuietTime.userId, userId));
+    if (preferences.quietTimes.length === 0) return;
+    await transaction.insert(notificationQuietTime).values(
+      preferences.quietTimes.map(({ from, to, allDay, days }, index) => ({
+        userId,
+        from,
+        to,
+        allDay,
+        days: [...new Set(days)].toSorted(),
+        // One millisecond apart, so they read back in the order given.
+        createdAt: new Date(values.updatedAt.getTime() + index),
+      })),
+    );
+  });
+}
+
+// Pause for an hour, until 08:00 tomorrow in the member's time zone, or resume (null). The browser's zone fills the
+// member's while it is still the default, as a first save does.
+export async function pauseAlerts(database: Database, userId: string, { until, timeZone: browserZone }: PauseBody, now: Date) {
+  const [row] = await database.select({ timeZone: notificationPreference.timeZone }).from(notificationPreference).where(eq(notificationPreference.userId, userId));
+  const savedZone = row?.timeZone ?? DEFAULT_TIME_ZONE;
+  const timeZone = savedZone === DEFAULT_TIME_ZONE && browserZone ? browserZone : savedZone;
+  const pausedUntil = until === PAUSE_CHOICES.hour ? new Date(now.getTime() + HOUR_MS) : until === PAUSE_CHOICES.tomorrow ? readLocalMoment(now, timeZone, 1, PAUSE_TOMORROW_AT) : null;
   await database
     .insert(notificationPreference)
-    .values({ userId, ...values })
-    .onConflictDoUpdate({ target: notificationPreference.userId, set: values });
+    .values({ userId, pausedUntil, timeZone, updatedAt: now })
+    .onConflictDoUpdate({ target: notificationPreference.userId, set: { pausedUntil, timeZone, updatedAt: now } });
+  return pausedUntil;
 }
 
 export async function setMute(database: Database, userId: string, mutedUserId: string, isMuted: boolean) {

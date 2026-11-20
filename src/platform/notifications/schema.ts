@@ -24,7 +24,9 @@ export const notificationDevice = pgTable(
   (table) => [index("notification_device_user_idx").on(table.userId), check("notification_device_type", sql`${table.type} in ('webpush', 'expo')`)],
 );
 
-// A member's choices. No row means alerts on, every kind, no quiet hours.
+// A member's choices. No row means alerts on, every kind, no quiet times, no pause. The `quiet_*` columns held the
+// single quiet window before several quiet times (notification_quiet_time); nothing reads them now, and a later
+// release drops them, so a revert loses nothing.
 export const notificationPreference = pgTable("notification_preference", {
   userId: text("user_id")
     .primaryKey()
@@ -40,8 +42,30 @@ export const notificationPreference = pgTable("notification_preference", {
     .notNull()
     .default(sql.raw(`'{${ALL_DAYS.join(",")}}'::integer[]`)),
   timeZone: text("time_zone").notNull().default("UTC"),
+  // A pause holds back every alert until then.
+  pausedUntil: timestamp("paused_until", { withTimezone: true }),
+  // During quiet times, alerts sent straight to the member still come.
+  letDirectThrough: boolean("let_direct_through").notNull().default(true),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+// A time the portfolio stays quiet for a member (at most 3, contract.ts): from–to on its days, or all day on them, in
+// the member's time zone (notification_preference.time_zone).
+export const notificationQuietTime = pgTable(
+  "notification_quiet_time",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    from: text("from").notNull(),
+    to: text("to").notNull(),
+    allDay: boolean("all_day").notNull().default(false),
+    days: integer("days").array().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("notification_quiet_time_user_idx").on(table.userId)],
+);
 
 // "Don't alert me when this person broadcasts." Other kinds from them still come.
 export const notificationMute = pgTable(

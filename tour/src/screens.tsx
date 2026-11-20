@@ -8,6 +8,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { AlertSettingsForm } from "@/components/alerts/alert-settings-form";
 import { DeviceAlertsCard } from "@/components/alerts/device-alerts-card";
 import { MutedPeople } from "@/components/alerts/muted-people";
+import { PauseCard } from "@/components/alerts/pause-card";
 import { BackLink, PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { LibraryBrowse } from "@/modules/library/components/library-browse";
@@ -139,7 +140,7 @@ function RoomPage() {
   );
 }
 
-// src/app/(app)/me/alerts/page.tsx. `?quiet=1`: quiet hours on (the step's end state).
+// src/app/(app)/me/alerts/page.tsx. `?quiet=1`: Working hours added (the step's end state).
 function AlertsPage() {
   const isQuietOn = useSearchParams().get("quiet") === "1";
   return (
@@ -147,11 +148,11 @@ function AlertsPage() {
       <BackLink href={ROUTES.editCard}>My profile</BackLink>
       <header data-slot="page-header" className="fh-pagehead">
         <h1 className="fh-h1">Alerts</h1>
-        <p className="fh-lede">What {COMMUNITY_NAME} alerts you to on your phone and computer, and when it stays quiet.</p>
       </header>
       <div className="grid max-w-[720px] gap-4">
         <DeviceAlertsCard vapidPublicKey="" isPaused={false} />
-        <AlertSettingsForm key={String(isQuietOn)} preferences={readAlertPreferences(isQuietOn)} kinds={ALERT_KINDS} isSaved />
+        <PauseCard pausedUntil={null} timeZone="America/New_York" />
+        <AlertSettingsForm key={String(isQuietOn)} preferences={readAlertPreferences(isQuietOn)} kinds={ALERT_KINDS} />
         <MutedPeople muted={ALERT_MUTED} members={ALERT_MEMBERS} />
       </div>
     </>
