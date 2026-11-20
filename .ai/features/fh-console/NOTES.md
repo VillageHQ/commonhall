@@ -37,3 +37,26 @@ anything else reads as this quarter.
 - The profile fill-in consent on Invites is community-wide in Community, not per invite.
 - Manage actions still confirm in a dialog (the confirm component is shared with other screens).
 - The phone foot keeps a "Job board" link (Commonhall's console has no phone path to it).
+
+## Round 6: six areas, tabs on the old addresses (simplify-round6, part 5)
+The menu is Home · Members · Asks & intros · Announce · Report · Set up. A merged area is a row of tabs
+(`src/shell/admin-tabs.tsx`, `ADMIN_AREAS`) across its pages' own addresses, so no bookmark breaks: Members
+(`/admin/members`, `/invites`, `/import`, `/links`, `/calls`), Asks & intros (`/admin/asks`, `/admin/intros`),
+Announce (`/admin/announcements`, `/admin/digest`). A tab whose module is off is hidden (the manifests' `adminTabs`).
+- **Home** (`src/shell/admin-home*.ts(x)`, `admin-this-week.ts`): the launch checklist until it is done once, then
+  This week: founders active in 7 days (signed in or did something), open asks with no offer or answer, intros
+  waiting over 3 days, room joins (`countRoomJoins`; no tile while Rooms is off), and up to 5 things that need the
+  admin. The old dashboard's sheets live on their own pages (Report, Calls, Village, Mail).
+- **Asks & intros**: open asks with no help first. The weekly email's schedule moved to Announce; the asks
+  allowance and the outcome question moved to Set up.
+- **Announce**: the announcement form (its preview folded), the weekly email's next send, schedule (folded) and
+  this week's email as the admin gets it, and what was sent. `/admin/digest` previews anyone's.
+- **Set up** is `/admin/settings` (`/admin/setup` redirects there, `next.config.mjs`): branding, Mail, Features and
+  the two numbers in view; everything for an engineer under Advanced (`src/shell/admin-setup-rows.ts`). The guided
+  start no longer has a branding step, so the branding form is on one page only.
+- **Features** lists Rooms first, with "Needs a voice server" until one is set up; Feed says "Under More in the menu".
+  Feed is off by default for new communities (migration 0045 kept it on for communities that had members).
+- **Report** leads with the one-line verdict and three numbers; rows and tables at zero are left out on the page
+  (the CSV and the partner email are unchanged).
+- Invites says "Added" for an invite that was never emailed, and "Sent" only when it was.
+
