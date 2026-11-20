@@ -13,7 +13,7 @@ import { FlashNote, FLASH_KINDS } from "@/components/flash";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { readNativeApp, subscribeToNativeApp } from "@/platform/native-app/bridge";
+import { readNativeApp, ROOM_CLOSED_REASONS, subscribeToNativeApp, subscribeToRoomClosed, type RoomClosedReason } from "@/platform/native-app/bridge";
 
 import {
   describeNotifyReset,
@@ -132,19 +132,69 @@ function readWhere() {
 export function LiveRoom(props: LiveRoomProps) {
   const where = useSyncExternalStore(subscribeToNativeApp, readWhere, () => SERVER_SNAPSHOT);
   if (where === SERVER_SNAPSHOT) return <p className="fh-small fh-muted">Joining {props.title}…</p>;
-  if (where === "app") return <AppRoomHandoff roomId={props.roomId} title={props.title} />;
+  if (where === "app") return <AppRoomHandoff roomId={props.roomId} title={props.title} hasNotified={props.hasNotified ?? false} />;
   return <BrowserRoom {...props} />;
 }
 
-function AppRoomHandoff({ roomId, title }: { roomId: string; title: string }) {
+const APP_CLOSED_WORDS: Record<RoomClosedReason, string> = {
+  [ROOM_CLOSED_REASONS.left]: "You left the room.",
+  [ROOM_CLOSED_REASONS.ended]: "This room has ended.",
+  [ROOM_CLOSED_REASONS.elsewhere]: "You joined this room on another device, so it continues there.",
+  [ROOM_CLOSED_REASONS.failed]: "The room didn't open in the app.",
+};
+
+// The app plays the room; this page says so until the app closes its room screen, then says why and offers Join again.
+function AppRoomHandoff({ roomId, title, hasNotified }: { roomId: string; title: string; hasNotified: boolean }) {
+  const router = useRouter();
+  const [closedReason, setClosedReason] = useState<RoomClosedReason | null>(null);
+  // The latest server answer, without opening the room again when it changes.
+  const notifiedRef = useRef(hasNotified);
   useEffect(() => {
-    readNativeApp()?.openRoom(roomId, title);
-  }, [roomId, title]);
+    notifiedRef.current = hasNotified;
+  }, [hasNotified]);
+  const handOff = useCallback(() => readNativeApp()?.openRoom(roomId, title, { hasNotified: notifiedRef.current }), [roomId, title]);
+  function joinAgain() {
+    setClosedReason(null);
+    handOff();
+  }
+
+  useEffect(() => {
+    handOff();
+  }, [handOff]);
+
+  useEffect(
+    () =>
+      subscribeToRoomClosed(roomId, (reason) => {
+        setClosedReason(reason);
+        // Read the room again: an ended room's head stops saying Live, and Join again carries a fresh hasNotified.
+        router.refresh();
+      }),
+    [roomId, router],
+  );
+
+  if (closedReason) {
+    return (
+      <div className="vr-room" data-testid="room-closed" data-reason={closedReason}>
+        <FlashNote kind={closedReason === ROOM_CLOSED_REASONS.failed ? FLASH_KINDS.needs : FLASH_KINDS.ok}>{APP_CLOSED_WORDS[closedReason]}</FlashNote>
+        <div className="fh-btn-row mt-4">
+          {closedReason === ROOM_CLOSED_REASONS.ended ? null : (
+            <Button variant="ink" onClick={joinAgain}>
+              Join again
+            </Button>
+          )}
+          <Button asChild variant={closedReason === ROOM_CLOSED_REASONS.ended ? "ink" : "secondary"}>
+            <Link href={VOICE_PAGE}>Back to Rooms</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="vr-room" data-testid="room-in-app">
       <p className="fh-small fh-muted">Playing in the app.</p>
       <div className="fh-btn-row mt-4">
-        <Button variant="ink" onClick={() => readNativeApp()?.openRoom(roomId, title)}>
+        <Button variant="ink" onClick={handOff}>
           Open the room
         </Button>
         <Button asChild variant="secondary">

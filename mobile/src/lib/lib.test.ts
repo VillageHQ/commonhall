@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { runInNewContext } from "node:vm";
 
-import { buildBootstrapScript, buildCallScript, isAllowedCall, parseBridgeMessage, readErrorCode, readFailureMessage, toApiAnswer } from "./bridge.ts";
+import { buildBootstrapScript, buildCallScript, buildRoomClosedScript, isAllowedCall, parseBridgeMessage, readErrorCode, readFailureMessage, ROOM_CLOSED_EVENT, toApiAnswer } from "./bridge.ts";
 import { checkCommunity, readAddress, type FetchLike } from "./community.ts";
 import { opensInPortal, readAlertPath, readJoinLink, toPortalUrl } from "./links.ts";
 
@@ -103,7 +103,10 @@ describe("the bridge between the app and the portal page", () => {
   });
 
   it("accepts only well-formed messages from the page", () => {
-    assert.deepEqual(parseBridgeMessage(JSON.stringify({ type: "voice.open", roomId: ROOM_ID, title: "Pricing AMA" })), { type: "voice.open", roomId: ROOM_ID, title: "Pricing AMA" });
+    assert.deepEqual(parseBridgeMessage(JSON.stringify({ type: "voice.open", roomId: ROOM_ID, title: "Pricing AMA", hasNotified: true })), { type: "voice.open", roomId: ROOM_ID, title: "Pricing AMA", hasNotified: true });
+    // A page from before the fact, or anything but true, reads as not told yet.
+    assert.deepEqual(parseBridgeMessage(JSON.stringify({ type: "voice.open", roomId: ROOM_ID, title: "Pricing AMA" })), { type: "voice.open", roomId: ROOM_ID, title: "Pricing AMA", hasNotified: false });
+    assert.equal((parseBridgeMessage(JSON.stringify({ type: "voice.open", roomId: ROOM_ID, hasNotified: "yes" })) as { hasNotified: boolean }).hasNotified, false);
     assert.equal(parseBridgeMessage(JSON.stringify({ type: "voice.open", roomId: "../admin" })), null);
     assert.equal(parseBridgeMessage("not json"), null);
     assert.equal(parseBridgeMessage(JSON.stringify({ type: "api.result", id: "1", status: 200, body: "" })), null);
@@ -132,18 +135,39 @@ describe("the bridge between the app and the portal page", () => {
     };
     runInNewContext(buildBootstrapScript({ platform: "android", pushToken: "ExponentPushToken[abcdefghijkl]" }), context);
     assert.deepEqual(events, ["commonhall-app-ready"]);
-    const app = window.CommonhallApp as { pushToken: string; openRoom: (id: string, title: string) => void };
+    const app = window.CommonhallApp as { pushToken: string; openRoom: (id: string, title: string, facts?: { hasNotified: boolean }) => void };
     assert.equal(app.pushToken, "ExponentPushToken[abcdefghijkl]");
 
+    app.openRoom(ROOM_ID, "Pricing AMA", { hasNotified: true });
+    assert.deepEqual(parseBridgeMessage(sent.shift() ?? ""), { type: "voice.open", roomId: ROOM_ID, title: "Pricing AMA", hasNotified: true });
     app.openRoom(ROOM_ID, "Pricing AMA");
-    assert.deepEqual(parseBridgeMessage(sent[0] ?? ""), { type: "voice.open", roomId: ROOM_ID, title: "Pricing AMA" });
+    assert.deepEqual(parseBridgeMessage(sent.shift() ?? ""), { type: "voice.open", roomId: ROOM_ID, title: "Pricing AMA", hasNotified: false });
 
     runInNewContext(buildCallScript(7, "POST", "/api/voice/join", { roomId: ROOM_ID }), context);
     await new Promise((resolve) => setTimeout(resolve, 10));
     assert.equal(calls[0]?.path, "/api/voice/join");
     assert.equal(calls[0]?.init.credentials, "same-origin");
     assert.deepEqual(JSON.parse(calls[0]?.init.body ?? ""), { roomId: ROOM_ID });
-    assert.deepEqual(parseBridgeMessage(sent[1] ?? ""), { type: "api.result", id: 7, status: 200, body: JSON.stringify({ token: "t" }) });
+    assert.deepEqual(parseBridgeMessage(sent[0] ?? ""), { type: "api.result", id: 7, status: 200, body: JSON.stringify({ token: "t" }) });
+  });
+
+  it("tells the page the room screen closed, and why", () => {
+    const events: { type: string; detail: unknown }[] = [];
+    const context = {
+      window: { dispatchEvent: (event: { type: string; detail: unknown }) => events.push(event) },
+      CustomEvent: class {
+        type: string;
+        detail: unknown;
+        constructor(type: string, init: { detail: unknown }) {
+          this.type = type;
+          this.detail = init.detail;
+        }
+      },
+    };
+    runInNewContext(buildRoomClosedScript(ROOM_ID, "left"), context);
+    assert.equal(events.length, 1);
+    assert.equal(events[0]?.type, ROOM_CLOSED_EVENT);
+    assert.deepEqual({ ...(events[0]?.detail as object) }, { roomId: ROOM_ID, reason: "left" });
   });
 
   it("turns a failed answer into the server's own words", () => {

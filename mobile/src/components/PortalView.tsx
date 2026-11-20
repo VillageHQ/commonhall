@@ -1,6 +1,6 @@
 import { createElement, forwardRef, useCallback, useImperativeHandle, useRef } from "react";
 
-import { BRIDGE_VERSION, isAllowedCall, NATIVE_APP_READY_EVENT, toApiAnswer } from "../lib/bridge";
+import { BRIDGE_VERSION, isAllowedCall, NATIVE_APP_READY_EVENT, ROOM_CLOSED_EVENT, toApiAnswer } from "../lib/bridge";
 import { toSafePath } from "../lib/links";
 import type { PortalHandle, PortalViewProps } from "./portal-types";
 
@@ -28,7 +28,12 @@ export const PortalView = forwardRef<PortalHandle, PortalViewProps>(function Por
 
   const describeApp = useCallback(
     (page: PortalWindow) => {
-      page.CommonhallApp = { version: BRIDGE_VERSION, platform: "web", pushToken: token.current, openRoom: (roomId: string, title: string) => onOpenRoom(String(roomId), String(title ?? "")) };
+      page.CommonhallApp = {
+        version: BRIDGE_VERSION,
+        platform: "web",
+        pushToken: token.current,
+        openRoom: (roomId: string, title: string, facts?: { hasNotified?: unknown }) => onOpenRoom(String(roomId), String(title ?? ""), facts?.hasNotified === true),
+      };
       page.dispatchEvent(new Event(NATIVE_APP_READY_EVENT));
     },
     [onOpenRoom],
@@ -57,6 +62,10 @@ export const PortalView = forwardRef<PortalHandle, PortalViewProps>(function Por
         token.current = next;
         const page = readPage();
         if (page?.CommonhallApp) (page.CommonhallApp as { pushToken: string | null }).pushToken = next;
+      },
+      roomClosed: (roomId, reason) => {
+        const page = readPage() as (PortalWindow & { CustomEvent: typeof CustomEvent }) | null;
+        page?.dispatchEvent(new page.CustomEvent(ROOM_CLOSED_EVENT, { detail: { roomId, reason } }));
       },
     }),
     [readPage],
