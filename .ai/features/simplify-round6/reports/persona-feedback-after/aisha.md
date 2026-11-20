@@ -76,7 +76,7 @@ LIVE_SEEN: yes. It's the first card under the title, and the Rooms tab has an or
 - **Fastest path:** this screen. "Live · Never recorded" at the top makes me feel safe.
 
 ### me_alerts (get told when a room opens, phone)
-- **Confusing:** "This device: Alerts are blocked in this browser's settings." Still no word on how to unblock them on my phone. "Asia/Beirut Change": is that my time zone? I didn't set it. "Evenings" and "Working hours" are chips with no hours shown, so what does "Evenings" mean? "People starting or joining rooms": *joining* too? That sounds like a lot of buzzing.
+- **Confusing:** "This device: Alerts are blocked in this browser's settings." Still no word on how to unblock them on my phone. "[the capture machine’s zone] Change": is that my time zone? I didn't set it. "Evenings" and "Working hours" are chips with no hours shown, so what does "Evenings" mean? "People starting or joining rooms": *joining* too? That sounds like a lot of buzzing.
 - **Complicated:** much less than before. Pause, Quiet times, then one list of switches split into "Sent to me" and "From the portfolio". "Muted people" is folded away.
 - **Would skip:** the switch list. I'd leave it as it is. ~40 of ~71 words.
 - **Expected:** a switch for *fundraising* rooms only. The room switch is all-or-nothing.
@@ -106,7 +106,7 @@ LIVE_SEEN: yes. It's the first card under the title, and the Rooms tab has an or
 - **Fastest path:** skip the page.
 
 ### me_email (phone)
-- **Confusing:** "Thursdays at 09:00 UTC": I still have to work out my own time, while Alerts knows "Asia/Beirut". "Intro asks and introductions" versus "Intro reminders": two intro switches.
+- **Confusing:** "Thursdays at 09:00 UTC": I still have to work out my own time, while Alerts knows "[the capture machine’s zone]". "Intro asks and introductions" versus "Intro reminders": two intro switches.
 - **Complicated:** six switches and one "Save". I'd worry I forgot to save.
 - **Would skip:** the grey sub-lines. ~40 of ~56 words.
 - **Expected:** "Email me when a room I asked to be reminded of starts". Not here.
@@ -139,7 +139,7 @@ LIVE_SEEN: yes. It's the first card under the title, and the Rooms tab has an or
   2. **rooms_id / room-joined:** "Joining…", "0 LISTENING" and "Nobody on stage yet." while Today said "Priya + 4" (capture limit, but it reads as broken). And "Tell people" could mean alerting everyone about me.
   3. **rooms:** unlabelled bell icons (one boxed, one not) next to "Join", an "Alerts on" button whose effect is unclear, and "Start a room" above "Live now".
   4. **me_network / me_privacy:** "Share with Northwind Founders: Members can ask you for intros" and "Let members ask me for intros" look like the same switch in two places. "Your network is connected": to what?
-  5. **me_alerts / me_email:** "Alerts are blocked in this browser's settings." with no how-to, "Evenings" with no hours, and "Thursdays at 09:00 UTC" while Alerts says "Asia/Beirut".
+  5. **me_alerts / me_email:** "Alerts are blocked in this browser's settings." with no how-to, "Evenings" with no hours, and "Thursdays at 09:00 UTC" while Alerts says "[the capture machine’s zone]".
 
 ## Old problems, now
 

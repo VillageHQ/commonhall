@@ -106,7 +106,7 @@ LIVE_SEEN: yes. The peach "LIVE NOW" card is the first thing under the title, an
 - Complicated: fine. Pause, quiet times, 1 master switch and 6 kinds. On the phone, the "What alerts you" title and
   "All alerts" are hidden behind the tab bar, but that's the full-page capture.
 - Would skip: nothing much. I'd read about 60 of 71 words.
-- Expected: huge improvement. "Pause alerts" ("1 hour", "Until tomorrow"), a time zone ("Asia/Beirut Change") and
+- Expected: huge improvement. "Pause alerts" ("1 hour", "Until tomorrow"), a time zone ("[the capture machine’s zone] Change") and
   "Let through intro asks and messages to me" are exactly what I asked for. Still missing: the hours behind each chip,
   an alert for new asks in my area, and email on the same page.
 - Fastest path: avatar → Alerts → "Custom" → my hours. The "Alerts On" row on My profile works too.
@@ -146,7 +146,7 @@ LIVE_SEEN: yes. The peach "LIVE NOW" card is the first thing under the title, an
 ## Old problems, now
 
 1. Quiet hours were one switch, room alerts all-or-nothing: **BETTER**. Now "Pause alerts", "Working hours /
-   Evenings / Weekends / Custom" and "Asia/Beirut Change", but no hours are shown, and "People starting or joining
+   Evenings / Weekends / Custom" and "[the capture machine’s zone] Change", but no hours are shown, and "People starting or joining
    rooms" is still all-or-nothing.
 2. No scheduling of office hours, two unclear buttons: **BETTER**. "I'm available to talk" and its "3 of 3 left
    today" caption are gone, leaving one "Start a room". There's still no visible schedule or repeat.

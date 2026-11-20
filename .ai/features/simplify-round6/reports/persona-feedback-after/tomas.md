@@ -130,7 +130,7 @@ LIVE_SEEN: yes. The peach "LIVE NOW" card is the first box under the headline; I
   alert.
 - **Alerts:** Yes. Avatar → "Alerts" (`member-me_alerts-desktop.png`) has "Pause alerts" ("1 hour", "Until tomorrow"),
   "Quiet times" ("Working hours", "Evenings", "Weekends", "Custom") and "Let through intro asks and messages to me". That is
-  where I'd look. But (17) the time zone says "Asia/Beirut" for a New York member, and every toggle starts on, including
+  where I'd look. But (17) the time zone says "[the capture machine’s zone]" for a New York member, and every toggle starts on, including
   "People starting or joining rooms" and "New in the library". I would switch "All alerts" off and live on the weekly email
   (Avatar → "Email": "Thursdays at 09:00 UTC, only when something needs you").
 
@@ -143,7 +143,7 @@ LIVE_SEEN: yes. The peach "LIVE NOW" card is the first box under the headline; I
    my own jobs even say "Apply".
 4. **Today:** "LIVE NOW" sits above "Waiting on you", and my own answered ask ("1 answer · Read") is mixed into "Waiting on
    you" without saying it's mine.
-5. **Alerts:** everything on by default, time zone "Asia/Beirut"; for someone who only wants the email, the first job is
+5. **Alerts:** everything on by default, time zone "[the capture machine’s zone]"; for someone who only wants the email, the first job is
    turning things off.
 
 ## Old problems, now

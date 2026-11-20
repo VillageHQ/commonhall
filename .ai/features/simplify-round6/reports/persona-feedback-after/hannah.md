@@ -148,7 +148,7 @@ mismatch is the problem.
   alert would be second, but this browser says "Alerts are blocked in this browser's settings."
 - **Alerts:** yes. Alerts has "Pause alerts" ("1 hour", "Until tomorrow") and "Quiet times" ("Working hours",
   "Evenings", "Weekends", "Custom"), plus "Let through intro asks and messages to me". That's where I'd look (the avatar,
-  then Alerts). I can't tell which quiet time is on, though: all four look like the same outlined buttons. "Asia/Beirut"
+  then Alerts). I can't tell which quiet time is on, though: all four look like the same outlined buttons. "[the capture machine’s zone]"
   as my time zone is surprising.
 - **My top 5 problems now (worst first):**
   1. admin (console home): no engagement pulse, still a launch checklist. "Welcome, Maya. Four steps to launch."

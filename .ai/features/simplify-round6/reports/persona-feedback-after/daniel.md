@@ -128,7 +128,7 @@ LIVE_SEEN: yes. It's the second thing on the page, a coloured card with a big bl
 - Fastest path: turn switches off, then Save.
 
 ### me_alerts
-- Confusing: "Asia/Beirut" as my time zone, though my profile says New York. Also "Alerts are blocked in this browser's settings." doesn't say how to unblock them.
+- Confusing: "[the capture machine’s zone]" as my time zone, though my profile says New York. Also "Alerts are blocked in this browser's settings." doesn't say how to unblock them.
 - Complicated: there's a lot here, but it's grouped well. "Pause alerts · 1 hour / Until tomorrow" is exactly what I want before a board meeting.
 - Would skip: "What alerts you" and its switches. I'd read about 25 of 71 words.
 - Expected: my real time zone, and a "Fix this" link for the blocked device.
@@ -152,12 +152,12 @@ LIVE_SEEN: yes. It's the second thing on the page, a coloured card with a big bl
 
 - **The tabs:** close. In order, I'd use Today, Inbox, Asks, People, Rooms. Today is my home. Inbox is where people need me. Rooms is a nice-to-have I'd only open from the Today card. I'd move Rooms off the first spot.
 - **Rooms:** I'd join "Pricing your first enterprise deal" while driving, from Today's "Join" card, since it was the second thing I saw. I wouldn't open the Rooms tab to look for one. I'd want to know that joining doesn't put me on the mic.
-- **Alerts:** yes. Avatar, then Alerts: "Pause alerts · 1 hour / Until tomorrow" and "Quiet times · Working hours / Evenings / Weekends / Custom". That's where I'd look. But it says "Asia/Beirut" for me, so I wouldn't trust the hours.
+- **Alerts:** yes. Avatar, then Alerts: "Pause alerts · 1 hour / Until tomorrow" and "Quiet times · Working hours / Evenings / Weekends / Custom". That's where I'd look. But it says "[the capture machine’s zone]" for me, so I wouldn't trust the hours.
 - **Top 5 problems, worst first:**
   1. intros_id: saying yes still takes a radio choice plus "Send", and "I don't know them well" is unclear.
   2. inbox: Priya's message is listed under "Waiting for your yes".
   3. today: my own ask sits in "Waiting on you" with no "your ask" label ("Who has hired a first VP Sales… 1 answer · Read").
-  4. me_alerts / me_email: wrong time zone ("Asia/Beirut", "09:00 UTC"), and "Alerts are blocked in this browser's settings." with no fix.
+  4. me_alerts / me_email: wrong time zone ("[the capture machine’s zone]", "09:00 UTC"), and "Alerts are blocked in this browser's settings." with no fix.
   5. me_network / me_privacy / me_data: two controls for intros ("Stop sharing" vs "Let members ask me for intros"), plus jargon ("What the lookup service receives", "Village", "Nobody has a path yet" on asks_id).
 
 ## Old problems, now

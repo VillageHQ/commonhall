@@ -47,7 +47,7 @@ and the Rooms tab in the bar has a dot.
 ### Alerts (member-me_alerts-phone.png)
 - Confusing: "This device: Alerts are blocked in this browser's settings." I'm in the phone app, so which browser? And
   there's no fix or link. The "Working hours / Evenings / Weekends / Custom" chips don't show their hours, and I can't
-  tell which ones are selected. "Asia/Beirut Change": fine, but I didn't expect it. "People starting or joining rooms"
+  tell which ones are selected. "[the capture machine’s zone] Change": fine, but I didn't expect it. "People starting or joining rooms"
   is on by default, which means I'd get pinged just because someone joined.
 - Complicated: "All alerts", then 6 toggles, all on, plus quiet times, a pause and muted people. It's still more than
   my one decision.

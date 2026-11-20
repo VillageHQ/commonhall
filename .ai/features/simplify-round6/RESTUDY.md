@@ -38,7 +38,7 @@ The first study's method, unchanged ([study/](study/)):
 from the capture, not the app, and are not counted against it:
 - Inside the room, nobody is really connected, so the stage reads "Nobody on stage yet" under a card that says
   "Priya + 4" (6 personas noticed).
-- The time zone reads "Asia/Beirut": the capture machine's zone becomes a new member's zone (8 noticed).
+- The time zone shown is the capture machine's, which becomes a new member's zone until they save their own (8 noticed).
 - The note on "Ask Ada for an intro" is drafted from the demo member's own profile, which personas who aren't that
   member read as someone else's words (3 noticed).
 

@@ -23,7 +23,7 @@ LIVE_SEEN: yes. The "LIVE NOW" card is the first thing under the heading.
   under "Live now". Is the host not in her own room? It reads as dead.
 - Confusing: the bells have no labels. There's a boxed bell on the Pricing card, a plain bell on the Fundraising card,
   and on Elena's card a bell sits right next to "Remind me". What does the bell do that "Remind me" doesn't?
-- Confusing: "Sat 2:09 PM" is an odd time for my own room, with no timezone (Alerts says "Asia/Beirut", but this
+- Confusing: "Sat 2:09 PM" is an odd time for my own room, with no timezone (Alerts says "[the capture machine’s zone]", but this
   card doesn't).
 - Confusing: is "Alerts on" a status or a button? It doesn't say what turns on, or for whom.
 - Complicated: hosting is "Start a room" or "Start now" on my scheduled card. That's clearer than before. I can't see
@@ -46,7 +46,7 @@ LIVE_SEEN: yes. The "LIVE NOW" card is the first thing under the heading.
 
 ### Alerts (member-me_alerts-phone / -desktop)
 - Confusing: "Working hours", "Evenings", "Weekends", "Custom" show no times and no selected state. Which hours count
-  as "Working hours" in Beirut? "Custom" looks like plain text, not a button.
+  as "Working hours" in that zone? "Custom" looks like plain text, not a button.
 - Confusing: "This device: Alerts are blocked in this browser's settings." It's shorter now, but still no button.
 - Complicated: 7 toggles plus "All alerts". OK, because they're grouped "Sent to me" / "From the portfolio".
 - Would skip: "Muted people" (collapsed, good). I'd read about 55 of 71 words.
