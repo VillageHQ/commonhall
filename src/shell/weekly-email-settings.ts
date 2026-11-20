@@ -1,8 +1,9 @@
 import "server-only";
 
-import type { DatabaseOrTransaction } from "../platform/database/client.ts";
+import type { Database, DatabaseOrTransaction } from "../platform/database/client.ts";
 import { readSettings, saveSettings } from "../platform/settings/store.ts";
-import { readLocalParts, WEEKDAYS } from "../platform/weekly-email/schedule.ts";
+import { readLocalParts, readNextSend, WEEKDAYS } from "../platform/weekly-email/schedule.ts";
+import { readWeeklySchedule } from "../platform/weekly-email/schedule-store.ts";
 
 // Commonhall's "Send the weekly digest" switch (Asks & digest). On unless an admin switched it off; while off, the
 // timed job sends nobody a digest. The schedule itself stays in the platform's weekly email settings.
@@ -22,4 +23,11 @@ export async function saveWeeklyEmailEnabled(connection: DatabaseOrTransaction, 
 export function describeNextDigest(at: Date, timeZone: string) {
   const local = readLocalParts(at, timeZone);
   return `${WEEKDAYS[local.weekday] ?? ""} ${local.date}, ${String(local.hour).padStart(2, "0")}:00 ${timeZone}`;
+}
+
+// The weekly email on Announce: on or off, its schedule, and when the next one goes out (null while off).
+export async function readWeeklyEmailPlan(database: Database, now = new Date()) {
+  const [schedule, isEnabled] = await Promise.all([readWeeklySchedule(database), readWeeklyEmailEnabled(database)]);
+  const next = isEnabled ? readNextSend(now, schedule) : null;
+  return { schedule, isEnabled, nextLabel: next ? describeNextDigest(next.at, schedule.timeZone) : null };
 }

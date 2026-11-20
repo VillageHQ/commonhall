@@ -3,19 +3,18 @@ import Link from "next/link";
 
 import { EmptyState } from "@/components/empty-state";
 import { FlashNote } from "@/components/flash";
-import { PageHeader } from "@/components/page-header";
-import { KvTiles } from "@/components/ui/figures";
 import { Pill, type PillTone } from "@/components/ui/pill";
-import { ASKS_ADMIN_PAGE, ASKS_PAGE } from "@/modules/asks/contract";
+import { ASKS_PAGE } from "@/modules/asks/contract";
 import { ROUTES } from "@/platform/http/routes";
 import { formatDayMonth } from "@/modules/admin/console-periods";
 
-import { ASK_ROW_STATUSES, describeHours, type AdminAskRow, type AdminAsks, type AskRowStatus, type AsksFigures } from "./admin-asks";
-import { AskRowActions, DigestSettingsForm } from "./admin-asks-actions";
+import { ASK_ROW_STATUSES, type AdminAskRow, type AdminAsks, type AskRowStatus } from "./admin-asks";
+import { AskRowActions } from "./admin-asks-actions";
+import { AdminSection } from "./admin-section";
 import { ReportedAsks } from "./reported-asks";
 
 // What a member reads when there is no ask yet (Commonhall's EMPTY_ASKS).
-export const EMPTY_ASKS = "No open asks yet. When a founder needs someone, the ask shows here and in Thursday’s digest.";
+export const EMPTY_ASKS = "Founders’ asks show here.";
 
 // The flash after an action on Asks & digest (?m=…), in Commonhall's words.
 export const ASKS_FLASHES: Record<string, string> = {
@@ -23,37 +22,7 @@ export const ASKS_FLASHES: Record<string, string> = {
   unpin: "Unpinned.",
   close: "Closed.",
   remove: "Removed. Members no longer see it.",
-  asksettings: "Saved.",
 };
-
-function plural(count: number, one: string, many = `${one}s`) {
-  return `${count} ${count === 1 ? one : many}`;
-}
-
-// Commonhall's "Asks & updates" block: four tiles and one line. The console home shows it with a link here.
-export function AsksBlock({ figures, hasLink = true }: { figures: AsksFigures; hasLink?: boolean }) {
-  const { open, answered, medianHours, posted, withHelpers, helped, intros, introsMade, updates } = figures;
-  return (
-    <>
-      <div className="fh-sheet-head">
-        <h2 className="fh-h3">Asks &amp; updates</h2>
-        {hasLink ? <Link href={ASKS_ADMIN_PAGE}>Asks &amp; digest</Link> : null}
-      </div>
-      <KvTiles
-        className="fh-askkv"
-        tiles={[
-          { value: open, label: "open asks" },
-          { value: answered, label: "answered", isGood: true },
-          { value: describeHours(medianHours), label: "median time to first help" },
-          { value: posted, label: `asks posted${withHelpers ? `, ${withHelpers} with members who can help` : ""}` },
-        ]}
-      />
-      <p className="fh-small fh-muted mt-2.5">
-        {helped} asks got an offer of help; {plural(intros, "intro")} started from asks, {introsMade} made. {plural(updates, "update")}.
-      </p>
-    </>
-  );
-}
 
 const STATUS_PILLS: Record<AskRowStatus, { tone: PillTone; label: string }> = {
   [ASK_ROW_STATUSES.open]: { tone: "open", label: "Open" },
@@ -76,7 +45,7 @@ function AskRow({ row, canPin }: { row: AdminAskRow; canPin: boolean }) {
           <Link href={`${ASKS_PAGE}/${row.id}`}>{row.title}</Link>
         </b>
         <span>
-          {row.authorName} · {formatDayMonth(new Date(row.createdAt))} · {row.helperCount} can help · {row.answerCount} answers
+          {row.authorName} · {formatDayMonth(new Date(row.createdAt))} · {row.offerCount + row.answerCount} {row.offerCount + row.answerCount === 1 ? "reply" : "replies"}
         </span>
       </div>
       <div className="fh-end">
@@ -89,66 +58,54 @@ function AskRow({ row, canPin }: { row: AdminAskRow; canPin: boolean }) {
 
 type AdminAsksViewProps = AdminAsks & { flash: string | null };
 
-// Asks & digest (Commonhall's): the figures, the weekly digest's settings, every ask and update with Pin / Close /
-// Remove, and Community's reported asks when there are any.
-export function AdminAsksView({ figures, rows, reported, weeklyAllowance, schedule, isDigestOn, nextDigest, digest, canPin, flash }: AdminAsksViewProps) {
+function AskRows({ rows, canPin }: { rows: readonly AdminAskRow[]; canPin: boolean }) {
+  return (
+    <div className="fh-rows fh-modrows">
+      {rows.map((row) => (
+        <AskRow key={row.id} row={row} canPin={canPin} />
+      ))}
+    </div>
+  );
+}
+
+// The console's Asks (Asks & intros): asks nobody has helped with first, then every other ask and update, each with
+// Pin / Close / Remove, and Community's reported asks when there are any.
+export function AdminAsksView({ noHelp, rest, reported, canPin, flash }: AdminAsksViewProps) {
   return (
     <>
       {flash ? <FlashNote>{flash}</FlashNote> : null}
-      <PageHeader
-        title="Asks & digest"
-        description="What members ask, who helps, and the Thursday digest that brings it to their inbox. Names and dates only; members’ answers stay in the portal."
-      />
-      <div className="fh-grid">
-        <section className="fh-sheet fh-c7">
-          <AsksBlock figures={figures} hasLink={false} />
-        </section>
-        <section className="fh-sheet fh-c5">
-          <div className="fh-sheet-head">
-            <h2 className="fh-h3">The weekly digest</h2>
-            <Link href={ROUTES.adminDigest}>Preview</Link>
-          </div>
-          <p className="fh-small">
-            {isDigestOn ? (
-              <>
-                Next: <b>{nextDigest ?? "–"}</b>.
-              </>
-            ) : (
-              <b>Off.</b>
-            )}
-            {isDigestOn ? "" : " No digest is sent."} Last 30 days: {digest.sent} sent, {digest.empty} skipped with nothing to answer, {digest.answered} items answered ({digest.byReply} by email reply).
-          </p>
-          <DigestSettingsForm isEnabled={isDigestOn} schedule={schedule} weeklyAllowance={weeklyAllowance} />
-        </section>
-        <section className="fh-sheet fh-c12">
-          <div className="fh-sheet-head">
-            <h2 className="fh-h3">Every ask and update</h2>
-            <Link href={ASKS_PAGE}>Members’ view</Link>
-          </div>
-          {rows.length > 0 ? (
-            <div className="fh-rows fh-modrows">
-              {rows.map((row) => (
-                <AskRow key={row.id} row={row} canPin={canPin} />
-              ))}
+      <AdminSection title="Asks & intros">
+      <div className="fh-stack">
+        {noHelp.length > 0 ? (
+          <section className="fh-sheet" aria-labelledby="no-help-asks">
+            <div className="fh-sheet-head">
+              <h2 className="fh-h3" id="no-help-asks">
+                No help yet
+              </h2>
+              <Link href={ASKS_PAGE}>Members’ view</Link>
             </div>
-          ) : (
-            <EmptyState title="No asks yet" description={EMPTY_ASKS} />
-          )}
-          <p className="fh-small fh-muted mt-2.5">Pin keeps an open ask at the top. Close ends it for everyone; Remove hides it from members (it stays in the audit log).</p>
+            <AskRows rows={noHelp} canPin={canPin} />
+          </section>
+        ) : null}
+        <section className="fh-sheet" aria-labelledby="every-ask">
+          <h2 className="fh-h3" id="every-ask">
+            {noHelp.length > 0 ? "The rest" : "Every ask and update"}
+          </h2>
+          {rest.length > 0 ? <AskRows rows={rest} canPin={canPin} /> : noHelp.length === 0 ? <EmptyState title="No asks yet" description={EMPTY_ASKS} /> : null}
         </section>
         {reported.length > 0 ? (
-          <section className="fh-sheet fh-c12" aria-labelledby="reported-asks">
+          <section className="fh-sheet" aria-labelledby="reported-asks">
             <div className="fh-sheet-head">
               <h2 className="fh-h3" id="reported-asks">
                 Reported
               </h2>
               <Link href={ROUTES.adminReports}>Every report</Link>
             </div>
-            <p className="fh-small fh-muted">Asks and answers members flagged. The person who posted it isn’t told either way.</p>
             <ReportedAsks reported={reported} />
           </section>
         ) : null}
       </div>
+      </AdminSection>
     </>
   );
 }

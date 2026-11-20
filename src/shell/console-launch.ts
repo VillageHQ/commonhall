@@ -61,8 +61,9 @@ function plural(count: number, one: string, many: string) {
 export function describeLaunchSteps(facts: LaunchFacts): LaunchStep[] {
   // The look is done with a logo: a saved name alone still shows initials on every page.
   const isLookDone = facts.isLookSet && facts.hasLogo;
+  // A done step shows only its title and its tick.
   const look: LaunchText = isLookDone
-    ? [{ text: "Done." }]
+    ? []
     : facts.isLookSet
       ? [{ text: "Members still see your initials. " }, { text: "Add your logo →", href: LAUNCH_LINKS.look }]
       : [{ text: "Name, colour and logo. " }, { text: "Set your look →", href: LAUNCH_LINKS.look }];
@@ -77,7 +78,7 @@ export function describeLaunchSteps(facts: LaunchFacts): LaunchStep[] {
         ];
   const plumbing: LaunchText =
     facts.isMailSet && facts.isNetworkSet
-      ? [{ text: "Done." }]
+      ? []
       : [
           ...(facts.isMailSet ? [] : [{ text: "Set up mail", href: LAUNCH_LINKS.mail }, { text: ". " }]),
           ...(facts.isNetworkSet ? [] : [{ text: "Connect Village", href: LAUNCH_LINKS.village }, { text: "." }]),

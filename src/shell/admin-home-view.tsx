@@ -51,7 +51,7 @@ export function AdminHomeView({ communityName, thisWeek, items }: AdminHomeViewP
         <h1 className="fh-h1">This week</h1>
         <p className="fh-lede">{communityName}, the last {THIS_WEEK_DAYS} days.</p>
       </div>
-      <section className="fh-sheet mb-4" aria-label="This week in numbers" data-testid="admin-home-this-week">
+      <section className="mb-4" aria-label="This week in numbers" data-testid="admin-home-this-week">
         <KvTiles className="fh-askkv" tiles={readTiles(thisWeek)} />
       </section>
       <NeedsYou items={items} />

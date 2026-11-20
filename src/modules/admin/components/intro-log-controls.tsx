@@ -10,7 +10,7 @@ import { useFlash } from "@/components/flash";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { ASK_ALLOWANCE, describeAllowance } from "@/modules/asks/contract";
+import { ASK_ALLOWANCE } from "@/modules/asks/contract";
 import { saveAllowanceRequest } from "@/modules/asks/queries";
 import { OUTCOME_DAYS } from "@/modules/intros/contract-outcome-days";
 
@@ -99,25 +99,25 @@ export function AskAllowanceSetting({ weeklyAllowance }: { weeklyAllowance: numb
       value={weeklyAllowance}
       minimum={ASK_ALLOWANCE.minimum}
       maximum={ASK_ALLOWANCE.maximum}
-      hint={`One allowance for asks posted and intro asks; members see “${describeAllowance({ left: 3, cap: weeklyAllowance })}”. Declined, expired and withdrawn intro asks come back. Default ${ASK_ALLOWANCE.default}. The same setting is in Asks & digest.`}
+      hint={`Asks and intro asks share it. Default ${ASK_ALLOWANCE.default}.`}
       save={saveAllowanceRequest}
       flash={INTRO_LOG_FLASH.limits}
     />
   );
 }
 
-export function OutcomeDaysSetting({ outcomeDays, reminderDays }: { outcomeDays: number; reminderDays: number }) {
+export function OutcomeDaysSetting({ outcomeDays }: { outcomeDays: number }) {
   return (
     <NumberSetting
       id="outcome"
       className="mt-4"
-      title="The outcome question"
+      title="Outcome question"
       label="Days after each intro"
       name="outcomeDays"
       value={outcomeDays}
       minimum={OUTCOME_DAYS.minimum}
       maximum={OUTCOME_DAYS.maximum}
-      hint={`The founder who asked is emailed “Was it helpful?” and what came of it, with one reminder ${reminderDays} days later. Default ${OUTCOME_DAYS.default}, in time for a 30-day trial; set 30 for a slower read.`}
+      hint={`When the asker gets “Was it helpful?”. Default ${OUTCOME_DAYS.default}.`}
       save={saveOutcomeDaysRequest}
       flash={INTRO_LOG_FLASH.outcomeDays}
     />
