@@ -2,17 +2,17 @@ import "server-only";
 
 import type { Database } from "../platform/database/client.ts";
 import type { Environment } from "../platform/environment.ts";
-import { readBranding } from "../platform/branding/branding.ts";
 import { readMailSettings } from "../platform/email/mail-settings.ts";
 import { readResendConfig } from "../platform/email/resend.ts";
 import { ROUTES } from "../platform/http/routes.ts";
 import { MODULE_KINDS } from "../platform/modules/manifest.ts";
-import { PLANS, readPlanSettings } from "../platform/settings/plan.ts";
 import { readVillageKeys } from "../platform/village/settings.ts";
 import { readOpenReportCount } from "../modules/admin/service-reports.ts";
 import { CHAT_ADMIN_PAGE } from "../modules/chat/contract.ts";
 import { chatManifest } from "../modules/chat/manifest.ts";
 import { readChatConnections } from "../modules/chat/service.ts";
+import { JOB_BOARD_PAGES } from "../modules/job-board/contract.ts";
+import { jobBoardManifest } from "../modules/job-board/manifest.ts";
 import { networkManifest } from "../modules/network/manifest.ts";
 import { PERKS_ADMIN_PAGE } from "../modules/perks/contract.ts";
 import { perksManifest } from "../modules/perks/manifest.ts";
@@ -23,9 +23,12 @@ import { voiceManifest } from "../modules/voice/manifest.ts";
 import { readVoiceConfig } from "../modules/voice/service-settings.ts";
 import { readEnabledIds } from "./enabled-modules.ts";
 
-// Set up (Commonhall's setupPage): the plumbing pages in one place, each with one plain line and whether it is set
-// up. A state is "done" (Set up), "todo" (Not yet), "needs" (a count that needs a look) or a small word of its own.
+// Set up (round 6: one page, /admin/settings): Mail and Features in view, beside the branding; every page for an
+// engineer folded under Advanced. Each row has one short line and whether it is set up. A state is "done" (Set up),
+// "todo" (Not yet), "needs" (a count that needs a look) or a small word of its own.
 export const SETUP_ROW_STATES = { done: "done", todo: "todo", needs: "needs", word: "word" } as const;
+
+export const SETUP_ROW_PLACES = { essential: "essential", advanced: "advanced" } as const;
 
 export type SetupRowState =
   | { kind: typeof SETUP_ROW_STATES.done }
@@ -33,10 +36,16 @@ export type SetupRowState =
   | { kind: typeof SETUP_ROW_STATES.needs; text: string }
   | { kind: typeof SETUP_ROW_STATES.word; text: string };
 
-export type SetupRow = { key: string; title: string; href: string; description: string; state: SetupRowState };
+export type SetupRow = {
+  key: string;
+  title: string;
+  href: string;
+  description: string;
+  state: SetupRowState;
+  place: (typeof SETUP_ROW_PLACES)[keyof typeof SETUP_ROW_PLACES];
+};
 
 export type SetupFacts = {
-  isBrandSaved: boolean;
   isMailOn: boolean;
   hasSendingDomain: boolean;
   isNetworkOn: boolean;
@@ -47,6 +56,7 @@ export type SetupFacts = {
   isPerksShown: boolean;
   isVoiceOn: boolean;
   isVoiceReady: boolean;
+  isJobBoardOn: boolean;
   featuresOn: number;
   openReports: number;
 };
@@ -57,97 +67,70 @@ const word = (text: string) => ({ kind: SETUP_ROW_STATES.word, text }) as const;
 const isDone = (isSet: boolean) => (isSet ? done : todo);
 const OFF = word("off");
 const OPTIONAL = word("optional");
+const { essential, advanced } = SETUP_ROW_PLACES;
+
+// A switched-off feature's page answers 404, so its row leads to its own switch on Features.
+function readSwitchHref(moduleId: string) {
+  return `${ROUTES.adminFeatures}#feature-card-${moduleId}`;
+}
 
 export function readSetupRows(facts: SetupFacts): SetupRow[] {
   return [
+    { key: "mail", title: "Mail", href: ROUTES.adminMail, description: "Invites and emails come from your domain.", state: isDone(facts.isMailOn && facts.hasSendingDomain), place: essential },
+    { key: "features", title: "Features", href: ROUTES.adminFeatures, description: "Switch parts of the portal on or off.", state: word(`${facts.featuresOn} on`), place: essential },
     {
-      key: "settings",
-      title: "Settings",
-      href: ROUTES.adminSettings,
-      description: "Your fund’s name, colour and logo, your plan, and who members write to about their data.",
-      state: isDone(facts.isBrandSaved),
-    },
-    {
-      key: "mail",
-      title: "Mail",
-      href: ROUTES.adminMail,
-      description: "Invites, sign-in links and the weekly digest go out from your own domain.",
-      state: isDone(facts.isMailOn && facts.hasSendingDomain),
+      key: "rooms",
+      title: "Rooms server",
+      href: facts.isVoiceOn ? VOICE_ADMIN_PAGE : readSwitchHref(voiceManifest.id),
+      description: "The voice server live rooms run on.",
+      state: facts.isVoiceOn ? isDone(facts.isVoiceReady) : OFF,
+      place: advanced,
     },
     {
       key: "village",
       title: "Village",
-      // A switched-off feature's page answers 404, so its row leads to the switch.
-      href: facts.isNetworkOn ? ROUTES.adminVillage : ROUTES.adminFeatures,
-      description: "Fills in profiles and finds who in your members’ networks can introduce whom.",
+      href: facts.isNetworkOn ? ROUTES.adminVillage : readSwitchHref(networkManifest.id),
+      description: "Network search and profile fill-in.",
       state: facts.isNetworkOn ? isDone(facts.hasVillageKeys) : OFF,
-    },
-    {
-      key: "import",
-      title: "Import members",
-      href: ROUTES.adminImport,
-      description: "Bring a whole alumni list in from a spreadsheet (CSV), in one upload.",
-      state: OPTIONAL,
-    },
-    {
-      key: "links",
-      title: "Sign-in links",
-      href: ROUTES.adminLinks,
-      description: facts.isMailOn
-        ? "Mail is on, so links are emailed. Links whose email failed wait here to copy."
-        : "While mail is off, invite and sign-in links wait here for you to copy and send.",
-      state: word(facts.isMailOn ? "not needed" : "in use"),
+      place: advanced,
     },
     {
       key: "integrations",
-      title: "Integrations",
-      href: facts.isChatOn ? CHAT_ADMIN_PAGE : ROUTES.adminFeatures,
-      description: "New asks and a weekly line in your Slack or Discord; /ask from Slack.",
-      // Commonhall says "optional" until it posts; switched off, the row still leads to the switch.
+      title: "Slack and Discord",
+      href: facts.isChatOn ? CHAT_ADMIN_PAGE : readSwitchHref(chatManifest.id),
+      description: "New asks in your chat.",
       state: facts.isChatOn && facts.isChatPosting ? done : OPTIONAL,
+      place: advanced,
     },
     {
       key: "perks",
       title: "Perks",
       // The Perks page stays open while Perks is off: its "Show Perks to members" switch turns it on.
       href: PERKS_ADMIN_PAGE,
-      description: "A perks page for your founders, from your BuiltFirst marketplace.",
+      description: "Your perks marketplace.",
       state: facts.isPerksOn && facts.isPerksShown ? done : OPTIONAL,
+      place: advanced,
     },
     {
-      key: "rooms",
-      title: "Rooms",
-      href: facts.isVoiceOn ? VOICE_ADMIN_PAGE : ROUTES.adminFeatures,
-      description: "Live voice rooms on your own server (LiveKit), or with LiveKit Cloud keys. Never recorded.",
-      state: facts.isVoiceOn ? isDone(facts.isVoiceReady) : OPTIONAL,
+      key: "jobs",
+      title: "Job board",
+      href: facts.isJobBoardOn ? JOB_BOARD_PAGES.admin : readSwitchHref(jobBoardManifest.id),
+      description: "The public board and its embed.",
+      state: facts.isJobBoardOn ? word("on") : OFF,
+      place: advanced,
     },
-    {
-      key: "audit",
-      title: "Audit log",
-      href: ROUTES.adminAuditLog,
-      description: "Every admin action, newest first: invites, settings, members and privacy changes.",
-      state: word("always on"),
-    },
-    // Community's own pages, in the same list.
-    {
-      key: "features",
-      title: "Features",
-      href: ROUTES.adminFeatures,
-      description: "Switch parts of the portal on or off. Turning one off hides it and keeps its data.",
-      state: word(`${facts.featuresOn} on`),
-    },
+    { key: "mail-log", title: "Mail log", href: `${ROUTES.adminMail}#log`, description: "What was sent, and what bounced.", state: word("always on"), place: advanced },
+    { key: "audit", title: "Audit log", href: ROUTES.adminAuditLog, description: "Every admin action.", state: word("always on"), place: advanced },
     {
       key: "reports",
-      title: "Reports",
+      title: "Flagged",
       href: ROUTES.adminReports,
-      description: "What members flagged. Only admins see it, and nobody is told who reported.",
+      description: "Posts, asks and messages members reported.",
       state: facts.openReports > 0 ? { kind: SETUP_ROW_STATES.needs, text: `${facts.openReports} open` } : word("none open"),
+      place: advanced,
     },
+    { key: "start", title: "Guided start", href: ROUTES.adminStart, description: "The first-run steps, one screen each.", state: OPTIONAL, place: advanced },
   ];
-}
-
-export function readSetupLede(communityName: string, isManaged: boolean) {
-  return `The plumbing behind ${communityName}.${isManaged ? " On the managed plan Village sets up mail and the network for you: nothing to paste." : " Each page says in plain words what it needs."}`;
 }
 
 export async function readSetupPage(database: Database, environment: Environment) {
@@ -156,10 +139,8 @@ export async function readSetupPage(database: Database, environment: Environment
   const isChatOn = enabledIds.has(chatManifest.id);
   const isPerksOn = enabledIds.has(perksManifest.id);
   const isVoiceOn = enabledIds.has(voiceManifest.id);
-  const [branding, mail, plan, keys, chats, perksUrl, openReports, voiceConfig] = await Promise.all([
-    readBranding(database),
+  const [mail, keys, chats, perksUrl, openReports, voiceConfig] = await Promise.all([
     readMailSettings(database),
-    readPlanSettings(database),
     isNetworkOn ? readVillageKeys(database, environment) : null,
     isChatOn ? readChatConnections(database) : [],
     isPerksOn ? readPerksUrl(database) : null,
@@ -168,7 +149,6 @@ export async function readSetupPage(database: Database, environment: Environment
   ]);
   const config = readResendConfig(environment);
   const facts: SetupFacts = {
-    isBrandSaved: branding.isSaved,
     isMailOn: config !== null,
     hasSendingDomain: Boolean(mail.domain) || /@[^>\s]+/.test(config?.fromAddress ?? ""),
     isNetworkOn,
@@ -179,8 +159,9 @@ export async function readSetupPage(database: Database, environment: Environment
     isPerksShown: perksUrl !== null,
     isVoiceOn,
     isVoiceReady: voiceConfig !== null,
+    isJobBoardOn: enabledIds.has(jobBoardManifest.id),
     featuresOn: MODULES.filter(({ manifest }) => manifest.kind === MODULE_KINDS.toggleable && enabledIds.has(manifest.id)).length,
     openReports,
   };
-  return { lede: readSetupLede(branding.name, plan.plan === PLANS.managed), rows: readSetupRows(facts) };
+  return readSetupRows(facts);
 }

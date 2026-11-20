@@ -11,14 +11,10 @@ function readTarget({ target, targetCompany }: IntroLogRow) {
   return targetCompany ? `${target} (${targetCompany})` : target;
 }
 
+// Only the latest step: "introduced 11 Nov · helpful", else "answered 12 Nov".
 function readThen({ answeredAt, introducedAt, outcome }: IntroLogRow) {
-  return [
-    answeredAt ? `answered ${formatDayMonth(answeredAt)}` : null,
-    introducedAt ? `introduced ${formatDayMonth(introducedAt)}` : null,
-    outcome ? `outcome: ${OUTCOME_WORDS[outcome]}` : null,
-  ]
-    .filter(Boolean)
-    .join(" · ");
+  if (introducedAt) return [`introduced ${formatDayMonth(introducedAt)}`, outcome ? OUTCOME_WORDS[outcome] : null].filter(Boolean).join(" · ");
+  return answeredAt ? `answered ${formatDayMonth(answeredAt)}` : "";
 }
 
 function LogRow({ row }: { row: IntroLogRow }) {
@@ -40,12 +36,11 @@ function LogRow({ row }: { row: IntroLogRow }) {
       </span>
       <span className="fh-cell fh-then fh-muted">{then || "–"}</span>
       <div className="fh-m-line">
-        <b>{row.asker}</b> → <b>{row.target}</b>
-        {row.targetCompany ? ` (${row.targetCompany})` : ""} via {row.connector}
+        <b>{row.asker}</b> → <b>{row.target}</b> via {row.connector}
       </div>
       <div className="fh-m-st">{pill}</div>
       <div className="fh-m-meta">
-        <span>asked {formatDayMonth(row.askedAt)}</span>
+        <span>{formatDayMonth(row.askedAt)}</span>
         {then ? <span>{then}</span> : null}
       </div>
     </div>
@@ -71,7 +66,7 @@ export function IntroLogTable({ rows, hasAny }: { rows: readonly IntroLogRow[]; 
         </div>
       ) : (
         <div className="mt-3">
-          <EmptyState title={hasAny ? "Nothing in this filter" : "No intros in this period"} description="Each intro a member asks for lands here with its state and dates." />
+          <EmptyState title={hasAny ? "Nothing in this filter" : "No intros in this period"} description="Intros members ask for show here." />
         </div>
       )}
     </div>

@@ -129,7 +129,7 @@ export function AnnouncementComposer({ members, cohorts, community, adminId, isE
     <>
       {!isEmailOn ? (
         <Note kind="needs" className="mb-4">
-          Email is off on this site, so announcements can&apos;t be sent yet. Set up email first (Set up › Mail).
+          Mail isn&apos;t set up, so nothing can be sent yet.
         </Note>
       ) : null}
       <div className="fh-grid">
@@ -163,7 +163,7 @@ export function AnnouncementComposer({ members, cohorts, community, adminId, isE
             htmlFor="a-body"
             label="Message"
             className="mt-3.5"
-            hint={unknownFields.length > 0 ? `Not a field we know: ${unknownFields.join(", ")}. It will be left out.` : "Fields are filled in for each member. A missing first name reads “there”."}
+            hint={unknownFields.length > 0 ? `Not a field we know: ${unknownFields.join(", ")}. It will be left out.` : undefined}
           >
             <Textarea
               ref={bodyRef}
@@ -221,9 +221,7 @@ export function AnnouncementComposer({ members, cohorts, community, adminId, isE
           ) : null}
           <p className="fh-hint" role="status">
             {blockReason ??
-              `${describeCount(wantedCount)} will get the email${inAudience.length > wantedCount ? ` (${inAudience.length - wantedCount} turned announcements off)` : ""}.${
-                willPost ? " It's also pinned at the top of the feed." : audienceKind !== ANNOUNCEMENT_AUDIENCES.everyone ? " Email only: the feed is shared by everyone." : ""
-              }`}
+              `${describeCount(wantedCount)} get the email${inAudience.length > wantedCount ? ` (${inAudience.length - wantedCount} turned it off)` : ""}${willPost ? ", and it's pinned in the feed" : ""}.`}
           </p>
 
           {send.error ? (
@@ -254,7 +252,8 @@ export function AnnouncementComposer({ members, cohorts, community, adminId, isE
           ) : null}
         </form>
 
-        <section className="fh-c5" aria-label="Preview">
+        <details className="fh-c5" aria-label="Preview">
+          <summary className="fh-h3 cursor-pointer">Preview and test</summary>
           {previewMember ? (
             <Field htmlFor="a-preview" label="Preview as">
               <Select id="a-preview" value={previewMember.id} onChange={(event) => setPreviewId(event.target.value)}>
@@ -294,7 +293,7 @@ export function AnnouncementComposer({ members, cohorts, community, adminId, isE
               {test.error.message}
             </p>
           ) : null}
-        </section>
+        </details>
       </div>
     </>
   );

@@ -9,8 +9,9 @@ export const feedManifest = {
   label: "Feed",
   description: "Members post updates, reply and react on the Feed page.",
   icon: House,
-  // On where no admin chose (the owner's call, 2026-11-12); a community whose admin switched it off stays off.
-  isOnByDefault: true,
+  // Off for new communities (round 6, the owner's call, 2026-11-20); an admin can turn it on, and it then sits under
+  // More in the avatar menu. Communities that had members by then keep Feed as it was (migration 0046 saved "on").
+  isOnByDefault: false,
   needsVillage: false,
   requires: [],
   navigation: [{ label: "Feed", href: ROUTES.feedPage, icon: House, section: NAVIGATION_SECTIONS.primary }],

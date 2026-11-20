@@ -11,6 +11,7 @@ import { AdminSection } from "@/shell/admin-section";
 import { reportPageQuery } from "@/modules/admin/queries-reports";
 import { ReportQueue } from "@/modules/admin/components/report-queue";
 import { adminManifest } from "@/modules/admin/manifest";
+import { ROUTES } from "@/platform/http/routes";
 import { modulePage } from "@/platform/modules/module-page";
 
 const FIRST_PAGE = 1;
@@ -24,7 +25,7 @@ export default modulePage(adminManifest, async function AdminReportsPage() {
   queryClient.setQueryData(reportPageQuery(REPORT_FILTERS.open, FIRST_PAGE).queryKey, reports);
 
   return (
-    <AdminSection title="Reports" description="What members flagged. Only you and other admins see this, and nobody is told who reported.">
+    <AdminSection title="Flagged" back={{ href: ROUTES.adminSettings, label: "Set up" }} description="Only admins see this. Nobody is told who reported.">
       <HydrationBoundary state={dehydrate(queryClient)}>
         <ReportQueue viewerId={admin.id} />
       </HydrationBoundary>

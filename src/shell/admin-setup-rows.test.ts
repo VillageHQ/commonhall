@@ -1,9 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import { readSetupLede, readSetupRows, SETUP_ROW_STATES, type SetupFacts } from "./admin-setup-rows.ts";
+import { readSetupRows, SETUP_ROW_PLACES, SETUP_ROW_STATES, type SetupFacts } from "./admin-setup-rows.ts";
 
 const FRESH_INSTALL: SetupFacts = {
-  isBrandSaved: false,
   isMailOn: false,
   hasSendingDomain: false,
   isNetworkOn: true,
@@ -14,72 +13,64 @@ const FRESH_INSTALL: SetupFacts = {
   isPerksShown: false,
   isVoiceOn: false,
   isVoiceReady: false,
+  isJobBoardOn: true,
   featuresOn: 8,
   openReports: 0,
 };
 
 function readStates(facts: SetupFacts) {
-  return readSetupRows(facts).map(({ title, state }) => [title, state.kind === SETUP_ROW_STATES.done ? "Set up" : state.kind === SETUP_ROW_STATES.todo ? "Not yet" : state.text]);
+  return readSetupRows(facts).map(({ title, state }) => [title, state.kind === SETUP_ROW_STATES.done ? "Done" : state.kind === SETUP_ROW_STATES.todo ? "Not yet" : state.text]);
 }
 
-describe("the Set up list", () => {
-  it("lists Commonhall's plumbing pages, then Community's Features and Reports", () => {
-    expect(readSetupRows(FRESH_INSTALL).map(({ title }) => title)).toEqual([
-      "Settings",
-      "Mail",
+describe("the Set up page's rows", () => {
+  it("keeps Mail and Features in view and folds every page for an engineer under Advanced", () => {
+    const rows = readSetupRows(FRESH_INSTALL);
+    expect(rows.filter(({ place }) => place === SETUP_ROW_PLACES.essential).map(({ title }) => title)).toEqual(["Mail", "Features"]);
+    expect(rows.filter(({ place }) => place === SETUP_ROW_PLACES.advanced).map(({ title }) => title)).toEqual([
+      "Rooms server",
       "Village",
-      "Import members",
-      "Sign-in links",
-      "Integrations",
+      "Slack and Discord",
       "Perks",
-      "Rooms",
+      "Job board",
+      "Mail log",
       "Audit log",
-      "Features",
-      "Reports",
+      "Flagged",
+      "Guided start",
     ]);
   });
 
-  it("says what a fresh install still needs, in Commonhall's words", () => {
+  it("says what a fresh install still needs", () => {
     expect(readStates(FRESH_INSTALL)).toEqual([
-      ["Settings", "Not yet"],
       ["Mail", "Not yet"],
-      ["Village", "Not yet"],
-      ["Import members", "optional"],
-      ["Sign-in links", "in use"],
-      ["Integrations", "optional"],
-      ["Perks", "optional"],
-      ["Rooms", "optional"],
-      ["Audit log", "always on"],
       ["Features", "8 on"],
-      ["Reports", "none open"],
+      ["Rooms server", "off"],
+      ["Village", "Not yet"],
+      ["Slack and Discord", "optional"],
+      ["Perks", "optional"],
+      ["Job board", "on"],
+      ["Mail log", "always on"],
+      ["Audit log", "always on"],
+      ["Flagged", "none open"],
+      ["Guided start", "optional"],
     ]);
-    expect(readSetupRows(FRESH_INSTALL).find(({ key }) => key === "links")?.description).toBe(
-      "While mail is off, invite and sign-in links wait here for you to copy and send.",
-    );
   });
 
   it("marks each page set up once it is", () => {
-    const states = readStates({ ...FRESH_INSTALL, isBrandSaved: true, isMailOn: true, hasSendingDomain: true, hasVillageKeys: true, isChatPosting: true, isPerksShown: true, openReports: 2 });
-    expect(states.slice(0, 3).every(([, state]) => state === "Set up")).toBe(true);
-    expect(states).toContainEqual(["Sign-in links", "not needed"]);
-    expect(states).toContainEqual(["Integrations", "Set up"]);
-    expect(states).toContainEqual(["Reports", "2 open"]);
+    const states = readStates({ ...FRESH_INSTALL, isMailOn: true, hasSendingDomain: true, hasVillageKeys: true, isChatPosting: true, isPerksShown: true, isVoiceOn: true, isVoiceReady: true, openReports: 2 });
+    for (const title of ["Mail", "Rooms server", "Village", "Slack and Discord", "Perks"]) expect(states).toContainEqual([title, "Done"]);
+    expect(states).toContainEqual(["Flagged", "2 open"]);
   });
 
-  it("sends a switched-off feature's row to the switch, in Commonhall's words", () => {
-    const rows = readSetupRows({ ...FRESH_INSTALL, isNetworkOn: false, isChatOn: false, isPerksOn: false });
+  it("sends a switched-off feature's row to its own switch on Features", () => {
+    const rows = readSetupRows({ ...FRESH_INSTALL, isNetworkOn: false, isChatOn: false, isPerksOn: false, isJobBoardOn: false });
     const row = (key: string) => rows.find((candidate) => candidate.key === key);
-    expect(row("village")?.state).toEqual({ kind: SETUP_ROW_STATES.word, text: "off" });
-    expect(row("village")?.href).toBe("/admin/features");
-    expect(row("integrations")?.state).toEqual({ kind: SETUP_ROW_STATES.word, text: "optional" });
-    expect(row("integrations")?.href).toBe("/admin/features");
+    expect(row("village")).toMatchObject({ state: { kind: SETUP_ROW_STATES.word, text: "off" }, href: "/admin/features#feature-card-network" });
+    expect(row("rooms")?.href).toBe("/admin/features#feature-card-voice");
+    expect(row("integrations")?.href).toBe("/admin/features#feature-card-chat");
+    expect(row("jobs")?.href).toBe("/admin/features#feature-card-job-board");
     // Perks' own page holds the switch that turns it on.
-    expect(row("perks")?.state).toEqual({ kind: SETUP_ROW_STATES.word, text: "optional" });
     expect(row("perks")?.href).toBe("/admin/perks");
-  });
-
-  it("tells a managed fund it has nothing to paste", () => {
-    expect(readSetupLede("Harbor Ventures", false)).toBe("The plumbing behind Harbor Ventures. Each page says in plain words what it needs.");
-    expect(readSetupLede("Harbor Ventures", true)).toContain("nothing to paste");
+    // Every row has its own address, so none repeats.
+    expect(new Set(rows.map(({ href }) => href)).size).toBe(rows.length);
   });
 });

@@ -1,6 +1,6 @@
 import { Check } from "lucide-react";
 
-import { ButtonLink, TextLink } from "@/shell/console-home-parts";
+import { TextLink } from "@/shell/console-home-parts";
 import type { LaunchStep } from "@/shell/console-launch";
 import { ROUTES } from "@/platform/http/routes";
 
@@ -9,8 +9,7 @@ export function ConsoleLaunchView({ firstName, steps }: { firstName: string; ste
   return (
     <>
       <div className="fh-pagehead">
-        <h1 className="fh-h1 fh-launch-h">{firstName ? `Welcome, ${firstName}. Four steps to your first partner report.` : "Welcome. Four steps to your first partner report."}</h1>
-        <p className="fh-lede">Four steps, in order. The first two take a few minutes; the console fills with real intros once founders join.</p>
+        <h1 className="fh-h1 fh-launch-h">{firstName ? `Welcome, ${firstName}. Four steps to launch.` : "Welcome. Four steps to launch."}</h1>
       </div>
       <section className="fh-sheet fh-launch" aria-label="Launch checklist">
         <ol className="fh-launch-list">
@@ -41,21 +40,9 @@ export function ConsoleLaunchView({ firstName, steps }: { firstName: string; ste
             </li>
           ))}
         </ol>
-        <div className="fh-btn-row">
-          <ButtonLink href={ROUTES.adminInvites} variant="primary">
-            Invite founders
-          </ButtonLink>
-          <ButtonLink href={ROUTES.feed} variant="secondary">
-            See it as a founder
-          </ButtonLink>
-        </div>
       </section>
       <p className="fh-small fh-muted fh-launch-foot">
-        Everything else (mail domain, Village keys, Slack, perks) lives under{" "}
-        <TextLink href={ROUTES.adminSetup}>
-          <b>Set up</b>
-        </TextLink>{" "}
-        in the menu, with plain words. One screen at a time instead? Open the <TextLink href={ROUTES.adminStart}>guided start</TextLink>.
+        Everything else is in <TextLink href={ROUTES.adminSettings}>Set up</TextLink>.
       </p>
     </>
   );

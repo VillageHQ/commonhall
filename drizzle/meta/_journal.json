@@ -316,6 +316,13 @@
       "when": 1795155289978,
       "tag": "0045_notify_schedule",
       "breakpoints": true
+    },
+    {
+      "idx": 46,
+      "version": "7",
+      "when": 1795160685237,
+      "tag": "0046_feed_off_for_new_communities",
+      "breakpoints": true
     }
   ]
 }

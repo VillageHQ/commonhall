@@ -52,7 +52,7 @@ export function DigestTestButton() {
     <div className="mt-3">
       <Button type="button" size="sm" disabled={send.isPending} onClick={() => send.mutate()}>
         <Send aria-hidden="true" />
-        Send me a test digest
+        Send me a test
       </Button>
       <FormError message={send.error?.message ?? null} />
     </div>

@@ -8,6 +8,10 @@ import { AUDIT_ACTIONS } from "@/platform/audit/actions";
 import { withAdminTransaction } from "@/platform/audit/admin-transaction";
 import { recordAdminAction } from "@/platform/audit/record";
 import type { Database } from "@/platform/database/client";
+import type { Environment } from "@/platform/environment";
+import { feedManifest } from "@/modules/feed/manifest";
+import { voiceManifest } from "@/modules/voice/manifest";
+import { readVoiceConfig } from "@/modules/voice/service-settings";
 import type { RequestContext } from "@/platform/http/request-context";
 import { RequestError } from "@/platform/http/request-error";
 import { readEnabledModuleIds, readStoredModuleStates, saveModuleState } from "@/platform/modules/enablement";
@@ -55,30 +59,42 @@ function toIcon({ icon }: ModuleManifest) {
   return createElement(icon, { "aria-hidden": true });
 }
 
-export async function readFeatureScreen(database: Database) {
-  const [storedStates, enabledIds] = await Promise.all([readStoredModuleStates(database, MANIFESTS), readEnabledModuleIds(database, MANIFESTS)]);
-  const features = MANIFESTS.filter(isToggleable).map((manifest) => ({
-    id: manifest.id,
-    label: manifest.label,
-    description: manifest.description,
-    icon: toIcon(manifest),
-    needsVillage: manifest.needsVillage,
-    turnOffNote: manifest.turnOffNote ?? null,
-    isOn: storedStates.get(manifest.id) === true,
-    missingRequirement: manifest.requires.find(({ id }) => !enabledIds.has(id)) ?? null,
-    dependentLabels: MANIFESTS.filter((candidate) => candidate.requires.some(({ id }) => id === manifest.id) && enabledIds.has(candidate.id)).map(({ label }) => label),
-  }));
-  const coreModules = MANIFESTS.filter((manifest) => !isToggleable(manifest)).map((manifest) => ({
-    id: manifest.id,
-    label: manifest.label,
-    description: manifest.description,
-    icon: toIcon(manifest),
-  }));
+// Rooms leads the list (round 6: the thing members join); the rest keep the registry's order.
+function byRoomsFirst(first: ModuleManifest, second: ModuleManifest) {
+  return Number(second.id === voiceManifest.id) - Number(first.id === voiceManifest.id);
+}
+
+// The one line a feature shows in view, beside its name: what it still needs, or where members find it.
+function readFeatureNote(manifest: ModuleManifest, hasVoiceServer: boolean) {
+  if (manifest.id === voiceManifest.id && !hasVoiceServer) return "Needs a voice server";
+  if (manifest.id === feedManifest.id) return "Under More in the menu";
+  return null;
+}
+
+export async function readFeatureScreen(database: Database, environment: Environment = process.env) {
+  const [storedStates, enabledIds, voiceConfig] = await Promise.all([
+    readStoredModuleStates(database, MANIFESTS),
+    readEnabledModuleIds(database, MANIFESTS),
+    readVoiceConfig(database, environment),
+  ]);
+  const features = MANIFESTS.filter(isToggleable)
+    .sort(byRoomsFirst)
+    .map((manifest) => ({
+      id: manifest.id,
+      label: manifest.label,
+      description: manifest.description,
+      note: readFeatureNote(manifest, voiceConfig !== null),
+      icon: toIcon(manifest),
+      needsVillage: manifest.needsVillage,
+      turnOffNote: manifest.turnOffNote ?? null,
+      isOn: storedStates.get(manifest.id) === true,
+      missingRequirement: manifest.requires.find(({ id }) => !enabledIds.has(id)) ?? null,
+      dependentLabels: MANIFESTS.filter((candidate) => candidate.requires.some(({ id }) => id === manifest.id) && enabledIds.has(candidate.id)).map(({ label }) => label),
+    }));
   return {
     features: features.map(({ missingRequirement, ...feature }) => ({
       ...feature,
       missingRequirement: missingRequirement && { id: missingRequirement.id, label: missingRequirement.label },
     })),
-    coreModules,
   };
 }

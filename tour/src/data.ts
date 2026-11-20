@@ -2,7 +2,8 @@ import type { BoardPost, AskTabCounts } from "@/modules/asks/reads-board";
 import type { AskAllowance, AskMember } from "@/modules/asks/contract";
 import type { Directory, DirectoryMember } from "@/modules/members/contract-profile";
 import type { NetworkSearchResult } from "@/modules/network/contract";
-import type { ConsoleHome } from "@/shell/console-home";
+import type { AdminHomeItem } from "@/shell/admin-home";
+import type { ThisWeek } from "@/shell/admin-this-week";
 import type { ComposerCohort, ComposerMember } from "@/modules/admin/components/announcement-composer";
 import type { SentAnnouncement } from "@/modules/admin/reads-announcements";
 import { ANNOUNCEMENT_AUDIENCES } from "@/modules/admin/contract-announcements";
@@ -231,31 +232,13 @@ export function readDirectory(sector: string, isExpertsView = false): Directory 
 
 // ---------- The admin home ----------
 
-export const CONSOLE_HOME: ConsoleHome = {
-  isIntrosOn: true,
-  ledger: {
-    asked: 148,
-    connectorYes: 112,
-    made: 91,
-    declinedByConnector: 14,
-    declinedByTarget: 9,
-    declined: 23,
-    noAnswer: 6,
-    openWithConnector: 11,
-    openWithTarget: 6,
-    open: 17,
-    answered: 64,
-    helpful: 57,
-  },
-  latest: [],
-  members: { joined: FOUNDERS.length + 2, invited: 2, withProfile: FOUNDERS.length, waiting: [] },
-  network: { connected: 15, sharing: 13, noAsks: 1, syncing: 1 },
-  lookups: { isConfigured: true, used: 1240, cap: 7500, usedPercent: 17, pace: 2100, search: 610, paths: 540, fillIn: 90, dailyLimit: 20 },
-  asks: { posted: 41, open: 3, answered: 29, medianHours: 5, withHelpers: 37, helped: 34, intros: 12, introsMade: 8, updates: 9 },
-  mail: { isSet: true, isDemo: false, address: "community@example.com", domain: "example.com", sent: 20, failed: 0 },
-  // "Book a call" clicks (made up), for the console Home's Calls requested sheet.
-  calls: { total: 14, lastThirtyDays: 6 },
-};
+// Admin Home's "This week" (made up): four numbers and what needs the admin.
+export const CONSOLE_THIS_WEEK: ThisWeek = { activeFounders: 14, asksWithNoHelp: 2, introsWaiting: 3, roomJoins: 23 };
+
+export const CONSOLE_HOME_ITEMS: AdminHomeItem[] = [
+  { id: "asks-with-no-help", label: "2 asks have no help yet", href: "/admin/asks", isUrgent: false },
+  { id: "stuck-intros", label: "3 intros waiting over 3 days", href: "/admin/intros", isUrgent: false },
+];
 
 // ---------- Jobs and Find candidates ----------
 

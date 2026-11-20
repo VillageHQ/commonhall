@@ -1,6 +1,7 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
+import { Info } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
 
@@ -17,6 +18,8 @@ export type Feature = {
   id: string;
   label: string;
   description: string;
+  // One line in view beside the name ("Needs a voice server"); the description waits behind the name's info button.
+  note: string | null;
   icon: ReactNode;
   needsVillage: boolean;
   turnOffNote: string | null;
@@ -24,8 +27,6 @@ export type Feature = {
   missingRequirement: { id: string; label: string } | null;
   dependentLabels: string[];
 };
-
-type CoreModule = { id: string; label: string; description: string; icon: ReactNode };
 
 function toCardId(moduleId: string) {
   return `feature-card-${moduleId}`;
@@ -86,20 +87,43 @@ function FeatureAction({ feature, onChanged }: { feature: Feature; onChanged: Ch
   return feature.isOn ? <TurnOffSwitch feature={feature} onChanged={onChanged} /> : <TurnOnSwitch feature={feature} onChanged={onChanged} />;
 }
 
-// One Commonhall setting row per feature (crop setrow.png): its name and one line left, its switch right. A feature
-// paused because what it needs is off says so, and offers to turn that on instead of a switch.
+// One setting row per feature: its name, its note when it has one, and its switch. The name's info button shows the
+// one-line description on hover (its title) or tap. A feature paused because what it needs is off says so, and
+// offers to turn that on instead of a switch.
 function FeatureRow({ feature, onChanged }: { feature: Feature; onChanged: ChangeHandler }) {
-  const { id, label, description, needsVillage, missingRequirement } = feature;
+  const { id, label, description, note, needsVillage, missingRequirement } = feature;
+  const [isHintShown, setIsHintShown] = useState(false);
+  const hint = `${description}${needsVillage ? " Needs a Village account." : ""}`;
   return (
     <li id={toCardId(id)} tabIndex={-1} className="rounded-sm border-b border-rule outline-offset-2 last:border-b-0 [&_.fh-setrow]:border-b-0">
       <SetRow
-        label={label}
+        label={
+          <span className="inline-flex items-center gap-1.5">
+            {label}
+            <button
+              type="button"
+              className="inline-flex size-6 items-center justify-center rounded-full text-graphite hover:text-ink focus-visible:outline-2 focus-visible:outline-ring"
+              title={hint}
+              aria-label={`About ${label}`}
+              aria-expanded={isHintShown}
+              onClick={(event) => {
+                // The button sits in the row's label: a tap shows the line, it never flips the switch.
+                event.preventDefault();
+                setIsHintShown((shown) => !shown);
+              }}
+            >
+              <Info aria-hidden="true" className="size-4" strokeWidth={1.5} />
+            </button>
+          </span>
+        }
         hint={
-          <>
-            {description}
-            {needsVillage ? " Needs a Village account." : null}
-            {missingRequirement ? <span className="mt-0.5 font-semibold text-ribbon">Paused: needs {missingRequirement.label}</span> : null}
-          </>
+          note || isHintShown || missingRequirement ? (
+            <>
+              {note ? <span className="block">{note}</span> : null}
+              {isHintShown ? <span className="block">{hint}</span> : null}
+              {missingRequirement ? <span className="mt-0.5 font-semibold text-ribbon">Paused: needs {missingRequirement.label}</span> : null}
+            </>
+          ) : undefined
         }
         control={<FeatureAction feature={feature} onChanged={onChanged} />}
       />
@@ -107,7 +131,7 @@ function FeatureRow({ feature, onChanged }: { feature: Feature; onChanged: Chang
   );
 }
 
-export function FeatureScreen({ features, coreModules }: { features: Feature[]; coreModules: CoreModule[] }) {
+export function FeatureScreen({ features }: { features: Feature[] }) {
   const router = useRouter();
   const [announcement, setAnnouncement] = useState("");
 
@@ -118,37 +142,15 @@ export function FeatureScreen({ features, coreModules }: { features: Feature[]; 
   }
 
   return (
-    <div className="fh-grid">
+    <Card className="fh-sheet max-w-2xl">
       <p role="status" className="sr-only">
         {announcement}
       </p>
-      <div className="fh-c7 fh-stack">
-        <Card className="fh-sheet">
-          <h2 className="type-h3">Switches</h2>
-          <p className="fh-small fh-muted mt-1.5">Off hides a feature from members and keeps its data; on brings it all back.</p>
-          <ul aria-label="Features you can turn on and off" className="mt-1.5">
-            {features.map((feature) => (
-              <FeatureRow key={feature.id} feature={feature} onChanged={handleChanged} />
-            ))}
-          </ul>
-        </Card>
-      </div>
-      <div className="fh-c5 fh-stack max-lg:mt-4">
-        <Card className="fh-sheet">
-          <section aria-labelledby="always-on-title">
-            <h2 id="always-on-title" className="type-h3">
-              Always on
-            </h2>
-            <ul className="mt-1.5">
-              {coreModules.map(({ id, label, description }) => (
-                <li key={id} className="border-b border-rule last:border-b-0 [&_.fh-setrow]:border-b-0">
-                  <SetRow label={label} hint={description} control={null} />
-                </li>
-              ))}
-            </ul>
-          </section>
-        </Card>
-      </div>
-    </div>
+      <ul aria-label="Features you can turn on and off">
+        {features.map((feature) => (
+          <FeatureRow key={feature.id} feature={feature} onChanged={handleChanged} />
+        ))}
+      </ul>
+    </Card>
   );
 }

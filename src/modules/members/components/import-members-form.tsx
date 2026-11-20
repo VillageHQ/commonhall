@@ -174,7 +174,7 @@ export function ImportMembersForm({ communityBasis, communityTermsDate, today, i
           aria-describedby={errors.file ? "imp-file-hint imp-file-error" : "imp-file-hint"}
         />
         <p className="fh-hint" id="imp-file-hint">
-          A header row with name, email, company and cohort, in any order (export it from your spreadsheet or Airtable as CSV). Up to 20,000 rows.
+          Columns: name, email, company, cohort. Up to 20,000 rows.
         </p>
         {errors.file ? (
           <p className="fh-hint fh-err" id="imp-file-error" role="alert">
@@ -184,15 +184,14 @@ export function ImportMembersForm({ communityBasis, communityTermsDate, today, i
         <label className="fh-setrow fh-check mt-3">
           <div>
             <b>Email each person their invite now</b>
-            <span>Off: they are added as invited, and their invite links wait on Sign-in links for you to send.</span>
+            <span>Off: their links wait on Sign-in links.</span>
           </div>
           <input type="checkbox" name={IMPORT_PARAMS.invite} value="1" className="fh-switch" />
         </label>
         <fieldset className="fh-basis" id="basis" style={{ border: 0, padding: 0, margin: "16px 0 0" }}>
           <legend className="fh-label px-0.5">Profile fill-in: how did these members agree?</legend>
           <p className="fh-hint" style={{ margin: "0 0 8px" }}>
-            Required. Profiles are filled in from public profiles only for members with a consent record. Saved for the whole community, with today’s date and your
-            name.
+            Required. Saved with today’s date and your name.
           </p>
           <OptionCard
             name="lookup_basis"
@@ -247,8 +246,8 @@ export function ImportMembersForm({ communityBasis, communityTermsDate, today, i
         </div>
       </form>
       {isCompact ? null : (
-      <section className="fh-sheet fh-c5">
-        <h2 className="fh-h3">The columns</h2>
+      <details className="fh-sheet fh-c5">
+        <summary className="fh-h3 cursor-pointer">An example file</summary>
         <table className="fh-tbl" style={{ marginTop: 10 }}>
           <thead>
             <tr>
@@ -280,7 +279,7 @@ export function ImportMembersForm({ communityBasis, communityTermsDate, today, i
         <p className="fh-small fh-muted" style={{ marginTop: 6 }}>
           Optional: a “community role” column (Founder, Mentor, Expert, Advisor, Entrepreneur in residence or Fund team). Empty means Founder; only admins can change it later.
         </p>
-      </section>
+      </details>
       )}
     </div>
   );

@@ -12,6 +12,7 @@ const NETWORK: Feature = {
   id: "network",
   label: "Network",
   description: "Search each other's networks.",
+  note: null,
   icon: null,
   needsVillage: true,
   turnOffNote: "Members stay in the Village group.",
@@ -23,7 +24,7 @@ const NETWORK: Feature = {
 const INTROS: Feature = { ...NETWORK, id: "intros", label: "Intros", turnOffNote: null, dependentLabels: [] };
 
 function renderScreen(features: Feature[]) {
-  const element = createElement(FeatureScreen, { features, coreModules: [{ id: "members", label: "Members and invites", description: "", icon: null }] });
+  const element = createElement(FeatureScreen, { features });
   render(createElement(QueryClientProvider, { client: new QueryClient() }, element));
 }
 
@@ -93,11 +94,15 @@ describe("the features screen", () => {
     });
   });
 
-  it("shows core modules with no button", () => {
-    renderScreen([]);
+  it("shows a feature's name and note, and its one line only on hover or tap", () => {
+    renderScreen([{ ...NETWORK, note: "Needs a voice server" }]);
+    const about = screen.getByRole("button", { name: "About Network" });
 
-    expect(screen.getByText("Members and invites")).toBeTruthy();
-    expect(screen.queryByRole("button")).toBeNull();
-    expect(screen.queryByRole("switch")).toBeNull();
+    expect(screen.getByText("Needs a voice server")).toBeTruthy();
+    expect(screen.queryByText(/Search each other's networks/)).toBeNull();
+    expect(about.getAttribute("title")).toBe("Search each other's networks. Needs a Village account.");
+    fireEvent.click(about);
+    expect(screen.getByText("Search each other's networks. Needs a Village account.")).toBeTruthy();
+    expect(screen.getByRole("switch", { name: "Network" }).getAttribute("aria-checked")).toBe("true");
   });
 });

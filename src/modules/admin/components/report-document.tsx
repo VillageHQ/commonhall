@@ -3,7 +3,10 @@ import { Ledger } from "@/components/ui/figures";
 import { Note } from "@/components/ui/note";
 
 import { formatDayMonth } from "../console-periods";
-import { hoursWord, medianTile, NO_ANSWER_DAYS, OTHER_CONNECTORS, readConnectorRows, REPORT_FOOT, RESULT_ROWS, type BreakdownRow, type ReportStats } from "../report-stats";
+import { hoursWord, NO_ANSWER_DAYS, readConnectorRows, RESULT_ROWS, type BreakdownRow, type ReportStats } from "../report-stats";
+
+// The page's foot. The partner email and the CSV keep the full words (REPORT_FOOT).
+const REPORT_FOOT_SHORT = "Names, states and dates only; notes stay private.";
 
 const percentOf = (part: number, whole: number) => (whole ? `${Math.round((part / whole) * 100)}%` : undefined);
 const barOf = (part: number, whole: number) => (part / Math.max(whole, 1)) * 100;
@@ -41,7 +44,7 @@ function Table({ first, columns, rows }: { first: string; columns: Column[]; row
           <tr key={row.name}>
             <td>
               <span className="fh-serif">{row.name}</span>
-              {row.isCredited === false ? <small className="fh-muted block">not named to partners</small> : null}
+              {row.isCredited === false ? <small className="fh-muted block">not credited</small> : null}
             </td>
             {columns.map(({ key }) => (
               <td key={key} className="fh-n">
@@ -57,33 +60,37 @@ function Table({ first, columns, rows }: { first: string; columns: Column[]; row
 
 type BreakdownProps = { title: string; first: string; columns: Column[]; rows: readonly BreakdownRow[]; empty?: string };
 
+const isAllZero = (row: BreakdownRow, columns: Column[]) => columns.every(({ key }) => !row[key]);
+
+// Rows that are all zero are left out. A breakdown left with one row says nothing (every intro in one place), so it
+// is left out too, unless it is the only row there is; with none it says its empty line.
 function Breakdown({ title, first, columns, rows, empty }: BreakdownProps) {
+  const shown = rows.filter((row) => !isAllZero(row, columns));
+  if (shown.length === 0 && !empty) return null;
+  if (shown.length === 1 && rows.length > 1) return null;
   return (
     <div>
       <h2>{title}</h2>
-      {rows.length > 0 || !empty ? <Table first={first} columns={columns} rows={rows} /> : <p className="fh-small fh-muted">{empty}</p>}
+      {shown.length > 0 ? <Table first={first} columns={columns} rows={shown} /> : <p className="fh-small fh-muted">{empty}</p>}
     </div>
   );
 }
 
 function Outcomes({ report }: { report: ReportStats }) {
   const { intros: stats } = report;
+  // Results at zero are left out.
   const rows: { label: string; note: string | null; value: string }[] = [
-    ...Object.entries(RESULT_ROWS).map(([key, label]) => ({ label, note: null, value: String(stats.results[key as keyof typeof stats.results]) })),
-    {
-      label: "Found it helpful",
-      note: stats.answered ? `${stats.notReally} not really, ${stats.tooEarly} too early to say` : null,
-      value: stats.answered ? `${stats.helpful} of ${stats.answered} who answered` : "no answers yet",
-    },
-    ...(stats.pending
-      ? [{ label: "Pending", note: `introduced less than ${stats.outcomeDays} days ago; asked at ${stats.outcomeDays} days`, value: `${stats.pending} pending` }]
-      : []),
+    ...Object.entries(RESULT_ROWS)
+      .map(([key, label]) => ({ label, count: stats.results[key as keyof typeof stats.results] }))
+      .filter(({ count }) => count > 0)
+      .map(({ label, count }) => ({ label, note: null, value: String(count) })),
+    ...(stats.pending ? [{ label: "Not asked yet", note: null, value: String(stats.pending) }] : []),
   ];
+  if (rows.length === 0) return null;
   return (
     <section className="fh-outcomes" aria-labelledby="outcomes-h">
       <div className="fh-ohead">
         <h2 id="outcomes-h">What came of the intros</h2>
-        <span>asked {stats.outcomeDays} days after each intro</span>
       </div>
       {rows.map(({ label, note, value }) => (
         <div key={label} className="fh-orow">
@@ -94,9 +101,6 @@ function Outcomes({ report }: { report: ReportStats }) {
           <b>{value}</b>
         </div>
       ))}
-      <p className="fh-oline">
-        One line for the partner meeting: <b>{report.summary}</b>
-      </p>
     </section>
   );
 }
@@ -123,9 +127,6 @@ function AsksAndUpdates({ asks }: { asks: NonNullable<ReportStats["asks"]> }) {
           <span>median time to first help</span>
         </div>
       </div>
-      <p className="fh-small mt-2.5">
-        {asks.helped} asks got an offer of help from a member; {asks.intros} intro{asks.intros === 1 ? "" : "s"} started from an ask, {asks.introsMade} made.
-      </p>
     </>
   );
 }
@@ -146,11 +147,14 @@ export function ReportDocument({ report, preparedBy, logo, now = new Date() }: R
           {period.range}
         </span>
       </div>
-      <h1 className="fh-h1">{report.title}</h1>
+      {/* The verdict first: the one line for the partner meeting (the email's subject is the report's title). */}
+      <h1 className="fh-h2" data-testid="report-verdict">
+        {report.summary}
+      </h1>
       <p className="fh-by">
-        Prepared by {preparedBy} · {formatDayMonth(now)} · from the intro log
+        Prepared by {preparedBy} · {formatDayMonth(now)}
       </p>
-      <div className="fh-kv">
+      <div className="fh-kv" style={{ gridTemplateColumns: "repeat(3, minmax(0, 1fr))" }}>
         <div>
           <b>{stats.asked}</b>
           <span>intros asked for</span>
@@ -161,11 +165,7 @@ export function ReportDocument({ report, preparedBy, logo, now = new Date() }: R
         </div>
         <div className="fh-good">
           <b>{stats.answered ? stats.helpful : "–"}</b>
-          <span>found it helpful{stats.answered ? `, ${stats.helpful} of ${stats.answered}` : ", no answers yet"}</span>
-        </div>
-        <div>
-          <b>{medianTile(stats.medianDays)}</b>
-          <span>median from ask to intro</span>
+          <span>found it helpful</span>
         </div>
       </div>
       <Outcomes report={report} />
@@ -173,31 +173,13 @@ export function ReportDocument({ report, preparedBy, logo, now = new Date() }: R
       <Ledger
         rows={[
           { label: "Asked for an intro", value: stats.asked, percent: barOf(stats.asked, stats.asked) },
-          { label: "Connector said yes", value: stats.connectorYes, share: percentOf(stats.connectorYes, stats.asked), percent: barOf(stats.connectorYes, stats.asked), tone: "yes" },
-          { label: "Target said yes", value: stats.made, share: percentOf(stats.made, stats.connectorYes), percent: barOf(stats.made, stats.asked), tone: "yes" },
-          { label: <b>Introduced</b>, value: stats.made, percent: barOf(stats.made, stats.asked), tone: "made", hasBookmark: true },
-          {
-            label: "Declined",
-            note: `${stats.declinedConnector} at the connector, ${stats.declinedTarget} by the person asked for`,
-            value: stats.declined,
-            percent: barOf(stats.declined, stats.asked),
-            tone: "declined",
-          },
-          {
-            label: `No answer in ${NO_ANSWER_DAYS} days`,
-            note: `${stats.expiredConnector} at the connector, ${stats.expiredTarget} with the person asked for`,
-            value: stats.noAnswer,
-            percent: barOf(stats.noAnswer, stats.asked),
-            tone: "declined",
-          },
-          {
-            label: "Still open",
-            note: `${stats.openConnector} with the connector, ${stats.openTarget} with the target`,
-            value: stats.open,
-            percent: barOf(stats.open, stats.asked),
-            tone: "open",
-          },
-        ]}
+          { label: "Connector said yes", value: stats.connectorYes, share: percentOf(stats.connectorYes, stats.asked), percent: barOf(stats.connectorYes, stats.asked), tone: "yes" as const },
+          { label: <b>Introduced</b>, value: stats.made, percent: barOf(stats.made, stats.asked), tone: "made" as const, hasBookmark: true },
+          { label: "Declined", value: stats.declined, percent: barOf(stats.declined, stats.asked), tone: "declined" as const },
+          { label: `No answer in ${NO_ANSWER_DAYS} days`, value: stats.noAnswer, percent: barOf(stats.noAnswer, stats.asked), tone: "declined" as const },
+          { label: "Withdrawn", value: stats.withdrawn, percent: barOf(stats.withdrawn, stats.asked), tone: "declined" as const },
+          { label: "Still open", value: stats.open, percent: barOf(stats.open, stats.asked), tone: "open" as const },
+        ].filter(({ value }) => value > 0)}
       />
       <div className="fh-two">
         <div>
@@ -205,10 +187,7 @@ export function ReportDocument({ report, preparedBy, logo, now = new Date() }: R
               email name only those who turned on "Credit me in reports". */}
           <div className="fh-no-print">
             <Breakdown title="Top connectors" first="Member" columns={CONNECTOR_COLUMNS} rows={readConnectorRows(stats, { everyone: true })} empty="No connectors yet." />
-            <p className="fh-small fh-muted mt-2">
-              Partners see a name only when that member turned on “Credit me in reports” on Your data. Everyone else is counted under {OTHER_CONNECTORS}, also in the
-              PDF, the CSV and the email.
-            </p>
+            <p className="fh-small fh-muted mt-2">Partners see only those who turned on “Credit me in reports”.</p>
           </div>
           <div className="fh-print-only">
             <Breakdown title="Top connectors" first="Member" columns={CONNECTOR_COLUMNS} rows={readConnectorRows(stats)} empty="No connectors yet." />
@@ -220,14 +199,9 @@ export function ReportDocument({ report, preparedBy, logo, now = new Date() }: R
         <Breakdown title="By what the founder needed" first="Need" columns={BREAKDOWN_COLUMNS} rows={stats.needs} />
         <Breakdown title="By cohort" first="Cohort" columns={BREAKDOWN_COLUMNS} rows={stats.cohorts} empty="No intros yet." />
       </div>
-      <h2>The no’s, too</h2>
-      <p className="fh-small">
-        {stats.declinedConnector} declined by the connector and {stats.declinedTarget} by the person asked for; {stats.noAnswer} had no answer in {NO_ANSWER_DAYS}{" "}
-        days and are not counted as declines. {stats.withdrawn} withdrawn by the asker. {stats.open} still open. Declines carry no reason, by design.
-      </p>
-      {stats.asked ? null : <Note className="mt-4">No intros in this period yet. The report fills in from the intro log as members ask for intros.</Note>}
+      {stats.asked ? null : <Note className="mt-4">No intros in this period yet.</Note>}
       {asks ? <AsksAndUpdates asks={asks} /> : null}
-      <p className="fh-foot">{REPORT_FOOT}</p>
+      <p className="fh-foot">{REPORT_FOOT_SHORT}</p>
     </article>
   );
 }

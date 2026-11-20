@@ -1211,7 +1211,7 @@ describe("asks", () => {
   });
 
   describe("the admin asks page", () => {
-    it("counts every ask the way the data says, and lists every ask and update", async () => {
+    it("lists every ask and update, the open asks nobody helped with first", async () => {
       const answeredId = await createAsk(asker, { title: "Answered one" });
       await call(postAnswer, helper, { askId: answeredId, body: "Done it." });
       const solvedId = await createAsk(asker, { title: "Solved one" });
@@ -1225,12 +1225,11 @@ describe("asks", () => {
 
       const page = await readAdminAsks(database);
 
-      expect(page.figures).toMatchObject({ posted: 4, open: 2, answered: 2, updates: 1 });
       expect(page.rows.map(({ title }) => title)).toEqual(expect.arrayContaining(["Answered one", "Solved one", "Elsewhere one", "Waiting longest", "An update"]));
       expect(page.rows.find(({ title }) => title === "Solved one")).toMatchObject({ status: "answered", canClose: false });
       expect(page.rows.find(({ title }) => title === "An update")).toMatchObject({ status: "update" });
-      expect(page.oldest.map(({ title }) => title)).toEqual(["Waiting longest"]);
-      expect(page.weeklyAllowance).toBe(ASK_ALLOWANCE.maximum);
+      expect(page.noHelp.map(({ title }) => title)).toEqual(["Waiting longest"]);
+      expect(page.rest.map(({ title }) => title)).not.toContain("Waiting longest");
     });
 
     it("doesn't count an answer from a removed member, as the board doesn't show it", async () => {
@@ -1241,7 +1240,7 @@ describe("asks", () => {
       const page = await readAdminAsks(database);
 
       expect(page.rows.find(({ id }) => id === askId)?.answerCount).toBe(0);
-      expect(page.oldest.map(({ id }) => id)).toEqual([askId]);
+      expect(page.noHelp.map(({ id }) => id)).toEqual([askId]);
     });
 
     it("lists reported asks once each, and the pinned ones", async () => {

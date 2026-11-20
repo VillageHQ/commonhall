@@ -214,7 +214,7 @@ export default modulePage(chatManifest, async function AdminIntegrationsPage() {
   const weekSample = composeWeekPost(CHAT_KINDS.discord, { community: branding.name, introsMade: 3, openAsks: 5, url: `${appUrl}${ROUTES.admin}` });
 
   return (
-    <AdminSection title="Integrations" description="Post new asks and a weekly line to your community’s Slack or Discord. Every post links back here.">
+    <AdminSection title="Slack and Discord" back={{ href: ROUTES.adminSettings, label: "Set up" }} description="New asks and a weekly line in your chat.">
       <div className="fh-grid">
         <div className="fh-c7 fh-stack">
           <SlackSheet connection={slack} manifestJson={JSON.stringify(manifest, null, 2)} createUrl={createUrl} />

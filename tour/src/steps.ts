@@ -217,6 +217,9 @@ export const TOUR_STEPS: readonly TourStep[] = [
       await hands.wait(300);
       await hands.type("#a-body", ANNOUNCEMENT_BODY);
       await hands.wait(400);
+      // The preview sits folded under "Preview and test": open it, then point at the email.
+      await hands.click("details[aria-label='Preview'] > summary");
+      await hands.wait(300);
       await hands.point(".fh-mail");
       await hands.wait(1600);
       await hands.tap("form[aria-label='New announcement'] button[type='submit']");
@@ -225,17 +228,15 @@ export const TOUR_STEPS: readonly TourStep[] = [
   },
   {
     id: "admin",
-    label: "Intros and calls",
-    caption: "The fund's home: every intro asked, made and declined, and every call booked with a mentor.",
+    label: "This week",
+    caption: "The fund's home: this week's active founders, asks, intros and room joins, and what needs you.",
     start: "/admin",
     still: "/admin",
     async play(hands) {
       await hands.wait(600);
-      await hands.point("[data-testid='admin-home-intros']");
-      await hands.wait(1400);
-      await hands.point("#h-ledger");
-      await hands.wait(1600);
-      await hands.point("[data-testid='admin-home-calls']");
+      await hands.point("[data-testid='admin-home-this-week']");
+      await hands.wait(1800);
+      await hands.point("[data-testid='admin-home-needs-you']");
       await hands.wait(2000);
     },
   },

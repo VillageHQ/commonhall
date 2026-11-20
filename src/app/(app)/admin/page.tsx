@@ -15,12 +15,12 @@ export const metadata: Metadata = { title: PAGE_TITLES.admin };
 
 const CHECKLIST_PARAM = "checklist";
 
-// The console's Home: the launch checklist until all four steps are done once (and on ?checklist=1 after), then the
-// dashboard of every intro, the members, the network, lookups, asks and mail.
+// The console's Home: the launch checklist until all four steps are done once (and on ?checklist=1 after), then this
+// week's numbers and what needs the admin.
 export default modulePage(adminManifest, async function AdminHomePage({ searchParams }: { searchParams?: Promise<Record<string, string | undefined>> } = {}) {
   const admin = await requireAdmin();
   const query = (await searchParams) ?? {};
-  const { communityName, steps, isLaunched, home, items } = await readConsoleHomePage(getDatabase(), process.env);
-  if (!isLaunched || !home || query[CHECKLIST_PARAM] === "1") return <ConsoleLaunchView firstName={readFirstName(admin.name, admin.email)} steps={steps} />;
-  return <AdminHomeView communityName={communityName} home={home} items={items} />;
+  const { communityName, steps, isLaunched, thisWeek, items } = await readConsoleHomePage(getDatabase(), process.env);
+  if (!isLaunched || !thisWeek || query[CHECKLIST_PARAM] === "1") return <ConsoleLaunchView firstName={readFirstName(admin.name, admin.email)} steps={steps} />;
+  return <AdminHomeView communityName={communityName} thisWeek={thisWeek} items={items} />;
 });

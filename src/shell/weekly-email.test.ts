@@ -562,11 +562,11 @@ ${HELP_NOTE}`;
       expect(await readFeedState()).toBe("on");
     });
 
-    // The default turned on later (the owner's call, 2026-11-12): a community with no stored choice has the feed.
-    it("leaves a new community with no members on the default, on", async () => {
+    // The default turned off for new communities in round 6 (the owner's call, 2026-11-20).
+    it("leaves a new community with no members on the default, off", async () => {
       await database.execute(sql.raw(feedRule));
       expect(await readFeedState()).toBeNull();
-      expect((await readEnabledIds(database)).has("feed")).toBe(true);
+      expect((await readEnabledIds(database)).has("feed")).toBe(false);
     });
 
     it("never changes a stored choice", async () => {

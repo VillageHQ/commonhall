@@ -1,14 +1,11 @@
 import { dehydrate, HydrationBoundary, QueryClient } from "@tanstack/react-query";
-import { Plus } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 
 import { EmptyState } from "@/components/empty-state";
 import { ChipCount, ChipRow, CHIP_CLASSES } from "@/components/ui/chip";
-import { Button, ButtonRow } from "@/components/ui/button";
 import { SearchBox } from "@/components/ui/search-box";
 import { getDatabase } from "@/platform/database/client";
-import { readBranding } from "@/platform/branding/branding";
 import { readResendConfig } from "@/platform/email/resend";
 import { ROUTES } from "@/platform/http/routes";
 import { requireAdmin } from "@/platform/auth/session";
@@ -21,7 +18,6 @@ import {
   countConsoleMembers,
   matchesConsoleFilter,
   matchesConsoleSearch,
-  MEMBERS_LEGEND,
   parseConsoleMemberFilter,
   SHOWN_WHEN_FULL_FILTERS,
   sortConsoleMembers,
@@ -34,9 +30,7 @@ import { readWaitingMemberCount, readWaitingMembers } from "@/modules/members/se
 import { waitingMembersQuery } from "@/modules/members/queries-invites";
 import { LinkedinClaimCard } from "@/modules/members/components/shared/linkedin-claim-card";
 import { adminManifest } from "@/modules/admin/manifest";
-
-// Commonhall's Import members page (Set up). Built by the Set up pages; Members only links to it.
-const IMPORT_PAGE = "/admin/import";
+import { AdminSection } from "@/shell/admin-section";
 
 export const metadata: Metadata = { title: "Members" };
 
@@ -57,9 +51,8 @@ export default modulePage(adminManifest, async function AdminMembersPage({ searc
   const search = (q ?? "").trim().slice(0, MAXIMUM_SEARCH_LENGTH);
 
   const database = getDatabase();
-  const [everyone, branding, waiting, waitingCount] = await Promise.all([
+  const [everyone, waiting, waitingCount] = await Promise.all([
     readConsoleMembers(database),
-    readBranding(database),
     readWaitingMembers(database),
     readWaitingMemberCount(database),
   ]);
@@ -71,29 +64,7 @@ export default modulePage(adminManifest, async function AdminMembersPage({ searc
   queryClient.setQueryData(waitingMembersQuery.queryKey, { members: waiting, waitingCount });
 
   return (
-    <>
-      <div className="fh-pagehead">
-        <div className="fh-row">
-          <div className="min-w-60 flex-1">
-            <h1 className="fh-h1">Members</h1>
-            <p className="fh-lede">
-              {counts.all} people in {branding.name}. Members write their own profiles; only admins see email addresses.
-            </p>
-          </div>
-          <ButtonRow>
-            <Button asChild size="sm">
-              <Link href={ROUTES.adminInvites}>
-                <Plus aria-hidden="true" strokeWidth={1.5} />
-                Add members
-              </Link>
-            </Button>
-            <Button asChild size="sm" variant="secondary">
-              <Link href={IMPORT_PAGE}>Import a CSV</Link>
-            </Button>
-          </ButtonRow>
-        </div>
-      </div>
-
+    <AdminSection title="Members">
       <HydrationBoundary state={dehydrate(queryClient)}>
         <WaitingMembers isEmailConfigured={readResendConfig(process.env) !== null} />
       </HydrationBoundary>
@@ -113,14 +84,12 @@ export default modulePage(adminManifest, async function AdminMembersPage({ searc
 
       <MemberTable members={shown} empty={<EmptyState title="Nobody here" description="Try another filter." />} />
 
-      <p className="fh-small fh-muted mt-3">{MEMBERS_LEGEND}</p>
-
       <details className="fh-copybox mt-7">
         <summary>Free up a LinkedIn profile</summary>
         <div className="mt-3">
           <LinkedinClaimCard />
         </div>
       </details>
-    </>
+    </AdminSection>
   );
 });

@@ -18,8 +18,7 @@ import { API_ROUTES, ROUTES } from "@/platform/http/routes";
 import { acknowledgedResponseSchema } from "@/platform/http/contract";
 import { postRequest } from "@/platform/http/post-request";
 
-// Commonhall's Import members and Mail pages (Set up). Invites only link to them.
-const IMPORT_PAGE = "/admin/import";
+// The Mail page (Set up): the invite form links to it while mail is off.
 const MAIL_PAGE = ROUTES.adminMail;
 
 const EMPTY_MESSAGE = "Paste at least one email address.";
@@ -191,18 +190,11 @@ export function InviteSheet({ community, inviterName, inviterRole, isEmailOn, is
           maxLength={MAXIMUM_LISTED_INVITES * 400}
           placeholder={"e.g. ada.founder@example.com\nSam Lee, sam.lee@example.com"}
         />
-        <p className="fh-hint">
-          {isEmailOn ? (
-            <>
-              Up to {MAXIMUM_LISTED_INVITES} at a time. People who are already members are skipped. A whole alumni list? <Link href={IMPORT_PAGE}>Import members (CSV)</Link>.
-            </>
-          ) : (
-            <>
-              Mail is not set up, so invites are not emailed: send the sign-in links yourself in one click below, or copy them all. To email them from the portal, set up{" "}
-              <Link href={MAIL_PAGE}>Mail</Link>.
-            </>
-          )}
-        </p>
+        {isEmailOn ? null : (
+          <p className="fh-hint">
+            <Link href={MAIL_PAGE}>Mail</Link> isn&apos;t set up: you send the sign-in links yourself.
+          </p>
+        )}
 
         {/* Community's cohort (group), as on Import members' CSV column and the setup step's single invite: one for
             everyone pasted here, on their card when they join. */}
@@ -210,12 +202,11 @@ export function InviteSheet({ community, inviterName, inviterRole, isEmailOn, is
           Cohort (optional)
         </label>
         <input className="fh-input" id="invite-cohort" name="cohort" autoComplete="off" maxLength={PROFILE_LIMITS.cohort} placeholder="e.g. Fall 2025" />
-        <p className="fh-hint">Goes on the card of everyone in this list. They can change it later.</p>
 
         {isFillInShown ? (
           <fieldset className="fh-basis mt-4 border-0 p-0" id="basis">
             <legend className="fh-label">Profile fill-in: how did these members agree?</legend>
-            <p className="fh-hint mt-0 mb-2">Required. Profiles are filled in from public profiles only for members with a consent record. Saved for each member with today’s date and your name.</p>
+            <p className="fh-hint mt-0 mb-2">Required. Saved with today’s date and your name.</p>
             <div className="grid gap-2.5">
               <OptionCard
                 id="basis-terms"

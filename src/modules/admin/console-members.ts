@@ -29,8 +29,9 @@ export const CONSOLE_MEMBER_FILTER_LABELS: Record<ConsoleMemberFilter, string> =
 };
 
 // Commonhall's six chips, always shown; then Community's own, only while they hold someone.
-export const ALWAYS_SHOWN_FILTERS: readonly ConsoleMemberFilter[] = ["all", "invited", "joined", "connected", "admins", "delete"];
-export const SHOWN_WHEN_FULL_FILTERS: readonly ConsoleMemberFilter[] = ["attention", "removed"];
+// "Asked to delete" shows only when someone did (Community members delete their own account, so it is usually 0).
+export const ALWAYS_SHOWN_FILTERS: readonly ConsoleMemberFilter[] = ["all", "invited", "joined", "connected", "admins"];
+export const SHOWN_WHEN_FULL_FILTERS: readonly ConsoleMemberFilter[] = ["attention", "delete", "removed"];
 
 export function parseConsoleMemberFilter(value: unknown): ConsoleMemberFilter {
   return typeof value === "string" && value in CONSOLE_MEMBER_FILTERS ? (value as ConsoleMemberFilter) : CONSOLE_MEMBER_FILTERS.all;
@@ -123,4 +124,3 @@ export const STATUS_PILLS: Record<ConsoleMemberState, { tone: "made" | "open" | 
   removed: { tone: "declined", label: "Removed" },
 };
 
-export const MEMBERS_LEGEND = "Invited: the invite went out, they haven’t signed in. Joined: signed in. Connected: joined and connected their network through Village.";

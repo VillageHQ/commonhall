@@ -162,9 +162,9 @@ export function CreditMeter({ lookups, used, cap, isConfigured, dailyLimit, outO
       </div>
       <Meter
         figure={n(used)}
-        figureNote={isConfigured ? `lookups used this month, of ${n(cap)}` : "no Village key"}
+        figureNote={isConfigured ? `used, of ${n(cap)}` : "no Village key"}
         percent={share}
-        mark={{ percent: 80, label: "80% warning" }}
+        mark={{ percent: 80, label: "80%" }}
         isInk
       />
       <Breakdown
@@ -190,8 +190,7 @@ export function CreditMeter({ lookups, used, cap, isConfigured, dailyLimit, outO
         </Note>
       ) : null}
       <p className="fh-small fh-muted mt-3">
-        {used ? `On pace for about ${n(pace)} this month. ` : ""}Counted by this portal for every lookup it makes; <a href={VILLAGE_PLATFORM_LINKS.usage}>Village’s own usage log</a> is the
-        record. Each member can use up to {n(dailyLimit)} a day.
+        {used ? `On pace for about ${n(pace)}. ` : ""}Up to {n(dailyLimit)} a member a day. <a href={VILLAGE_PLATFORM_LINKS.usage}>Village’s usage log</a>
       </p>
     </>
   );
@@ -333,9 +332,7 @@ export function NetworkMeter({ reach, isConfigured }: { reach: Reach; isConfigur
         ]}
       />
       <p className="fh-small fh-muted mt-3">
-        {isConfigured
-          ? "Paths come from members who connect and agree to share. Each one makes search warmer for everyone."
-          : "Village is not connected, so nobody can connect a network yet."}
+        {isConfigured ? "Each one who shares makes search warmer." : "Village isn’t connected yet."}
       </p>
     </>
   );

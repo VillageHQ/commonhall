@@ -9,10 +9,10 @@ import { PerksFrame } from "@/modules/perks/components/perks-frame";
 import { perksManifest } from "@/modules/perks/manifest";
 import { readPerksUrl } from "@/modules/perks/service";
 import { requireAdmin } from "@/platform/auth/session";
-import { readBranding } from "@/platform/branding/branding";
 import { PAGE_TITLES } from "@/platform/branding/page-metadata";
 import { getDatabase } from "@/platform/database/client";
 import { isDemoMode } from "@/platform/demo/mode";
+import { ROUTES } from "@/platform/http/routes";
 import { modulePage } from "@/platform/modules/module-page";
 import { AdminSection } from "@/shell/admin-section";
 import { readEnabledIds } from "@/shell/enabled-modules";
@@ -20,12 +20,12 @@ import { readEnabledIds } from "@/shell/enabled-modules";
 export const metadata: Metadata = { title: PAGE_TITLES.adminPerks };
 
 // The demo shows made-up deals without a marketplace (Community only).
-const DEMO_STATUS = "Demo: members see a made-up list of deals at /perks. A real community pastes its BuiltFirst embed code here.";
+const DEMO_STATUS = "Demo: members see made-up deals.";
 
 function readStatus(url: string | null, isShown: boolean, isDemo: boolean) {
   if (!url && isShown && isDemo) return DEMO_STATUS;
-  if (!url) return "No marketplace yet: members don’t see Perks.";
-  return isShown ? "Members see Perks: on Today, in the menu and at /perks." : "Saved, but switched off: members don’t see Perks.";
+  if (!url) return "Not yet: members don’t see Perks.";
+  return isShown ? "Members see Perks." : "Saved, but switched off.";
 }
 
 // Commonhall's Admin › Perks (lib/perks.mjs). The page belongs to the admin module so it stays open while Perks is
@@ -34,13 +34,13 @@ function readStatus(url: string | null, isShown: boolean, isDemo: boolean) {
 export default modulePage(adminManifest, async function AdminPerksPage() {
   await requireAdmin();
   const database = getDatabase();
-  const [url, enabledIds, branding] = await Promise.all([readPerksUrl(database), readEnabledIds(database), readBranding(database)]);
+  const [url, enabledIds] = await Promise.all([readPerksUrl(database), readEnabledIds(database)]);
   const isShown = enabledIds.has(perksManifest.id);
   const isOn = url !== null && isShown;
   const StatusIcon = isOn ? CircleCheck : EyeOff;
 
   return (
-    <AdminSection title="Perks" description={`Show your BuiltFirst perks marketplace inside the portal, in ${branding.name}’s name.`}>
+    <AdminSection title="Perks" back={{ href: ROUTES.adminSettings, label: "Set up" }}>
       <div className="fh-grid">
         <div className="fh-c7 fh-stack">
           <PerksForm savedUrl={url} isShown={isShown} />
@@ -64,11 +64,8 @@ export default modulePage(adminManifest, async function AdminPerksPage() {
             {url ? (
               <PerksFrame url={url} title="Perks preview" isPreview />
             ) : (
-              <p className="fh-small fh-muted mt-1.5">
-                Paste the embed code to see your marketplace here. No BuiltFirst account yet? BuiltFirst runs the marketplace and its deals; you open it on builtfirst.com.
-              </p>
+              <p className="fh-small fh-muted mt-1.5">Paste the embed code to see it here.</p>
             )}
-            <p className="fh-small fh-muted mt-2">BuiltFirst may ask members to sign in with a BuiltFirst account.</p>
           </Card>
         </div>
       </div>

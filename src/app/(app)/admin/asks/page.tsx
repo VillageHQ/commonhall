@@ -7,7 +7,7 @@ import { modulePage } from "@/platform/modules/module-page";
 import { readAdminAsks } from "@/shell/admin-asks";
 import { ASKS_FLASHES, AdminAsksView } from "@/shell/admin-asks-view";
 
-export const metadata: Metadata = { title: "Asks & digest" };
+export const metadata: Metadata = { title: "Asks" };
 
 type AdminAsksPageProps = { searchParams: Promise<{ m?: string }> };
 

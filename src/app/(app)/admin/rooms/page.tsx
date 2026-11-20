@@ -8,18 +8,19 @@ import { voiceManifest } from "@/modules/voice/manifest";
 import { readVoiceSettingsView } from "@/modules/voice/service-settings";
 import { requireAdmin } from "@/platform/auth/session";
 import { getDatabase } from "@/platform/database/client";
+import { ROUTES } from "@/platform/http/routes";
 import { modulePage } from "@/platform/modules/module-page";
 import { AdminSection } from "@/shell/admin-section";
 
-export const metadata: Metadata = { title: "Rooms" };
+export const metadata: Metadata = { title: "Rooms server" };
 
 const STATUS_WORDS = {
-  [VOICE_SOURCES.server]: "Set up: this server runs its own LiveKit, so rooms run on your own host.",
-  [VOICE_SOURCES.saved]: "Set up: rooms run on the LiveKit Cloud keys below.",
-  [VOICE_SOURCES.none]: "Not yet: members see Rooms, but can't start or join one until LiveKit is set up.",
+  [VOICE_SOURCES.server]: "Set up, on this server.",
+  [VOICE_SOURCES.saved]: "Set up, with the LiveKit Cloud keys.",
+  [VOICE_SOURCES.none]: "Not yet: nobody can start a room.",
 };
 
-// Set up › Rooms: where voice rooms run. The installer sets up LiveKit on the same server; LiveKit Cloud keys are the
+// Set up › Advanced › Rooms server: where voice rooms run. The installer sets up LiveKit on the same server; LiveKit Cloud keys are the
 // other way. Rooms are never recorded: there is no recording setting to turn on.
 export default modulePage(voiceManifest, async function AdminRoomsPage() {
   await requireAdmin();
@@ -27,7 +28,7 @@ export default modulePage(voiceManifest, async function AdminRoomsPage() {
   const isReady = view.source !== VOICE_SOURCES.none;
   const StatusIcon = isReady ? CircleCheck : CircleDashed;
   return (
-    <AdminSection title="Rooms" description="Live voice rooms for your members, like Clubhouse. Nothing said in a room is recorded or stored.">
+    <AdminSection title="Rooms server" back={{ href: ROUTES.adminSettings, label: "Set up" }}>
       <div className="fh-grid">
         <div className="fh-c7 fh-stack">
           {view.source === VOICE_SOURCES.server ? (
@@ -36,7 +37,7 @@ export default modulePage(voiceManifest, async function AdminRoomsPage() {
               <p className="fh-small mt-2">
                 Address: <span className="fh-mono">{view.url}</span>
               </p>
-              <p className="fh-small fh-muted mt-2">Set in the server&rsquo;s settings file (LIVEKIT_URL, LIVEKIT_API_KEY, LIVEKIT_API_SECRET). The installer made these keys.</p>
+              <p className="fh-small fh-muted mt-2">Set in the server&rsquo;s settings file.</p>
             </Card>
           ) : (
             <VoiceSettingsForm view={view} />
@@ -55,12 +56,12 @@ export default modulePage(voiceManifest, async function AdminRoomsPage() {
               ) : null}
             </p>
           </Card>
-          <Card className="fh-sheet">
-            <h2 className="type-h3">Ports to open</h2>
+          <details className="fh-sheet">
+            <summary className="type-h3 cursor-pointer">Ports to open</summary>
             <p className="fh-small fh-muted mt-2">
               On your own server, voice needs TCP 7881 and UDP 50000–50100 open, besides 80 and 443. The guide for self-hosting says how.
             </p>
-          </Card>
+          </details>
         </div>
       </div>
     </AdminSection>

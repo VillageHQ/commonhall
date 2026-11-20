@@ -10,6 +10,7 @@ import { AdminSection } from "@/shell/admin-section";
 import { AuditLog } from "@/modules/admin/components/audit-log";
 import { auditPageQuery } from "@/modules/admin/queries-audit";
 import { adminManifest } from "@/modules/admin/manifest";
+import { ROUTES } from "@/platform/http/routes";
 import { modulePage } from "@/platform/modules/module-page";
 
 const FIRST_PAGE = 1;
@@ -23,7 +24,7 @@ export default modulePage(adminManifest, async function AdminAuditLogPage() {
   queryClient.setQueryData(auditPageQuery(FIRST_PAGE).queryKey, auditPage);
 
   return (
-    <AdminSection title="Audit log" description="Who changed what, newest first. Kept in this portal’s own database.">
+    <AdminSection title="Audit log" back={{ href: ROUTES.adminSettings, label: "Set up" }}>
       <HydrationBoundary state={dehydrate(queryClient)}>
         <AuditLog />
       </HydrationBoundary>

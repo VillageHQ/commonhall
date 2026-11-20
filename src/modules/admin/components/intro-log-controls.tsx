@@ -3,14 +3,14 @@
 import { useMutation } from "@tanstack/react-query";
 import { Download } from "lucide-react";
 import { useRouter } from "next/navigation";
-import type { FormEvent, ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 
 import { FormError } from "@/components/form-error";
 import { useFlash } from "@/components/flash";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { ASK_ALLOWANCE, describeAllowance } from "@/modules/asks/contract";
+import { ASK_ALLOWANCE } from "@/modules/asks/contract";
 import { saveAllowanceRequest } from "@/modules/asks/queries";
 import { OUTCOME_DAYS } from "@/modules/intros/contract-outcome-days";
 
@@ -45,8 +45,10 @@ type NumberSettingProps = {
   className?: string;
 };
 
-// One sheet with one number and Save (Commonhall's `.pair` form). After saving, the flash says so at the top.
+// One number and Save (Commonhall's `.pair`). It sits inside Set up's settings form, so it is no form of its own:
+// Save and Enter send just this number. After saving, the flash says so at the top.
 function NumberSetting({ id, title, label, name, value, minimum, maximum, hint, save, flash, className }: NumberSettingProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const showFlash = useFlash();
   const mutation = useMutation({
@@ -58,9 +60,18 @@ function NumberSetting({ id, title, label, name, value, minimum, maximum, hint, 
     },
   });
   const inputId = `${id}-value`;
-  function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    mutation.mutate(Number(new FormData(event.currentTarget).get(name)));
+  const [inputError, setInputError] = useState<string | null>(null);
+  const isSending = useRef(false);
+  function submit() {
+    if (isSending.current) return;
+    const number = Number(inputRef.current?.value);
+    if (!Number.isInteger(number) || number < minimum || number > maximum) {
+      setInputError(`A whole number from ${minimum} to ${maximum}.`);
+      return;
+    }
+    setInputError(null);
+    isSending.current = true;
+    mutation.mutate(number, { onSettled: () => (isSending.current = false) });
   }
   return (
     <Card id={id} className={className}>
@@ -68,20 +79,36 @@ function NumberSetting({ id, title, label, name, value, minimum, maximum, hint, 
         <h2 id={`${id}-title`} className="fh-h3">
           {title}
         </h2>
-        <form className="fh-pair mt-2.5 items-end" onSubmit={submit} noValidate>
+        <div className="fh-pair mt-2.5 items-end">
           <div>
             <label className="fh-label fh-small" htmlFor={inputId}>
               {label}
             </label>
-            <Input id={inputId} name={name} type="number" inputMode="numeric" min={minimum} max={maximum} step={1} defaultValue={value} aria-invalid={mutation.isError || undefined} />
+            <Input
+              ref={inputRef}
+              id={inputId}
+              name={name}
+              type="number"
+              inputMode="numeric"
+              min={minimum}
+              max={maximum}
+              step={1}
+              defaultValue={value}
+              aria-invalid={mutation.isError || inputError !== null || undefined}
+              onKeyDown={(event) => {
+                if (event.key !== "Enter") return;
+                event.preventDefault();
+                submit();
+              }}
+            />
           </div>
           <div>
-            <Button type="submit" variant="secondary" size="sm" disabled={mutation.isPending}>
+            <Button type="button" variant="secondary" size="sm" disabled={mutation.isPending} onClick={submit}>
               Save
             </Button>
           </div>
-        </form>
-        {mutation.error ? <FormError message={mutation.error.message} /> : null}
+        </div>
+        {inputError || mutation.error ? <FormError message={inputError ?? mutation.error?.message ?? null} /> : null}
         <p className="fh-hint">{hint}</p>
       </section>
     </Card>
@@ -94,30 +121,30 @@ export function AskAllowanceSetting({ weeklyAllowance }: { weeklyAllowance: numb
       id="limits"
       className="fh-section"
       title="Asks a week"
-      label="Asks per member a week"
+      label="Per member"
       name="weeklyAllowance"
       value={weeklyAllowance}
       minimum={ASK_ALLOWANCE.minimum}
       maximum={ASK_ALLOWANCE.maximum}
-      hint={`One allowance for asks posted and intro asks; members see “${describeAllowance({ left: 3, cap: weeklyAllowance })}”. Declined, expired and withdrawn intro asks come back. Default ${ASK_ALLOWANCE.default}. The same setting is in Asks & digest.`}
+      hint={`Asks and intro asks share it. Default ${ASK_ALLOWANCE.default}.`}
       save={saveAllowanceRequest}
       flash={INTRO_LOG_FLASH.limits}
     />
   );
 }
 
-export function OutcomeDaysSetting({ outcomeDays, reminderDays }: { outcomeDays: number; reminderDays: number }) {
+export function OutcomeDaysSetting({ outcomeDays }: { outcomeDays: number }) {
   return (
     <NumberSetting
       id="outcome"
       className="mt-4"
-      title="The outcome question"
-      label="Days after each intro"
+      title="Outcome question"
+      label="Days after an intro"
       name="outcomeDays"
       value={outcomeDays}
       minimum={OUTCOME_DAYS.minimum}
       maximum={OUTCOME_DAYS.maximum}
-      hint={`The founder who asked is emailed “Was it helpful?” and what came of it, with one reminder ${reminderDays} days later. Default ${OUTCOME_DAYS.default}, in time for a 30-day trial; set 30 for a slower read.`}
+      hint={`When the asker gets “Was it helpful?”. Default ${OUTCOME_DAYS.default}.`}
       save={saveOutcomeDaysRequest}
       flash={INTRO_LOG_FLASH.outcomeDays}
     />

@@ -2,7 +2,8 @@ import { Building2, Copy, Link2 } from "lucide-react";
 import type { Metadata } from "next";
 
 import { EmptyState } from "@/components/empty-state";
-import { PageHeader } from "@/components/page-header";
+import { ROUTES } from "@/platform/http/routes";
+import { AdminSection } from "@/shell/admin-section";
 import { COMPANY_PARAM, isFeedTool, JOB_BOARD_API_ROUTES, JOB_BOARD_PAGES, type JobSourceView } from "@/modules/job-board/contract";
 import { jobBoardManifest } from "@/modules/job-board/manifest";
 import { isPublicBoardOn, readAllSources } from "@/modules/job-board/reads";
@@ -48,11 +49,7 @@ export default modulePage(jobBoardManifest, async function AdminJobsPage() {
   const exampleCompany = sources[0]?.companySlug ?? "ledgerline";
 
   return (
-    <>
-      <PageHeader
-        title="Job board"
-        description={`${plural(openJobs, "open job")} at ${plural(companies, "company", "companies")}. Founders link their hiring tool on My profile; the portal pulls their open jobs every hour. Applications go to each company’s own page.`}
-      />
+    <AdminSection title="Job board" back={{ href: ROUTES.adminSettings, label: "Set up" }} description={`${plural(openJobs, "open job")} at ${plural(companies, "company", "companies")}.`}>
       <div className="fh-grid">
         <section className="fh-sheet fh-c5" id="public">
           <h2 className="fh-h3">Public job board</h2>
@@ -64,15 +61,13 @@ export default modulePage(jobBoardManifest, async function AdminJobsPage() {
                 <CopyRow value={publicLink} label="The public job board link" icon={<Link2 {...ICON} />} />
               </div>
               <p className="fh-small fh-muted mt-2">
-                Each company also has its own page: {companyLink}.{" "}
                 <a href={JOB_BOARD_PAGES.public} target="_blank" rel="noopener">
                   Open the public board
-                </a>{" "}
-                in a private window to see it as outsiders do.
+                </a>
               </p>
             </>
           ) : (
-            <p className="fh-small fh-muted mt-3">Off: only signed-in members see the board. The public link shows “This board is not public”.</p>
+            <p className="fh-small fh-muted mt-3">Off: only members see the board.</p>
           )}
         </section>
         <section className="fh-sheet fh-c7">
@@ -97,16 +92,16 @@ export default modulePage(jobBoardManifest, async function AdminJobsPage() {
                   </div>
                 ))}
               </div>
-              <p className="fh-small fh-muted mt-2.5">Hide takes a company off the board for members and the public; its founder sees it hidden on My profile.</p>
+              <p className="fh-small fh-muted mt-2.5">Hide takes a company off the board.</p>
             </>
           ) : (
-            <EmptyState title="No boards linked yet" description="Founders add their company’s jobs on My profile › Our jobs: they pick the hiring tool and paste the careers link." />
+            <EmptyState title="No boards linked yet" description="Founders link their jobs on My profile." />
           )}
         </section>
-        <section className="fh-sheet fh-c12" id="embed">
-          <h2 className="fh-h3 flex items-center gap-1.5">
+        <details className="fh-sheet fh-c12" id="embed">
+          <summary className="fh-h3 flex cursor-pointer items-center gap-1.5">
             <Link2 {...ICON} /> Embed on your site
-          </h2>
+          </summary>
           {isPublic ? (
             <>
               <p className="fh-small mt-1.5">
@@ -133,11 +128,11 @@ export default modulePage(jobBoardManifest, async function AdminJobsPage() {
             </>
           ) : (
             <p className="fh-small fh-muted mt-1.5">
-              The public job board is off, so an embedded board shows only “This board is not public”. Switch it on above to put the board on your site.
+              Switch the public board on first.
             </p>
           )}
-        </section>
+        </details>
       </div>
-    </>
+    </AdminSection>
   );
 });

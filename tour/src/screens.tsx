@@ -53,7 +53,7 @@ import {
   CANDIDATE_RESULT,
   CANDIDATE_ROLE,
   COMMUNITY_NAME,
-  CONSOLE_HOME,
+  CONSOLE_THIS_WEEK, CONSOLE_HOME_ITEMS,
   DIRECTORY_SECTOR,
   FOUNDER,
   FOUNDER_VIEWER,
@@ -288,7 +288,7 @@ function describeAudience({ audience, cohort }: SentAnnouncement) {
 function AnnouncementsPage() {
   return (
     <>
-      <PageHeader title="Announcements" description={`Tell the whole community, its founders, its mentors and experts, or one cohort something from the ${COMMUNITY_NAME} team. One email each, and a pinned post in the feed.`} />
+      <PageHeader title="Announce" />
       <AnnouncementComposer members={ANNOUNCEMENT_MEMBERS} cohorts={ANNOUNCEMENT_COHORTS} community={COMMUNITY_NAME} adminId={ANNOUNCEMENT_MEMBERS[0]!.id} isEmailOn isFeedOn />
       <section className="mt-8" aria-labelledby="sent-heading">
         <h2 id="sent-heading" className="fh-h2 mb-3">
@@ -328,7 +328,7 @@ function AnnouncementsPage() {
 }
 
 function AdminPage() {
-  return <AdminHomeView communityName={COMMUNITY_NAME} home={CONSOLE_HOME} items={[]} />;
+  return <AdminHomeView communityName={COMMUNITY_NAME} thisWeek={CONSOLE_THIS_WEEK} items={CONSOLE_HOME_ITEMS} />;
 }
 
 const PAGES: Record<string, { page: () => React.ReactNode; isAdmin: boolean }> = {

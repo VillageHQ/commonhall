@@ -25,6 +25,7 @@ import {
 } from "./contract.ts";
 import { MEMBER_ROLES } from "../../platform/auth/roles.ts";
 import { COMMUNITY_ROLES, isCommunityRole } from "../members/contract-community-roles.ts";
+import { INVITE_EMAIL_STATUSES } from "../members/contract-invite-state.ts";
 
 function matchesMemberSearch(search: string) {
   if (!search) return undefined;
@@ -260,12 +261,14 @@ export async function readListedInvites(database: Database, now = new Date()) {
     );
   const hasAccount = database.select({ id: user.id }).from(user).where(eq(user.email, invite.email));
   const rows = await database
-    .select({ id: invite.id, email: invite.email, name: invite.inviteeName, createdAt: invite.createdAt, expiresAt: invite.expiresAt, revokedAt: invite.revokedAt })
+    .select({ id: invite.id, email: invite.email, name: invite.inviteeName, createdAt: invite.createdAt, expiresAt: invite.expiresAt, revokedAt: invite.revokedAt, emailStatus: invite.emailStatus })
     .from(invite)
     .where(and(isNull(invite.acceptedAt), or(isNull(invite.revokedAt), and(notExists(supersededBy), notExists(hasAccount)))))
     .orderBy(desc(invite.createdAt), asc(invite.email));
-  return rows.map((row) => ({
+  return rows.map(({ emailStatus, ...row }) => ({
     ...row,
+    // Added but never emailed (mail off, an import with email off, or a failed send): the list says "Added", not "Sent".
+    isEmailed: emailStatus === INVITE_EMAIL_STATUSES.sent || emailStatus === INVITE_EMAIL_STATUSES.retrying,
     isRevoked: row.revokedAt !== null,
     isExpired: row.revokedAt === null && row.expiresAt.getTime() <= now.getTime(),
   }));

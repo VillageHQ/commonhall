@@ -9,7 +9,6 @@ import { getDatabase, type Database } from "@/platform/database/client";
 import { readResendConfig } from "@/platform/email/resend";
 import { ROUTES } from "@/platform/http/routes";
 import { modulePage } from "@/platform/modules/module-page";
-import { PLANS, formatDayWord, readPlanSettings } from "@/platform/settings/plan";
 import { VILLAGE_KEY_STATUSES } from "@/platform/village/contract";
 import { readVillageAppName, readVillageKeyState } from "@/platform/village/settings";
 import { resolveVillageAppUrl } from "@/platform/village/urls";
@@ -17,8 +16,6 @@ import type { SessionMember } from "@/platform/http/request-context";
 import { InviteSheet } from "@/modules/admin/components/invite-sheet";
 import { adminManifest } from "@/modules/admin/manifest";
 import { readInviterSignature } from "@/modules/admin/reads-members";
-import { readMailOverview } from "@/modules/admin/reads-mail";
-import { readSettingsValues } from "@/modules/admin/service-settings";
 import { AvatarField } from "@/modules/members/components/avatar-field";
 import { ImportMembersForm } from "@/modules/members/components/import-members-form";
 import { readFillInSettings } from "@/modules/members/service-fill-in";
@@ -28,31 +25,17 @@ import { readEnabledIds } from "@/shell/enabled-modules";
 import { GUIDED_STEP_PARAM, GUIDED_STEP_TITLES, GUIDED_STEPS, readGuidedSteps, resolveGuidedStep, type GuidedStepKey } from "@/shell/guided-start";
 
 import { AboutForm } from "../../welcome/about-form";
-import { FinishGuidedStart, LookStep, SkipForNow, VillageStep } from "./guided-parts";
+import { FinishGuidedStart, SkipForNow, VillageStep } from "./guided-parts";
 
 export const metadata: Metadata = { title: "Get started" };
 
 // One line per step: what it does for the organizer.
 const STEP_LINES: Record<GuidedStepKey, string> = {
-  look: "Members see your name, logo and colour on every page and email.",
-  village: "Founders find a warm path to the people they need, through members who already know them.",
-  card: "You are a member too: founders see your card in the directory and on every intro you make.",
-  invite: "Founders get a one-tap sign-in link; nobody needs a password.",
+  look: "",
+  village: "Founders find warm paths through members who know them.",
+  card: "Founders see your card in People and on your intros.",
+  invite: "Each founder gets a one-tap sign-in link.",
 };
-
-async function LookContent({ database, nextHref }: { database: Database; nextHref: string }) {
-  const [saved, branding, plan, mail] = await Promise.all([readSettingsValues(database), readBranding(database), readPlanSettings(database), readMailOverview(database, process.env)]);
-  return (
-    <LookStep
-      nextHref={nextHref}
-      saved={saved}
-      uploadedLogo={saved.logoUrl ? null : branding.logo}
-      isMailOn={mail.isMailOn}
-      serverPlan={PLANS.selfHost}
-      managedBy={plan.managedSetupBy ? formatDayWord(plan.managedSetupBy) : null}
-    />
-  );
-}
 
 async function VillageContent({ database, nextHref }: { database: Database; nextHref: string }) {
   const [keyState, appName] = await Promise.all([readVillageKeyState(database), readVillageAppName(database)]);
@@ -90,7 +73,7 @@ async function InviteContent({ database, admin }: { database: Database; admin: S
     <>
       {isEmailOn ? null : (
         <Note className="mb-3" role="status">
-          This server has no mail service yet, so nobody is emailed: their links wait on <Link href={ROUTES.adminLinks}>Sign-in links</Link> for you to send.
+          Mail isn&apos;t set up: links wait on <Link href={ROUTES.adminLinks}>Sign-in links</Link> for you to send.
         </Note>
       )}
       <InviteSheet
@@ -103,7 +86,7 @@ async function InviteContent({ database, admin }: { database: Database; admin: S
         savedTermsDate={fillIn.termsDate}
       />
       <details className="mt-4">
-        <summary className="fh-h3 cursor-pointer">Or upload a CSV, with the email switch</summary>
+        <summary className="fh-h3 cursor-pointer">Or upload a CSV</summary>
         <div className="mt-3">
           <ImportMembersForm communityBasis={fillIn.basis} communityTermsDate={fillIn.termsDate} today={new Date().toISOString().slice(0, 10)} isCompact />
         </div>
@@ -122,7 +105,8 @@ export default modulePage(adminManifest, async function GuidedStartPage({ search
   const admin = await requireAdmin();
   const database = getDatabase();
   const query = (await searchParams) ?? {};
-  const steps = readGuidedSteps((await readEnabledIds(database)).has(networkManifest.id));
+  // The branding lives on Set up only (round 6: no branding form repeats), so the guided start begins after it.
+  const steps = readGuidedSteps((await readEnabledIds(database)).has(networkManifest.id)).filter((key) => key !== GUIDED_STEPS.look);
   const { step, nextHref } = resolveGuidedStep(steps, query[GUIDED_STEP_PARAM]);
   // Only the last step has no next one, and it finishes instead.
   const next = nextHref ?? ROUTES.admin;
@@ -135,7 +119,6 @@ export default modulePage(adminManifest, async function GuidedStartPage({ search
       </div>
       <h1 className="fh-h1">{GUIDED_STEP_TITLES[step]}</h1>
       <p className="fh-lede mb-4">{STEP_LINES[step]}</p>
-      {step === GUIDED_STEPS.look ? <LookContent database={database} nextHref={next} /> : null}
       {step === GUIDED_STEPS.village ? <VillageContent database={database} nextHref={next} /> : null}
       {step === GUIDED_STEPS.card ? <CardContent database={database} admin={admin} nextHref={next} /> : null}
       {step === GUIDED_STEPS.invite ? <InviteContent database={database} admin={admin} /> : null}

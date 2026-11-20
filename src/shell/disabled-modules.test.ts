@@ -96,8 +96,8 @@ describe("the shell with modules off", () => {
       const enabledIds = await readEnabledIds(database);
       const labels = selectNavigationItems(NAVIGATION_SECTIONS.primary, false, enabledIds).map(({ label }) => label);
 
-      // The feed and the library are on where no admin chose (the owner's calls, 2026-11-12 and 2026-11-19).
-      expect(labels).toEqual(["Today", "Asks & updates", "Feed", "Directory", "Jobs", "Intros", "Inbox", "Library", "My profile"]);
+      // The library is on where no admin chose (the owner's call, 2026-11-19); the feed is off (round 6, 2026-11-20).
+      expect(labels).toEqual(["Today", "Asks & updates", "Directory", "Jobs", "Intros", "Inbox", "Library", "My profile"]);
     });
 
     it("hides the credits tab", async () => {
