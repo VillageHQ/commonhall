@@ -66,6 +66,8 @@ export function toShellMember(who: DemoPerson) {
 // ---------- Search ----------
 
 export const SEARCH_QUERY = "Head of procurement at a US hospital";
+// "Search their networks" on People (round 6): the address that shows its results.
+export const SEARCH_RESULTS_HREF = `/people?${new URLSearchParams({ q: SEARCH_QUERY, scope: "network", net: "1" }).toString()}`;
 
 function pathThrough(key: string, warmth: string) {
   const member = person(key);
@@ -115,7 +117,7 @@ export const INTRO_TARGET = outsider("Dana Whitfield");
 export const INTRO_CONNECTOR = person("oliver.grant");
 export const INTRO_NOTE = `Hi Oliver, could you introduce me to Dana? Tallyhealth cuts supply waste in US hospitals, and Lakeshore Health is the buyer we want to learn from. Happy to send a short note you can forward.`;
 // The address "Ask Oliver for an intro" opens (the app's toAskHref in search-results.tsx).
-export const INTRO_ASK_PAGE = `/search/ask?${new URLSearchParams({ target: INTRO_TARGET.slug, via: idOf(INTRO_CONNECTOR.key), back: `/search?${new URLSearchParams({ q: SEARCH_QUERY, scope: "network" }).toString()}` }).toString()}`;
+export const INTRO_ASK_PAGE = `/search/ask?${new URLSearchParams({ target: INTRO_TARGET.slug, via: idOf(INTRO_CONNECTOR.key), back: SEARCH_RESULTS_HREF }).toString()}`;
 
 // ---------- Asks & updates ----------
 
@@ -202,7 +204,7 @@ function readBookingUrl(key: string) {
 }
 
 // "Experts and mentors" (?view=experts): the mentor the tour books first, then the members with a link, then the rest.
-export const EXPERTS_VIEW_HREF = "/directory?view=experts";
+export const EXPERTS_VIEW_HREF = "/people?view=experts";
 export const BOOKED_MEMBER = person("grace.kim");
 
 function readExperts() {

@@ -1,7 +1,7 @@
 import { Waypoints } from "lucide-react";
 
 import { API_ROUTES, ROUTES } from "../../platform/http/routes.ts";
-import { MODULE_KINDS, NAVIGATION_SECTIONS, type ToggleableManifest } from "../../platform/modules/manifest.ts";
+import { MODULE_KINDS, type ToggleableManifest } from "../../platform/modules/manifest.ts";
 
 export const networkManifest = {
   kind: MODULE_KINDS.toggleable,
@@ -13,10 +13,11 @@ export const networkManifest = {
   isOnByDefault: true,
   needsVillage: true,
   requires: [],
-  navigation: [{ label: "Search", href: ROUTES.network, icon: Waypoints, section: NAVIGATION_SECTIONS.primary }],
+  // Searching who members know is a step on People (round 6): no menu entry of its own.
+  navigation: [],
   adminTabs: [{ label: "Village", href: ROUTES.adminVillage }],
   paths: {
-    pages: [ROUTES.network, ROUTES.myNetwork, ROUTES.adminVillage],
+    pages: [ROUTES.searchPages, ROUTES.myNetwork, ROUTES.adminVillage],
     api: ["/api/network", "/api/admin/village", API_ROUTES.dailyLimit, API_ROUTES.monthlyCap],
   },
 } satisfies ToggleableManifest;

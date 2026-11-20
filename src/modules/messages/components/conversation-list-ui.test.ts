@@ -132,10 +132,10 @@ describe("the conversation list", () => {
     });
   });
 
-  it("shows Commonhall's empty inbox, linking the directory", () => {
+  it("shows the empty inbox as one line and one button to People", () => {
     renderList([]);
 
-    expect(screen.getByRole("heading", { name: "No messages yet" })).toBeTruthy();
-    expect(screen.getByRole("link", { name: "directory" }).getAttribute("href")).toBe(ROUTES.members);
+    expect(screen.getByText("No messages yet")).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Find someone" }).getAttribute("href")).toBe(ROUTES.people);
   });
 });

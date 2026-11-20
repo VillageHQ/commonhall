@@ -16,13 +16,14 @@ import { SEARCH_WHERE, type NetworkSearchResult, type SearchMember, type SearchP
 import { activeSearchQuery, networkSearchQuery } from "@/modules/network/queries";
 import { readFirstWord, readPeopleCountLine, toPossessive, toReachPhrase } from "@/modules/network/rules-search-words";
 
+import { toNetworkSearchHref } from "./search-links";
 import type { SearchScreenProps, SearchViewer } from "./search-types";
 type SearchPerson = NetworkSearchResult["people"][number];
 
 const MORE_PATHS_FROM = 2;
 
 function toAskHref({ person, path, query, scope }: { person: SearchPerson; path: SearchPath; query: string; scope: SearchWhere }) {
-  const back = `${ROUTES.network}?${new URLSearchParams({ q: query, scope }).toString()}`;
+  const back = toNetworkSearchHref(query, scope);
   return `${ROUTES.searchAsk}?${new URLSearchParams({ target: person.linkedinSlug ?? "", via: path.memberId, back }).toString()}`;
 }
 
@@ -154,7 +155,7 @@ function PersonRow({ person, viewer, communityName, canAskIntro, query, scope, p
 }
 
 function NoPathCard({ query, scope, canAskCommunity, communityName, digestDay, isProfilesOnly }: { query: string; scope: SearchWhere; canAskCommunity: boolean; communityName: string; digestDay: string; isProfilesOnly: boolean }) {
-  const everywhereHref = `${ROUTES.network}?${new URLSearchParams({ q: query, scope: SEARCH_WHERE.global }).toString()}`;
+  const everywhereHref = toNetworkSearchHref(query, SEARCH_WHERE.global);
   return (
     <div className="fh-empty fh-nopath" style={{ marginTop: 16 }} role="status">
       <h2 className="fh-h2">

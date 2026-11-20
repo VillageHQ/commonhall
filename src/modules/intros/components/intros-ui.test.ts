@@ -79,15 +79,14 @@ describe("the intro screens (Commonhall's)", () => {
     vi.clearAllMocks();
   });
 
-  describe("Your intros", () => {
-    it("lists what waits for you and your asks as rows, with the allowance", () => {
+  describe("the Inbox's intros", () => {
+    it("lists what waits for your yes and your asks as rows", () => {
       const waiting = makeIntro({ viewerRole: INTRO_ROLES.introducer, requester: MARCUS, introducer: SAM, target: { name: "Rachel Kim", headline: null, linkedinSlug: null, isNamed: true } });
       const mine = makeIntro({ id: "22222222-2222-4222-8222-222222222222", state: INTRO_STATES.completed, target: { name: "Alex Kim", headline: "Head of Procurement at Halcyon Health", linkedinSlug: null, isNamed: true }, introducer: { ...MARCUS, name: "Priya Shah" } });
-      renderInApp(createElement(IntrosList, { board: makeBoard({ asksForYou: [waiting], yourAsks: [mine] }), allowance: { left: 4, cap: 5 } }));
+      renderInApp(createElement(IntrosList, { board: makeBoard({ asksForYou: [waiting], yourAsks: [mine] }) }));
 
-      expect(screen.getByRole("heading", { level: 1, name: "Your intros" })).toBeTruthy();
-      expect(screen.getByText("Ask a member for an intro from their profile. Nobody is introduced without saying yes.")).toBeTruthy();
-      expect(screen.getByText("4 of 5 asks left this week")).toBeTruthy();
+      expect(screen.getByRole("heading", { level: 2, name: "Waiting for your yes" })).toBeTruthy();
+      expect(screen.getByRole("heading", { level: 2, name: "You asked" })).toBeTruthy();
       expect(screen.getByRole("link", { name: /Marcus Webb asks you for an intro to Rachel Kim/ }).getAttribute("href")).toBe(`/intros/${waiting.id}`);
       expect(screen.getByText("Answer")).toBeTruthy();
       expect(screen.getByText("Alex Kim via Priya Shah")).toBeTruthy();
@@ -95,12 +94,12 @@ describe("the intro screens (Commonhall's)", () => {
       expect(screen.getByText("Introduced")).toBeTruthy();
     });
 
-    it("says how to ask when there's nothing yet", () => {
-      renderInApp(createElement(IntrosList, { board: makeBoard(), allowance: { left: 5, cap: 5 } }));
+    it("offers People when there's nothing yet", () => {
+      renderInApp(createElement(IntrosList, { board: makeBoard() }));
 
-      expect(screen.getByText("No asks yet")).toBeTruthy();
-      expect(screen.queryByText("Waiting for your answer")).toBeNull();
-      expect(screen.getByText(/choose “Ask for an intro”. 5 of 5 asks left this week./)).toBeTruthy();
+      expect(screen.getByText("No intro asks yet.")).toBeTruthy();
+      expect(screen.queryByText("Waiting for your yes")).toBeNull();
+      expect(screen.getByRole("link", { name: "Find someone" }).getAttribute("href")).toBe("/people");
     });
   });
 

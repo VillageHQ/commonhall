@@ -63,16 +63,16 @@ function ConversationRow({ summary }: { summary: ConversationSummary }) {
   );
 }
 
-// Commonhall's empty inbox: the dashed empty state, its line linking the directory.
+// The empty inbox: one line and one button (round 6's text rule).
 function NoConversations() {
   return (
     <div data-slot="empty-state" className="fh-empty">
-      <h2 className="fh-h2">{INBOX_EMPTY.title}</h2>
-      <p>
-        {INBOX_EMPTY.before}
-        <Link href={ROUTES.members}>{INBOX_EMPTY.link}</Link>
-        {INBOX_EMPTY.after}
-      </p>
+      <p>{INBOX_EMPTY.title}</p>
+      <div className="fh-btn-row mt-3.5">
+        <Link className="fh-btn fh-btn-secondary" href={ROUTES.people}>
+          Find someone
+        </Link>
+      </div>
     </div>
   );
 }

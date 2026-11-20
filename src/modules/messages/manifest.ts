@@ -14,5 +14,7 @@ export const messagesManifest = {
   requires: [],
   navigation: [{ label: "Inbox", href: ROUTES.messages, icon: Inbox, section: NAVIGATION_SECTIONS.primary, badge: "messages" }],
   adminTabs: [],
-  paths: { pages: [ROUTES.messages, ROUTES.newMessage], api: [API_ROUTES.messages] },
+  // The conversations under /inbox/ (the trailing "/" claims only the pages under it): the Inbox itself is a shell page
+  // that also holds intros, so it stays open while Messages is off and Intros is on.
+  paths: { pages: [`${ROUTES.messages}/`, ROUTES.newMessage], api: [API_ROUTES.messages] },
 } satisfies ToggleableManifest;

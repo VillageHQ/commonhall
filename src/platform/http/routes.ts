@@ -24,8 +24,10 @@ export const ROUTES = {
   confirmEmail: "/confirm-email",
   unsubscribe: "/unsubscribe",
   weeklyAnswer: "/weekly",
-  // Commonhall's Inbox; the old /messages addresses redirect here (next.config.mjs).
+  // The Inbox (round 6): messages while Messages is on, intros while Intros is on. The old /messages addresses and
+  // /intros redirect here (next.config.mjs).
   messages: "/inbox",
+  inboxIntros: "/inbox?show=intros",
   // A first message to a member: the empty thread page; the first Send starts the conversation.
   newMessage: "/messages/new",
   intros: "/intros",
@@ -33,17 +35,19 @@ export const ROUTES = {
   introConsent: "/i",
   introOptOut: "/intro/optout",
   introConsentOld: "/meet",
-  // Commonhall's addresses. The old ones (/members, /members/<id>, /members/card, /members/data) answer with
-  // permanent redirects (next.config.mjs).
-  members: "/directory",
+  // People (round 6): the member search, and "Search their networks". The old /directory, /search, /members and
+  // /network redirect here (next.config.mjs); a member's profile is /people/<id>.
+  members: "/people",
   people: "/people",
   editCard: "/me",
   yourData: "/me/data",
   emailSettings: "/me/email",
   // Settings › Alerts: what alerts this member, quiet hours, muted broadcasters, this device (platform/notifications).
   alerts: "/me/alerts",
-  // Search (Commonhall's "/search"; the old "/network" redirects here), the guided ask, the intro ask page and My network.
-  network: "/search",
+  // Searching who members know is a step on People. The network's own pages sit under /search (the one-step ask and
+  // Find candidates); /search itself redirects to People. /ask (the old guided ask) answers with Asks or People.
+  network: "/people",
+  searchPages: "/search",
   guidedAsk: "/ask",
   introAsk: "/intros/new",
   // The one-step ask from a search result (Commonhall keeps Search lit for it).

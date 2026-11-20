@@ -97,7 +97,8 @@ describe("the shell with modules off", () => {
       const labels = selectNavigationItems(NAVIGATION_SECTIONS.primary, false, enabledIds).map(({ label }) => label);
 
       // The library is on where no admin chose (the owner's call, 2026-11-19); the feed is off (round 6, 2026-11-20).
-      expect(labels).toEqual(["Today", "Asks & updates", "Directory", "Jobs", "Intros", "Inbox", "Library", "My profile"]);
+      // Rooms starts off; Intros live in the Inbox; Jobs and Library sit under the avatar's More.
+      expect(labels).toEqual(["Today", "Asks", "People", "Inbox", "Jobs", "Library"]);
     });
 
     it("hides the credits tab", async () => {

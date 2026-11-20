@@ -16,8 +16,8 @@ import { isListedMember } from "./service-privacy.ts";
 import { COMMUNITY_ROLES, EXPERT_ROLES, isCommunityRole } from "./contract-community-roles.ts";
 import { readShownBookings, type IntroducedCheck } from "./service-booking.ts";
 
-// Commonhall lists everyone on one page; a large community pages with a quiet "More".
-export const DIRECTORY_PAGE_SIZE = 60;
+// People (round 6) pages at 30, with a quiet "More".
+export const DIRECTORY_PAGE_SIZE = 30;
 
 // Lists show a filled-in role, company and face where the member left theirs empty, and the company's logo by its rule.
 const filledTitle = shownFillInColumn(FILL_IN_FIELDS.title);

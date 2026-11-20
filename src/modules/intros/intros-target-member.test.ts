@@ -110,7 +110,7 @@ describe("a member who is the person asked for", () => {
     expect(forMarcus).toMatchObject({ id: introId, introducerName: "Jonas Lindqvist", requester: { name: "Amara Osei" } });
     expect(JSON.stringify(forMarcus)).not.toContain(amara.email);
     expect(await introsModule.readNavigationBadge?.(database, marcus.userId)).toBe(1);
-    const list = createElement(IntrosList, { board: await readIntroBoard(database, marcus.userId), allowance: { left: 5, cap: 5 }, forYou: [forMarcus!] });
+    const list = createElement(IntrosList, { board: await readIntroBoard(database, marcus.userId), forYou: [forMarcus!] });
     const html = renderToStaticMarkup(createElement(QueryClientProvider, { client: new QueryClient() }, createElement(FlashProvider, null, list as ReactNode)));
     expect(html).toContain("Jonas Lindqvist would like to introduce you to Amara Osei");
     expect(html).toContain("Yes, introduce us");

@@ -1,7 +1,6 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Building2 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 
@@ -26,12 +25,12 @@ import { CompanyFilter, JobList } from "@/modules/job-board/components/job-list"
 import { describeMemberBoard, HIRING_LINE, readCompaniesWithJobs } from "@/modules/job-board/copy";
 import { formatDayMonthTimeUtc } from "@/platform/text/format-date";
 import { AsksBoard } from "@/modules/asks/components/asks-board";
-import { MemberDirectory } from "@/modules/members/components/member-directory";
 import { directoryQuery } from "@/modules/members/queries-directory";
 import { parseDirectoryFilters } from "@/modules/members/rules-directory-url";
 import { SearchScreen } from "@/modules/network/components/search-screen";
 import { networkSearchQuery } from "@/modules/network/queries";
 import { AppShell } from "@/shell/app-shell";
+import { PeopleScreen } from "@/shell/people-screen";
 import { AdminHomeView } from "@/shell/admin-home-view";
 import { OneStepAskForm } from "@/shell/intro-ask-forms";
 import { buildShellNavigation } from "@/shell/navigation";
@@ -71,6 +70,7 @@ import {
   ROOMS_PAGE,
   SEARCH_QUERY,
   SEARCH_RESULT,
+  SEARCH_RESULTS_HREF,
   SENT_ANNOUNCEMENTS,
   SHARING_MEMBER_COUNT,
   toCandidatesHref,
@@ -96,6 +96,8 @@ export function seedTourData(client: QueryClient) {
   for (const sector of ["", DIRECTORY_SECTOR]) {
     client.setQueryData(directoryQuery(parseDirectoryFilters(sector ? { sector } : {})).queryKey, readDirectory(sector));
   }
+  // "Search their networks" keeps the words in the box: no member's profile matches them.
+  client.setQueryData(directoryQuery(parseDirectoryFilters({ q: SEARCH_QUERY })).queryKey, { ...readDirectory(""), members: [], matchCount: 0 });
   client.setQueryData(directoryQuery(parseDirectoryFilters({ view: "experts" })).queryKey, readDirectory("", true));
   client.setQueryData(VOICE_QUERY_KEYS.rooms, ROOMS_PAGE);
 }
@@ -157,19 +159,31 @@ function AlertsPage() {
   );
 }
 
-function SearchPage() {
+// src/app/(app)/people/page.tsx: the member search, and "Search their networks" for a member who connected theirs.
+function PeoplePage() {
   return (
-    <SearchScreen
-      viewer={FOUNDER_VIEWER}
-      communityName={COMMUNITY_NAME}
-      sharingMemberCount={SHARING_MEMBER_COUNT}
-      isConnected
-      isVillageOn
-      defaultScope="network"
-      canAskIntro
-      canAskCommunity
-      digestDay="Thursday"
-    />
+    <>
+      <header data-slot="page-header" className="fh-pagehead">
+        <h1 className="fh-h1">People</h1>
+      </header>
+      <PeopleScreen
+        canAskIntro
+        network={{
+          state: "ready",
+          search: {
+            viewer: FOUNDER_VIEWER,
+            communityName: COMMUNITY_NAME,
+            sharingMemberCount: SHARING_MEMBER_COUNT,
+            isConnected: true,
+            isVillageOn: true,
+            defaultScope: "network",
+            canAskIntro: true,
+            canAskCommunity: true,
+            digestDay: "Thursday",
+          },
+        }}
+      />
+    </>
   );
 }
 
@@ -179,7 +193,7 @@ function SearchAskPage() {
   const targetFirst = INTRO_TARGET.name.split(" ")[0] ?? INTRO_TARGET.name;
   return (
     <>
-      <BackLink href={`/search?q=${encodeURIComponent(SEARCH_QUERY)}&scope=network`}>Back to results</BackLink>
+      <BackLink href={SEARCH_RESULTS_HREF}>Back to results</BackLink>
       <div className="fh-narrow">
         <h1 className="fh-h1 mt-3.5">
           Ask {connectorFirst} to introduce you to {INTRO_TARGET.name}
@@ -196,25 +210,6 @@ function SearchAskPage() {
 
 function AsksPage() {
   return <AsksBoard tab="open" search={null} posts={ASK_POSTS} counts={ASK_COUNTS} allowance={ASK_ALLOWANCE} flash={null} draft={null} />;
-}
-
-// src/app/(app)/directory/page.tsx
-function DirectoryPage() {
-  const directory = readDirectory("");
-  return (
-    <>
-      <header data-slot="page-header" className="fh-pagehead">
-        <h1 className="fh-h1">Directory</h1>
-        <p className="fh-lede">
-          {directory.memberCount} members of {COMMUNITY_NAME}. Each member writes their own profile.
-        </p>
-        <p className="fh-small mt-2">
-          <Building2 aria-hidden="true" className="fh-i fh-xs inline align-[-2px]" strokeWidth={1.5} /> <Link href="/jobs">Jobs at member companies ({BOARD_JOBS.length})</Link>
-        </p>
-      </header>
-      <MemberDirectory />
-    </>
-  );
 }
 
 // src/app/(app)/jobs/page.tsx: Sam Lee sees "Find candidates" on Tallyhealth's jobs.
@@ -332,10 +327,9 @@ function AdminPage() {
 }
 
 const PAGES: Record<string, { page: () => React.ReactNode; isAdmin: boolean }> = {
-  "/search": { page: SearchPage, isAdmin: false },
+  "/people": { page: PeoplePage, isAdmin: false },
   "/search/ask": { page: SearchAskPage, isAdmin: false },
   "/asks": { page: AsksPage, isAdmin: false },
-  "/directory": { page: DirectoryPage, isAdmin: false },
   "/jobs": { page: JobsPage, isAdmin: false },
   "/search/candidates": { page: CandidatesPage, isAdmin: false },
   [LIBRARY_PAGES.browse]: { page: LibraryPage, isAdmin: false },
@@ -351,7 +345,7 @@ export function TourScreens({ client }: { client: QueryClient }) {
   const pathname = usePathname();
   // Read here so a change of the address re-renders the page under the shell.
   useSearchParams();
-  const route = PAGES[pathname] ?? PAGES["/search"]!;
+  const route = PAGES[pathname] ?? PAGES["/people"]!;
   const Page = route.page;
   const who = route.isAdmin ? ADMIN : FOUNDER;
   return (

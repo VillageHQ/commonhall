@@ -1,16 +1,16 @@
 // @vitest-environment jsdom
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { createElement } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { ASK_API_ROUTES } from "@/modules/asks/contract";
 import { introsManifest } from "@/modules/intros/manifest";
-import { messagesManifest } from "@/modules/messages/manifest";
 import { API_ROUTES, ROUTES } from "@/platform/http/routes";
 
 import { buildShellNavigation } from "./navigation";
-import { FounderViewStrip, ModeSwitch, SidebarNavigation, TabBar } from "./navigation-links";
+import { FounderViewStrip, SidebarNavigation, TabBar } from "./navigation-links";
+import { PhoneAccountButton } from "./user-menu";
 
 const location = vi.hoisted(() => ({ pathname: "/" }));
 
@@ -62,129 +62,143 @@ afterEach(() => {
 });
 
 describe("the phone tab bar", () => {
-  it("shows a member Commonhall's six tabs, and Feed while the feed is on", () => {
+  it("shows a member five tabs, Rooms first", () => {
     renderShellPart(TabBar);
 
-    expect(readNames("Sections")).toEqual(["Today", "Asks", "Feed", "Search", "Directory", "Intros", "Inbox"]);
+    expect(readNames("Sections")).toEqual(["Rooms", "Today", "Asks", "People", "Inbox"]);
   });
 
-  it("fits every tab in equal columns, as Commonhall's bar does", () => {
+  it("fits the tabs in equal columns", () => {
     renderShellPart(TabBar, { isAdmin: true });
 
     const bar = screen.getByRole("navigation", { name: "Sections" });
-    expect(bar.style.gridTemplateColumns).toBe("repeat(8, 1fr)");
-    expect(bar.dataset.count).toBe("8");
+    expect(bar.style.gridTemplateColumns).toBe("repeat(5, 1fr)");
+    expect(bar.dataset.count).toBe("5");
   });
 
   it("leaves out the tab of a module that is off", () => {
-    renderShellPart(TabBar, { enabledIds: ["feed", messagesManifest.id, "members", introsManifest.id, "admin"] });
+    renderShellPart(TabBar, { enabledIds: ["feed", "members", introsManifest.id, "admin"] });
 
-    expect(readNames("Sections")).toEqual(["Today", "Feed", "Directory", "Intros", "Inbox"]);
+    expect(readNames("Sections")).toEqual(["Today", "People", "Inbox"]);
   });
 
-  it("adds a Console tab for an admin on member pages", () => {
+  it("gives an admin on member pages the same five tabs (the console is in the avatar menu)", () => {
     renderShellPart(TabBar, { isAdmin: true });
 
-    expect(readNames("Sections").at(-1)).toBe("Console");
+    expect(readNames("Sections")).toEqual(["Rooms", "Today", "Asks", "People", "Inbox"]);
   });
 
-  it("shows the console's five tabs and a Founder tab in the console", () => {
-    location.pathname = ROUTES.adminMembers;
+  it("shows the console's five tabs in the console", () => {
+    location.pathname = ROUTES.adminInvites;
     renderShellPart(TabBar, { isAdmin: true });
 
-    expect(readNames("Sections")).toEqual(["Home", "Intros", "Asks", "Members", "Set up", "Founder"]);
+    expect(readNames("Sections")).toEqual(["Home", "Asks", "Members", "Announce", "Set up"]);
     expect(screen.getByRole("link", { name: "Members" }).getAttribute("aria-current")).toBe("page");
   });
 
-  it("lights Directory on the job board", () => {
-    location.pathname = "/jobs";
-    renderShellPart(TabBar);
+  it("lights nothing on My profile or the job board", () => {
+    for (const pathname of [ROUTES.editCard, "/jobs"]) {
+      location.pathname = pathname;
+      renderShellPart(TabBar);
 
-    expect(screen.getByRole("link", { name: "Directory" }).getAttribute("aria-current")).toBe("page");
+      expect(screen.getByRole("navigation", { name: "Sections" }).querySelector("[aria-current]")).toBeNull();
+      cleanup();
+    }
   });
 
-  it("lights nothing on My profile", () => {
-    location.pathname = ROUTES.editCard;
+  it("lights People on a member's profile, and Inbox on an intro", () => {
+    location.pathname = "/people/abc";
     renderShellPart(TabBar);
+    expect(screen.getByRole("link", { name: "People" }).getAttribute("aria-current")).toBe("page");
+    cleanup();
 
-    expect(screen.getByRole("navigation", { name: "Sections" }).querySelector("[aria-current]")).toBeNull();
+    location.pathname = "/intros/abc";
+    renderShellPart(TabBar);
+    expect(screen.getByRole("link", { name: "Inbox" }).getAttribute("aria-current")).toBe("page");
   });
 
-  it("shows the intros count on the Intros tab", () => {
-    renderShellPart(TabBar, { badges: { intros: 2 } });
+  it("counts unread messages and the intro asks waiting for your yes on the Inbox", () => {
+    renderShellPart(TabBar, { badges: { messages: 1, "intros-waiting": 2, "intros-for-you": 1 } });
 
-    const introsTab = screen.getByRole("link", { name: /Intros/ });
-    expect(within(introsTab).getByRole("img", { name: "2 intros need a look" }).textContent).toBe("2");
+    const inboxTab = screen.getByRole("link", { name: /Inbox/ });
+    expect(within(inboxTab).getByRole("img", { name: "4 new in your inbox" }).textContent).toBe("4");
+  });
+
+  it("shows a dot on Rooms while a room is live", () => {
+    renderShellPart(TabBar, { badges: { live: 1 } });
+
+    expect(within(screen.getByRole("link", { name: /Rooms/ })).getByRole("img", { name: "A room is live" }).textContent).toBe("");
   });
 });
 
 describe("the sidebar", () => {
-  it("lists the member menu under Members", () => {
+  it("lists the same five under Members", () => {
     renderShellPart(SidebarNavigation);
 
     expect(screen.getByText("Members")).toBeTruthy();
-    expect(readNames("Main")).toEqual(["Today", "Asks & updates", "Feed", "Search", "Directory", "Jobs", "Intros", "Inbox", "Rooms", "Perks", "Library", "My profile"]);
+    expect(readNames("Main")).toEqual(["Rooms", "Today", "Asks", "People", "Inbox"]);
   });
 
-  it("lists the console menu under Console on console pages", () => {
+  it("lists the six console items under Console on console pages", () => {
     location.pathname = ROUTES.adminVillage;
     renderShellPart(SidebarNavigation, { isAdmin: true });
 
     expect(screen.getByText("Console")).toBeTruthy();
+    expect(readNames("Main")).toEqual(["Home", "Members", "Asks & intros", "Announce", "Report", "Set up"]);
     expect(screen.getByRole("link", { name: "Set up" }).getAttribute("aria-current")).toBe("page");
-  });
-
-  it("lights My profile, not Directory, on the profile editor", () => {
-    location.pathname = ROUTES.editCard;
-    renderShellPart(SidebarNavigation);
-
-    expect(screen.getByRole("link", { name: "My profile" }).getAttribute("aria-current")).toBe("page");
-    expect(screen.getByRole("link", { name: "Directory" }).getAttribute("aria-current")).toBeNull();
-  });
-
-  // Its page frames the marketplace under its own security policy, which only a full page load applies.
-  it("loads the whole Perks page, while other entries navigate inside the app", () => {
-    renderShellPart(SidebarNavigation);
-
-    expect(screen.getByRole("link", { name: /Perks/ }).hasAttribute("data-app-link")).toBe(false);
-    expect(screen.getByRole("link", { name: /Inbox/ }).hasAttribute("data-app-link")).toBe(true);
   });
 });
 
-describe("the messages badge", () => {
-  it("shows the unread count in the sidebar", () => {
-    stubCounts(1);
-    renderWithClient(createElement(SidebarNavigation, { navigation: buildShellNavigation(), isAdmin: false, badges: { messages: 1 } }));
-
-    expect(screen.getByRole("img", { name: "1 unread message" })).toBeTruthy();
-  });
-
-  it("follows the count the server reports", async () => {
+describe("the Inbox count", () => {
+  it("follows the unread count the server reports", async () => {
     stubCounts(4);
     const queryClient = renderWithClient(createElement(TabBar, { navigation: buildShellNavigation(), isAdmin: false, badges: { messages: 1 } }));
 
     await queryClient.invalidateQueries();
 
-    await waitFor(() => expect(screen.getByRole("img", { name: "4 unread messages" })).toBeTruthy());
+    await waitFor(() => expect(screen.getByRole("img", { name: "4 new in your inbox" })).toBeTruthy());
   });
 });
 
-describe("the admin's two modes", () => {
-  it("marks Console in the switch on console pages", () => {
-    location.pathname = ROUTES.admin;
-    render(createElement(ModeSwitch));
-
-    expect(screen.getByRole("link", { name: "Console" }).getAttribute("aria-current")).toBe("true");
-    expect(screen.getByRole("link", { name: "View as a founder" }).getAttribute("aria-current")).toBeNull();
-  });
-
-  it("shows the founder-view strip on member pages only", () => {
+describe("the founder-view strip", () => {
+  it("shows on member pages only", () => {
     render(createElement(FounderViewStrip, { name: "Maya Ortiz" }));
-    expect(screen.getByText(/This is what members see. You are signed in as Maya Ortiz, an admin./)).toBeTruthy();
+    expect(screen.getByText(/What members see. You are Maya Ortiz, an admin./)).toBeTruthy();
     cleanup();
 
     location.pathname = ROUTES.adminReport;
     render(createElement(FounderViewStrip, { name: "Maya Ortiz" }));
     expect(screen.queryByText(/Founder view/)).toBeNull();
+  });
+});
+
+describe("the avatar menu", () => {
+  const MAYA = { id: "maya", name: "Maya Ortiz", email: "maya@example.com", image: null, isAdmin: true };
+
+  async function openMenu(pathname: string) {
+    location.pathname = pathname;
+    stubCounts(0);
+    renderWithClient(createElement(PhoneAccountButton, { member: MAYA, navigation: buildShellNavigation(undefined, true) }));
+    const trigger = screen.getByRole("button", { name: "Your menu" });
+    fireEvent.keyDown(trigger, { key: "ArrowDown" });
+    return screen.findByRole("menu");
+  }
+
+  it("holds the member's pages, More, the console, Dark mode and Sign out", async () => {
+    const menu = await openMenu(ROUTES.today);
+    const items = Array.from(menu.querySelectorAll("[role^='menuitem']"), (item) => item).map((item) => item.textContent?.replace(/(On|Off)$/, ""));
+
+    expect(items).toEqual(["My profile", "Alerts", "Email", "Your data", "Jobs", "Perks", "Library", "Feed", "Admin console", "Dark mode", "Sign out"]);
+    expect(within(menu).getByText("More")).toBeTruthy();
+    expect(within(menu).getByRole("menuitem", { name: "Alerts" }).getAttribute("href")).toBe(ROUTES.alerts);
+  });
+
+  it("offers the founder view from the console, and the Report (no phone tab), with no member pages", async () => {
+    const menu = await openMenu(ROUTES.adminMembers);
+
+    expect(within(menu).getByRole("menuitem", { name: "See it as a founder" })).toBeTruthy();
+    expect(within(menu).queryByRole("menuitem", { name: "Admin console" })).toBeNull();
+    expect(within(menu).queryByRole("menuitem", { name: "Perks" })).toBeNull();
+    expect(within(menu).getByRole("menuitem", { name: "Report" }).getAttribute("href")).toBe(ROUTES.adminReport);
   });
 });

@@ -6,15 +6,16 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import type { SearchWhere } from "@/modules/network/contract";
+import { toNetworkSearchHref } from "@/modules/network/components/search-links";
 import { activeSearchQuery, networkSearchQuery } from "@/modules/network/queries";
 import { ROUTES } from "@/platform/http/routes";
 
 const NOTICE_COPY = {
   success: { title: "Your search is ready", action: "See who you found" },
-  error: { title: "Your search didn't finish", action: "Back to Search" },
+  error: { title: "Your search didn't finish", action: "Back to People" },
 };
 
-// A search runs on while the member browses; Commonhall's toast says when it is done.
+// A search of members' networks runs on while the member browses; Commonhall's toast says when it is done.
 function SearchOutcomeNotice({ prompt, scope }: { prompt: string; scope: SearchWhere }) {
   const { status } = useQuery({ ...networkSearchQuery(prompt, scope), enabled: false });
   if (status === "pending") return null;
@@ -23,7 +24,7 @@ function SearchOutcomeNotice({ prompt, scope }: { prompt: string; scope: SearchW
     <div role="status" data-slot="search-ready-notice" className="fh-toast">
       <Search aria-hidden="true" className="fh-i fh-s" strokeWidth={1.5} />
       <span>{title}</span>
-      <Link href={`${ROUTES.network}?${new URLSearchParams({ q: prompt, scope }).toString()}`} className="font-semibold text-paper underline">
+      <Link href={toNetworkSearchHref(prompt, scope)} className="font-semibold text-paper underline">
         {action}
       </Link>
     </div>

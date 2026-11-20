@@ -1,4 +1,4 @@
-import { ANNOUNCEMENT_BODY, ANNOUNCEMENT_SUBJECT, ASK_BODY, CANDIDATES_PAGE, DIRECTORY_SECTOR, EXPERTS_VIEW_HREF, INTRO_ASK_PAGE, INTRO_NOTE, ROOM_HREF, SEARCH_QUERY } from "./data";
+import { ANNOUNCEMENT_BODY, ANNOUNCEMENT_SUBJECT, ASK_BODY, CANDIDATES_PAGE, DIRECTORY_SECTOR, EXPERTS_VIEW_HREF, INTRO_ASK_PAGE, INTRO_NOTE, ROOM_HREF, SEARCH_QUERY, SEARCH_RESULTS_HREF } from "./data";
 import type { Player } from "./player";
 
 // The tour's steps, in order. Each is one tab on the landing page. How to add one: tour/AGENTS.md and
@@ -25,20 +25,24 @@ export type TourStep = {
   play: (hands: TourHands) => Promise<void>;
 };
 
-const RESULTS = `/search?q=${encodeURIComponent(SEARCH_QUERY)}&scope=network`;
+const RESULTS = SEARCH_RESULTS_HREF;
 const ASK_BUTTON = ".fh-result .fh-btn-row a";
+const NETWORK_BUTTON = "[data-slot='people-network'] button";
+const FILTER_BUTTON = "[aria-controls='people-filters']";
 
 export const TOUR_STEPS: readonly TourStep[] = [
   {
     id: "search",
     label: "Search",
-    caption: "Type who you need. See the faces in reach and the member who can introduce you.",
-    start: "/search",
+    caption: "Type who you need, then search their networks. See the faces in reach and the member who can introduce you.",
+    start: "/people",
     still: RESULTS,
     async play(hands) {
-      await hands.type("#q", SEARCH_QUERY);
+      await hands.type("#member-search", SEARCH_QUERY);
       await hands.wait(250);
-      await hands.submit("#q");
+      // The button reads the box and moves the address; the tour presses it and moves its own.
+      await hands.tap(NETWORK_BUTTON);
+      await hands.go(RESULTS);
       await hands.wait(900);
       await hands.point(".fh-result .fh-pathtext");
       await hands.wait(1200);
@@ -86,15 +90,17 @@ export const TOUR_STEPS: readonly TourStep[] = [
   },
   {
     id: "directory",
-    label: "Directory",
+    label: "People",
     caption: "Every founder in one place. Filter by stage, sector, city and cohort.",
-    start: "/directory",
-    still: `/directory?sector=${DIRECTORY_SECTOR}`,
+    start: "/people",
+    still: `/people?sector=${DIRECTORY_SECTOR}`,
     async play(hands) {
       await hands.wait(500);
+      await hands.click(FILTER_BUTTON);
+      await hands.wait(300);
       await hands.point(".fh-filters .fh-filt:nth-child(2) select");
       await hands.wait(200);
-      await hands.go(`/directory?sector=${DIRECTORY_SECTOR}`);
+      await hands.go(`/people?sector=${DIRECTORY_SECTOR}`);
       await hands.wait(900);
       await hands.point(".fh-cards .fh-mcard");
       await hands.wait(2000);
@@ -104,12 +110,12 @@ export const TOUR_STEPS: readonly TourStep[] = [
     id: "book-call",
     label: "Book a call",
     caption: "Mentors, experts and advisors in one view. Book a call on their own calendar, in one click.",
-    start: "/directory",
+    start: "/people",
     still: EXPERTS_VIEW_HREF,
     async play(hands) {
       await hands.wait(500);
-      // The switch rewrites the window's address in the app, so the tour presses it and moves its own address.
-      await hands.tap(".fh-seg button[aria-pressed='false']");
+      // "An expert" rewrites the window's address in the app, so the tour presses it and moves its own address.
+      await hands.tap("[data-slot='people-needs'] button:last-child");
       await hands.go(EXPERTS_VIEW_HREF);
       await hands.wait(900);
       await hands.point("[data-testid='expert-card'] .fh-who");

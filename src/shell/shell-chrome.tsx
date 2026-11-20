@@ -5,11 +5,8 @@ import { ProductCredit, SourceLine } from "@/components/source-code-link";
 import type { CommunityLogo } from "@/platform/branding/branding";
 import { ROUTES } from "@/platform/http/routes";
 
-import Link from "next/link";
-
 import { useFundMarkSub, useShellMode } from "./navigation-links";
-import { CONSOLE_KEYS, MEMBER_KEYS, SHELL_MODES, type ShellNavigation } from "./navigation-rules";
-import { SignOutButton } from "./user-menu";
+import { SHELL_MODES } from "./navigation-rules";
 
 type ShellFundMarkProps = { name: string; logo: CommunityLogo | null; isAdmin: boolean; size: "default" | "sidebar"; pathname?: string };
 
@@ -25,38 +22,11 @@ export function ShellFooterLine({ isAdmin, pathname }: { isAdmin: boolean; pathn
   return useShellMode(isAdmin, pathname) === SHELL_MODES.console ? <ProductCredit /> : <SourceLine />;
 }
 
-// The menu items with no phone tab and no link from a page. Commonhall reaches the rest from its pages: Jobs and
-// Perks from Today's cards; in the console, Home and the Intro log link the Partner report, Home and Members link
-// Invites, and the Job board has no phone link in Commonhall either, so the console's foot lists none of them.
-const LINKED_FROM_PAGES: ReadonlySet<string> = new Set([MEMBER_KEYS.jobs, MEMBER_KEYS.perks, CONSOLE_KEYS.report, CONSOLE_KEYS.invites, CONSOLE_KEYS.jobs]);
-
-function PhoneMoreLinks({ navigation, isAdmin, pathname }: { navigation: ShellNavigation; isAdmin: boolean; pathname?: string }) {
-  const mode = useShellMode(isAdmin, pathname);
-  const items = (mode === SHELL_MODES.console ? navigation.console : navigation.member).filter((item) => !item.tabLabel && item.key !== MEMBER_KEYS.me && !LINKED_FROM_PAGES.has(item.key));
-  if (items.length === 0) return null;
-  return (
-    <nav aria-label="More" className="mb-2 flex flex-wrap gap-x-4 gap-y-1">
-      {items.map((item) =>
-        item.isFullPageLoad ? (
-          <a key={item.key} href={item.href} className="fh-linkbtn">
-            {item.label}
-          </a>
-        ) : (
-          <Link key={item.key} href={item.href} className="fh-linkbtn">
-            {item.label}
-          </Link>
-        ),
-      )}
-    </nav>
-  );
-}
-
-// The foot of every page on a phone (crop footer-phone.png): Sign out, then the footer line.
-export function PhoneFoot({ isAdmin, pathname, navigation }: { isAdmin: boolean; pathname?: string; navigation?: ShellNavigation }) {
+// The foot of every page on a phone (crop footer-phone.png): the footer line. Sign out and every page the five tabs
+// don't hold sit in the avatar menu (round 6), so the foot lists no links of its own.
+export function PhoneFoot({ isAdmin, pathname }: { isAdmin: boolean; pathname?: string }) {
   return (
     <div data-slot="phone-foot" className="fh-phone-foot">
-      {navigation ? <PhoneMoreLinks navigation={navigation} isAdmin={isAdmin} pathname={pathname} /> : null}
-      <SignOutButton />
       <ShellFooterLine isAdmin={isAdmin} pathname={pathname} />
     </div>
   );

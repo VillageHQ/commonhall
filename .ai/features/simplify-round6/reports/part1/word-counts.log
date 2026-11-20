@@ -1,0 +1,68 @@
+server up
+room admin 200 {"roomId":"d55a65b3-ff79-47f7-a059-27f5e3cfadbc"}
+room member 200 {"roomId":"0eaf1656-214a-4c9c-9de7-c8a2cd1b87cc"}
+member phone sign-in 303
+member desktop sign-in 303
+member /people 200 /people words 189 controls 27 | phone 192 28
+member /inbox?show=intros 200 /inbox words 35 controls 4 | phone 38 5
+member /today 200 /today words 404 controls 26 | phone 407 27
+member /asks 200 /asks words 463 controls 26 | phone 382 27
+member /ask 200 /asks words 463 controls 26 | phone 382 27
+member /search 200 /people words 189 controls 27 | phone 192 28
+member /directory 200 /people words 189 controls 27 | phone 192 28
+member /jobs 200 /jobs words 150 controls 14 | phone 153 15
+member /jobs/yours 200 /me words 522 controls 48 | phone 525 49
+member /intros 200 /inbox words 35 controls 4 | phone 38 5
+member /intros/new 404 /intros/new words 8 controls 1 | phone 11 2
+member /inbox 200 /inbox words 37 controls 4 | phone 40 5
+member /messages/new 404 /messages/new words 8 controls 1 | phone 11 2
+member /rooms 200 /rooms words 89 controls 5 | phone 92 6
+member /perks 200 /perks words 123 controls 0 | phone 126 1
+member /library 200 /library words 316 controls 29 | phone 259 29
+member /library/leaderboard 200 /library/leaderboard words 128 controls 11 | phone 131 12
+member /library/new 200 /library/new words 150 controls 13 | phone 153 14
+member /me 200 /me words 522 controls 48 | phone 525 49
+member /me/alerts 200 /me/alerts words 147 controls 18 | phone 150 19
+member /me/data 200 /me/data words 519 controls 17 | phone 522 18
+member /me/email 200 /me/email words 166 controls 14 | phone 169 15
+member /me/network 200 /me/network words 76 controls 6 | phone 79 7
+member /feed 200 /feed words 141 controls 29 | phone 134 26
+member /welcome 200 /today words 404 controls 26 | phone 407 27
+member /start 200 /today words 404 controls 26 | phone 407 27
+member /search/ask 200 /people words 189 controls 27 | phone 192 28
+member /asks/3985d532-e35a-4f8c-b287-2ef75bac614f 200 /asks/3985d532-e35a-4f8c-b287-2ef75bac614f words 134 controls 9 | phone 137 10
+member /intros/140e7ced-0e7d-4484-943c-c249a80a7f91 200 /intros/140e7ced-0e7d-4484-943c-c249a80a7f91 words 163 controls 10 | phone 166 11
+member /inbox/71bcd958-e748-406c-b650-464aa03fac80 200 /inbox/71bcd958-e748-406c-b650-464aa03fac80 words 98 controls 7 | phone 101 8
+member /people/36aae102-4563-41b5-893e-4f6468d69490 200 /people/36aae102-4563-41b5-893e-4f6468d69490 words 158 controls 6 | phone 161 7
+member /library/a7130024-8ce2-4c2d-94a8-3d1fe53917a6 200 /library/a7130024-8ce2-4c2d-94a8-3d1fe53917a6 words 146 controls 8 | phone 149 9
+member /rooms/d55a65b3-ff79-47f7-a059-27f5e3cfadbc 200 /rooms/d55a65b3-ff79-47f7-a059-27f5e3cfadbc words 27 controls 2 | phone 30 3
+member /intros/new?via=36aae102-4563-41b5-893e-4f6468d69490 200 /intros/new words 235 controls 8 | phone 158 9
+member /messages/new?to=36aae102-4563-41b5-893e-4f6468d69490 200 /messages/new words 35 controls 3 | phone 38 4
+admin phone sign-in 303
+admin desktop sign-in 303
+admin /admin 200 /admin words 127 controls 6 | phone 133 7
+admin /admin/report 200 /admin/report words 511 controls 6 | phone 517 7
+admin /admin/intros 200 /admin/intros words 353 controls 14 | phone 375 15
+admin /admin/members 200 /admin/members words 323 controls 34 | phone 250 35
+admin /admin/invites 200 /admin/invites words 263 controls 11 | phone 269 12
+admin /admin/asks 200 /admin/asks words 509 controls 46 | phone 515 47
+admin /admin/digest 200 /admin/digest words 191 controls 3 | phone 197 4
+admin /admin/announcements 200 /admin/announcements words 187 controls 13 | phone 193 14
+admin /admin/jobs 200 /admin/jobs words 242 controls 17 | phone 248 18
+admin /admin/settings 200 /admin/settings words 93 controls 29 | phone 99 30
+admin /admin/setup 200 /admin/setup words 199 controls 11 | phone 205 12
+admin /admin/start 200 /admin/start words 92 controls 14 | phone 98 15
+admin /admin/features 200 /admin/features words 189 controls 10 | phone 195 11
+admin /admin/rooms 200 /admin/rooms words 80 controls 1 | phone 86 2
+admin /admin/perks 200 /admin/perks words 125 controls 5 | phone 131 6
+admin /admin/calls 200 /admin/calls words 148 controls 5 | phone 154 6
+admin /admin/weekly-email 200 /admin/digest words 191 controls 3 | phone 197 4
+admin /admin/mail 200 /admin/mail words 85 controls 8 | phone 91 9
+admin /admin/health 200 /admin/report words 511 controls 6 | phone 517 7
+admin /admin/audit 200 /admin/audit words 19 controls 0 | phone 25 1
+admin /admin/import 200 /admin/import words 210 controls 7 | phone 216 8
+admin /admin/links 200 /admin/links words 69 controls 2 | phone 75 3
+admin /admin/reports 200 /admin/reports words 70 controls 2 | phone 76 3
+admin /admin/village 200 /admin/village words 338 controls 32 | phone 344 33
+admin /admin/members/36aae102-4563-41b5-893e-4f6468d69490 200 /admin/members/36aae102-4563-41b5-893e-4f6468d69490 words 104 controls 9 | phone 110 10
+done
