@@ -115,6 +115,7 @@ for rooms and member-set quiet times. The study and plan: [study](features/simpl
 - [ ] Part 4, alerts schedule: several quiet times, presets, pause, let direct alerts through — notify-schedule — size S — [spec](features/notify-schedule/SPEC.md)
 - [ ] Part 5, admin console: Home "This week", Asks & intros, Members, Announce, one Set up — simplify-round6 — size M — [spec](features/simplify-round6/SPEC.md)
 - [ ] Fix pass and re-study: the parts' open items, then the 12 personas again on the new app — simplify-fixpass — size S — [spec](features/simplify-fixpass/SPEC.md) · [re-study](features/simplify-round6/RESTUDY.md)
+- [ ] Room hand-off fix (store app): the web room page says you left and offers Join again after Leave in the app; the app hides "Tell people" when you already told people — room-handoff — size S — open pull request — [spec](features/room-handoff/SPEC.md) · needs a new TestFlight build
 ### Follow-ups from the round-6 study (no spec yet)
 - [ ] Nudge buttons for admins: who could help on an ask, nudge a stuck connector
 - [ ] A partner introduces two people directly, without spending their own asks

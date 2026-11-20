@@ -50,15 +50,22 @@ with the same answers for a wrong code, an expired one and an unknown address.
 
 ## Voice rooms, native
 - The room page (`src/modules/voice/components/live-room.tsx`) asks `readNativeApp()`: in the app it calls
-  `openRoom()` and shows "This room plays in the app's player" with Open the room; in a browser it plays there as
-  before. Nothing connects until the page knows which.
+  `openRoom(roomId, title, { hasNotified })` and shows "Playing in the app." with Open the room; in a browser it plays
+  there as before. Nothing connects until the page knows which. `hasNotified` (the member already told people about
+  this room, or started it with Notify) reaches the room screen in the `voice.open` message, so it hides Tell people.
+- When the room screen closes (Leave, the lock screen's Leave, or Back to the portal from an ended, failed or
+  elsewhere room), the app sends the page `commonhall-room-closed` `{ roomId, reason }` (`buildRoomClosedScript`;
+  reasons `left` · `ended` · `elsewhere` · `failed`). That room's page then says why ("You left the room."), re-reads
+  itself from the server (a fresh `hasNotified`) and offers Join again, except for an ended room (room-handoff, 20 Nov
+  2026). An app build before this sends nothing, and the page keeps saying "Playing in the app."
 - `RoomScreen` (`mobile/src/voice/`): `/api/voice/join` through the bridge, then `livekit-client` on the phone's WebRTC
   (`@livekit/react-native` `registerGlobals()`, its Expo plugin and `@config-plugins/react-native-webrtc`). Stage and
   audience with faces, talking rings, raised hands, invite up / move down / co-hosts for moderators, reactions, mute,
   End room for the host, Leave quietly. Every role change still goes through the server's voice API.
 - **Tell people I'm here** (round 6): picks up to 10 people and posts `/api/voice/notify`. The app learns that the
-  member already told people about this room (once per room, a Notify when starting it included) only from the
-  server's `voice_notified_already` answer; that answer closes the button like a send. Confirmations read in ink,
+  member already told people about this room (once per room, a Notify when starting it included) from the page's
+  `hasNotified` when the room is handed over, and otherwise from the server's `voice_notified_already` answer, which
+  closes the button like a send. Confirmations read in ink,
   problems in rust. "Start a room" with Notify others is the portal's own sheet, so the app needs nothing for it.
 - **Minimise** keeps the room connected under the portal with a bar ("Pricing AMA · On stage, talking"; the dot greys
   when the room closes). One room at a time: opening another leaves the first (`/api/voice/leave`). No room chat yet.
