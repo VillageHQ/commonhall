@@ -25,7 +25,7 @@ export default modulePage(adminManifest, async function AdminReportsPage() {
   queryClient.setQueryData(reportPageQuery(REPORT_FILTERS.open, FIRST_PAGE).queryKey, reports);
 
   return (
-    <AdminSection title="Flagged asks" back={{ href: ROUTES.adminSettings, label: "Set up" }} description="Only admins see this; nobody is told who reported.">
+    <AdminSection title="Flagged" back={{ href: ROUTES.adminSettings, label: "Set up" }} description="Only admins see this. Nobody is told who reported.">
       <HydrationBoundary state={dehydrate(queryClient)}>
         <ReportQueue viewerId={admin.id} />
       </HydrationBoundary>

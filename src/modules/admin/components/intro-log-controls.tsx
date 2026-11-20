@@ -3,7 +3,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { Download } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useRef, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 
 import { FormError } from "@/components/form-error";
 import { useFlash } from "@/components/flash";
@@ -60,8 +60,18 @@ function NumberSetting({ id, title, label, name, value, minimum, maximum, hint, 
     },
   });
   const inputId = `${id}-value`;
+  const [inputError, setInputError] = useState<string | null>(null);
+  const isSending = useRef(false);
   function submit() {
-    mutation.mutate(Number(inputRef.current?.value));
+    if (isSending.current) return;
+    const number = Number(inputRef.current?.value);
+    if (!Number.isInteger(number) || number < minimum || number > maximum) {
+      setInputError(`A whole number from ${minimum} to ${maximum}.`);
+      return;
+    }
+    setInputError(null);
+    isSending.current = true;
+    mutation.mutate(number, { onSettled: () => (isSending.current = false) });
   }
   return (
     <Card id={id} className={className}>
@@ -84,7 +94,7 @@ function NumberSetting({ id, title, label, name, value, minimum, maximum, hint, 
               max={maximum}
               step={1}
               defaultValue={value}
-              aria-invalid={mutation.isError || undefined}
+              aria-invalid={mutation.isError || inputError !== null || undefined}
               onKeyDown={(event) => {
                 if (event.key !== "Enter") return;
                 event.preventDefault();
@@ -98,7 +108,7 @@ function NumberSetting({ id, title, label, name, value, minimum, maximum, hint, 
             </Button>
           </div>
         </div>
-        {mutation.error ? <FormError message={mutation.error.message} /> : null}
+        {inputError || mutation.error ? <FormError message={inputError ?? mutation.error?.message ?? null} /> : null}
         <p className="fh-hint">{hint}</p>
       </section>
     </Card>

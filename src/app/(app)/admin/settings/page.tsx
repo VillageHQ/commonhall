@@ -25,6 +25,7 @@ import { introsManifest } from "@/modules/intros/manifest";
 import { readOutcomeDays } from "@/modules/intros/reads-outcome-days";
 import { readSetupPage, SETUP_ROW_PLACES } from "@/shell/admin-setup-rows";
 import { SetupRowList } from "@/shell/admin-setup-rows-view";
+import { VILLAGE_KEYS_ANCHOR } from "@/shell/admin-home-anchors";
 import { readEnabledIds } from "@/shell/enabled-modules";
 
 export const metadata: Metadata = { title: PAGE_TITLES.adminSettings };
@@ -74,7 +75,7 @@ export default modulePage(adminManifest, async function AdminSettingsPage() {
       <section className="fh-sheet">
         <SetupRowList rows={rows.filter(({ place }) => place === SETUP_ROW_PLACES.advanced)} />
       </section>
-      <section className="fh-sheet">
+      <section className="fh-sheet" id={VILLAGE_KEYS_ANCHOR}>
         <h2 className="fh-h3">Village keys</h2>
         <p className="fh-small" style={{ marginTop: 6 }}>
           {village.text}. <Link href={village.href}>{village.link}</Link>

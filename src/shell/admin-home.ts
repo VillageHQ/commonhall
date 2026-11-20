@@ -9,7 +9,9 @@ import { introsManifest } from "../modules/intros/manifest.ts";
 import { networkManifest } from "../modules/network/manifest.ts";
 import { readInviteCounts } from "../modules/members/service-invites.ts";
 import { readAdminTabFacts, type AdminTabFacts } from "./admin-badges.ts";
-import { SETUP_STEPS } from "./admin-setup-steps.ts";
+import { SETUP_STEP_NAMES } from "./admin-setup.ts";
+import { VILLAGE_KEYS_ANCHOR } from "./admin-home-anchors.ts";
+import { SETUP_STEPS, type SetupStepId } from "./admin-setup-steps.ts";
 import { readEnabledIds } from "./enabled-modules.ts";
 import { describeLaunchSteps, readIsLaunched, readLaunchFacts } from "./console-launch.ts";
 import { countAsksWithNoHelp, countWaitingIntros, readThisWeek } from "./admin-this-week.ts";
@@ -34,11 +36,21 @@ export type AdminHomeItem = { id: (typeof ADMIN_HOME_ITEMS)[keyof typeof ADMIN_H
 
 type AdminHomeCounts = { pendingInvites: number; stuckIntros: number; asksWithNoHelp?: number; isNetworkOn?: boolean };
 
-// With network on, the Village item opens the Village check, which says what's wrong and links to the fix.
+// With network on, the Village item opens the Village check, which says what's wrong and links to the fix. With it
+// off, refused keys are fixed from Set up's Village keys (under Advanced; the address opens it).
 function readVillageHref(trouble: string | null, isNetworkOn: boolean) {
   if (isNetworkOn) return ROUTES.adminVillage;
-  return trouble === VILLAGE_TROUBLES.keysRejected ? `${ROUTES.adminSettings}?step=${SETUP_STEPS.keys}` : ROUTES.adminVillage;
+  return trouble === VILLAGE_TROUBLES.keysRejected ? `${ROUTES.adminSettings}#${VILLAGE_KEYS_ANCHOR}` : ROUTES.adminVillage;
 }
+
+// Where each setup step is done.
+const SETUP_STEP_PAGES: Record<SetupStepId, string> = {
+  [SETUP_STEPS.brand]: ROUTES.adminSettings,
+  [SETUP_STEPS.keys]: ROUTES.adminVillage,
+  [SETUP_STEPS.group]: ROUTES.adminVillage,
+  [SETUP_STEPS.invite]: ROUTES.adminInvites,
+  [SETUP_STEPS.report]: ROUTES.adminReport,
+};
 
 function plural(count: number, one: string, many: string) {
   return `${count} ${count === 1 ? one : many}`;
@@ -74,7 +86,12 @@ export function readAdminHomeItems(facts: AdminTabFacts, { pendingInvites, stuck
       ? { id: ADMIN_HOME_ITEMS.invites, label: `${plural(pendingInvites, "invite", "invites")} not accepted yet`, href: ROUTES.adminInvites, isUrgent: false }
       : null,
     facts.setupStepsLeft > 0
-      ? { id: ADMIN_HOME_ITEMS.setup, label: `${plural(facts.setupStepsLeft, "setup step", "setup steps")} left`, href: ROUTES.adminSettings, isUrgent: false }
+      ? {
+          id: ADMIN_HOME_ITEMS.setup,
+          label: facts.setupNextStep ? `Next setup step: ${SETUP_STEP_NAMES[facts.setupNextStep]}` : `${plural(facts.setupStepsLeft, "setup step", "setup steps")} left`,
+          href: facts.setupNextStep ? SETUP_STEP_PAGES[facts.setupNextStep] : ROUTES.adminSettings,
+          isUrgent: false,
+        }
       : null,
   ];
   return items.filter((item) => item !== null).slice(0, MAX_HOME_ITEMS);

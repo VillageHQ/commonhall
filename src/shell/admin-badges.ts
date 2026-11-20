@@ -18,7 +18,7 @@ export async function readAdminTabFacts(database: Database, environment: Environ
   const enabledIds = await readEnabledIds(database);
   const isNetworkOn = enabledIds.has(networkManifest.id);
   const isChatOn = enabledIds.has(chatManifest.id);
-  const [{ isComplete, stepsLeft }, confirmations, pendingLinks, openReports, outOfCreditsAt, villageHealth, chatConnections] = await Promise.all([
+  const [{ isComplete, stepsLeft, currentStepId }, confirmations, pendingLinks, openReports, outOfCreditsAt, villageHealth, chatConnections] = await Promise.all([
     readSetupProgress(database),
     readConfirmationBadgeCount(database, environment),
     isNetworkOn ? readPendingLinkCount(database) : 0,
@@ -30,6 +30,8 @@ export async function readAdminTabFacts(database: Database, environment: Environ
   return {
     isSetupComplete: isComplete,
     setupStepsLeft: stepsLeft,
+    // The first setup step not done yet: Home's item names it and opens its page.
+    setupNextStep: currentStepId,
     membersBadge: confirmations + pendingLinks,
     reportsBadge: openReports,
     creditsBadge: outOfCreditsAt || villageHealth?.trouble ? 1 : 0,

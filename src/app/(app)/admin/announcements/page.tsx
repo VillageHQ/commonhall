@@ -20,7 +20,8 @@ import { ROUTES } from "@/platform/http/routes";
 import { AdminSection } from "@/shell/admin-section";
 import { DigestMailText } from "@/shell/digest-mail-text";
 import { previewMemberDigest } from "@/shell/weekly-email";
-import { SCHEDULE_SAVED_FLASH, WeeklyEmailScheduleForm } from "@/shell/weekly-email-schedule-form";
+import { WeeklyEmailScheduleForm } from "@/shell/weekly-email-schedule-form";
+import { SCHEDULE_SAVED_FLASH } from "@/shell/weekly-email-rules";
 import { readWeeklyEmailPlan } from "@/shell/weekly-email-settings";
 import Link from "next/link";
 

@@ -103,8 +103,8 @@ const FILTERS: { filter: ReportFilter; label: string }[] = [
 const FILTER_TITLES: Record<ReportFilter, string> = { [REPORT_FILTERS.open]: "Waiting for you", [REPORT_FILTERS.resolved]: "Handled" };
 
 const EMPTY_STATES: Record<ReportFilter, { title: string; description: string }> = {
-  [REPORT_FILTERS.open]: { title: "Nothing to review", description: "When a member reports a post, a reply, a message or an intro note, it shows up here." },
-  [REPORT_FILTERS.resolved]: { title: "Nothing handled yet", description: "Reports you've dealt with stay here, so you can look back." },
+  [REPORT_FILTERS.open]: { title: "Nothing to review", description: "What members flag shows here." },
+  [REPORT_FILTERS.resolved]: { title: "Nothing handled yet", description: "Reports you dealt with stay here." },
 };
 
 function focusQueueTitle() {
@@ -296,7 +296,7 @@ export function ReportQueue({ viewerId }: { viewerId: string }) {
           />
         </QueryBoundary>
         <p className="fh-small fh-muted mt-2.5">
-          Dismiss closes a report and changes nothing else. Delete removes it for everyone; a copy stays in the audit log. Nobody is told who reported.
+          Dismiss changes nothing else. Delete removes it for everyone; the audit log keeps a copy.
         </p>
       </Card>
     </section>

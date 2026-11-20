@@ -4,7 +4,7 @@ import { SetupRows } from "@/components/ui/rows";
 import { SETUP_ROW_STATES, type SetupRow, type SetupRowState } from "./admin-setup-rows";
 
 function RowState({ state }: { state: SetupRowState }) {
-  if (state.kind === SETUP_ROW_STATES.done) return <Pill tone="made">Set up</Pill>;
+  if (state.kind === SETUP_ROW_STATES.done) return <Pill tone="made">Done</Pill>;
   if (state.kind === SETUP_ROW_STATES.todo) return <Pill tone="open">Not yet</Pill>;
   if (state.kind === SETUP_ROW_STATES.needs) return <Pill tone="needs">{state.text}</Pill>;
   return <small className="fh-muted">{state.text}</small>;

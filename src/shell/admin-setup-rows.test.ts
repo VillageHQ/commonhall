@@ -19,7 +19,7 @@ const FRESH_INSTALL: SetupFacts = {
 };
 
 function readStates(facts: SetupFacts) {
-  return readSetupRows(facts).map(({ title, state }) => [title, state.kind === SETUP_ROW_STATES.done ? "Set up" : state.kind === SETUP_ROW_STATES.todo ? "Not yet" : state.text]);
+  return readSetupRows(facts).map(({ title, state }) => [title, state.kind === SETUP_ROW_STATES.done ? "Done" : state.kind === SETUP_ROW_STATES.todo ? "Not yet" : state.text]);
 }
 
 describe("the Set up page's rows", () => {
@@ -34,7 +34,7 @@ describe("the Set up page's rows", () => {
       "Job board",
       "Mail log",
       "Audit log",
-      "Flagged asks",
+      "Flagged",
       "Guided start",
     ]);
   });
@@ -50,15 +50,15 @@ describe("the Set up page's rows", () => {
       ["Job board", "on"],
       ["Mail log", "always on"],
       ["Audit log", "always on"],
-      ["Flagged asks", "none open"],
+      ["Flagged", "none open"],
       ["Guided start", "optional"],
     ]);
   });
 
   it("marks each page set up once it is", () => {
     const states = readStates({ ...FRESH_INSTALL, isMailOn: true, hasSendingDomain: true, hasVillageKeys: true, isChatPosting: true, isPerksShown: true, isVoiceOn: true, isVoiceReady: true, openReports: 2 });
-    for (const title of ["Mail", "Rooms server", "Village", "Slack and Discord", "Perks"]) expect(states).toContainEqual([title, "Set up"]);
-    expect(states).toContainEqual(["Flagged asks", "2 open"]);
+    for (const title of ["Mail", "Rooms server", "Village", "Slack and Discord", "Perks"]) expect(states).toContainEqual([title, "Done"]);
+    expect(states).toContainEqual(["Flagged", "2 open"]);
   });
 
   it("sends a switched-off feature's row to its own switch on Features", () => {

@@ -34,6 +34,7 @@ function daysAgo(now: Date, days: number) {
 const QUIET_FACTS = {
   isSetupComplete: true,
   setupStepsLeft: 0,
+  setupNextStep: null,
   membersBadge: 0,
   reportsBadge: 0,
   creditsBadge: 0,
@@ -123,23 +124,23 @@ describe("the admin home", () => {
   it("shows the setup item on a fresh install, linking to Set up", async () => {
     const { items } = await readAdminHome(database, process.env);
 
-    expect(items.find(({ id }) => id === ADMIN_HOME_ITEMS.setup)).toMatchObject({ href: ROUTES.adminSettings });
+    expect(items.find(({ id }) => id === ADMIN_HOME_ITEMS.setup)).toMatchObject({ label: "Next setup step: brand your community", href: ROUTES.adminSettings });
   });
 
   it("links each item to its place and leaves out every item at zero", () => {
     expect(readAdminHomeItems(QUIET_FACTS, { pendingInvites: 0, stuckIntros: 0 })).toEqual([]);
 
     const items = readAdminHomeItems(
-      { ...QUIET_FACTS, reportsBadge: 1, membersBadge: 2, setupStepsLeft: 3, villageTrouble: { trouble: VILLAGE_TROUBLES.keysRejected, troubleAt: null, lastOkAt: null } },
+      { ...QUIET_FACTS, reportsBadge: 1, membersBadge: 2, setupStepsLeft: 3, setupNextStep: "invite", villageTrouble: { trouble: VILLAGE_TROUBLES.keysRejected, troubleAt: null, lastOkAt: null } },
       { pendingInvites: 1, stuckIntros: 0 },
     );
 
     expect(items.map(({ label, href }) => [label, href])).toEqual([
-      ["Village refused your keys", `${ROUTES.adminSettings}?step=keys`],
+      ["Village refused your keys", `${ROUTES.adminSettings}#village-keys`],
       ["1 report waiting", ROUTES.adminReports],
       ["2 people waiting for your OK", ROUTES.adminMembers],
       ["1 invite not accepted yet", ROUTES.adminInvites],
-      ["3 setup steps left", ROUTES.adminSettings],
+      ["Next setup step: invite your first members", ROUTES.adminInvites],
     ]);
   });
 

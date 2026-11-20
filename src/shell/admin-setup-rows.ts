@@ -123,9 +123,9 @@ export function readSetupRows(facts: SetupFacts): SetupRow[] {
     { key: "audit", title: "Audit log", href: ROUTES.adminAuditLog, description: "Every admin action.", state: word("always on"), place: advanced },
     {
       key: "reports",
-      title: "Flagged asks",
+      title: "Flagged",
       href: ROUTES.adminReports,
-      description: "What members reported.",
+      description: "Posts, asks and messages members reported.",
       state: facts.openReports > 0 ? { kind: SETUP_ROW_STATES.needs, text: `${facts.openReports} open` } : word("none open"),
       place: advanced,
     },

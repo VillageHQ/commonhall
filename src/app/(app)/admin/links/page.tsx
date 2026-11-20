@@ -18,10 +18,9 @@ const MAIL_ON_LINE = "Links whose email failed. Copy one and send it yourself.";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-// Commonhall's admin dates: "11 Nov 15:08 UTC".
+// "11 Nov": the day is enough here (a link lasts 14 days).
 function formatMoment(date: Date) {
-  const time = `${String(date.getUTCHours()).padStart(2, "0")}:${String(date.getUTCMinutes()).padStart(2, "0")}`;
-  return `${date.getUTCDate()} ${MONTHS[date.getUTCMonth()]} ${time} UTC`;
+  return `${date.getUTCDate()} ${MONTHS[date.getUTCMonth()]}`;
 }
 
 // Set up › Sign-in links: Commonhall's links page, for the invites a person can only get by hand.
