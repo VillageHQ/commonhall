@@ -121,6 +121,14 @@ for rooms and member-set quiet times. The study and plan: [study](features/simpl
 - [ ] Usage next to each feature switch
 - [ ] An admin-set default for quiet times
 - [ ] Check: Asks' "20 hours median time to first help" against the Partner report's "24 hours"; admin Home's "no email sent yet" against Invites' "Sent 18 Nov"
+### Follow-ups from the round-6 re-study (no spec yet; [re-study](features/simplify-round6/RESTUDY.md))
+- [ ] Ask for an intro: pick from who the connector knows instead of typing a name, role and company blind; say "through Ada"
+- [ ] One switch for "members can ask me for intros" (My network and Privacy each have one)
+- [ ] Room alerts by topic or host, not all rooms or none
+- [ ] Jobs: no "Apply" on your own company's jobs; say what "Find candidates" does
+- [ ] Rooms page back under its 50-word target (66 on the capture's four cards); the bell says "Alerts on" while the browser blocks them
+- [ ] Admin Home's "Next setup step" agrees with the launch checklist; the Report has a title on a phone
+- [ ] Inbox on a phone: the intro row shows its whole line ("Marcus Webb asks you for an …"); Library shows upvotes one way
 
 ## Later (someday / deferred)
 - [ ] Admin console: member-view switch, mail page lists, Village test connection, the mail setup step (the home and the asks page are built) — parity — [spec](features/admin-console/SPEC.md)
