@@ -1,0 +1,15 @@
+{
+  "label": "rooms-off",
+  "maya": "Maya Ortiz",
+  "sam": "Sam Lee",
+  "stranger": "Ada Okafor",
+  "readLiveRooms(maya)": [],
+  "countLiveRooms(maya)": 0,
+  "readLiveRooms(sam)": [],
+  "countLiveRooms(sam)": 0,
+  "readLiveRooms(stranger)": [],
+  "countLiveRooms(stranger)": 0,
+  "readLiveRooms(stranger, no LiveKit env -> everyone who joined)": [],
+  "countRoomJoins(last hour)": 0,
+  "countRoomJoins(epoch)": 0
+}
