@@ -32,7 +32,7 @@ function readOutcome(result: BulkInviteResult): Outcome {
   const invited = result.invitedCount + result.renewedCount;
   const lines = [...result.skipped.map(({ email, why }) => `${email}: ${why}`), ...result.problems.map(({ text, why }) => `${text}: ${why}`)];
   // Mail off: nothing went out, so the line says the links are ready to copy, not "invited".
-  const done = result.isEmailOn ? `${invited} invited.` : `${invited} ${invited === 1 ? "link" : "links"} ready: copy each one and send it to that founder.`;
+  const done = result.isEmailOn ? `${invited} invited.` : invited === 1 ? "1 link ready: copy it and send it to that founder." : `${invited} links ready: copy each one and send it to that founder.`;
   const summary =
     invited > 0
       ? `${done}${lines.length ? ` ${lines.length} skipped:` : ""}`
