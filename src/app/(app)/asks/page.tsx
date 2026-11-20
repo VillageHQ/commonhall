@@ -4,6 +4,7 @@ import { permanentRedirect } from "next/navigation";
 import { AsksBoard } from "@/modules/asks/components/asks-board";
 import { ASK_PAGE_TABS, ASKS_PAGE, ASKS_PAGE_TITLE, ASK_LIMITS, readAskFlash, type AskTab } from "@/modules/asks/contract";
 import { asksManifest } from "@/modules/asks/manifest";
+import { isHiringRequestFree } from "@/modules/asks/reads";
 import { readAsksPage } from "@/modules/asks/reads-board";
 import { parseAskDraftParts } from "@/modules/asks/rules-board-url";
 import { requireMember } from "@/platform/auth/session";
@@ -38,12 +39,16 @@ export default modulePage(asksManifest, async function AsksPage({ searchParams }
   const database = getDatabase();
   const search = readFirst(params.q)?.replace(/\s+/g, " ").trim().slice(0, ASK_LIMITS.searchLength) || null;
   const tab = readTab(readFirst(params.tab));
-  const draft = parseAskDraftParts(params);
+  const parsedDraft = parseAskDraftParts(params);
   const now = new Date();
-  const [allowance, { posts, counts }] = await Promise.all([
+  const [allowance, { posts, counts }, isFreeHiring] = await Promise.all([
     readAskAllowance(database, member.id, now),
     readAsksPage(database, { viewerId: member.id, tab, search }, now),
+    parsedDraft?.hiringJobId ? isHiringRequestFree(database, parsedDraft.hiringJobId, now) : false,
   ]);
+  // An old link (Back, a bookmark) to a job whose free request is used this week drafts an ordinary hiring ask, so the
+  // composer never says "free" when the post would spend an ask.
+  const draft = parsedDraft?.hiringJobId && !isFreeHiring ? { ...parsedDraft, hiringJobId: null } : parsedDraft;
 
   return (
     <AsksBoard
