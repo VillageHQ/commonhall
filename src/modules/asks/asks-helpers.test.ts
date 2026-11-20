@@ -37,7 +37,7 @@ import { INTRO_ACTIONS, INTRO_ERROR_CODES, INTRO_STATES } from "@/modules/intros
 import { introRequest } from "@/modules/intros/schema";
 import { CONNECTOR_WEEKLY_CAP } from "@/modules/intros/service";
 import { normalizeTag } from "@/modules/members/contract-profile";
-import { memberProfile, memberTag } from "@/modules/members/schema";
+import { memberPrivacy, memberProfile, memberTag } from "@/modules/members/schema";
 import { saveVillageGroup } from "@/modules/network/service-settings";
 import { EMAIL_KINDS, EMAIL_TOPICS } from "@/platform/email/kinds";
 import { emailOutbox } from "@/platform/email/schema";
@@ -247,6 +247,14 @@ describe("asks that reach helpers", () => {
       expect((await post(amara, named)).helperCount).toBe(2);
       const [askToday] = await readAsksYouCouldHelp(database, bystander.userId);
       expect(askToday?.matchedWords).toEqual(["procurement"]);
+    });
+
+    it("never points to a member who hides from People (\"Nobody\") by their words", async () => {
+      village.state.pathsByUrl.clear();
+      await database.insert(memberPrivacy).values({ userId: noor.userId, isHidden: true });
+
+      expect((await post(amara, { targetLinkedin: null })).helperCount).toBe(0);
+      expect(await readHelperEmails()).toEqual([]);
     });
 
     it("refuses a link that isn't a LinkedIn profile, and junk typed as a profile name", async () => {

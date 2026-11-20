@@ -4,16 +4,13 @@ import { linkedinUrl } from "@villagehq/sdk";
 
 import { getDatabase } from "@/platform/database/client";
 import { PAGE_TITLES } from "@/platform/branding/page-metadata";
-import { ROUTES } from "@/platform/http/routes";
 import { SetupRows } from "@/components/ui/rows";
 import { readBrandingForPage } from "@/platform/branding/branding";
 import { requireMember } from "@/platform/auth/session";
 import { MAXIMUM_NAME_LENGTH } from "@/platform/auth/member-name";
 import { hasPassword } from "@/platform/auth/password-setup";
-import { isModuleEnabled } from "@/platform/modules/enablement";
 import { modulePage } from "@/platform/modules/module-page";
 import { FILL_IN_FIELDS, type FillInField, type FilledLine } from "@/modules/members/contract-fill-in";
-import { ME_PAGES } from "@/modules/members/contract-me-pages";
 import { PROFILE_LIMITS } from "@/modules/members/contract-profile";
 import { membersManifest } from "@/modules/members/manifest";
 import { toRoleLine } from "@/modules/members/rules-words";
@@ -32,6 +29,8 @@ import { LeaveGroupCard } from "@/modules/network/components/leave-group-card";
 import { networkManifest } from "@/modules/network/manifest";
 import { readIsInVillageGroup, readNetworkConnectedAt } from "@/modules/network/reads-progress";
 import { readAlertState } from "@/platform/notifications/reads";
+import { readEnabledIds } from "@/shell/enabled-modules";
+import { EDIT_CARD_HREF, readSettingsLinks, SETTINGS_KEYS, type SettingsKey } from "@/shell/settings-links";
 
 export const metadata: Metadata = { title: PAGE_TITLES.editCard };
 
@@ -93,25 +92,26 @@ function describeOpenJobs(count: number) {
   return count === 1 ? "1 open job" : `${count} open jobs`;
 }
 
-// Commonhall's My profile (member-me-profile), round 6: the head as members see it, the own words edited one field at
-// a time, the lines filled in from public profiles (folded, and only those that show), then one row per setting, each
-// opening its own short page.
+// Commonhall's My profile (member-me-profile): the head as members see it, the own words (round 7: one Edit card opens
+// every field with one Save), the lines filled in from public profiles (folded, and only those that show), then the
+// Settings list, the same as the avatar menu's, each row opening its own short page.
 export default modulePage(membersManifest, async function MyProfilePage() {
   const member = await requireMember();
   const database = getDatabase();
   const profile = await readMemberProfile(database, member.id);
   if (!profile) notFound();
 
-  const [lookup, lines, privacy, isNetworkOn, isJobBoardOn, memberHasPassword, booking, alerts] = await Promise.all([
+  const [lookup, lines, privacy, enabledIds, memberHasPassword, booking, alerts] = await Promise.all([
     readLookupState(database, member.id),
     readFilledLines(database, member.id),
     readPrivacy(database, member.id),
-    isModuleEnabled(database, networkManifest),
-    isModuleEnabled(database, jobBoardManifest),
+    readEnabledIds(database),
     hasPassword(database, member.id),
     readOwnBooking(database, member.id),
     readAlertState(database, member.id, new Date()),
   ]);
+  const isNetworkOn = enabledIds.has(networkManifest.id);
+  const isJobBoardOn = enabledIds.has(jobBoardManifest.id);
   const [community, networkConnectedAt, showsLeaveCard, jobSources] = await Promise.all([
     isNetworkOn && lookup.needsAnswer ? readBrandingForPage() : null,
     isNetworkOn ? readNetworkConnectedAt(database, member.id) : null,
@@ -126,14 +126,23 @@ export default modulePage(membersManifest, async function MyProfilePage() {
   const shownLines = isRefused ? [] : lines.filter((line) => !overridden.has(line.field));
   const hasFilledLines = shownLines.some((line) => line.field === FILL_IN_FIELDS.pastRoles || WORDED_LINE_FIELDS.includes(line.field));
 
-  const settings = [
-    { href: ME_PAGES.privacy, title: "Privacy", description: privacy.isHidden ? "Hidden from People" : "Shown to members" },
-    { href: ME_PAGES.booking, title: "Booking link", description: readBookingHost(booking.bookingUrl) },
-    { href: ROUTES.alerts, title: "Alerts", description: describeAlerts(alerts) },
-    ...(isNetworkOn ? [{ href: ROUTES.myNetwork, title: "My network", description: networkConnectedAt ? "Connected" : "Not connected" }] : []),
-    ...(jobSources ? [{ href: ME_PAGES.jobs, title: "Our jobs", description: describeOpenJobs(openJobCount) }] : []),
-    { href: ME_PAGES.password, title: "How you sign in", description: memberHasPassword ? "Password or email link" : "Email link" },
-  ];
+  // The Settings list, the same as the avatar menu's (settings-links.ts); here each row says where it stands.
+  const descriptions: Record<SettingsKey, string> = {
+    [SETTINGS_KEYS.card]: "Edit every field, one Save",
+    [SETTINGS_KEYS.privacy]: privacy.isHidden ? "Hidden from People" : "Shown to members",
+    [SETTINGS_KEYS.alerts]: describeAlerts(alerts),
+    [SETTINGS_KEYS.email]: "The weekly email and what reaches your inbox",
+    [SETTINGS_KEYS.booking]: readBookingHost(booking.bookingUrl),
+    [SETTINGS_KEYS.network]: networkConnectedAt ? "Connected" : "Not connected",
+    [SETTINGS_KEYS.jobs]: describeOpenJobs(openJobCount),
+    [SETTINGS_KEYS.data]: "Export, public-profile lookups, delete",
+    [SETTINGS_KEYS.password]: memberHasPassword ? "Password or email link" : "Email link",
+  };
+  const settings = readSettingsLinks(enabledIds).map(({ key, label, href }) => ({
+    href: key === SETTINGS_KEYS.card ? EDIT_CARD_HREF : href,
+    title: label,
+    description: descriptions[key],
+  }));
 
   return (
     <>

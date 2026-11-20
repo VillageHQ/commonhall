@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Check, RefreshCw, ShieldCheck } from "lucide-react";
 import { eq } from "drizzle-orm";
+import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { BackLink } from "@/components/page-header";
@@ -13,6 +14,7 @@ import { requireMember } from "@/platform/auth/session";
 import { readEnabledModuleIds } from "@/platform/modules/enablement";
 import { modulePage } from "@/platform/modules/module-page";
 import { formatDay, formatDayMonth } from "@/platform/text/format-date";
+import { ME_PAGES } from "@/modules/members/contract-me-pages";
 import { CHOICE_PLACE_WORDS } from "@/modules/members/contract-privacy";
 import { FILL_IN_BASES, FILL_IN_FIELDS, LOOKUP_STATUSES } from "@/modules/members/contract-fill-in";
 import { memberNetwork } from "@/modules/members/schema";
@@ -44,7 +46,7 @@ function Item({ term, children }: { term: ReactNode; children?: ReactNode }) {
   );
 }
 
-function RecordRow({ term, detail }: { term: string; detail: string }) {
+function RecordRow({ term, detail }: { term: ReactNode; detail: string }) {
   return (
     <li>
       <span>
@@ -218,7 +220,10 @@ export default modulePage(membersManifest, async function YourDataPage() {
                   <RecordRow term="Sharing your network with members" detail={readSharingDetail(network)} />
                 </>
               ) : null}
-              {isIntrosOn ? <RecordRow term="Members can ask you for intros" detail={readIntroAsksDetail(privacy)} /> : null}
+              {isIntrosOn ? (
+                // A record, not a switch: intro asks are switched on Privacy only (round 7), so its name links there.
+                <RecordRow term={<Link href={ME_PAGES.privacy}>Members can ask you for intros</Link>} detail={readIntroAsksDetail(privacy)} />
+              ) : null}
               {isIntrosOn ? <RecordRow term="Named in partner reports" detail={isCredited ? "yes" : "no, only counted"} /> : null}
             </ul>
           </details>

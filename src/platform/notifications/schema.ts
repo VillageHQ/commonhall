@@ -24,7 +24,7 @@ export const notificationDevice = pgTable(
   (table) => [index("notification_device_user_idx").on(table.userId), check("notification_device_type", sql`${table.type} in ('webpush', 'expo')`)],
 );
 
-// A member's choices. No row means alerts on, every kind, no quiet times, no pause. The `quiet_*` columns held the
+// A member's choices. No row means alerts on, every kind, no quiet times, no pause, Let through off. The `quiet_*` columns held the
 // single quiet window before several quiet times (notification_quiet_time); nothing reads them now, and a later
 // release drops them, so a revert loses nothing.
 export const notificationPreference = pgTable("notification_preference", {
@@ -44,8 +44,12 @@ export const notificationPreference = pgTable("notification_preference", {
   timeZone: text("time_zone").notNull().default("UTC"),
   // A pause holds back every alert until then.
   pausedUntil: timestamp("paused_until", { withTimezone: true }),
-  // During quiet times, alerts sent straight to the member still come.
-  letDirectThrough: boolean("let_direct_through").notNull().default(true),
+  // During quiet times, alerts sent straight to the member still come. Off for members who joined after round 7
+  // (quiet means quiet); members from before it kept theirs on (migration 0048 wrote it down).
+  letDirectThrough: boolean("let_direct_through").notNull().default(false),
+  // False only on the rows migration 0048 wrote for members who never saved: their choices are kept, but their time
+  // zone is still the browser's until they save or pause (readPreferenceSaved).
+  isSavedByMember: boolean("is_saved_by_member").notNull().default(true),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

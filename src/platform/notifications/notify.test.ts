@@ -91,7 +91,7 @@ describe("notify()", () => {
     const paused = await memberWithBrowser("Kim Example");
     // Monday noon UTC is inside Working hours in London.
     const working = { from: "09:00", to: "18:00", allDay: false, days: [1, 2, 3, 4, 5] };
-    await savePreferences(database, letting, { ...DEFAULT_PREFERENCES, quietTimes: [working], timeZone: "Europe/London" });
+    await savePreferences(database, letting, { ...DEFAULT_PREFERENCES, quietTimes: [working], timeZone: "Europe/London", letDirectThrough: true });
     await savePreferences(database, strict, { ...DEFAULT_PREFERENCES, quietTimes: [working], timeZone: "Europe/London", letDirectThrough: false });
     expect(await pauseAlerts(database, paused, { until: PAUSE_CHOICES.hour }, NOON_UTC)).toEqual(new Date(NOON_UTC.getTime() + 60 * 60_000));
 

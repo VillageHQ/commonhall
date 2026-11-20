@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, Database, Eye, LayoutDashboard, LogOut, Mail, Moon, UserRound, type LucideIcon } from "lucide-react";
+import { Eye, LayoutDashboard, LogOut, Moon } from "lucide-react";
 import Link from "next/link";
 import { DropdownMenu } from "radix-ui";
 import { useId, type ReactNode } from "react";
@@ -16,15 +16,9 @@ import { MENU_PLACES, SHELL_MODES, type ShellNavigation } from "./navigation-rul
 
 export type ShellMember = { id: string; name: string; email: string; image?: string | null; isAdmin: boolean };
 
-// The avatar's menu (round 6, SPEC "The member tab set"): My profile, Alerts, Email, Your data, then "More" (Jobs,
+// The avatar's menu: Settings, the same list as the foot of My profile (round 7, settings-links.ts), then "More" (Jobs,
 // Perks, Library, Feed, each while it's on), the admin's switch between the console and the founder view, Dark mode
 // and Sign out. On a phone the avatar sits top right; on a desktop the member's name at the foot of the sidebar opens it.
-const ACCOUNT_LINKS: readonly { label: string; href: string; icon: LucideIcon }[] = [
-  { label: "My profile", href: ROUTES.editCard, icon: UserRound },
-  { label: "Alerts", href: ROUTES.alerts, icon: Bell },
-  { label: "Email", href: ROUTES.emailSettings, icon: Mail },
-  { label: "Your data", href: ROUTES.yourData, icon: Database },
-];
 
 const MENU_ITEM =
   "flex min-h-11 cursor-pointer items-center gap-3 rounded-[7px] px-3 text-[15px] leading-5 font-medium text-[var(--ink)] no-underline outline-none select-none data-[highlighted]:bg-[var(--vellum)] [&_svg]:size-[18px] [&_svg]:shrink-0 [&_svg]:text-[var(--graphite)]";
@@ -70,11 +64,14 @@ export function AccountMenu({ member, navigation, trigger, side, pathname }: Acc
           data-slot="account-menu"
           className="z-50 max-h-[var(--radix-dropdown-menu-content-available-height)] w-[232px] overflow-y-auto rounded-[10px] border border-[var(--rule)] bg-[var(--leaf)] p-1.5 shadow-[var(--shadow)]"
         >
-          {ACCOUNT_LINKS.map(({ label, href, icon: Icon }) => (
-            <MenuLink key={href} href={href} icon={<Icon aria-hidden="true" strokeWidth={1.5} />}>
-              {label}
-            </MenuLink>
-          ))}
+          <DropdownMenu.Group aria-label="Settings">
+            <DropdownMenu.Label className={MENU_LABEL}>Settings</DropdownMenu.Label>
+            {navigation.settings.map((item) => (
+              <MenuLink key={item.key} href={item.href} icon={item.icon}>
+                {item.label}
+              </MenuLink>
+            ))}
+          </DropdownMenu.Group>
           {more.length > 0 ? (
             <DropdownMenu.Group className={isConsole ? "min-[1000px]:hidden" : undefined}>
               <DropdownMenu.Separator className={MENU_RULE} />

@@ -9,6 +9,7 @@ import { introsManifest } from "@/modules/intros/manifest";
 import { API_ROUTES, ROUTES } from "@/platform/http/routes";
 
 import { buildShellNavigation } from "./navigation";
+import { readSettingsLinks } from "./settings-links";
 import { FounderViewStrip, SidebarNavigation, TabBar } from "./navigation-links";
 import { PhoneAccountButton } from "./user-menu";
 
@@ -172,6 +173,15 @@ describe("the founder-view strip", () => {
   });
 });
 
+describe("the Settings list", () => {
+  it("is one list for the avatar menu and My profile, Your network and Our jobs only while their feature is on", () => {
+    expect(readSettingsLinks(new Set()).map(({ label }) => label)).toEqual(["My card", "Privacy", "Alerts", "Email", "Booking link", "Your data", "Password"]);
+    expect(buildShellNavigation(new Set(["network", "job-board"])).settings.map(({ label }) => label)).toEqual(
+      readSettingsLinks(new Set(["network", "job-board"])).map(({ label }) => label),
+    );
+  });
+});
+
 describe("the avatar menu", () => {
   const MAYA = { id: "maya", name: "Maya Ortiz", email: "maya@example.com", image: null, isAdmin: true };
 
@@ -184,11 +194,15 @@ describe("the avatar menu", () => {
     return screen.findByRole("menu");
   }
 
-  it("holds the member's pages, More, the console, Dark mode and Sign out", async () => {
+  it("holds the Settings list, More, the console, Dark mode and Sign out", async () => {
     const menu = await openMenu(ROUTES.today);
     const items = Array.from(menu.querySelectorAll("[role^='menuitem']"), (item) => item).map((item) => item.textContent?.replace(/(On|Off)$/, ""));
 
-    expect(items).toEqual(["My profile", "Alerts", "Email", "Your data", "Jobs", "Perks", "Library", "Feed", "Admin console", "Dark mode", "Sign out"]);
+    expect(items).toEqual([
+      ...["My card", "Privacy", "Alerts", "Email", "Booking link", "Your network", "Our jobs", "Your data", "Password"],
+      ...["Jobs", "Perks", "Library", "Feed", "Admin console", "Dark mode", "Sign out"],
+    ]);
+    expect(within(menu).getByText("Settings")).toBeTruthy();
     expect(within(menu).getByText("More")).toBeTruthy();
     expect(within(menu).getByRole("menuitem", { name: "Alerts" }).getAttribute("href")).toBe(ROUTES.alerts);
   });

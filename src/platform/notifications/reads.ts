@@ -86,6 +86,6 @@ export async function readDevices(database: DatabaseOrTransaction, userIds: stri
 
 // Whether the member ever saved a choice or a pause: until then their zone is the browser's, not yet stored.
 export async function readPreferenceSaved(database: DatabaseOrTransaction, userId: string) {
-  const [row] = await database.select({ userId: notificationPreference.userId }).from(notificationPreference).where(eq(notificationPreference.userId, userId));
-  return row !== undefined;
+  const [row] = await database.select({ isSavedByMember: notificationPreference.isSavedByMember }).from(notificationPreference).where(eq(notificationPreference.userId, userId));
+  return row?.isSavedByMember === true;
 }

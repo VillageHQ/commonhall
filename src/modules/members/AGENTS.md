@@ -2,7 +2,7 @@
 
 Core. Always on. Others build on it; it never imports them.
 
-- `schema.ts`: profiles, tags, avatars, invites and `member_network`. It also holds Village columns: LinkedIn lives on it, and splitting needs a data migration.
+- `schema.ts`: profiles, tags, avatars, invites and `member_network`. It also holds Village columns (LinkedIn); splitting needs a data migration.
 - `service-profile.ts`, `reads-directory.ts`: the member card and the directory. Stage, sector and cohort are free text, filtered as whole values ignoring case; the cohort starts from the invite.
 - `service-invites.ts`, `service-email-confirmation.ts`: issuing and accepting invites, and confirming an email.
   `service-invite-emailed.ts`: the emailed link's mark; joining from it confirms the address.
@@ -15,7 +15,7 @@ Core. Always on. Others build on it; it never imports them.
 - `service-linkedin.ts`: LinkedIn claims, and whether a member's email is trusted.
 - `*-fill-in.ts`: the fill-in's data: the admin's basis, each member's answer (`member_lookup`), the lines (`member_fill_in`). Network saves here.
 - `service-onboarding.ts`: onboarding state; `src/shell/onboarding.ts` runs the two welcome steps.
-- `contract-privacy.ts`, `service-privacy.ts`: `member_privacy`: hide me, who can message me, accept intro asks (null = never answered = yes). `isListedMember` keeps hidden members out of lists.
+- `contract-privacy.ts`, `service-privacy.ts`: `member_privacy`: hide me, who can message me, accept intro asks (null = never answered = yes). `isListedMember` keeps hidden members out of lists and ask helpers.
 - `service-erasure.ts`: the real delete's part. The `user` row stays as a "Deleted member" placeholder; `member_removal.erased_at` marks it. `shell/account-deletion.ts` runs it all.
 - `*community-role*.ts`, `service-booking.ts`: roles, booking links, Book a call: `.ai/features/mentors-calls/NOTES.md`.
 - `contract-*.ts`: Zod schemas and constants, loaded outside Next too: relative imports, no `server-only`.

@@ -56,6 +56,7 @@ Better Auth, Vitest, pnpm. Village is optional (network search, intro paths, pro
   `.ai/features/fix-intros-reports/NOTES.md`, `.ai/features/fix-host-findings/NOTES.md`,
   `.ai/features/fix-cleanup/NOTES.md`, `.ai/features/common-hall-site/NOTES.md` (superseded), `.ai/features/common-hall-v2/NOTES.md` (the landing page: themes, hover field, faces, dialog), `.ai/features/landing-v3/NOTES.md` (the landing page round 3: the rooms list, the scroll demo, the comparison cards), `.ai/features/landing-tour/NOTES.md` (the landing page's live tour: `tour/`, `pnpm tour:build`, how to add a step; the feature groups; round 5: library, voice room and alerts steps, the AI group), `.ai/features/tour-new-steps/NOTES.md` (the tour's eight steps: book a call, find candidates, announcement, admin), `.ai/features/app-kit/NOTES.md` (the app on the Commonhall look: where the colours, fonts and icon live),
   `.ai/features/onboarding-settings-fold/NOTES.md` (Set up pages: essentials in view, the rest under Advanced),
+  `.ai/features/choice-settings/NOTES.md` (member settings: one Settings list, intro asks on Privacy only, Edit card, Let through off for new members),
   `.ai/features/onboarding-village-connect/NOTES.md`, `.ai/features/onboarding-guided-start/NOTES.md`,
   `.ai/features/mentors-calls/NOTES.md` (community roles, booking links, Book a call, calls counted),
   `.ai/features/find-candidates/NOTES.md` (Find candidates on a job: the button, the search, the hiring request),
