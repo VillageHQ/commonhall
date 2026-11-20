@@ -18,7 +18,8 @@ function formatMoment(date: Date) {
   return date.toISOString().slice(0, 16).replace("T", " ") + " UTC";
 }
 
-// Alerts › Log, for checking only: the member's last 20 alerts, sent or skipped and why. Demo mode and development
+// Alerts › Log, for checking only: the member's last 20 alerts, allowed or skipped and why ("Allowed", not "Sent":
+// demo mode delivers nothing). Demo mode and development
 // only (platform/notifications/log.ts); a 404 everywhere else.
 export default modulePage(membersManifest, async function AlertLogPage() {
   if (!isAlertLogOn(process.env)) notFound();
@@ -29,7 +30,7 @@ export default modulePage(membersManifest, async function AlertLogPage() {
       <BackLink href={ROUTES.alerts}>Alerts</BackLink>
       <header data-slot="page-header" className="fh-pagehead">
         <h1 className="fh-h1">Alert log</h1>
-        <p className="fh-lede">Your last 20 alerts. Demo and development only.</p>
+        <p className="fh-lede">Your last 20 alerts. Allowed: your settings let it through (demo mode delivers nothing).</p>
       </header>
       {entries.length ? (
         <div className="fh-rows max-w-[720px]" data-testid="alert-log">
@@ -42,14 +43,14 @@ export default modulePage(membersManifest, async function AlertLogPage() {
                 </span>
               </div>
               <div className="fh-small text-right">
-                {entry.status === ALERT_LOG_STATUSES.sent ? "Sent" : `Skipped: ${REASON_WORDS[entry.reason ?? ""] ?? entry.reason}`}
+                {entry.status === ALERT_LOG_STATUSES.sent ? "Allowed" : `Skipped: ${REASON_WORDS[entry.reason ?? ""] ?? entry.reason}`}
                 <span className="fh-muted block">{formatMoment(entry.createdAt)}</span>
               </div>
             </div>
           ))}
         </div>
       ) : (
-        <EmptyState title="No alerts yet" description="Alerts sent to you show here." />
+        <EmptyState title="No alerts yet" description="Alerts meant for you show here." />
       )}
     </>
   );

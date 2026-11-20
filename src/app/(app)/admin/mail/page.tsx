@@ -13,7 +13,7 @@ import { PLANS, readPlanSettings } from "@/platform/settings/plan";
 import { formatDayMonth, formatDayMonthTimeUtc } from "@/platform/text/format-date";
 import { DoNotSendRemove } from "@/modules/admin/components/do-not-send-remove";
 import { CheckDnsButton, MailDnsSettings, SendTestButton } from "@/modules/admin/components/mail-forms";
-import { readDnsCheckLine, readMailPageChecks, type MailPageCheck } from "@/modules/admin/mail-checks";
+import { MAIL_CHECK_STATES, readDnsCheckLine, readMailPageChecks, type MailPageCheck } from "@/modules/admin/mail-checks";
 import { adminManifest } from "@/modules/admin/manifest";
 import { MAIL_LOG_STATES, readMailOverview, type MailLogState, type MailOverview } from "@/modules/admin/reads-mail";
 import { PRICING_URL } from "@/modules/network/components/admin-village-sections";
@@ -69,17 +69,36 @@ function MailStatus({ mail, isManaged }: { mail: MailOverview; isManaged: boolea
   );
 }
 
-function DnsChecklist({ mail }: { mail: MailOverview }) {
-  const checks = readMailPageChecks({ mailService: mail.mailService, inbound: mail.inbound, dnsCheck: mail.settings.dnsCheck });
+function toChecklistItems(checks: readonly MailPageCheck[]) {
+  return checks.map(({ key, state, label, value, note, toAdd }) => ({ key, state, title: label, value: <DnsLineValue value={value} toAdd={toAdd} />, status: note }));
+}
+
+// In view: only the mail checks that need the admin, with Check DNS now; one line when every check passes. The whole
+// checklist, with its record values, sits under Advanced.
+function MailChecksNeedingYou({ checks, dnsCheck }: { checks: readonly MailPageCheck[]; dnsCheck: MailOverview["settings"]["dnsCheck"] }) {
+  const needing = checks.filter(({ state }) => state !== MAIL_CHECK_STATES.pass);
   return (
-    <section className="fh-sheet">
+    <section className="fh-sheet" aria-label="Mail checks">
       <div className="fh-sheet-head" style={{ alignItems: "center" }}>
-        <h2 className="fh-h3">DNS checklist</h2>
+        <h2 className="fh-h3">{needing.length ? `${needing.length} mail ${needing.length === 1 ? "check needs" : "checks need"} you` : "Mail checks pass"}</h2>
         <CheckDnsButton />
       </div>
-      <p className="fh-small fh-muted">{readDnsCheckLine(mail.settings.dnsCheck)}</p>
+      <p className="fh-small fh-muted">{readDnsCheckLine(dnsCheck)}</p>
+      {needing.length ? (
+        <div style={{ marginTop: 8 }}>
+          <StatusChecklist items={toChecklistItems(needing)} />
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+function DnsChecklist({ checks }: { checks: readonly MailPageCheck[] }) {
+  return (
+    <section className="fh-sheet">
+      <h2 className="fh-h3">Every mail check</h2>
       <div style={{ marginTop: 8 }}>
-        <StatusChecklist items={checks.map(({ key, state, label, value, note, toAdd }) => ({ key, state, title: label, value: <DnsLineValue value={value} toAdd={toAdd} />, status: note }))} />
+        <StatusChecklist items={toChecklistItems(checks)} />
       </div>
     </section>
   );
@@ -159,23 +178,26 @@ function SendingLog({ mail }: { mail: MailOverview }) {
   );
 }
 
-// Set up › Mail (Commonhall's mailPage). In view: one status line with a test, and the mail checks (the DNS checklist
-// with Check DNS now, kept in view by the owner's pick). Under Advanced: the DNS settings, the last 30 days, the
+// Set up › Mail (Commonhall's mailPage). In view: one status line with a test, and the mail checks that need the admin
+// with Check DNS now (round 6: the owner's pick keeps problems in view; passing record details fold). Under Advanced:
+// every mail check with its records, the DNS settings, the last 30 days, the
 // do-not-send list, the sending log and "Running it yourself". Community sends every kind of email from one address.
 export default modulePage(adminManifest, async function AdminMailPage() {
   await requireAdmin();
   const database = getDatabase();
   const [mail, plan] = await Promise.all([readMailOverview(database, process.env), readPlanSettings(database)]);
+  const checks = readMailPageChecks({ mailService: mail.mailService, inbound: mail.inbound, dnsCheck: mail.settings.dnsCheck });
   return (
     <AdminSection title="Mail" back={{ href: ROUTES.adminSettings, label: "Set up" }}>
       <div className="fh-grid">
         <div className="fh-c7 fh-stack">
           <MailStatus mail={mail} isManaged={plan.plan === PLANS.managed} />
-          <DnsChecklist mail={mail} />
+          <MailChecksNeedingYou checks={checks} dnsCheck={mail.settings.dnsCheck} />
         </div>
-        <AdvancedSection summary="DNS settings, the last 30 days, the do-not-send list, the sending log and running it yourself.">
+        <AdvancedSection summary="Every mail check, DNS settings, the last 30 days, the do-not-send list, the sending log and running it yourself.">
           <div className="fh-grid">
             <div className="fh-c7 fh-stack">
+              <DnsChecklist checks={checks} />
               <MailDnsSettings saved={{ dkimSelector: mail.settings.dkimSelector, replyDomain: mail.settings.replyDomain }} defaultReplyDomain={mail.defaultReplyDomain} />
               <LastThirtyDays counts={mail.lastThirtyDays} />
               <DoNotSendList entries={mail.suppressions} />

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
+import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useRef, useState, type FormEvent } from "react";
 
@@ -29,7 +30,7 @@ import {
   type NotificationKind,
   type QuietTime,
 } from "@/platform/notifications/contract";
-import { describeQuietTime, describeTimeZone } from "./alert-words";
+import { describeDays, describeQuietTime, describeTimeZone } from "./alert-words";
 
 type AlertSettingsFormProps = {
   preferences: AlertPreferences;
@@ -49,6 +50,11 @@ function readTimeZones(current: string) {
 
 function isSameQuietTime(first: QuietTime, second: QuietTime) {
   return first.allDay === second.allDay && (first.allDay || (first.from === second.from && first.to === second.to)) && first.days.toSorted().join() === second.days.toSorted().join();
+}
+
+// "Working hours: Mon–Fri 09:00–18:00", "Weekends: Sat, Sun all day".
+function describePreset(label: string, quietTime: QuietTime) {
+  return `${label}: ${describeDays(quietTime.days)} ${quietTime.allDay ? "all day" : `${quietTime.from}–${quietTime.to}`}`;
 }
 
 // Alerts › Quiet times, Let through, What alerts you. Every change saves at once; a refused one (a fourth quiet
@@ -204,16 +210,30 @@ export function AlertSettingsForm({ preferences, kinds, isSaved }: AlertSettings
         ) : current.quietTimes.length >= MAXIMUM_QUIET_TIMES ? (
           <p className="fh-small fh-muted mt-3">{QUIET_TIMES_FULL}</p>
         ) : (
-          <div className="fh-btn-row mt-3" role="group" aria-label="Add a quiet time">
-            {presets.map(({ label, quietTime }) => (
-              <Button key={label} type="button" variant="secondary" size="sm" disabled={save.isPending} onClick={() => change({ quietTimes: [...current.quietTimes, { ...quietTime, days: [...quietTime.days] }] })}>
-                {label}
+          <>
+            {/* Each preset adds itself, with a "+" and its hours below (the re-study: bare names read as switches). */}
+            <div className="fh-btn-row mt-3" role="group" aria-label="Add a quiet time">
+              {presets.map(({ label, quietTime }) => (
+                <Button
+                  key={label}
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  title={describeQuietTime(quietTime)}
+                  disabled={save.isPending}
+                  onClick={() => change({ quietTimes: [...current.quietTimes, { ...quietTime, days: [...quietTime.days] }] })}
+                >
+                  <Plus aria-hidden="true" className="fh-i fh-xs" strokeWidth={1.5} />
+                  {label}
+                </Button>
+              ))}
+              <Button type="button" variant="secondary" size="sm" onClick={() => setEditing({ index: current.quietTimes.length, quietTime: NEW_QUIET_TIME })}>
+                <Plus aria-hidden="true" className="fh-i fh-xs" strokeWidth={1.5} />
+                Custom
               </Button>
-            ))}
-            <Button type="button" variant="quiet" size="sm" onClick={() => setEditing({ index: current.quietTimes.length, quietTime: NEW_QUIET_TIME })}>
-              Custom
-            </Button>
-          </div>
+            </div>
+            {presets.length ? <p className="fh-small fh-muted mt-2">{presets.map(({ label, quietTime }) => describePreset(label, quietTime)).join("; ")}</p> : null}
+          </>
         )}
         <div className="mt-3">
           <SetRow

@@ -15,7 +15,8 @@ function firstName(name: string) {
 type FollowToggleProps = { memberId: string; memberName: string; isFollowing: boolean; isCompact?: boolean };
 
 // Follow on a profile or a room card: "Tell me when Lina starts a room". One tap follows, the same tap unfollows. On a
-// room card it is a bell with a tooltip (`isCompact`); every card for the same host follows the change.
+// room card (`isCompact`) it is a small bell with its word ("Follow", "Following"): a bare bell read as an alert
+// switch in the re-study. Every card for the same host follows the change.
 export function FollowToggle({ memberId, memberName, isFollowing: initial, isCompact = false }: FollowToggleProps) {
   const queryClient = useQueryClient();
   // The server's answer wins whenever it changes (another card for the same host, the 15-second refresh).
@@ -36,17 +37,16 @@ export function FollowToggle({ memberId, memberName, isFollowing: initial, isCom
   return (
     <Button
       type="button"
-      size={isCompact ? "icon" : "sm"}
+      size="sm"
       variant={isFollowing ? "secondary" : "quiet"}
       aria-pressed={isFollowing}
-      aria-label={isCompact ? hint : undefined}
       title={hint}
       disabled={follow.isPending}
       onClick={() => follow.mutate(!isFollowing)}
       data-testid="follow"
-      className={isCompact ? "size-8" : undefined}
     >
-      {isCompact ? <Icon aria-hidden="true" className="fh-i fh-xs" strokeWidth={1.5} /> : isFollowing ? "Following" : "Follow"}
+      {isCompact ? <Icon aria-hidden="true" className="fh-i fh-xs" strokeWidth={1.5} /> : null}
+      {isFollowing ? "Following" : "Follow"}
     </Button>
   );
 }

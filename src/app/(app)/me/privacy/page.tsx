@@ -16,7 +16,7 @@ import { messagesManifest } from "@/modules/messages/manifest";
 
 export const metadata: Metadata = { title: "Privacy" };
 
-// My profile › Privacy: who sees me in the directory, intro asks, and who can message me.
+// My profile › Privacy: who sees me in People, intro asks, and who can message me.
 export default modulePage(membersManifest, async function PrivacyPage() {
   const member = await requireMember();
   const database = getDatabase();

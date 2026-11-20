@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 
 import { voiceRequests } from "../queries";
-import { formatRoomTime } from "./rooms-board";
+import { useRoomTimeFormat } from "./rooms-board";
 
 const REFRESH_MS = 15_000;
 
@@ -20,11 +20,12 @@ export function ScheduledRoom({ roomId, scheduledFor, isHost, hasReminder }: { r
     return () => clearInterval(timer);
   }, [router]);
   const [isReminding, setIsReminding] = useState(hasReminder);
+  const formatTime = useRoomTimeFormat();
   const start = useMutation({ mutationFn: () => voiceRequests.start(roomId), onSuccess: () => router.refresh() });
   const remind = useMutation({ mutationFn: (isOn: boolean) => voiceRequests.remind({ roomId, isOn }), onSuccess: (_result, isOn) => setIsReminding(isOn) });
   return (
     <div className="fh-sheet">
-      <p className="fh-name">{scheduledFor ? `Starts ${formatRoomTime(scheduledFor)}` : "Starts soon"}</p>
+      <p className="fh-name">{scheduledFor ? `Starts ${formatTime(scheduledFor)}` : "Starts soon"}</p>
       <div className="fh-btn-row mt-3">
         {isHost ? (
           <Button variant="ink" onClick={() => start.mutate()} disabled={start.isPending}>

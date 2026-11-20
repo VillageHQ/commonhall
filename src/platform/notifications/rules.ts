@@ -82,6 +82,13 @@ export function readLocalMoment(now: Date, timeZone: string, dayOffset: number, 
   return new Date(wanted - (readWallTime(guess, timeZone) - guess));
 }
 
+// The next instant of `clock` on the member's clock after now: today's when it is still ahead, else tomorrow's.
+// "Until tomorrow" at 02:00 ends at 08:00 that same morning, not a day later.
+export function readNextLocalMoment(now: Date, timeZone: string, clock: string) {
+  const today = readLocalMoment(now, timeZone, 0, clock);
+  return today.getTime() > now.getTime() ? today : readLocalMoment(now, timeZone, 1, clock);
+}
+
 export const SKIP_REASONS = { off: "off", kindOff: "kind_off", quietHours: "quiet_hours", muted: "muted", paused: "paused" } as const;
 
 export type SkipReason = (typeof SKIP_REASONS)[keyof typeof SKIP_REASONS];

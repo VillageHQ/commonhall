@@ -208,7 +208,7 @@ export function readConnectorChoices(intro: Pick<Intro, "requester" | "introduce
   return [
     { value: "yes", title: "Yes, introduce them" },
     { value: "not_now", title: "Not this time", description: `${askerFirst} is never told why.` },
-    { value: "dont_know", title: "I don’t know them well" },
+    { value: "dont_know", title: "I don’t know them well", description: `Same for ${askerFirst}: never told why.` },
   ] as const;
 }
 

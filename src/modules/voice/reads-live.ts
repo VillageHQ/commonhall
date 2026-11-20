@@ -5,6 +5,7 @@ import { and, count, desc, eq, gte, inArray } from "drizzle-orm";
 import { user } from "@/platform/database/auth-schema";
 import type { Database } from "@/platform/database/client";
 import type { Environment } from "@/platform/environment";
+import { isDemoMode } from "@/platform/demo/mode";
 import { isModuleEnabled } from "@/platform/modules/enablement";
 import { shownFaceColumns, toShownFaceUrl } from "@/modules/members/reads-pictures";
 
@@ -45,8 +46,13 @@ async function readJoined(database: Database, roomIds: string[]) {
   return byRoom;
 }
 
-// The live rooms the viewer may see, newest first, with the faces of the people in each and how many are in. Who is
-// in comes from LiveKit; while it can't say (no server set up, or out of reach), everyone who joined counts.
+// Live rooms looked at before picking the busiest: enough for any real community, and LiveKit is asked once per room.
+const LIVE_ROOMS_RANKED = 50;
+
+// The live rooms the viewer may see, busiest first (the newest on a tie), with the faces of the people in each and
+// how many are in. The viewer's own face is left out ("who else is there"); the count is everyone. Who is in comes
+// from LiveKit; while it can't say (no server set up, or out of reach), everyone who joined counts. In demo mode the
+// seeded people count as in too, since nobody really connects for them (src/shell/demo-rooms.ts).
 export async function readLiveRooms(database: Database, viewerId: string, limit: number, environment: Environment = process.env): Promise<LiveRoom[]> {
   if (limit <= 0 || !(await isRoomsOn(database))) return [];
   const rooms = await database
@@ -55,20 +61,27 @@ export async function readLiveRooms(database: Database, viewerId: string, limit:
     .innerJoin(user, eq(user.id, voiceRoom.hostId))
     .where(and(eq(voiceRoom.status, ROOM_STATUSES.live), visibleTo(viewerId)))
     .orderBy(desc(voiceRoom.startedAt))
-    .limit(limit);
+    .limit(LIVE_ROOMS_RANKED);
   if (rooms.length === 0) return [];
   const roomIds = rooms.map(({ id }) => id);
   const [config, joined] = await Promise.all([readVoiceConfig(database, environment), readJoined(database, roomIds)]);
   const connected = config ? await Promise.all(roomIds.map((id) => readConnectedIdentities(config, toLiveKitRoomName(id)))) : roomIds.map(() => null);
-  return rooms.map((room, index) => {
+  const isDemo = isDemoMode(environment);
+  const read = rooms.map((room, index) => {
     const present = connected[index] ?? null;
-    const people = (joined.get(room.id) ?? []).filter(({ id }) => present === null || present.includes(id));
+    const everyone = joined.get(room.id) ?? [];
+    const people = present === null || isDemo ? everyone : everyone.filter(({ id }) => present.includes(id));
+    // Someone connected with no join row yet (a race with the join call) counts, with no face.
+    const count = present === null ? people.length : isDemo ? new Set([...people.map(({ id }) => id), ...present]).size : present.length;
+    const others = people.filter(({ id }) => id !== viewerId);
     return {
       ...room,
-      faces: people.slice(0, FACES_PER_ROOM).map((person) => ({ name: person.name, image: toShownFaceUrl(person.id, person.avatarUpdatedAt, person.filledFace) })),
-      count: present === null ? people.length : present.length,
+      faces: others.slice(0, FACES_PER_ROOM).map((person) => ({ name: person.name, image: toShownFaceUrl(person.id, person.avatarUpdatedAt, person.filledFace) })),
+      count,
     };
   });
+  // A stable sort keeps the newest first among rooms with as many people.
+  return read.toSorted((first, second) => second.count - first.count).slice(0, limit);
 }
 
 // How many live rooms the viewer may see: the Rooms tab's live dot.

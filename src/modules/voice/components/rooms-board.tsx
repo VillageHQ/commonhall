@@ -9,11 +9,12 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { FlashNote, FLASH_KINDS } from "@/components/flash";
+import { useIsInBrowser } from "@/components/use-is-in-browser";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { isRouteGone } from "@/platform/http/polling";
 
-import { ROOM_ACCESS, toRoomHref, type CardFace, type RoomCard, type RoomsPageData } from "../contract";
+import { describeRoomPeople, ROOM_ACCESS, toRoomHref, type CardFace, type RoomCard, type RoomsPageData } from "../contract";
 import { ROOMS_POLL_MS, VOICE_QUERY_KEYS, voiceRequests } from "../queries";
 import { FollowToggle } from "./follow-toggle";
 import { RoomComposer } from "./room-composer";
@@ -22,8 +23,13 @@ const TIME_FORMAT: Intl.DateTimeFormatOptions = { weekday: "short", day: "numeri
 const CARD_TIME_FORMAT: Intl.DateTimeFormatOptions = { weekday: "short", hour: "numeric", minute: "2-digit" };
 const FACES_SHOWN = 4;
 
-export function formatRoomTime(iso: string) {
-  return new Date(iso).toLocaleString(undefined, TIME_FORMAT);
+// A room's time on the member's own clock. The server can't know the browser's zone or language, so while it renders
+// and while the browser hydrates, both write UTC in one fixed language (the first paint matches, no hydration error);
+// right after, the browser re-renders in its own zone and language.
+export function useRoomTimeFormat() {
+  const isInBrowser = useIsInBrowser();
+  return (iso: string, options: Intl.DateTimeFormatOptions = TIME_FORMAT) =>
+    isInBrowser ? new Date(iso).toLocaleString(undefined, options) : new Date(iso).toLocaleString("en-GB", { ...options, timeZone: "UTC" });
 }
 
 function firstName(name: string) {
@@ -40,12 +46,6 @@ function Faces({ faces }: { faces: CardFace[] }) {
   );
 }
 
-// "Maya + 3": the first person in the room and how many more (the faces shown, when LiveKit counts nobody yet).
-function describeInRoom(room: RoomCard) {
-  const first = room.faces[0]?.name ?? room.hostName;
-  const more = Math.max(0, Math.max(room.count, room.faces.length) - 1);
-  return more > 0 ? `${firstName(first)} + ${more}` : firstName(first);
-}
 
 function InviteOnly() {
   return (
@@ -73,7 +73,7 @@ function LiveCard({ room, viewerId }: { room: RoomCard; viewerId: string }) {
       <span className="vr-card-foot">
         <span className="flex items-center gap-2.5" data-testid="room-faces">
           <Faces faces={room.faces} />
-          <span>{describeInRoom(room)}</span>
+          <span>{describeRoomPeople(room)}</span>
         </span>
         <span className="fh-btn-row">
           <FollowHost room={room} viewerId={viewerId} />
@@ -97,10 +97,11 @@ function ScheduledCard({ room, viewerId }: { room: RoomCard; viewerId: string })
   });
   const start = useMutation({ mutationFn: () => voiceRequests.start(room.id), onSuccess: () => router.push(toRoomHref(room.id)) });
   const isHost = room.hostId === viewerId;
+  const formatTime = useRoomTimeFormat();
   return (
     <div className="vr-card" data-testid="scheduled-room">
       <span className="vr-card-top">
-        {room.scheduledFor ? <time dateTime={room.scheduledFor} title={formatRoomTime(room.scheduledFor)}>{new Date(room.scheduledFor).toLocaleString(undefined, CARD_TIME_FORMAT)}</time> : null}
+        {room.scheduledFor ? <time dateTime={room.scheduledFor} title={formatTime(room.scheduledFor)}>{formatTime(room.scheduledFor, CARD_TIME_FORMAT)}</time> : null}
         {room.access === ROOM_ACCESS.invite ? <InviteOnly /> : null}
       </span>
       <Link href={toRoomHref(room.id)} className="vr-card-title text-inherit no-underline">
@@ -129,7 +130,7 @@ function ScheduledCard({ room, viewerId }: { room: RoomCard; viewerId: string })
   );
 }
 
-// Rooms: one "Start a room", then who is live (faces, Join) and what's coming up (Remind me).
+// Rooms: one "Start or schedule a room" (the re-study: 6 of 12 never found Schedule behind "Start a room"), then who is live (faces, Join) and what's coming up (Remind me).
 export function RoomsBoard({ initial, viewerId }: { initial: RoomsPageData; viewerId: string }) {
   const [isComposing, setIsComposing] = useState(false);
   const rooms = useQuery({
@@ -144,7 +145,7 @@ export function RoomsBoard({ initial, viewerId }: { initial: RoomsPageData; view
     <>
       <div className="fh-btn-row">
         <Button variant="ink" onClick={() => setIsComposing((value) => !value)} aria-expanded={isComposing} disabled={!isConfigured}>
-          Start a room
+          Start or schedule a room
         </Button>
       </div>
       {!isConfigured ? (

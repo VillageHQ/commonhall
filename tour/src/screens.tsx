@@ -124,7 +124,7 @@ function LibraryLeaderboardPage() {
 function RoomsPage() {
   return (
     <>
-      <PageHeader title="Rooms" description="Talk live with your community: drop into a room, or say you're free to talk. Rooms are never recorded." />
+      <PageHeader title="Rooms" />
       <RoomsBoard initial={ROOMS_PAGE} viewerId={ROOM_VIEWER_ID} />
     </>
   );

@@ -68,7 +68,7 @@ function AskerMain({ intro, community, hasThread, otherPaths }: IntroPageProps) 
           <div className="fh-note fh-section">
             <Search aria-hidden="true" className="fh-i fh-s" strokeWidth={1.5} />
             <span>
-              Find another way in: <Link href={ROUTES.members}>the directory</Link>.
+              Find another way in: <Link href={ROUTES.people}>People</Link>.
             </span>
           </div>
           {otherPaths}

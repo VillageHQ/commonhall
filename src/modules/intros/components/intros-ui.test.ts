@@ -85,7 +85,7 @@ describe("the intro screens (Commonhall's)", () => {
       const mine = makeIntro({ id: "22222222-2222-4222-8222-222222222222", state: INTRO_STATES.completed, target: { name: "Alex Kim", headline: "Head of Procurement at Halcyon Health", linkedinSlug: null, isNamed: true }, introducer: { ...MARCUS, name: "Priya Shah" } });
       renderInApp(createElement(IntrosList, { board: makeBoard({ asksForYou: [waiting], yourAsks: [mine] }) }));
 
-      expect(screen.getByRole("heading", { level: 2, name: "Waiting for your yes" })).toBeTruthy();
+      expect(screen.getByRole("heading", { level: 2, name: "Waiting on you" })).toBeTruthy();
       expect(screen.getByRole("heading", { level: 2, name: "You asked" })).toBeTruthy();
       expect(screen.getByRole("link", { name: /Marcus Webb asks you for an intro to Rachel Kim/ }).getAttribute("href")).toBe(`/intros/${waiting.id}`);
       expect(screen.getByText("Answer")).toBeTruthy();
@@ -98,7 +98,7 @@ describe("the intro screens (Commonhall's)", () => {
       renderInApp(createElement(IntrosList, { board: makeBoard() }));
 
       expect(screen.getByText("No intro asks yet.")).toBeTruthy();
-      expect(screen.queryByText("Waiting for your yes")).toBeNull();
+      expect(screen.queryByText("Waiting on you")).toBeNull();
       expect(screen.getByRole("link", { name: "Find someone" }).getAttribute("href")).toBe("/people");
     });
   });

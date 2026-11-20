@@ -177,8 +177,9 @@ describe("Commonhall's asks and Today", () => {
         { body: "Dana ran supply chain at Mercy Ridge; we worked together for two years.", kind: "know_someone" },
         { body: "I’ve done this myself. Happy to talk it through.", kind: "done_myself" },
       ]);
-      const emails = await database.select({ subject: emailOutbox.subject, to: emailOutbox.toEmail }).from(emailOutbox).where(eq(emailOutbox.kind, "ask_help_offered"));
-      expect(emails.map(({ subject }) => subject)).toEqual(["Priya can introduce you to Dana Morris", "Priya can help with your ask"]);
+      const emails = await database.select({ subject: emailOutbox.subject, to: emailOutbox.toEmail }).from(emailOutbox).where(eq(emailOutbox.kind, "ask_help_offered")).orderBy(emailOutbox.createdAt);
+      // Two offers can land in the same millisecond, so the order of the two emails isn't part of the check.
+      expect(emails.map(({ subject }) => subject).toSorted()).toEqual(["Priya can help with your ask", "Priya can introduce you to Dana Morris"]);
       expect(emails.every(({ to }) => to === amara.email)).toBe(true);
 
       const detail = await readAskDetail(database, { viewerId: sam.userId, askId });

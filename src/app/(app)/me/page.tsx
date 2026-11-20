@@ -31,6 +31,7 @@ import { readMemberSources, readSourceJobs } from "@/modules/job-board/reads";
 import { LeaveGroupCard } from "@/modules/network/components/leave-group-card";
 import { networkManifest } from "@/modules/network/manifest";
 import { readIsInVillageGroup, readNetworkConnectedAt } from "@/modules/network/reads-progress";
+import { readAlertState } from "@/platform/notifications/reads";
 
 export const metadata: Metadata = { title: PAGE_TITLES.editCard };
 
@@ -82,6 +83,11 @@ function readBookingHost(bookingUrl: string | null) {
   }
 }
 
+function describeAlerts({ isOn, pausedUntil }: { isOn: boolean; pausedUntil: Date | null }) {
+  if (!isOn) return "Off";
+  return pausedUntil ? "Paused" : "On";
+}
+
 function describeOpenJobs(count: number) {
   if (count === 0) return "Add your company’s jobs";
   return count === 1 ? "1 open job" : `${count} open jobs`;
@@ -96,7 +102,7 @@ export default modulePage(membersManifest, async function MyProfilePage() {
   const profile = await readMemberProfile(database, member.id);
   if (!profile) notFound();
 
-  const [lookup, lines, privacy, isNetworkOn, isJobBoardOn, memberHasPassword, booking] = await Promise.all([
+  const [lookup, lines, privacy, isNetworkOn, isJobBoardOn, memberHasPassword, booking, alerts] = await Promise.all([
     readLookupState(database, member.id),
     readFilledLines(database, member.id),
     readPrivacy(database, member.id),
@@ -104,6 +110,7 @@ export default modulePage(membersManifest, async function MyProfilePage() {
     isModuleEnabled(database, jobBoardManifest),
     hasPassword(database, member.id),
     readOwnBooking(database, member.id),
+    readAlertState(database, member.id, new Date()),
   ]);
   const [community, networkConnectedAt, showsLeaveCard, jobSources] = await Promise.all([
     isNetworkOn && lookup.needsAnswer ? readBrandingForPage() : null,
@@ -120,8 +127,9 @@ export default modulePage(membersManifest, async function MyProfilePage() {
   const hasFilledLines = shownLines.some((line) => line.field === FILL_IN_FIELDS.pastRoles || WORDED_LINE_FIELDS.includes(line.field));
 
   const settings = [
-    { href: ME_PAGES.privacy, title: "Privacy", description: privacy.isHidden ? "Hidden from the directory" : "Shown to members" },
+    { href: ME_PAGES.privacy, title: "Privacy", description: privacy.isHidden ? "Hidden from People" : "Shown to members" },
     { href: ME_PAGES.booking, title: "Booking link", description: readBookingHost(booking.bookingUrl) },
+    { href: ROUTES.alerts, title: "Alerts", description: describeAlerts(alerts) },
     ...(isNetworkOn ? [{ href: ROUTES.myNetwork, title: "My network", description: networkConnectedAt ? "Connected" : "Not connected" }] : []),
     ...(jobSources ? [{ href: ME_PAGES.jobs, title: "Our jobs", description: describeOpenJobs(openJobCount) }] : []),
     { href: ME_PAGES.password, title: "How you sign in", description: memberHasPassword ? "Password or email link" : "Email link" },

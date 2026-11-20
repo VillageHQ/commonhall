@@ -80,7 +80,7 @@ export function IntrosWaitingForYes({ board, forYou = [], now = new Date() }: Wa
   const toAnswer = board.asksForYou.filter(isWaitingOnYou);
   if (toAnswer.length + forYou.length === 0) return null;
   return (
-    <Section title="Waiting for your yes">
+    <Section title="Waiting on you">
       {forYou.map((intro) => (
         <TargetMemberAsk key={intro.id} intro={intro} ago={describeAskedAgo(intro.createdAt, now)} />
       ))}

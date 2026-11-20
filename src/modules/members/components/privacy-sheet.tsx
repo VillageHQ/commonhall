@@ -36,7 +36,7 @@ type PrivacySheetProps = {
   messagePolicy: MessagePolicy | null;
 };
 
-// My profile › Privacy (/me/privacy): who sees me in the directory, intro asks, who can message me, one Save.
+// My profile › Privacy (/me/privacy): who sees me in People, intro asks, who can message me, one Save.
 export function PrivacySheet({ communityName, isHidden, acceptsIntroAsks, messagePolicy }: PrivacySheetProps) {
   const router = useRouter();
   const flash = useFlash();
@@ -78,7 +78,7 @@ export function PrivacySheet({ communityName, isHidden, acceptsIntroAsks, messag
   return (
     <form className="fh-sheet" id="privacy" aria-label="Privacy" onSubmit={submit}>
       <fieldset>
-        <legend className="fh-label">Show me in the directory to</legend>
+        <legend className="fh-label">Show me in People to</legend>
         <div className="mt-2">
           <OptionCard
             id="privacy-visibility-all"

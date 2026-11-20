@@ -19,7 +19,7 @@ import { readNetworkProgress } from "@/modules/network/reads-progress";
 import { PERKS_PAGE } from "@/modules/perks/contract";
 import { perksManifest } from "@/modules/perks/manifest";
 import { readPerksUrl } from "@/modules/perks/service";
-import { type LiveRoom, readLiveRooms } from "@/modules/voice/reads-live";
+import { readLiveRooms } from "@/modules/voice/reads-live";
 import { requireMember } from "@/platform/auth/session";
 import { readBrandingForPage } from "@/platform/branding/branding";
 import { getDatabase } from "@/platform/database/client";
@@ -43,11 +43,8 @@ const FACTS_WINDOW_MS = 14 * 24 * 60 * 60 * 1000;
 
 type TodayRouteProps = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
-// The Live now card shows one room: the one with the most people in, the newest on a tie (the reads come newest first).
-const LIVE_ROOMS_LOOKED_AT = 5;
-function pickBusiestRoom(rooms: LiveRoom[]) {
-  return rooms.reduce<LiveRoom | null>((busiest, room) => (busiest === null || room.count > busiest.count ? room : busiest), null);
-}
+// The Live now card shows one room: the busiest, the newest on a tie (the reads rank every live room that way).
+const LIVE_ROOMS_SHOWN = 1;
 
 // Commonhall's Today: the member home. Admins see it as the founder view; their setup lives on the console's Home.
 export default modulePage(membersManifest, async function TodayRoute({ searchParams }: TodayRouteProps) {
@@ -67,7 +64,7 @@ export default modulePage(membersManifest, async function TodayRoute({ searchPar
     enabledIds.has(perksManifest.id) ? readPerksUrl(database) : null,
     readWeeklySchedule(database),
     searchParams,
-    readLiveRooms(database, member.id, LIVE_ROOMS_LOOKED_AT),
+    readLiveRooms(database, member.id, LIVE_ROOMS_SHOWN),
   ]);
 
   const nextSteps = selectNextSteps({
@@ -90,7 +87,7 @@ export default modulePage(membersManifest, async function TodayRoute({ searchPar
       today={today}
       memberName={member.name}
       dateLabel={now.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "short" })}
-      liveRoom={pickBusiestRoom(liveRooms)}
+      liveRoom={liveRooms[0] ?? null}
       replyDay={isReplyByEmailOn(process.env) ? (WEEKDAYS[schedule.weekday] ?? "Thursday") : null}
       showFacts={now.getTime() - new Date(member.createdAt).getTime() < FACTS_WINDOW_MS}
       isAsksOn={enabledIds.has(asksManifest.id)}

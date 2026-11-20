@@ -1,6 +1,8 @@
 // The words and controls table from capture.mjs's inventory.json. Run from the repo root after capture.mjs.
 import { readFileSync, writeFileSync } from "node:fs";
-const j = JSON.parse(readFileSync(".ai/tmp/simplify-study/inventory.json", "utf8"));
+// TABLE_DIR picks the capture folder (the re-study's is .ai/tmp/restudy); the default is the first study's.
+const DIR = process.env.TABLE_DIR ?? ".ai/tmp/simplify-study";
+const j = JSON.parse(readFileSync(`${DIR}/inventory.json`, "utf8"));
 const P = {
   "/today": "Home: asks you could help with, intros waiting, profile check, your asks, perks, jobs, library, new members",
   "/asks": "Asks & updates board: post an ask, browse asks and updates",
@@ -65,7 +67,7 @@ for (const r of [...j.member, ...j.admin]) {
   lines.push(`| \`${s}\` | ${r.role} | ${w} | ${c} | ${purpose(r.route)} |`);
 }
 for (const r of j.pub) lines.push(`| \`${r.route}\` | signed out | ${r.phone.words} / – | ${r.phone.controls} / – | ${r.route === "/signin" ? "Sign in" : "Public job board"} |`);
-writeFileSync(".ai/tmp/simplify-study/table.md", lines.join("\n") + "\n");
+writeFileSync(`${DIR}/table.md`, lines.join("\n") + "\n");
 const real = [...j.member, ...j.admin].filter((r) => r.desktop && r.desktop.status === 200 && r.desktop.finalPath === r.route.replace(/\?.*$/, ""));
 const sum = (role) => { const rs = real.filter((r) => r.role === role); return { screens: rs.length, words: rs.reduce((a, r) => a + r.desktop.words, 0), controls: rs.reduce((a, r) => a + r.desktop.controls, 0), median: rs.map((r) => r.desktop.words).sort((a, b) => a - b)[Math.floor(rs.length / 2)] }; };
 console.log(JSON.stringify({ member: sum("member"), admin: sum("admin") }));

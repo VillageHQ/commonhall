@@ -29,6 +29,16 @@ export const VOICE_API_ROUTES = {
   adminSettings: "/api/admin/voice",
 } as const;
 
+// Who is in a live room, the same words on Today's Live now card and the Rooms cards: "Maya + 3", "Maya is in",
+// "Nobody in yet". `faces` leaves the viewer out; `count` is everyone in, the viewer too.
+export function describeRoomPeople<Face extends { name: string }>({ faces, count }: { faces: readonly Face[]; count: number }) {
+  if (count <= 0) return "Nobody in yet";
+  const first = faces[0];
+  if (!first) return `${count} in`;
+  const firstName = first.name.trim().split(/\s+/)[0] || first.name;
+  return count > 1 ? `${firstName} + ${count - 1}` : `${firstName} is in`;
+}
+
 export const ROOM_ACCESS = { open: "open", invite: "invite" } as const;
 export type RoomAccess = (typeof ROOM_ACCESS)[keyof typeof ROOM_ACCESS];
 
