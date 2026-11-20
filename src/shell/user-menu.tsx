@@ -11,6 +11,7 @@ import { applyTheme, useIsDarkTheme } from "@/components/use-theme";
 import { signOut } from "@/platform/auth/sign-out";
 import { ROUTES } from "@/platform/http/routes";
 
+import { AppActionsGroup } from "./app-actions-group";
 import { useShellMode } from "./navigation-links";
 import { MENU_PLACES, SHELL_MODES, type ShellNavigation } from "./navigation-rules";
 
@@ -83,6 +84,7 @@ export function AccountMenu({ member, navigation, trigger, side, pathname }: Acc
               ))}
             </DropdownMenu.Group>
           ) : null}
+          <AppActionsGroup />
           <DropdownMenu.Separator className={MENU_RULE} />
           {member.isAdmin && mode === SHELL_MODES.console ? (
             <MenuLink href={ROUTES.feed} icon={<Eye aria-hidden="true" strokeWidth={1.5} />}>

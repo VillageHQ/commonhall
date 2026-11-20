@@ -4,7 +4,7 @@ The Commonhall store app (iOS and Android): Expo SDK 58, React Native, TypeScrip
 web app's lint, typecheck, tests and build. How it works today: `.ai/features/mobile-app/NOTES.md`.
 
 - `App.tsx`: picks the community (remembered), routes alert taps and `commonhall://join` links.
-- `src/screens/`: `JoinScreen` (address check), `PortalScreen` (the portal in a web view, the top bar, alert
+- `src/screens/`: `JoinScreen` (address check), `PortalScreen` (the portal in a web view up to the top edge, alert
   registration, the room's mini bar).
 - `src/components/PortalView.native.tsx`: the web view and the bridge; `PortalView.tsx` is the web preview's iframe.
 - `src/lib/`: pure logic with unit tests (`community.ts`, `links.ts`, `bridge.ts`); `storage.ts` (AsyncStorage).

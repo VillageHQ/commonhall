@@ -76,7 +76,12 @@ describe("links inside the app", () => {
     assert.equal(readAlertPath({ url: "//elsewhere.example/x" }), null);
     assert.equal(readAlertPath(null), null);
     assert.equal(toPortalUrl(origin, "/intros/42"), `${origin}/intros/42`);
-    assert.equal(toPortalUrl(origin, "//elsewhere.example"), `${origin}/`);
+    assert.equal(toPortalUrl(origin, "//elsewhere.example"), `${origin}/today`);
+  });
+
+  it("opens on Today unless an alert or a link names a page", () => {
+    assert.equal(toPortalUrl(origin, null), `${origin}/today`);
+    assert.equal(toPortalUrl(origin, "/invite/abc"), `${origin}/invite/abc`);
   });
 
   it("keeps the community's pages in the web view and sends other sites to the browser", () => {

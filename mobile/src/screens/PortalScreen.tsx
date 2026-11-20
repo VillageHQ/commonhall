@@ -34,7 +34,6 @@ export function PortalScreen({ community, startPath, openRequest, onSwitchCommun
   const portalRef = useRef<PortalHandle>(null);
   const [failure, setFailure] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [room, setRoom] = useState<OpenRoom | null>(null);
   const [isRoomShown, setIsRoomShown] = useState(false);
   const [roomStatus, setRoomStatus] = useState({ text: "Joining…", isLive: false });
@@ -127,47 +126,13 @@ export function PortalScreen({ community, startPath, openRequest, onSwitchCommun
 
   return (
     <View style={styles.screen}>
-      <View style={[styles.bar, { paddingTop: insets.top + 6 }]}>
-        <Text style={styles.barTitle} numberOfLines={1} accessibilityRole="header">
-          {community.name}
-        </Text>
-        <Pressable accessibilityRole="button" accessibilityLabel="More" testID="portal-menu" onPress={() => setIsMenuOpen((value) => !value)} hitSlop={10} style={styles.barButton}>
-          <Text style={styles.barButtonText}>•••</Text>
-        </Pressable>
-      </View>
-      {isMenuOpen ? (
-        <View style={styles.menu}>
-          <Pressable
-            accessibilityRole="button"
-            style={styles.menuRow}
-            onPress={() => {
-              setIsMenuOpen(false);
-              setFailure(null);
-              portal.reload();
-            }}
-          >
-            <Text style={styles.menuText}>Reload</Text>
-          </Pressable>
-          <Pressable
-            accessibilityRole="button"
-            style={styles.menuRow}
-            onPress={() => {
-              setIsMenuOpen(false);
-              void Linking.openURL(startUrl);
-            }}
-          >
-            <Text style={styles.menuText}>Open in the browser</Text>
-          </Pressable>
-          <Pressable accessibilityRole="button" testID="switch-community" style={styles.menuRow} onPress={onSwitchCommunity}>
-            <Text style={styles.menuText}>Switch community</Text>
-          </Pressable>
-        </View>
-      ) : null}
-
+      {/* No native bar: the web view reaches the top edge and the site pads its own bar under the status bar
+          (smooth-app; the viewport is viewport-fit=cover for the app). Reload, Open in the browser and Switch community
+          are the avatar menu's "This app" group, arriving through onAppAction. */}
       <View style={styles.portal}>
         <PortalView key={attempt} ref={portalRef} origin={community.origin} startUrl={startUrl} pushToken={pushToken} onOpenRoom={onOpenRoom} onAppAction={onAppAction} onPageLoaded={onPageLoaded} onFailed={setFailure} />
         {failure ? (
-          <View style={styles.failure} testID="portal-failure">
+          <View style={[styles.failure, { paddingTop: insets.top + 24 }]} testID="portal-failure">
             <Text style={styles.failureTitle}>We couldn&apos;t open {community.name}</Text>
             <Text style={styles.failureBody}>{failure}</Text>
             <Pressable
@@ -216,13 +181,6 @@ export function PortalScreen({ community, startPath, openRequest, onSwitchCommun
 function makeStyles(colors: Colors) {
   return StyleSheet.create({
     screen: { flex: 1, backgroundColor: colors.paper },
-    bar: { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingBottom: 8, borderBottomWidth: 1, borderBottomColor: colors.line, backgroundColor: colors.paper },
-    barTitle: { flex: 1, color: colors.ink, fontFamily: SERIF, fontSize: 19, fontWeight: "500" },
-    barButton: { paddingHorizontal: 6, paddingVertical: 4 },
-    barButtonText: { color: colors.ink, fontFamily: SANS, fontSize: 16, fontWeight: "700", letterSpacing: 1 },
-    menu: { position: "absolute", right: 12, top: 56, zIndex: 10, minWidth: 220, borderWidth: 1, borderColor: colors.line, backgroundColor: colors.sheet, borderRadius: 8, paddingVertical: 4, elevation: 6, shadowColor: "#000", shadowOpacity: 0.12, shadowRadius: 12, shadowOffset: { width: 0, height: 4 } },
-    menuRow: { paddingVertical: 12, paddingHorizontal: 16 },
-    menuText: { color: colors.ink, fontFamily: SANS, fontSize: 15 },
     portal: { flex: 1 },
     failure: { position: "absolute", top: 0, right: 0, bottom: 0, left: 0, backgroundColor: colors.paper, padding: 24, justifyContent: "center" },
     failureTitle: { color: colors.ink, fontFamily: SERIF, fontSize: 24, fontWeight: "500" },

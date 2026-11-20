@@ -17,6 +17,7 @@ import { DARK_CLASS, parseTheme, SYSTEM_THEME_SCRIPT, THEME_COOKIE, THEMES } fro
 
 import { FONT_VARIABLES } from "./fonts";
 import "./globals.css";
+import "./in-app.css";
 
 export async function generateMetadata(): Promise<Metadata> {
   await connection();

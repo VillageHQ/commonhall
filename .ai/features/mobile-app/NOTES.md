@@ -7,8 +7,9 @@ Built 19 Nov 2026 (round 5, part "mobile-app"). Spec: `SPEC.md`. Proof: `reports
 - **Expo SDK 58, React Native 0.88, TypeScript**, its own npm project in `mobile/`. The root ignores it: `tsconfig.json`
   excludes `mobile`, `eslint.config.mjs` ignores `mobile/**`, Vitest only reads `src/**`, `next build` never sees it.
 - **The portal runs in a web view** (`react-native-webview`), so every screen of the web app works in the app and the
-  member's session lives in the web view's own cookie store. The app adds native chrome: a top bar (community name;
-  Reload, Open in the browser, Switch community), its own error screen with Try again (a failed load or a 5xx never
+  member's session lives in the web view's own cookie store. The app adds native chrome: no top bar of its own (the
+  site's bar reaches under the status bar; Reload, Open in the browser and Switch community are the avatar menu's
+  "This app" group, smooth-app), its own error screen with Try again (a failed load or a 5xx never
   leaves a blank view), Android's back button going back in the portal, and other sites opening in the phone's browser.
 - **The bridge** (`mobile/src/lib/bridge.ts`, the page side in `src/platform/native-app/bridge.ts`): before each page
   loads, the app puts `window.CommonhallApp` (`version`, `platform`, `pushToken`, `openRoom()`) and

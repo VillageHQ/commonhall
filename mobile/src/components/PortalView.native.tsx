@@ -123,7 +123,13 @@ export const PortalView = forwardRef<PortalHandle, PortalViewProps>(function Por
       domStorageEnabled
       setSupportMultipleWindows={false}
       allowsBackForwardNavigationGestures
-      pullToRefreshEnabled
+      // Scrolls like the phone's own lists (smooth-app, S1–S3, S7): no bounce past the edges (iOS), no stretch glow
+      // (Android), native momentum, no pull-to-refresh reload (Reload is in the avatar menu), no long-press preview.
+      pullToRefreshEnabled={false}
+      bounces={false}
+      overScrollMode="never"
+      decelerationRate="normal"
+      allowsLinkPreview={false}
       allowsInlineMediaPlayback
       webviewDebuggingEnabled={__DEV__}
       onShouldStartLoadWithRequest={onShouldStartLoad}
