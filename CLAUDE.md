@@ -43,6 +43,7 @@ Better Auth, Vitest, pnpm. Village is optional (network search, intro paths, pro
   `.ai/features/asks-tools/NOTES.md`, `.ai/features/search-first/NOTES.md` (superseded), `.ai/features/search-connect-only/NOTES.md` (search needs your own Village), `.ai/features/intros-no-village/NOTES.md`, `.ai/features/demo-portraits/SPEC.md` (spec: how to add a portrait),
   `.ai/features/fh-foundation/NOTES.md` (look, parts, shell), `.ai/features/fh-dark/NOTES.md` (dark mode), `.ai/features/fh-public-signin/NOTES.md` (sign-in), `.ai/features/fh-setup-plumbing/NOTES.md` (Set up pages), `.ai/features/fh-inbox-jobs-perks/NOTES.md`, `.ai/features/fh-intros/NOTES.md` (intro screens, links, emails),
   `.ai/features/fh-today-asks/NOTES.md` (Today, Asks & updates),
+  `.ai/features/choice-today/NOTES.md` (round 7: Today leads with what waits; People's any-word search, one-tap network offer),
   `.ai/features/announcements/NOTES.md` (audiences by community role too),
   `.ai/features/commonhall-ai-live/NOTES.md` (commonhall.ai: the Worker, the call form, mail),
   `.ai/features/fh-search-ask/NOTES.md` (search, asks),
