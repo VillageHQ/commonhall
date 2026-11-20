@@ -537,6 +537,11 @@
   color: #ffffff;
 }
 
+/* The tabs' outlines wait hidden until their tab is tapped (src/shell/pressed-tab.tsx shows one and hides the page). */
+[data-slot="tab-outline"] {
+  display: none;
+}
+
 /* A tab's outline (src/components/page-outline.tsx): its grey blocks a shade stronger than the Skeleton part's, so
    the page's shape reads at a glance on Paper, in light and dark; the shimmer stays. */
 [data-slot="page-outline"] [data-slot="skeleton"] {

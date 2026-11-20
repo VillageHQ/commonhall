@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Eye } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { ComponentProps, MouseEvent, PointerEvent } from "react";
+import type { ComponentProps } from "react";
 
 import { askCountsQuery } from "@/modules/asks/queries";
 import { introCountsQuery } from "@/modules/intros/queries";
@@ -28,39 +28,11 @@ import {
   type ShellNavigation,
   type ShellNavigationItem,
 } from "./navigation-rules";
-import { usePressedTab } from "./pressed-tab";
+import { readPressHandlers, TabOutlines } from "./pressed-tab";
 
 // A plain link where the page needs a full load (its own security headers), the app's link elsewhere.
 function NavigationLink({ isFullPageLoad, ...linkProps }: ComponentProps<typeof Link> & { href: string; isFullPageLoad?: boolean }) {
   return isFullPageLoad ? <a {...linkProps} /> : <Link {...linkProps} />;
-}
-
-// Lights the tapped tab or menu item at once, before the server answers (smooth-app Part A): pressed on pointerdown,
-// tapped on click (the page area then shows that tab's outline), forgotten when the address changes or after
-// PRESSED_TIMEOUT_MS. aria-current stays on the page actually shown.
-function usePressedItem() {
-  const { pressed, press, release } = usePressedTab();
-  const pressedKey = pressed?.key ?? null;
-
-  function readPressProps(item: ShellNavigationItem) {
-    // A full page load (Perks) shows the browser's own progress; nothing to light ahead of it.
-    if (item.isFullPageLoad) return {};
-    return {
-      "data-pressed": pressedKey === item.key ? "true" : undefined,
-      onPointerDown: (event: PointerEvent<HTMLAnchorElement>) => {
-        if (event.button === 0 && !hasModifier(event)) press(item.key, item.href, false);
-      },
-      onPointerCancel: release,
-      // A ⌘- or Ctrl-click opens a new tab and leaves this page as it is.
-      onClick: (event: MouseEvent<HTMLAnchorElement>) => (event.button === 0 && !hasModifier(event) ? press(item.key, item.href, true) : release()),
-    };
-  }
-
-  return { pressedKey, readPressProps };
-}
-
-function hasModifier(event: { metaKey: boolean; ctrlKey: boolean; shiftKey: boolean; altKey: boolean }) {
-  return event.metaKey || event.ctrlKey || event.shiftKey || event.altKey;
 }
 
 // The parts page shows the menus at a fixed address; everywhere else they follow the page.
@@ -147,14 +119,19 @@ function useCurrentItems({ navigation, isAdmin, pathname: pathnameOverride }: Om
   return { mode, items, currentKey, currentTabKey };
 }
 
+// The outlines of this menu's places (smooth-app Part A), shown when one is tapped: pressed-tab.tsx.
+export function MenuTabOutlines({ navigation, isAdmin }: Omit<ShellNavigationProps, "badges">) {
+  const { items } = useCurrentItems({ navigation, isAdmin });
+  return <TabOutlines hrefs={items.filter((item) => !item.isFullPageLoad).map((item) => item.href)} />;
+}
+
 // The sidebar's menu (crops shell-sidebar-member.png, shell-sidebar-admin.png): a group label, then flat links; the
 // current one is a Leaf pill with its icon in the fund colour.
 export function SidebarNavigation({ navigation, isAdmin, badges, pathname }: ShellNavigationProps) {
   const { mode, items, currentKey } = useCurrentItems({ navigation, isAdmin, pathname });
   const liveBadges = useLiveBadges(items, badges);
-  const { pressedKey, readPressProps } = usePressedItem();
   return (
-    <nav aria-label="Main" data-pressing={pressedKey && pressedKey !== currentKey ? "true" : undefined}>
+    <nav aria-label="Main">
       <div className="fh-grp">{mode === SHELL_MODES.console ? "Console" : "Members"}</div>
       {items.map((item) => (
         <NavigationLink
@@ -162,7 +139,7 @@ export function SidebarNavigation({ navigation, isAdmin, badges, pathname }: She
           href={item.href}
           isFullPageLoad={item.isFullPageLoad}
           aria-current={item.key === currentKey ? "page" : undefined}
-          {...readPressProps(item)}
+          {...(item.isFullPageLoad ? {} : readPressHandlers(item.href))}
         >
           {item.icon}
           <span>{item.label}</span>
@@ -186,13 +163,11 @@ export function TabBar({ navigation, isAdmin, badges, pathname }: ShellNavigatio
   const { mode, items, currentTabKey } = useCurrentItems({ navigation, isAdmin, pathname });
   const tabs = orderTabs(items.filter((item) => item.tabLabel), mode);
   const liveBadges = useLiveBadges(tabs, badges);
-  const { pressedKey, readPressProps } = usePressedItem();
   return (
     <nav
       aria-label="Sections"
       data-slot="tab-bar"
       data-count={tabs.length}
-      data-pressing={pressedKey && pressedKey !== currentTabKey ? "true" : undefined}
       className="fh-tabbar"
       style={{ gridTemplateColumns: `repeat(${tabs.length}, 1fr)` }}
     >
@@ -202,7 +177,7 @@ export function TabBar({ navigation, isAdmin, badges, pathname }: ShellNavigatio
           href={item.href}
           isFullPageLoad={item.isFullPageLoad}
           aria-current={item.key === currentTabKey ? "page" : undefined}
-          {...readPressProps(item)}
+          {...(item.isFullPageLoad ? {} : readPressHandlers(item.href))}
         >
           {item.icon}
           <span>{item.tabLabel}</span>

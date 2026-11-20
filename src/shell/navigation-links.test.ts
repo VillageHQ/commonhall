@@ -10,8 +10,8 @@ import { API_ROUTES, ROUTES } from "@/platform/http/routes";
 
 import { buildShellNavigation } from "./navigation";
 import { readSettingsLinks } from "./settings-links";
-import { FounderViewStrip, SidebarNavigation, TabBar } from "./navigation-links";
-import { PendingTabPage, PRESSED_TIMEOUT_MS, PressedTabProvider } from "./pressed-tab";
+import { FounderViewStrip, MenuTabOutlines, SidebarNavigation, TabBar } from "./navigation-links";
+import { endPress, PressEnd, PRESSED_TIMEOUT_MS } from "./pressed-tab";
 import { PhoneAccountButton } from "./user-menu";
 
 const location = vi.hoisted(() => ({ pathname: "/" }));
@@ -58,6 +58,7 @@ function readNames(label: string) {
 }
 
 afterEach(() => {
+  endPress();
   cleanup();
   vi.unstubAllGlobals();
   location.pathname = ROUTES.feed;
@@ -114,47 +115,66 @@ describe("the phone tab bar", () => {
 
   it("shows the tapped tab's outline in place of the page until the new page comes, and only after a tap", () => {
     location.pathname = ROUTES.today;
+    window.history.replaceState(null, "", ROUTES.today);
     stubCounts(0);
     const navigation = buildShellNavigation(undefined, false);
     const shell = () =>
       createElement(
-        PressedTabProvider,
+        "div",
         null,
-        createElement(PendingTabPage, null, createElement("h1", null, "Today's page")),
+        createElement(
+          "div",
+          { "data-slot": "page-width" },
+          createElement("div", { "data-slot": "page" }, createElement("h1", null, "Today's page")),
+          createElement(PressEnd),
+          createElement(MenuTabOutlines, { navigation, isAdmin: false }),
+        ),
         createElement(TabBar, { navigation, isAdmin: false, badges: {} }),
       );
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Number.POSITIVE_INFINITY } } });
     const view = render(createElement(QueryClientProvider, { client: queryClient }, shell()));
+    const html = document.documentElement;
+    const page = () => screen.getByText("Today's page").parentElement as HTMLElement;
     const people = within(screen.getByRole("navigation", { name: "Sections" })).getByRole("link", { name: /People/ });
+    const today = within(screen.getByRole("navigation", { name: "Sections" })).getByRole("link", { name: /Today/ });
+    expect(getComputedStyle(page()).display).not.toBe("none");
 
     // A finger on the tab lights it, but the page stays until the tap.
     fireEvent.pointerDown(people, { button: 0 });
-    expect(screen.queryByRole("heading", { name: "People" })).toBeNull();
+    expect(html.getAttribute("data-pending-tab")).toBeNull();
 
     fireEvent.click(people, { button: 0 });
-    expect(screen.getByRole("heading", { name: "People" })).toBeTruthy();
-    expect(screen.getByRole("status").textContent).toBe("Loading…");
-    expect((screen.getByText("Today's page").parentElement as HTMLElement).style.display).toBe("none");
+    expect(html.getAttribute("data-pending-tab")).toBe(ROUTES.people);
+    const outline = document.querySelector('[data-slot="tab-outline"][data-for="/people"]') as HTMLElement;
+    expect(within(outline).getByRole("heading", { name: "People" })).toBeTruthy();
+    expect(getComputedStyle(outline).display).toBe("block");
+    expect(getComputedStyle(page()).display).toBe("none");
 
-    // The address changes in the same frame as the new page: the outline is gone, nothing stays pressed.
+    // The address changes (the new page commits): no outline, nothing pressed.
     location.pathname = ROUTES.people;
+    window.history.replaceState(null, "", ROUTES.people);
     view.rerender(createElement(QueryClientProvider, { client: queryClient }, shell()));
-    expect(screen.queryByRole("status")).toBeNull();
+    expect(html.getAttribute("data-pending-tab")).toBeNull();
     expect(people.getAttribute("data-pressed")).toBeNull();
 
     // Back to Today (Back, the iOS back swipe): Today's own page, not People's outline.
     location.pathname = ROUTES.today;
+    window.history.replaceState(null, "", ROUTES.today);
     view.rerender(createElement(QueryClientProvider, { client: queryClient }, shell()));
-    expect(screen.queryByRole("status")).toBeNull();
-    expect((screen.getByText("Today's page").parentElement as HTMLElement).style.display).toBe("contents");
-    expect(people.getAttribute("data-pressed")).toBeNull();
+    expect(html.getAttribute("data-pending-tab")).toBeNull();
+    expect(getComputedStyle(page()).display).not.toBe("none");
 
-    // Tapping the tab already shown lights nothing and swaps nothing.
-    const today = within(screen.getByRole("navigation", { name: "Sections" })).getByRole("link", { name: /Today/ });
+    // Tapping the tab already shown lights nothing; tapped while another tab's page is on the way, it gives that tab
+    // up (the router keeps this page, so the address never changes to end the press).
     fireEvent.pointerDown(today, { button: 0 });
     fireEvent.click(today, { button: 0 });
     expect(today.getAttribute("data-pressed")).toBeNull();
-    expect(screen.queryByRole("status")).toBeNull();
+    fireEvent.click(people, { button: 0 });
+    expect(html.getAttribute("data-pending-tab")).toBe(ROUTES.people);
+    fireEvent.pointerDown(today, { button: 0 });
+    expect(html.getAttribute("data-pending-tab")).toBeNull();
+    expect(people.getAttribute("data-pressed")).toBeNull();
+    expect(getComputedStyle(page()).display).not.toBe("none");
   });
 
   it("forgets a press after a while, and a ⌘-click lights nothing", () => {

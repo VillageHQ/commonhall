@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { OutlineBox, OutlineCard, OutlineChips, OutlineCircle, OutlineLine, OutlineRows, OutlineSectionHead, OutlineSheet, OutlineTitle, PageOutline } from "@/components/page-outline";
 
 // Each tab's outline (smooth-app Part A): the page's own head and grey blocks shaped like its first screen at 390 px,
-// drawn the moment its tab is tapped (pending-tab-page.tsx) and replaced when the page arrives. Keyed by the tab's
+// drawn the moment its tab is tapped (pressed-tab.tsx) and replaced when the page arrives. Keyed by the tab's
 // address; a tab without one here (Perks, the job board) keeps the old page on screen until the new one comes.
 
 function TodayOutline() {
@@ -270,6 +270,10 @@ const TAB_OUTLINES: Readonly<Record<string, () => ReactNode>> = {
 // The address a link leads to, without its query or fragment ("/asks?tab=yours" is "/asks").
 export function toPathname(href: string) {
   return href.split(/[?#]/)[0] ?? href;
+}
+
+export function hasTabOutline(href: string) {
+  return toPathname(href) in TAB_OUTLINES;
 }
 
 // The outline drawn for a tab's address, or null for a page that has none.

@@ -1,78 +1,98 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useLayoutEffect, useSyncExternalStore, type MouseEvent, type PointerEvent } from "react";
 
-import { renderTabOutline, toPathname } from "./tab-outlines";
+import { hasTabOutline, renderTabOutline, toPathname } from "./tab-outlines";
+
+// A tapped tab answers at once (smooth-app Part A): the tab lights up on the finger-down (`data-pressed="true"` on the
+// link, `data-pressing` on its menu, so the current tab lets go), and on the tap the page area shows that tab's outline
+// (`data-pending-tab` on <html>; TabOutlines' rules show the outline and hide the page) until the new page commits.
+//
+// Plain DOM attributes, not React state, on purpose: tap a tab and then the tab you are on before the first page
+// comes, and the router keeps a render waiting for a page it dropped; React state updates in the shell then never
+// reach the screen, and a press kept in state would leave the outline over the page. Attributes set here always do.
 
 // How long a tapped item stays lit when its page never comes (a failed request, a press that wasn't a tap).
 export const PRESSED_TIMEOUT_MS = 5000;
 
-// The menu item a finger is on or just tapped (smooth-app Part A). `from` is the address shown when it was pressed:
-// once the address changes, the press is over (the real current item and the new page take over). `isTapped` turns
-// true on the click, so a finger that touches a tab and slides away never swaps the page for an outline.
-type Pressed = { key: string; href: string; from: string; isTapped: boolean };
+const PENDING_TAB_ATTRIBUTE = "data-pending-tab";
 
-type PressedTab = {
-  pressed: Pressed | null;
-  press: (key: string, href: string, isTapped: boolean) => void;
-  release: () => void;
-};
+let pressedLink: HTMLElement | null = null;
+let timer: ReturnType<typeof setTimeout> | undefined;
 
-const PressedTabContext = createContext<PressedTab | null>(null);
+// Ends the press: the address changed (the new page, Back, the iOS back swipe), the tab shown was tapped, the finger
+// slid away, or the page never came.
+export function endPress() {
+  clearTimeout(timer);
+  timer = undefined;
+  if (pressedLink) {
+    delete pressedLink.dataset.pressed;
+    pressedLink.closest("nav")?.removeAttribute("data-pressing");
+    pressedLink = null;
+  }
+  document.documentElement.removeAttribute(PENDING_TAB_ATTRIBUTE);
+}
 
-function usePressedState(): PressedTab {
-  const pathname = usePathname();
-  const [state, setState] = useState<Pressed | null>(null);
-  // A press ends for good when the address changes: coming back to the page it was made on (Back, the iOS back
-  // swipe, the fund mark) never brings its outline back. Adjusted while rendering, so the frame that shows the new
-  // page shows no press.
-  if (state && state.from !== pathname) setState(null);
-  useEffect(() => {
-    if (!state) return;
-    const timer = setTimeout(() => setState(null), PRESSED_TIMEOUT_MS);
-    return () => clearTimeout(timer);
-  }, [state]);
-  const press = useCallback(
-    (key: string, href: string, isTapped: boolean) => {
-      // The page already shown: nothing to light or wait for.
-      if (toPathname(href) === pathname) return;
-      setState((current) => (current?.key === key && current.from === pathname && current.isTapped === isTapped ? current : { key, href, from: pathname, isTapped }));
+// `isTapped`: the click (not just a finger on the tab) also swaps the page for the tab's outline.
+export function pressTab(link: HTMLElement, href: string, isTapped: boolean) {
+  const target = toPathname(href);
+  // The page already shown: nothing to light or wait for, and a tab tapped just before it is given up.
+  if (target === window.location.pathname) {
+    endPress();
+    return;
+  }
+  if (pressedLink !== link) endPress();
+  pressedLink = link;
+  link.dataset.pressed = "true";
+  link.closest("nav")?.setAttribute("data-pressing", "true");
+  if (isTapped && hasTabOutline(target)) {
+    document.documentElement.setAttribute(PENDING_TAB_ATTRIBUTE, target);
+    window.scrollTo(0, 0);
+  }
+  clearTimeout(timer);
+  timer = setTimeout(endPress, PRESSED_TIMEOUT_MS);
+}
+
+function hasModifier(event: { metaKey: boolean; ctrlKey: boolean; shiftKey: boolean; altKey: boolean }) {
+  return event.metaKey || event.ctrlKey || event.shiftKey || event.altKey;
+}
+
+// The handlers a tab-bar or sidebar link spreads. A ⌘- or Ctrl-click opens a new tab and leaves this page as it is.
+export function readPressHandlers(href: string) {
+  return {
+    onPointerDown: (event: PointerEvent<HTMLAnchorElement>) => {
+      if (event.button === 0 && !hasModifier(event)) pressTab(event.currentTarget, href, false);
     },
-    [pathname],
-  );
-  const release = useCallback(() => setState(null), []);
-  const pressed = state && state.from === pathname ? state : null;
-  return useMemo(() => ({ pressed, press, release }), [pressed, press, release]);
+    onPointerCancel: endPress,
+    onClick: (event: MouseEvent<HTMLAnchorElement>) => (event.button === 0 && !hasModifier(event) ? pressTab(event.currentTarget, href, true) : endPress()),
+  };
 }
 
-// One press for the tab bar, the sidebar and the page area, so the page can show the tapped tab's outline.
-export function PressedTabProvider({ children }: { children: ReactNode }) {
-  return <PressedTabContext.Provider value={usePressedState()}>{children}</PressedTabContext.Provider>;
-}
-
-// The shared press, or this menu's own when it is drawn without the shell (the parts page, a test).
-export function usePressedTab(): PressedTab {
-  const own = usePressedState();
-  return useContext(PressedTabContext) ?? own;
-}
-
-// Where the page sits: the tapped tab's outline while its page is on the way, else the page. The page stays mounted
-// (only hidden), so a press that never arrives gives back the page as it was.
-export function PendingTabPage({ children }: { children: ReactNode }) {
-  const { pressed } = usePressedTab();
+// Ends a press whenever the address changes, before the new page paints.
+export function PressEnd() {
   const pathname = usePathname();
-  const outline = pressed?.isTapped && toPathname(pressed.href) !== pathname ? renderTabOutline(pressed.href) : null;
-  const isPending = outline !== null;
-  useEffect(() => {
-    if (isPending) window.scrollTo(0, 0);
-  }, [isPending]);
+  useLayoutEffect(() => endPress(), [pathname]);
+  return null;
+}
+
+const subscribeToNothing = () => () => {};
+
+// The outlines of the menu's tabs, drawn once after the page loads and hidden (globals.css) until their tab is tapped:
+// the rules below show the tapped one and hide the page while `data-pending-tab` names it. Not in the server's page: they cost a tap nothing, and the first load nothing either.
+export function TabOutlines({ hrefs }: { hrefs: readonly string[] }) {
+  const isHydrated = useSyncExternalStore(subscribeToNothing, () => true, () => false);
+  if (!isHydrated) return null;
+  const paths = [...new Set(hrefs.map(toPathname))].filter(hasTabOutline);
   return (
     <>
-      {outline}
-      <div data-slot="page" style={isPending ? { display: "none" } : { display: "contents" }}>
-        {children}
-      </div>
+      {paths.map((path) => (
+        <div key={path} data-slot="tab-outline" data-for={path}>
+          {renderTabOutline(path)}
+        </div>
+      ))}
+      {/* Only for outlines drawn here: a tab with none never hides the page. */}
+      <style>{paths.map((path) => `html[${PENDING_TAB_ATTRIBUTE}="${path}"] [data-slot="tab-outline"][data-for="${path}"]{display:block}html[${PENDING_TAB_ATTRIBUTE}="${path}"] [data-slot="page"]{display:none}`).join("\n")}</style>
     </>
   );
 }

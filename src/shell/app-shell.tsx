@@ -5,9 +5,9 @@ import { MAIN_CONTENT_ID } from "@/components/skip-link";
 import type { CommunityLogo } from "@/platform/branding/branding";
 
 import { ModuleOffNotice } from "./module-off-notice";
-import { FounderViewStrip, SidebarNavigation, TabBar } from "./navigation-links";
+import { FounderViewStrip, MenuTabOutlines, SidebarNavigation, TabBar } from "./navigation-links";
 import type { NavigationBadgeCounts, ShellNavigation } from "./navigation-rules";
-import { PendingTabPage, PressedTabProvider } from "./pressed-tab";
+import { PressEnd } from "./pressed-tab";
 import { SearchReadyNotice } from "./search-ready-notice";
 import { PhoneFoot, ShellFooterLine, ShellFundMark } from "./shell-chrome";
 import { PhoneAccountButton, SidebarMember, type ShellMember } from "./user-menu";
@@ -29,34 +29,37 @@ type AppShellProps = {
 export function AppShell({ community, member, navigation, badges, isNetworkOn, children }: AppShellProps) {
   return (
     <FlashProvider>
-      <PressedTabProvider>
-        <div data-slot="app-shell" className="fh-app">
-          <aside data-slot="sidebar" aria-label="Navigation" className="fh-side">
-            <ShellFundMark name={community.name} logo={community.logo} isAdmin={member.isAdmin} size="sidebar" />
-            <SidebarNavigation navigation={navigation} isAdmin={member.isAdmin} badges={badges} />
-            <SidebarMember member={member} navigation={navigation} />
-            <ShellFooterLine isAdmin={member.isAdmin} />
-          </aside>
-          <div data-slot="shell-column" className="fh-col min-w-0">
-            <header data-slot="phone-top-bar" className="fh-topbar">
-              <ShellFundMark name={community.name} logo={community.logo} isAdmin={member.isAdmin} size="default" />
-              <span className="fh-spacer" />
-              <PhoneAccountButton member={member} navigation={navigation} />
-            </header>
-            {member.isAdmin ? <FounderViewStrip name={member.name} /> : null}
-            <main id={MAIN_CONTENT_ID} tabIndex={-1} data-slot="main" className="fh-main">
-              <FlashSlot />
-              <div data-slot="page-width" className="w-full">
-                <PendingTabPage>{children}</PendingTabPage>
+      <div data-slot="app-shell" className="fh-app">
+        <aside data-slot="sidebar" aria-label="Navigation" className="fh-side">
+          <ShellFundMark name={community.name} logo={community.logo} isAdmin={member.isAdmin} size="sidebar" />
+          <SidebarNavigation navigation={navigation} isAdmin={member.isAdmin} badges={badges} />
+          <SidebarMember member={member} navigation={navigation} />
+          <ShellFooterLine isAdmin={member.isAdmin} />
+        </aside>
+        <div data-slot="shell-column" className="fh-col min-w-0">
+          <header data-slot="phone-top-bar" className="fh-topbar">
+            <ShellFundMark name={community.name} logo={community.logo} isAdmin={member.isAdmin} size="default" />
+            <span className="fh-spacer" />
+            <PhoneAccountButton member={member} navigation={navigation} />
+          </header>
+          {member.isAdmin ? <FounderViewStrip name={member.name} /> : null}
+          <main id={MAIN_CONTENT_ID} tabIndex={-1} data-slot="main" className="fh-main">
+            <FlashSlot />
+            <div data-slot="page-width" className="w-full">
+              <div data-slot="page" className="contents">
+                {children}
               </div>
-              <PhoneFoot isAdmin={member.isAdmin} />
-            </main>
-          </div>
-          {isNetworkOn ? <SearchReadyNotice /> : null}
-          <ModuleOffNotice />
-          <TabBar navigation={navigation} isAdmin={member.isAdmin} badges={badges} />
+              {/* A tapped tab's outline shows here while the page above is hidden (pressed-tab.tsx). */}
+              <PressEnd />
+              <MenuTabOutlines navigation={navigation} isAdmin={member.isAdmin} />
+            </div>
+            <PhoneFoot isAdmin={member.isAdmin} />
+          </main>
         </div>
-      </PressedTabProvider>
+        {isNetworkOn ? <SearchReadyNotice /> : null}
+        <ModuleOffNotice />
+        <TabBar navigation={navigation} isAdmin={member.isAdmin} badges={badges} />
+      </div>
     </FlashProvider>
   );
 }

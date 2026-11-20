@@ -1,5 +1,5 @@
 // Measures tab-tap-to-paint, page weight, prefetch and scroll smoothness on a local throwaway Commonhall copy.
-// The "after" copy (smooth-app Part A): feedbackMs reads data-pressed="true" or aria-current="page", whichever comes
+// The "after" copy (smooth-app Part A; the tabs' outlines sit hidden on every page, so only a visible one counts): feedbackMs reads data-pressed="true" or aria-current="page", whichever comes
 // first; outlineMs is the tap to the tab's outline (or its real heading); cls sums each tap's layout shifts (Chromium
 // only); each prefetch is listed; and pages under the tabs are opened to check they show no tab outline.
 import { createRequire } from "node:module";
@@ -100,7 +100,7 @@ async function tapTab(label) {
     const target = new URL(link.href).pathname;
     const before = document.querySelector("main h1")?.textContent ?? "";
     const tabBar = document.querySelector('nav[data-slot="tab-bar"]');
-    const isOutline = () => document.querySelector('main [data-slot="page-outline"]') !== null;
+    const isOutline = () => [...document.querySelectorAll('main [data-slot="page-outline"]')].some((e) => e.offsetParent !== null);
     return await new Promise((resolve) => {
       let feedback = null;
       let feedbackBy = null;
@@ -214,7 +214,7 @@ async function openSubpage(listPath, selector) {
       const target = new URL(link.href).pathname;
       let outlineSeen = false;
       const observer = new MutationObserver(() => {
-        if (document.querySelector('main [data-slot="page-outline"]')) outlineSeen = true;
+        if ([...document.querySelectorAll('main [data-slot="page-outline"]')].some((e) => e.offsetParent !== null)) outlineSeen = true;
       });
       observer.observe(document.querySelector("main"), { childList: true, subtree: true });
       const t0 = performance.now();
@@ -224,7 +224,7 @@ async function openSubpage(listPath, selector) {
           const h1 = document.querySelector("main h1")?.textContent ?? "";
           // Console pages of one area share their heading, so the new page is in once the address has changed and no
           // outline is on screen (a page with no loading.tsx commits with its address).
-          if (location.pathname === target && !document.querySelector('main [data-slot="page-outline"]')) {
+          if (location.pathname === target && ![...document.querySelectorAll('main [data-slot="page-outline"]')].some((e) => e.offsetParent !== null)) {
             setTimeout(() => {
               observer.disconnect();
               resolve({ target, outlineSeen, paintedMs: Math.round(performance.now() - t0), heading: h1.slice(0, 40) });
