@@ -17,19 +17,16 @@ import { CHOICE_PLACE_WORDS } from "@/modules/members/contract-privacy";
 import { FILL_IN_BASES, FILL_IN_FIELDS, LOOKUP_STATUSES } from "@/modules/members/contract-fill-in";
 import { memberNetwork } from "@/modules/members/schema";
 import { membersManifest } from "@/modules/members/manifest";
-import { toPossessive } from "@/modules/members/rules-words";
 import { readFilledLines, readLookupState, type LookupState } from "@/modules/members/service-fill-in";
-import { MESSAGE_POLICIES } from "@/modules/members/contract-privacy";
 import { readPrivacy, type MemberPrivacy } from "@/modules/members/service-privacy";
 import { readReportCredit } from "@/modules/members/service-report-credit";
-import { ShareNetworkSheet, SwitchesSheet, type ShareState } from "@/modules/members/components/your-data-switches";
+import { SwitchesSheet } from "@/modules/members/components/your-data-switches";
 import { DeleteAccountSheet, ExportSheet } from "@/modules/members/components/your-data-actions";
 import { asksManifest } from "@/modules/asks/manifest";
 import { feedManifest } from "@/modules/feed/manifest";
 import { introsManifest } from "@/modules/intros/manifest";
 import { messagesManifest } from "@/modules/messages/manifest";
 import { networkManifest } from "@/modules/network/manifest";
-import { DarkModeRow } from "@/shell/user-menu";
 import { readDataHome } from "@/platform/settings/data-home";
 
 export const metadata: Metadata = { title: PAGE_TITLES.yourData };
@@ -112,14 +109,9 @@ function readIntroAsksDetail(privacy: MemberPrivacy) {
   return `${answer}${when}${where}`;
 }
 
-function readShareState(network: NetworkDates | undefined): ShareState {
-  if (network?.groupJoinedAt) return { kind: "sharing" };
-  if (network?.villageLinkedAt) return { kind: "connected" };
-  return { kind: "not_connected" };
-}
-
-// Commonhall's Your data (member-me-data): what is stored and where, what the lookup service receives, the consent
-// record, the switches, the export and the real delete.
+// Commonhall's Your data (member-me-data), round 6: what we hold as a short list, then the lookup service and the
+// consent record folded, the two switches that live only here, the export and the real delete. Directory, intro asks
+// and messages live on My profile › Privacy; sharing the network on My network; dark mode in the avatar menu.
 export default modulePage(membersManifest, async function YourDataPage() {
   const member = await requireMember();
   const database = getDatabase();
@@ -148,64 +140,58 @@ export default modulePage(membersManifest, async function YourDataPage() {
       <BackLink href={ROUTES.editCard}>My profile</BackLink>
       <header data-slot="page-header" className="fh-pagehead">
         <h1 className="fh-h1">Your data</h1>
-        <p className="fh-lede">What {community} keeps about you in this portal, where it lives, and what you can switch off.</p>
+        <p className="fh-lede">What {community} keeps about you, and how to take it or delete it.</p>
       </header>
       <div className="fh-prof fh-section">
         <div className="fh-stack">
           <section className="fh-sheet" aria-labelledby="stored-title">
             <h2 id="stored-title" className="fh-h3 flex items-center gap-1.5">
-              <ShieldCheck aria-hidden="true" className="fh-i fh-s" strokeWidth={1.5} /> What is stored, and where
+              <ShieldCheck aria-hidden="true" className="fh-i fh-s" strokeWidth={1.5} /> What we hold
             </h2>
+            <ul className="fh-hist fh-small mt-2">
+              <Item term="Your profile">, its filled-in lines and your privacy choices.</Item>
+              {isAsksOn || isFeedOn ? <Item term="Your asks and answers." /> : null}
+              {isIntrosOn ? <Item term="Your intros.">{" Only the people in an intro see its note; admins see names, states and dates."}</Item> : null}
+              {isMessagesOn ? <Item term="Your messages.">{" Admins can’t read them here."}</Item> : null}
+              <Item term="Your email address"> (only admins see it) and a sign-in log.</Item>
+            </ul>
             <p className="fh-small mt-2">
-              Everything below lives in this community’s own database.
+              All in this community’s own database.
               <HostingLine communityName={community} location={dataHome.location} />
             </p>
-            <ul className="fh-hist fh-small mt-2">
-              <Item term="Your profile:"> your name, your own words, the lines filled in from public profiles, and your privacy choices.</Item>
-              {isAsksOn || isFeedOn ? <Item term="Your asks and answers"> in Asks &amp; updates.</Item> : null}
-              {isIntrosOn ? (
-                <Item term="Your intros:"> who asked whom, the states and dates, and the note. Only the people in an intro see its note; admins see names, states and dates.</Item>
-              ) : null}
-              {isMessagesOn ? <Item term="Your messages.">{` ${toPossessive(community)} admins can’t read them in the portal.`}</Item> : null}
-              <Item term="Your email address"> (only admins see it), and a log of sign-ins and changes.</Item>
-            </ul>
             <DataQuestionsLine contactEmail={dataHome.contact?.email ?? null} />
           </section>
 
-          <section className="fh-sheet" aria-labelledby="lookup-title">
-            <h2 id="lookup-title" className="fh-h3 flex items-center gap-1.5">
+          <details className="fh-sheet" aria-labelledby="lookup-title">
+            <summary id="lookup-title" className="fh-h3 flex cursor-pointer items-center gap-1.5">
               <RefreshCw aria-hidden="true" className="fh-i fh-s" strokeWidth={1.5} /> What the lookup service receives
-            </h2>
+            </summary>
             {isNetworkOn || lookup.basis ? (
               <>
                 <ul className="fh-hist fh-small mt-2">
                   <Item term="For the profile fill-in:">
                     {" "}
-                    your email address (the one you were invited with) and, once it is known, your LinkedIn address for refreshes. The service may pass an email it doesn’t
-                    know to its own data provider to find its owner. It sends back your role, company, city and past roles.
+                    your email address and, once known, your LinkedIn address. It may ask its own data provider who owns an email. It sends back your role,
+                    company, city and past roles.
                   </Item>
                   {isNetworkOn ? (
                     <>
-                      <Item term="When you connect your network:">
-                        {" "}
-                        your email address and a member number, so the service can make your account. You connect Google and LinkedIn on its own screen; it never reads email
-                        content.
-                      </Item>
-                      <Item term="When you search:"> what you type, to find people and paths.</Item>
+                      <Item term="When you connect your network:"> your email address and a member number. It never reads email content.</Item>
+                      <Item term="When you search:"> what you type.</Item>
                     </>
                   ) : null}
                 </ul>
-                <p className="fh-small fh-muted mt-2">Your contact list is never stored in this portal.</p>
+                <p className="fh-small fh-muted mt-2">Your contact list is never stored here.</p>
               </>
             ) : (
-              <p className="fh-small mt-2">Nothing while network search and the profile fill-in are off. It never gets your messages, asks, intro notes or profile.</p>
+              <p className="fh-small mt-2">Nothing while network search and the profile fill-in are off.</p>
             )}
-          </section>
+          </details>
 
-          <section className="fh-sheet" id="consent" aria-labelledby="consent-title">
-            <h2 id="consent-title" className="fh-h3 flex items-center gap-1.5">
+          <details className="fh-sheet" id="consent" aria-labelledby="consent-title">
+            <summary id="consent-title" className="fh-h3 flex cursor-pointer items-center gap-1.5">
               <Check aria-hidden="true" className="fh-i fh-s" strokeWidth={1.5} /> Your consent record
-            </h2>
+            </summary>
             <ul className="fh-hist fh-small mt-2">
               <li className="fh-wide">
                 <span>
@@ -223,7 +209,7 @@ export default modulePage(membersManifest, async function YourDataPage() {
                   <span>
                     <b>Your picture</b>
                   </span>
-                  <span className="fh-rec fh-muted">From your public profile, shown to members only. “Don’t look me up” removes it.</span>
+                  <span className="fh-rec fh-muted">From your public profile, members only. “Don’t look me up” removes it.</span>
                 </li>
               ) : null}
               {isNetworkOn ? (
@@ -235,21 +221,11 @@ export default modulePage(membersManifest, async function YourDataPage() {
               {isIntrosOn ? <RecordRow term="Members can ask you for intros" detail={readIntroAsksDetail(privacy)} /> : null}
               {isIntrosOn ? <RecordRow term="Named in partner reports" detail={isCredited ? "yes" : "no, only counted"} /> : null}
             </ul>
-          </section>
+          </details>
         </div>
 
         <div className="fh-stack">
-          <SwitchesSheet
-            communityName={community}
-            isHidden={privacy.isHidden}
-            // Commonhall selects "The community’s default" for a member who never chose.
-            messagePolicy={privacy.followsCommunityDefault ? MESSAGE_POLICIES.communityDefault : privacy.messagePolicy}
-            isMessagesOn={isMessagesOn}
-            lookup={lookup.basis ? { isAllowed: lookup.isAllowed } : null}
-            reportCredit={isIntrosOn ? { isOn: isCredited } : null}
-            deviceRow={<DarkModeRow />}
-          />
-          {isNetworkOn ? <ShareNetworkSheet state={readShareState(network)} /> : null}
+          <SwitchesSheet lookup={lookup.basis ? { isAllowed: lookup.isAllowed } : null} reportCredit={isIntrosOn ? { isOn: isCredited } : null} />
           <ExportSheet />
           <DeleteAccountSheet communityName={community} isAdmin={isAdminMember(member)} />
         </div>

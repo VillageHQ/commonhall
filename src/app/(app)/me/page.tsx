@@ -1,44 +1,36 @@
 import type { Metadata } from "next";
-import { eq } from "drizzle-orm";
-import { EyeOff } from "lucide-react";
 import { notFound } from "next/navigation";
 import { linkedinUrl } from "@villagehq/sdk";
 
 import { getDatabase } from "@/platform/database/client";
 import { PAGE_TITLES } from "@/platform/branding/page-metadata";
+import { ROUTES } from "@/platform/http/routes";
+import { SetupRows } from "@/components/ui/rows";
 import { readBrandingForPage } from "@/platform/branding/branding";
 import { requireMember } from "@/platform/auth/session";
 import { MAXIMUM_NAME_LENGTH } from "@/platform/auth/member-name";
 import { hasPassword } from "@/platform/auth/password-setup";
-import { isAdminMember } from "@/platform/auth/roles";
-import { readResendConfig } from "@/platform/email/resend";
 import { isModuleEnabled } from "@/platform/modules/enablement";
 import { modulePage } from "@/platform/modules/module-page";
-import { FILL_IN_FIELDS, LOOKUP_STATUSES, type FillInField, type FilledLine } from "@/modules/members/contract-fill-in";
+import { FILL_IN_FIELDS, type FillInField, type FilledLine } from "@/modules/members/contract-fill-in";
+import { ME_PAGES } from "@/modules/members/contract-me-pages";
 import { PROFILE_LIMITS } from "@/modules/members/contract-profile";
 import { membersManifest } from "@/modules/members/manifest";
-import { readFilledEmptyNote, toRoleLine } from "@/modules/members/rules-words";
-import { memberNetwork } from "@/modules/members/schema";
+import { toRoleLine } from "@/modules/members/rules-words";
 import { readFilledLines, readLookupState } from "@/modules/members/service-fill-in";
 import { readPrivacy } from "@/modules/members/service-privacy";
 import { readMemberProfile } from "@/modules/members/service-profile";
-import { FilledLinesSheet } from "@/modules/members/components/filled-lines-sheet";
+import { FilledLinesSheet, WORDED_LINE_FIELDS } from "@/modules/members/components/filled-lines-sheet";
 import { LookupQuestionCard } from "@/modules/members/components/lookup-question-card";
 import { OWN_FIELD_KEYS } from "@/modules/members/contract-own-words";
 import { OwnWordsSheet, type OwnField } from "@/modules/members/components/own-words-sheet";
-import { PasswordCard } from "@/modules/members/components/password-card";
-import { BookingSheet } from "@/modules/members/components/booking-sheet";
 import { readOwnBooking } from "@/modules/members/service-booking";
-import { PrivacySheet } from "@/modules/members/components/privacy-sheet";
 import { ProfileHead } from "@/modules/members/components/profile-head";
-import { introsManifest } from "@/modules/intros/manifest";
-import { OurJobsSection } from "@/modules/job-board/components/our-jobs-section";
 import { jobBoardManifest } from "@/modules/job-board/manifest";
-import { isPublicBoardOn, readMemberSources, readSourceJobs } from "@/modules/job-board/reads";
+import { readMemberSources, readSourceJobs } from "@/modules/job-board/reads";
 import { LeaveGroupCard } from "@/modules/network/components/leave-group-card";
 import { networkManifest } from "@/modules/network/manifest";
-import { readIsInVillageGroup } from "@/modules/network/reads-progress";
-import { MyNetworkSheet, type MyNetworkState } from "@/shell/my-network-sheet";
+import { readIsInVillageGroup, readNetworkConnectedAt } from "@/modules/network/reads-progress";
 
 export const metadata: Metadata = { title: PAGE_TITLES.editCard };
 
@@ -81,44 +73,59 @@ const OWN_OVER_FILLED: readonly { field: FillInField; own: (profile: Profile) =>
   { field: FILL_IN_FIELDS.location, own: (profile) => profile.location },
 ];
 
-async function readNetworkState(database: ReturnType<typeof getDatabase>, memberId: string, isNetworkOn: boolean): Promise<MyNetworkState> {
-  if (!isNetworkOn) return { kind: "off" };
-  const [row] = await database
-    .select({ villageLinkedAt: memberNetwork.villageLinkedAt, groupJoinedAt: memberNetwork.groupJoinedAt, sharingConsentedAt: memberNetwork.sharingConsentedAt })
-    .from(memberNetwork)
-    .where(eq(memberNetwork.userId, memberId));
-  if (!row?.villageLinkedAt) return { kind: "not_connected" };
-  return { kind: "connected", connectedAt: row.villageLinkedAt.toISOString(), isSharing: row.groupJoinedAt !== null, hasAgreed: row.sharingConsentedAt !== null };
+function readBookingHost(bookingUrl: string | null) {
+  if (!bookingUrl) return "Not added";
+  try {
+    return new URL(bookingUrl).host;
+  } catch {
+    return "Added";
+  }
 }
 
-// Commonhall's My profile (member-me-profile): the head as members see it, the own words edited one field at a
-// time, the lines filled in from public profiles, Privacy, My network and Our jobs.
+function describeOpenJobs(count: number) {
+  if (count === 0) return "Add your company’s jobs";
+  return count === 1 ? "1 open job" : `${count} open jobs`;
+}
+
+// Commonhall's My profile (member-me-profile), round 6: the head as members see it, the own words edited one field at
+// a time, the lines filled in from public profiles (folded, and only those that show), then one row per setting, each
+// opening its own short page.
 export default modulePage(membersManifest, async function MyProfilePage() {
   const member = await requireMember();
   const database = getDatabase();
   const profile = await readMemberProfile(database, member.id);
   if (!profile) notFound();
 
-  const [community, lookup, lines, privacy, isIntrosOn, isNetworkOn, isJobBoardOn, memberHasPassword, booking] = await Promise.all([
-    readBrandingForPage(),
+  const [lookup, lines, privacy, isNetworkOn, isJobBoardOn, memberHasPassword, booking] = await Promise.all([
     readLookupState(database, member.id),
     readFilledLines(database, member.id),
     readPrivacy(database, member.id),
-    isModuleEnabled(database, introsManifest),
     isModuleEnabled(database, networkManifest),
     isModuleEnabled(database, jobBoardManifest),
     hasPassword(database, member.id),
     readOwnBooking(database, member.id),
   ]);
-  const [networkState, showsLeaveCard, jobSources, isBoardPublic] = await Promise.all([
-    readNetworkState(database, member.id, isNetworkOn),
+  const [community, networkConnectedAt, showsLeaveCard, jobSources] = await Promise.all([
+    isNetworkOn && lookup.needsAnswer ? readBrandingForPage() : null,
+    isNetworkOn ? readNetworkConnectedAt(database, member.id) : null,
     isNetworkOn ? false : readIsInVillageGroup(database, member.id),
     isJobBoardOn ? readMemberSources(database, member.id) : null,
-    isJobBoardOn ? isPublicBoardOn(database) : false,
   ]);
   const jobsBySource = jobSources ? await readSourceJobs(database, jobSources.map(({ id }) => id)) : null;
+  const openJobCount = jobsBySource ? [...jobsBySource.values()].reduce((total, jobs) => total + jobs.length, 0) : 0;
   const isRefused = lookup.refusedAt !== null;
-  const ownWordsFields = OWN_OVER_FILLED.filter(({ own }) => Boolean(own(profile))).map(({ field }) => field);
+  // A filled-in line shows only where it applies: not where the member's own words show instead.
+  const overridden = new Set(OWN_OVER_FILLED.filter(({ own }) => Boolean(own(profile))).map(({ field }) => field));
+  const shownLines = isRefused ? [] : lines.filter((line) => !overridden.has(line.field));
+  const hasFilledLines = shownLines.some((line) => line.field === FILL_IN_FIELDS.pastRoles || WORDED_LINE_FIELDS.includes(line.field));
+
+  const settings = [
+    { href: ME_PAGES.privacy, title: "Privacy", description: privacy.isHidden ? "Hidden from the directory" : "Shown to members" },
+    { href: ME_PAGES.booking, title: "Booking link", description: readBookingHost(booking.bookingUrl) },
+    ...(isNetworkOn ? [{ href: ROUTES.myNetwork, title: "My network", description: networkConnectedAt ? "Connected" : "Not connected" }] : []),
+    ...(jobSources ? [{ href: ME_PAGES.jobs, title: "Our jobs", description: describeOpenJobs(openJobCount) }] : []),
+    { href: ME_PAGES.password, title: "How you sign in", description: memberHasPassword ? "Password or email link" : "Email link" },
+  ];
 
   return (
     <>
@@ -129,59 +136,34 @@ export default modulePage(membersManifest, async function MyProfilePage() {
         companyLogoUrl={profile.shown.companyLogoUrl}
         hasCompany={Boolean(profile.shown.company)}
         roleLine={toRoleLine(profile.shown)}
-      >
-        <p className="fh-small mt-1">This is how members see you. Change anything; you decide what shows.</p>
-      </ProfileHead>
-      {privacy.isHidden ? (
-        <div className="fh-note mt-4">
-          <EyeOff aria-hidden="true" className="fh-i fh-s" strokeWidth={1.5} />
-          <span>You are hidden from the directory. Admins still see you in the member list.</span>
-        </div>
-      ) : null}
+      />
 
       <div className="fh-prof fh-section">
         <div>
-          <OwnWordsSheet fields={readOwnFields(profile, lines)} isFillInOn={lookup.basis !== null} communityName={community.name} />
-          {isNetworkOn && lookup.needsAnswer ? (
+          <OwnWordsSheet fields={readOwnFields(profile, lines)} />
+          {community && isNetworkOn && lookup.needsAnswer ? (
             <div className="mt-4">
               <LookupQuestionCard communityName={community.name} />
             </div>
           ) : null}
-          <div className="mt-4">
-            <FilledLinesSheet
-              lines={isRefused ? [] : lines}
-              refreshedAt={lookup.lookedUpAt?.toISOString() ?? null}
-              isOwn
-              isRefused={isRefused}
-              ownWordsFields={ownWordsFields}
-              emptyNote={readFilledEmptyNote({
-                isFillInOn: lookup.basis !== null,
-                isNotFound: lookup.status === LOOKUP_STATUSES.notFound,
-                hasLines: lines.length > 0,
-                communityName: community.name,
-              })}
-            />
-          </div>
+          {hasFilledLines ? (
+            <div className="mt-4">
+              <FilledLinesSheet lines={shownLines} refreshedAt={lookup.lookedUpAt?.toISOString() ?? null} isOwn emptyNote={null} isFolded />
+            </div>
+          ) : null}
         </div>
         <div className="fh-stack">
-          <PrivacySheet communityName={community.name} isHidden={privacy.isHidden} acceptsIntroAsks={isIntrosOn ? privacy.acceptsIntroAsks !== false : null} />
-          <BookingSheet communityName={community.name} bookingUrl={booking.bookingUrl} bookingVisibility={booking.bookingVisibility} />
-          <MyNetworkSheet state={networkState} communityName={community.name} />
-          <PasswordCard hasPassword={memberHasPassword} isLinkOn={readResendConfig(process.env) !== null} />
+          {/* The old sheets' anchors (/me#privacy, #booking, #network, #jobs) land on these rows. */}
+          <section aria-label="Settings" className="fh-sheet">
+            <span id="privacy" />
+            <span id="booking" />
+            <span id="network" />
+            <span id="jobs" />
+            <SetupRows rows={settings} />
+          </section>
           {showsLeaveCard ? <LeaveGroupCard /> : null}
         </div>
       </div>
-
-      {jobSources && jobsBySource ? (
-        <OurJobsSection
-          sources={jobSources}
-          jobsBySource={jobsBySource}
-          company={profile.company ?? ""}
-          isCompanyFixed={!isAdminMember(member)}
-          communityName={community.name}
-          isPublicBoardOn={isBoardPublic}
-        />
-      ) : null}
     </>
   );
 });

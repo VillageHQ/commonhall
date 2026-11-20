@@ -353,20 +353,6 @@ export async function readLeaderboard(database: Database, viewer: LibraryViewer,
   };
 }
 
-// Today's "New in the library": the newest items the member may see from the last two weeks, not their own.
-export async function readNewLibraryItems(database: Database, viewer: LibraryViewer, now = new Date()) {
-  const since = new Date(now.getTime() - LIBRARY_LIMITS.todayDays * 24 * 60 * 60 * 1000);
-  const rows = await database
-    .select(cardColumns(viewer.id))
-    .from(libraryItem)
-    .innerJoin(user, eq(user.id, libraryItem.authorId))
-    .leftJoin(memberProfile, eq(memberProfile.userId, libraryItem.authorId))
-    .where(and(isItemVisibleTo(viewer, now), gte(libraryItem.createdAt, since), sql`${libraryItem.authorId} <> ${viewer.id}`))
-    .orderBy(desc(libraryItem.createdAt))
-    .limit(LIBRARY_LIMITS.todayItems);
-  return rows.map((row) => toCard(row, viewer.id));
-}
-
 export async function countFeaturedItems(connection: DatabaseOrTransaction) {
   const [row] = await connection.select({ featured: sql<number>`count(*)`.mapWith(Number) }).from(libraryItem).where(isNotNull(libraryItem.featuredAt));
   return row?.featured ?? 0;

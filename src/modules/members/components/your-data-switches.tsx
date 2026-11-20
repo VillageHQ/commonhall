@@ -4,61 +4,43 @@ import { useMutation } from "@tanstack/react-query";
 import { Settings2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, type FormEvent, type ReactNode } from "react";
+import { useState, type FormEvent } from "react";
 
 import { useFlash } from "@/components/flash";
 import { FormError } from "@/components/form-error";
 import { Button } from "@/components/ui/button";
-import { OptionCard } from "@/components/ui/checkbox-card";
 import { SetRow } from "@/components/ui/rows";
 import { Switch } from "@/components/ui/switch";
-import { acknowledgedResponseSchema } from "@/platform/http/contract";
 import { postRequest } from "@/platform/http/post-request";
-import { API_ROUTES, ROUTES } from "@/platform/http/routes";
+import { API_ROUTES } from "@/platform/http/routes";
 import { reportCreditSchema } from "@/modules/members/contract-report-credit";
-import { COMMUNITY_MESSAGE_POLICY, MESSAGE_POLICIES, type MessagePolicy } from "@/modules/members/contract-privacy";
+import { ME_PAGES } from "@/modules/members/contract-me-pages";
 
 import { saveLookupChoice } from "./lookup-question-card";
 
 const NO_LOOKUP_ID = "switch-no-lookup";
-const HIDDEN_ID = "switch-hidden";
 const CREDIT_ID = "switch-credit";
 
-const COMMUNITY_DEFAULT_WORDS: Record<string, string> = {
-  [MESSAGE_POLICIES.anyone]: "anyone in the community",
-  [MESSAGE_POLICIES.introduced]: "only people you were introduced to",
-};
-
 type SwitchesSheetProps = {
-  communityName: string;
-  isHidden: boolean;
-  messagePolicy: MessagePolicy;
-  // Null while messages are off: "Who can message me" is not offered.
-  isMessagesOn: boolean;
   // Null when the community doesn't fill in profiles at all.
   lookup: { isAllowed: boolean } | null;
   // Null while intros are off: "Credit me in reports" is not offered. Off by default.
   reportCredit?: { isOn: boolean } | null;
-  // Community's own row, kept: dark mode on this device.
-  deviceRow?: ReactNode;
 };
 
-type SwitchesToSave = { privacy: { isHidden: boolean; messagePolicy?: MessagePolicy }; allowsLookup: boolean | null; creditInReports: boolean | null };
+type SwitchesToSave = { allowsLookup: boolean | null; creditInReports: boolean | null };
 
-async function saveSwitches({ privacy, allowsLookup, creditInReports }: SwitchesToSave) {
-  await postRequest(API_ROUTES.profilePrivacy, privacy, acknowledgedResponseSchema);
+async function saveSwitches({ allowsLookup, creditInReports }: SwitchesToSave) {
   if (allowsLookup !== null) await saveLookupChoice(allowsLookup);
   if (creditInReports !== null) await postRequest(API_ROUTES.profileReportCredit, { isOn: creditInReports }, reportCreditSchema);
 }
 
-// Commonhall's "Your switches" (member-me-data): don't look me up, hide me, who can message me, one Save. Community
-// adds "Credit me in reports" (off by default) while intros are on.
-export function SwitchesSheet({ communityName, isHidden, messagePolicy, isMessagesOn, lookup, reportCredit = null, deviceRow }: SwitchesSheetProps) {
+// Commonhall's "Your switches" (member-me-data), round 6: the two that live only here, "Don't look me up" and (while
+// intros are on) "Credit me in reports", off by default. Hide me and who can message me live on My profile › Privacy.
+export function SwitchesSheet({ lookup, reportCredit = null }: SwitchesSheetProps) {
   const router = useRouter();
   const flash = useFlash();
   const [noLookup, setNoLookup] = useState(lookup ? !lookup.isAllowed : false);
-  const [hidden, setHidden] = useState(isHidden);
-  const [policy, setPolicy] = useState<MessagePolicy>(messagePolicy);
   const [credited, setCredited] = useState(reportCredit?.isOn ?? false);
   const save = useMutation({
     mutationFn: saveSwitches,
@@ -74,23 +56,10 @@ export function SwitchesSheet({ communityName, isHidden, messagePolicy, isMessag
     event.preventDefault();
     const lookupChanged = lookup !== null && noLookup === lookup.isAllowed;
     save.mutate({
-      privacy: { isHidden: hidden, ...(isMessagesOn && policy !== messagePolicy ? { messagePolicy: policy } : {}) },
       allowsLookup: lookupChanged ? !noLookup : null,
       creditInReports: reportCredit !== null && credited !== reportCredit.isOn ? credited : null,
     });
   }
-
-  const radio = (value: MessagePolicy, title: string, description: string) => (
-    <OptionCard
-      id={`dm-policy-${value}`}
-      name="dm_policy"
-      value={value}
-      checked={policy === value}
-      onChange={() => setPolicy(value)}
-      title={title}
-      description={description}
-    />
-  );
 
   return (
     <form className="fh-sheet" id="switches" aria-labelledby="switches-title" onSubmit={submit}>
@@ -101,86 +70,29 @@ export function SwitchesSheet({ communityName, isHidden, messagePolicy, isMessag
         <SetRow
           htmlFor={NO_LOOKUP_ID}
           label="Don’t look me up on public profiles"
-          hint="Stops the fill-in for you and deletes what it found. Your own words stay. Search can then no longer name you as a path."
+          hint="Deletes what was found. Your own words stay."
           control={<Switch id={NO_LOOKUP_ID} checked={noLookup} onCheckedChange={setNoLookup} />}
         />
       ) : null}
-      <SetRow
-        htmlFor={HIDDEN_ID}
-        label="Hide me from the directory"
-        hint="Members can’t find or open your profile. Admins still see you."
-        control={<Switch id={HIDDEN_ID} checked={hidden} onCheckedChange={setHidden} />}
-      />
       {reportCredit ? (
         <SetRow
           htmlFor={CREDIT_ID}
           label="Credit me in reports"
-          hint="Admins send a partner report with this community’s totals. On, you can be named among its top connectors. Off, you’re only part of a count. Who you introduced is never in it."
+          hint="Named as a top connector, never whom you introduced."
           control={<Switch id={CREDIT_ID} checked={credited} onCheckedChange={setCredited} />}
         />
       ) : null}
-      {isMessagesOn ? (
-        <fieldset className="mt-3.5">
-          <legend className="fh-label">Who can message me</legend>
-          <div>
-            {radio(MESSAGE_POLICIES.communityDefault, "The community’s default", `Now: ${COMMUNITY_DEFAULT_WORDS[COMMUNITY_MESSAGE_POLICY]}.`)}
-            {radio(MESSAGE_POLICIES.anyone, `Anyone in ${communityName}`, "Any member can start a conversation.")}
-            {radio(MESSAGE_POLICIES.introduced, "Only people I’ve been introduced to", "Members you met through an intro here. Admins can always write.")}
-          </div>
-        </fieldset>
-      ) : null}
       <FormError message={save.error?.message ?? null} />
       <div className="fh-btn-row mt-3">
-        <Button type="submit" variant="primary" size="sm" disabled={save.isPending}>
-          Save
+        {lookup || reportCredit ? (
+          <Button type="submit" variant="primary" size="sm" disabled={save.isPending}>
+            Save
+          </Button>
+        ) : null}
+        <Button asChild variant="quiet" size="sm">
+          <Link href={ME_PAGES.privacy}>Privacy</Link>
         </Button>
       </div>
-      {deviceRow ? <div className="mt-3.5">{deviceRow}</div> : null}
     </form>
-  );
-}
-
-function stopSharing() {
-  return postRequest(API_ROUTES.networkLeave, { confirmed: true }, acknowledgedResponseSchema);
-}
-
-export type ShareState = { kind: "sharing" } | { kind: "connected" } | { kind: "not_connected" };
-
-// Commonhall's "Share my network" row on Your data.
-export function ShareNetworkSheet({ state }: { state: ShareState }) {
-  const router = useRouter();
-  const flash = useFlash();
-  const leave = useMutation({
-    mutationFn: stopSharing,
-    onSuccess: () => {
-      flash("Sharing is off. Your paths are gone from other members’ searches.");
-      router.refresh();
-    },
-  });
-  const hint =
-    state.kind === "sharing" ? "On: members see that you can introduce them, and ask." : state.kind === "connected" ? "Off: your network powers only your own searches." : "Connect your network first.";
-  return (
-    <section className="fh-sheet" aria-label="Share my network">
-      <SetRow
-        label="Share my network"
-        hint={hint}
-        control={
-          state.kind === "sharing" ? (
-            <Button type="button" variant="secondary" size="sm" className="whitespace-nowrap" disabled={leave.isPending} onClick={() => leave.mutate()}>
-              Stop sharing
-            </Button>
-          ) : state.kind === "connected" ? (
-            <Button asChild variant="secondary" size="sm" className="whitespace-nowrap">
-              <Link href={ROUTES.network}>Share</Link>
-            </Button>
-          ) : (
-            <Button asChild variant="secondary" size="sm" className="whitespace-nowrap">
-              <Link href={`${ROUTES.editCard}#network`}>My network</Link>
-            </Button>
-          )
-        }
-      />
-      <FormError message={leave.error?.message ?? null} />
-    </section>
   );
 }

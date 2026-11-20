@@ -14,7 +14,7 @@
 - **Asks finding helpers.** `findPersonToReach` (`shell/ask-helpers.ts`) picks the first search result who isn't a
   member, isn't known first-hand by the author, and has a way in through a member; the helper's warmth comes from that
   result's ways in.
-- **Our jobs** is `OurJobsSection` (job-board module) rendered on `/me`; `JOB_BOARD_PAGES.ours` is `/me#jobs`.
+- **Our jobs** is `OurJobsSection` (job-board module) rendered on `/me/jobs` (round 6: a row on My profile opens it); `JOB_BOARD_PAGES.ours` is `/me/jobs`.
 - **Your data** gets `followsCommunityDefault` from `readPrivacy`, so a member who never chose sees "The community's
   default" selected.
 - **Print.** `globals.css` ends with a print block that puts the light tokens back under `.dark`;

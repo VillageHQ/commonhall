@@ -4,6 +4,7 @@ import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-q
 import { openSyncModal } from "@villagehq/sdk";
 import { Clock, KeyRound, Link2, ShieldAlert } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
 
 import { FormError } from "@/components/form-error";
@@ -11,7 +12,9 @@ import { LoadingState } from "@/components/loading-state";
 import { BackLink } from "@/components/page-header";
 import { QueryBoundary } from "@/components/query-boundary";
 import { useIsInBrowser } from "@/components/use-is-in-browser";
+import { useFlash } from "@/components/flash";
 import { Button } from "@/components/ui/button";
+import { SetRow } from "@/components/ui/rows";
 import { Note } from "@/components/ui/note";
 import { Pill } from "@/components/ui/pill";
 import { acknowledgedResponseSchema } from "@/platform/http/contract";
@@ -39,6 +42,8 @@ export type MyNetworkScreenProps = {
   villageLine: ReactNode;
   // Their name here can't match their LinkedIn, so members can't find them as a way in.
   needsFullName: boolean;
+  // Whether members can ask this member for intros through their network (they joined the community group).
+  isSharing?: boolean;
 };
 
 async function openVillageSync(appUrl: string) {
@@ -120,7 +125,7 @@ function ConnectStart({ status, communityName, processedLine }: { status: Networ
   );
 }
 
-function SyncSheet({ status, connectedAtLabel, myProfileHref }: { status: NetworkStatus } & Pick<MyNetworkScreenProps, "connectedAtLabel" | "myProfileHref">) {
+function SyncSheet({ status, connectedAtLabel }: { status: NetworkStatus } & Pick<MyNetworkScreenProps, "connectedAtLabel">) {
   const queryClient = useQueryClient();
   const syncMutation = useMutation({
     mutationFn: openVillageSync,
@@ -146,9 +151,6 @@ function SyncSheet({ status, connectedAtLabel, myProfileHref }: { status: Networ
           <Button asChild>
             <Link href={ROUTES.network}>Search your network</Link>
           </Button>
-          <Button asChild variant="secondary">
-            <Link href={myProfileHref}>Back to my profile</Link>
-          </Button>
         </div>
       ) : status.sync ? (
         <>
@@ -168,8 +170,7 @@ function SyncSheet({ status, connectedAtLabel, myProfileHref }: { status: Networ
   );
 }
 
-// Community's own setting for a connected member: the LinkedIn profile Village matches. Stop sharing and Disconnect
-// live on My profile's My network sheet, as Commonhall's.
+// Community's own setting for a connected member: the LinkedIn profile Village matches.
 function NetworkSettings() {
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
@@ -183,8 +184,44 @@ function NetworkSettings() {
   );
 }
 
-const PRIVACY_LINE =
-  "Members who search can see that you know a person and ask you for an intro. They can’t download your contacts, see how you know them beyond a warmth word, or reach anyone without your yes.";
+const PRIVACY_LINE = "Members see that you know someone, never your contacts.";
+
+function stopSharing() {
+  return postRequest(API_ROUTES.networkLeave, { confirmed: true }, acknowledgedResponseSchema);
+}
+
+// Round 6: sharing moved here from My profile's sheet. On, members can ask for intros through your network.
+function ShareRow({ communityName, isSharing }: { communityName: string; isSharing: boolean }) {
+  const router = useRouter();
+  const flash = useFlash();
+  const leave = useMutation({
+    mutationFn: stopSharing,
+    onSuccess: () => {
+      flash("Sharing is off. Your paths are gone from other members’ searches.");
+      router.refresh();
+    },
+  });
+  return (
+    <div className="fh-sheet mt-3.5">
+      <SetRow
+        label={`Share with ${communityName}`}
+        hint={isSharing ? "Members can ask you for intros." : "Off: only your own searches."}
+        control={
+          isSharing ? (
+            <Button type="button" variant="secondary" size="sm" className="whitespace-nowrap" disabled={leave.isPending} onClick={() => leave.mutate()}>
+              Stop sharing
+            </Button>
+          ) : (
+            <Button asChild variant="secondary" size="sm" className="whitespace-nowrap">
+              <Link href={ROUTES.network}>Share</Link>
+            </Button>
+          )
+        }
+      />
+      <FormError message={leave.error?.message ?? null} />
+    </div>
+  );
+}
 
 function readStageNote(status: NetworkStatus, communityName: string): ReactNode {
   switch (status.stage) {
@@ -222,10 +259,11 @@ function CurrentNetwork(props: MyNetworkScreenProps) {
         <h1 className="fh-h1">{isDone ? "Your network is connected" : "Connect your network"}</h1>
         <p className="fh-lede">
           {isDone
-            ? `Search now covers the people you know and ${communityName} members can ask you for intros to them.`
+            ? "Search covers the people you know."
             : "Last step: connect Google (read-only) on Village’s own screen. LinkedIn can wait for a laptop: it needs Village’s Chrome extension."}
         </p>
-        <SyncSheet status={status} connectedAtLabel={props.connectedAtLabel} myProfileHref={props.myProfileHref} />
+        <SyncSheet status={status} connectedAtLabel={props.connectedAtLabel} />
+        {isDone && props.isSharing !== undefined ? <ShareRow communityName={communityName} isSharing={props.isSharing} /> : null}
         <p className="fh-small fh-muted" style={{ marginTop: 14 }}>
           {PRIVACY_LINE}
         </p>
