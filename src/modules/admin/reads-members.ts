@@ -6,6 +6,7 @@ import { alias } from "drizzle-orm/pg-core";
 import { memberRemoval, invite, memberAvatar, memberNetwork, memberProfile } from "../members/schema.ts";
 import { user } from "../../platform/database/auth-schema.ts";
 import type { Database } from "../../platform/database/client.ts";
+import { readVillageKeys } from "../../platform/village/settings.ts";
 import { isReclaimedEmail } from "../../platform/auth/reclaimed-email.ts";
 import { isActiveMember, isBanActive, isBanInEffect } from "../../platform/auth/member-status.ts";
 import { toContainsPattern } from "../members/reads-directory.ts";
@@ -284,4 +285,10 @@ export async function readInviterSignature(database: Database, memberId: string)
     .leftJoin(memberProfile, eq(memberProfile.userId, user.id))
     .where(eq(user.id, memberId));
   return { name: row?.name ?? "", role: row?.title?.trim() || null };
+}
+
+// The invite form's profile fill-in question shows only while fill-in can run: the network is on and Village is
+// connected (its keys are saved and readable). Otherwise invites ask nothing about it.
+export async function readIsFillInOffered(database: Database, isNetworkOn: boolean) {
+  return isNetworkOn && (await readVillageKeys(database)) !== null;
 }

@@ -18,6 +18,13 @@ import { ADMIN_HOME_ITEMS, MAX_HOME_ITEMS, readAdminHome, readAdminHomeItems, re
 import { readThisWeek } from "./admin-this-week";
 import { describeLaunchSteps, readFirstName, LAUNCH_STEPS } from "./console-launch";
 import { readIntroLog } from "@/modules/admin/reads-intro-log";
+import { REPORT_TARGETS } from "@/modules/admin/contract";
+import { contentReport } from "@/modules/admin/schema";
+import { invite, memberProfile } from "@/modules/members/schema";
+import { saveBranding } from "@/platform/branding/branding";
+import { INSTANCE_SETTING_KEYS, instanceSettings } from "@/platform/settings/schema";
+import { readNavigationBadges } from "./navigation-badges";
+import { NAVIGATION_BADGES } from "./navigation-rules";
 
 const session = vi.hoisted(() => ({ cookie: "" }));
 
@@ -124,7 +131,7 @@ describe("the admin home", () => {
   it("shows the setup item on a fresh install, linking to Set up", async () => {
     const { items } = await readAdminHome(database, process.env);
 
-    expect(items.find(({ id }) => id === ADMIN_HOME_ITEMS.setup)).toMatchObject({ label: "Next setup step: brand your community", href: ROUTES.adminSettings });
+    expect(items.find(({ id }) => id === ADMIN_HOME_ITEMS.setup)).toMatchObject({ label: "Next setup step: name your community", href: ROUTES.adminSettings });
   });
 
   it("links each item to its place and leaves out every item at zero", () => {
@@ -140,7 +147,7 @@ describe("the admin home", () => {
       ["1 report waiting", ROUTES.adminReports],
       ["2 people waiting for your OK", ROUTES.adminMembers],
       ["1 invite not accepted yet", ROUTES.adminInvites],
-      ["Next setup step: invite your first members", ROUTES.adminInvites],
+      ["Next setup step: invite your first founders", ROUTES.adminInvites],
     ]);
   });
 
@@ -167,49 +174,60 @@ describe("the admin home", () => {
     expect(JSON.stringify(log)).not.toContain("A note.");
   });
 
-  it("opens on the launch checklist on a fresh install, and on the dashboard once all four steps are done", async () => {
+  it("opens on the one setup checklist on a fresh install, and on the dashboard once all four steps are done", async () => {
     const fresh = await readConsoleHomePage(database, process.env);
 
     expect(fresh.isLaunched).toBe(false);
     expect(fresh.thisWeek).toBeNull();
     expect(fresh.steps.map(({ key, isDone }) => [key, isDone])).toEqual([
-      [LAUNCH_STEPS.look, false],
+      [LAUNCH_STEPS.name, false],
       [LAUNCH_STEPS.invite, false],
-      [LAUNCH_STEPS.plumbing, false],
-      [LAUNCH_STEPS.report, false],
+      [LAUNCH_STEPS.card, false],
+      [LAUNCH_STEPS.mail, false],
     ]);
   });
 
-  it("words each launch step like Commonhall, with its link", () => {
-    const facts = { communityName: "Harbor Ventures", isLookSet: false, hasLogo: false, invitesAdded: 2, invitesEmailed: 2, invitesJoined: 0, isMailSet: false, isNetworkSet: false, mailDomain: null, hasMadeIntro: false };
-    const text = describeLaunchSteps(facts).map(({ text: parts }) => parts.map(({ text: words }) => words).join(""));
+  const NEW_FACTS = { communityName: "Harbor Ventures", isNameSet: true, isCardDone: false, invitesAdded: 0, invitesEmailed: 0, hasLiveInvite: false, isMailSet: false, mailDomain: null };
 
-    expect(text).toEqual([
-      "Name, colour and logo. Set your look →",
-      "2 invites sent. Invite more →",
-      "Set up mail. Connect Village.",
-      "Appears with the first intro.",
+  function readWords(facts: typeof NEW_FACTS) {
+    return describeLaunchSteps(facts).map(({ text: parts }) => parts.map(({ text: words }) => words).join(""));
+  }
+
+  it("words each step with its link, and has no Village or report step", () => {
+    expect(readWords({ ...NEW_FACTS, isNameSet: false })).toEqual([
+      "Founders see it on their invite. Name it →",
+      "Paste their emails. Invite founders →",
+      "Founders see it in People. Fill in your card →",
+      "Copy each founder’s link from the invite, or set up mail →",
     ]);
-    expect(describeLaunchSteps({ ...facts, isLookSet: true, hasLogo: true, isMailSet: true, isNetworkSet: true, mailDomain: "mail.harbor.example", hasMadeIntro: true }).map(({ isDone }) => isDone)).toEqual([true, true, true, true]);
+    expect(describeLaunchSteps(NEW_FACTS)[2]?.text.at(-1)).toMatchObject({ href: "/admin/start?step=card" });
     expect(readFirstName("Dana Whitfield", "x@example.com")).toBe("Dana");
   });
 
-  // Found on a demo: the name alone marked the look done (the sidebar still showed initials), and an import with email
-  // off said "6 invites sent" when nobody was emailed.
-  it("counts the look done only with a logo, and never says invites were sent when no email went out", () => {
-    const facts = { communityName: "Harbor Ventures", isLookSet: true, hasLogo: false, invitesAdded: 6, invitesEmailed: 0, invitesJoined: 0, isMailSet: false, isNetworkSet: false, mailDomain: null, hasMadeIntro: false };
-    const steps = describeLaunchSteps(facts);
-    const text = steps.map(({ text: parts }) => parts.map(({ text: words }) => words).join(""));
+  // Round 7: mail can't be set up from the app, so copying the links is a complete way to run; and with mail off an
+  // invite is "made", never "sent".
+  it("counts Mail done once links are made with mail off, so a finished setup has nothing left", () => {
+    const copying = { ...NEW_FACTS, isCardDone: true, invitesAdded: 6, hasLiveInvite: true };
+    const steps = describeLaunchSteps(copying);
 
-    expect(steps[0]?.isDone).toBe(false);
-    expect(steps[1]?.isDone).toBe(false);
-    expect(describeLaunchSteps({ ...facts, invitesJoined: 1 })[1]?.isDone).toBe(true);
-    expect(text[0]).toBe("Members still see your initials. Add your logo →");
-    expect(text[1]).toBe("6 added, no email sent yet. Send their links →");
-    expect(steps[1]?.text.at(-1)).toMatchObject({ href: "/admin/links" });
-    const someEmailed = describeLaunchSteps({ ...facts, invitesEmailed: 4 }).map(({ text: parts }) => parts.map(({ text: words }) => words).join(""));
-    expect(someEmailed[1]).toBe("6 added, 4 emailed. Send their links →");
+    expect(steps.map(({ isDone }) => isDone)).toEqual([true, true, true, true]);
+    expect(steps[3]?.title).toBe("Mail: you copy the links");
+    expect(readWords(copying)[1]).toBe("6 invites made. Invite more →");
+    expect(readWords({ ...copying, isMailSet: true, invitesEmailed: 4 })[1]).toBe("6 invites made, 4 emailed. Invite more →");
+    expect(describeLaunchSteps({ ...copying, hasLiveInvite: false }).map(({ isDone }) => isDone)).toEqual([true, false, true, false]);
     expect(readFirstName("", "dana.whitfield@example.com")).toBe("Dana");
+  });
+
+  // Round 7: the Set up badge counts setup steps only; a flag shows on Home, not as a setup step.
+  it("keeps the Set up badge at 0 on a finished setup with an open flag, which Home lists", async () => {
+    await saveBranding(database, { name: "Harbor Ventures", descriptor: "", accentColor: "#0f7f86" });
+    await database.insert(instanceSettings).values({ key: INSTANCE_SETTING_KEYS.firstAdminUserId, value: admin.userId }).onConflictDoNothing();
+    await database.insert(memberProfile).values({ userId: admin.userId, cardStepDoneAt: new Date() }).onConflictDoUpdate({ target: memberProfile.userId, set: { cardStepDoneAt: new Date() } });
+    await database.insert(invite).values({ email: "ada.founder@example.com", tokenHash: crypto.randomUUID(), invitedByName: "Admin", expiresAt: new Date(Date.now() + 14 * DAY_MS) });
+    await database.insert(contentReport).values({ targetType: REPORT_TARGETS.ask, targetId: crypto.randomUUID(), reporterId: asker.userId, reportedMemberId: connector.userId, body: "A seeded ask", contentCreatedAt: new Date() });
+
+    expect((await readNavigationBadges(database, process.env))[NAVIGATION_BADGES.admin]).toBe(0);
+    expect((await readAdminHome(database, process.env)).items.map(({ id }) => id)).toContain(ADMIN_HOME_ITEMS.reports);
   });
 
   it("lists at most five things that need the admin, the most urgent first", () => {

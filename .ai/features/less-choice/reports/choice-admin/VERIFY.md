@@ -1,0 +1,49 @@
+# Verify: An admin's first hour and daily view (choice-admin)
+
+The app ran at http://localhost:6151 (production build). The database started empty, mail was off and Village was not connected. I used made-up people only: Jordan Vale (admin), Alex Chen (founder), Sam Lee, and "Adaline Montgomery-Okonkwo" (a long name, to test truncation). Screenshots are in this folder.
+
+## Checks
+
+| Check | Result | Numbers / evidence | Screenshots |
+|---|---|---|---|
+| A. Phone: from /setup to a link you can copy | PASS | **2 screens** (/setup, /admin/start), **0 decisions**: only typing and the one primary button on each screen. After "Copy link" the clipboard held `http://localhost:6151/invite?token=zwOW…` and the button turned to "Copied". The step pills show **2 steps** ("Invite founders", "Your card", "Step 1 of 2"), with no Village step. The Set up badge read 3 before invites and 1 after. | 01-setup-phone.png, 02-start-step1-phone.png, 03-invite-link-ready-phone.png, 04-copy-link-clicked-phone.png |
+| B. Invitee sees the community's name | PASS | In a separate browser context at 390px: the invite page says "Join Northwind Founders", then Welcome step 1 ("Welcome to Northwind Founders"), step 2 (Your privacy: "Everyone in Northwind Founders") and People. "Your community" appeared **0 times** in the page text and titles. The later checks of /signin, /setup (now "Setup is complete") and a used or bad invite link (410 "That link doesn't work any more") also had no "Your community". | 05-invite-page-phone.png, 06-invitee-after-accept-phone.png, 07-invitee-step2-phone.png, 08-invitee-today-phone.png, H8-used-invite-phone.png |
+| C. Checklist, then dashboard | PASS | Before finishing: "Welcome, Jordan. Four steps to launch." with 4 steps. **Done:** "Your community's name", "Invite your first founders" ("1 invite made"), "Mail: you copy the links". **Not done:** "Your card". No Village step and no partner-report step. **Set up badge = 1.** After saving "Your card" (step 2 of 2): /admin turned into the "This week" dashboard, the Set up badge is gone, and Needs you shows "1 person waiting for your OK" and "2 invites not accepted yet". | 09-admin-checklist-phone.png, 10-admin-checklist-laptop.png, 12-start-step2-card-phone.png, 13-admin-dashboard-phone.png, 14-admin-dashboard-laptop.png |
+| D. Partner report from Home on a phone in 1 tap | PASS | At 390px, one tap on the "Partner report" tile opened /admin/report. The tile was also on the checklist Home before launch (09, 10). | 15-partner-report-phone.png, 15b-partner-report-phone-viewport.png, 09-admin-checklist-phone.png |
+| E. Set up badge is 0 with an open flag | PASS | I inserted 1 open content_report row. Needs you then lists "1 report waiting" at both widths. The Set up nav item has **no badge (0)** at 390 and at 1280. The flag shows only inside Set up › Advanced › Flagged as "1 open". | 16-needs-you-flag-phone.png, 17-needs-you-flag-laptop.png, 20-settings-postlaunch-advanced-laptop.png |
+| F. Set up page at 1280 | PASS | The "Weekly email" row shows "Thu 09:00 UTC" and links to `/admin/announcements?schedule=open#weekly-heading`. It lands on Announce with "Change the schedule" **open** (Day Thursday, Hour 09:00, UTC). The "Network search" row is in the main list, not under Advanced, and reads "Optional" / "optional". "Your plan" was **shown** under Advanced before launch and is **not shown** after launch. | 11-settings-prelaunch-advanced-laptop.png, 18-settings-postlaunch-laptop.png, 19-announce-schedule-open-laptop.png, 20-settings-postlaunch-advanced-laptop.png |
+| G. /admin/links and /admin/invites at 390 | PASS | /admin/links shows "A link signs in as that person. Copy makes a new link; the one you sent before stops working." above the rows (sentence at y=260, first Copy button at y=321). /admin/invites has 1 textarea, 1 visible button ("Create invite links"), "Add a cohort" folded (closed `<details>`), and no consent question. | G2-links-phone.png, G1-invites-phone.png |
+| H. Try to break it | PASS, with doubts (see below) | Blank community name (spaces only) is refused: "Enter your community's name.", HTTP 422, and no user is created. With 2 valid emails and 1 invalid line: 2 rows appear, each with its own Copy link button (each copies its own URL) and "Open in your email". "Copy all links" appears and copies both lines (`email URL`). Buttons do not overlap. An invalid-only paste gives "Paste at least one email address." and keeps the text. `/admin/start?step=village` shows step 1 "Invite founders". "Skip the guided start" goes to /admin. | H1-setup-blank-name-phone.png, H3-invites-two-plus-invalid-phone.png, H4-invites-rows-copied-phone.png, H5-invites-invalid-only-phone.png, H2-start-step-village-phone.png, H7-after-skip-phone.png |
+
+## Broken or doubtful
+
+1. **An invalid line is dropped with no message when valid lines are pasted with it.** I pasted "Sam Lee, sam.lee@…", "Adaline…, adaline…@…" and "this is not an email". Two links were made, the box was cleared, and nothing said that one line was skipped. A typo'd address would vanish without the admin noticing. (H3-invites-two-plus-invalid-phone.png)
+2. **Names and emails are cut short on the phone in the "sign-in links" rows.** Even the short "sam.lee@example.com" shows as "sam.lee@exa…", and "Adaline Montgomery-Okonkwo" as "Adaline M…". The right column with two stacked actions (Copy link, Open in your email) takes about 160px. With no name given, the row shows the email twice ("alex.founde…" / "alex.founder@…"), and neither copy is readable. The admin cannot easily confirm whose link they are copying. (03-invite-link-ready-phone.png, 04-copy-link-clicked-phone.png, H4-invites-rows-copied-phone.png)
+3. **At 1280 the checklist and the Partner report tile do not line up.** The checklist card is about 720px wide, but the tile below it spans the full content width (about 935px). The two cards touch with no gap. This looks unfinished; on the phone they have a normal gap. (10-admin-checklist-laptop.png)
+4. **/setup keeps focus on the wrong field after a refusal.** After the blank-name error, the Setup token and Password are cleared and focus moves to "Setup token", not "Community name". The admin has to retype the 64-character token and the password. (H1-setup-blank-name-phone.png)
+5. **Some words still promise Village while Village is not connected.**
+   - The invite email body from "Open in your email" says "see who in Northwind Founders' circle can introduce you".
+   - The "Waiting for your OK" text on /admin/members says Yes "turns on network search for them".
+
+   Both are probably out of scope for this change, but they promise network search that this install does not have. (mailto in 03 snapshot; H6-waiting-for-ok-phone.png)
+6. **"Your card" (the last guided step) ends with a "Next" button and carries the heading "Welcome to Northwind Founders".** That heading is the member welcome copy, which reads oddly for the admin. "Next" on step 2 of 2 is unclear; "Save" or "Done" would say what it does. (12-start-step2-card-phone.png)
+7. **New behaviour, not a bug: Alex counted as "1 person waiting for your OK" after accepting.** Home's Needs you shows this only after launch. It was not on the checklist Home before launch, so the admin first meets it after launch.
+8. **Not tested:** "Skip the guided start" *before* launch, because the throwaway database could not be reset mid-run. It was tested after launch only, where it goes to /admin.
+
+## Re-check after repair
+
+2026-11-20. An independent verifier ran the production build at :6151 on a fresh empty copy, in a real browser (Playwright Chromium). Admin: Jordan Vale. No source files were edited.
+
+| Check | Result | Measured | Screenshot |
+|---|---|---|---|
+| R1: link rows on a phone (390px) | PASS | 3 rows, one "Copy link" per row (112px, x=235), with an "Open in your email" text link under the person. Text column 150px. "Sam Lee" (60px) and "sam.lee@example.com" (136px) fit in full. "Adaline Montgomery-Okonkwo" (229px) and her email (210px) end in "…". The address-only row shows the address once. "Copy all links" sits below. Sam's button changed to "Copied". The clipboard held `http://localhost:6151/invite?token=…`, checked on a 4th invite, Casey Ortiz. Nothing overlaps; no horizontal scroll. | R1-link-rows-390.png |
+| R3: last guided step | PASS | Step 2 of 2 "Your card": the buttons are "Save and finish" and "Skip for now" beside it. There is no "Next" on the page. | R3-last-step-save-and-finish-390.png |
+| R2: checklist Home at 1280x860 | PASS | Checklist: left 304, width 720, bottom 466. Partner report tile: left 304, width 720, top 482. Gap 16px, left edges aligned, width difference 0. "Your card" is not done. | R2-checklist-report-tile-1280.png |
+| Step 4: Save and finish | PASS | Both questions filled, then "Save and finish". The admin lands on /admin, h1 "This week", with no checklist. The Partner report tile is 358px wide at 390, and Needs you shows "4 invites not accepted yet". | R4-after-finish-this-week-390.png |
+
+Notes, none of them blocking:
+- At 390, the address-only row still cuts a typical address: "alex.founder@example.com" (197px) shows as "alex.founder@exa…" in the 150px column. The name column is 150px because the 112px "Copy link" button plus the avatar take the rest. A shorter button, icon + "Copy", would give about 40px more.
+- Step 2 still shows "Welcome to Northwind Founders" above the admin's card (item 6 above). This was not part of the repair.
+- "Copied" goes back to "Copy link" after a few seconds, which is expected.
+- The invite count on the checklist reads 4: the extra one is the Casey Ortiz invite made for the clipboard check.
+- The Playwright browser was shared with another session: my first tab was closed mid-run. I signed in again in a new isolated context and carried on. None of the results depend on that tab.

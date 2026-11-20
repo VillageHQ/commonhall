@@ -27,6 +27,8 @@ type SettingsFormProps = {
   // The plan this server runs as when none is picked (Commonhall: "As this server is set up (self-host)").
   serverPlan: string;
   managedBy: string | null;
+  // After the first launch "Your plan" has no checklist to word, so it hides (round 7).
+  isLaunched?: boolean;
   // Under Advanced, beside the folded fields: the mail checklist, Village, the audit log and the version (rendered on
   // the server).
   aside: ReactNode;
@@ -53,7 +55,7 @@ function isPreviewableLogo(url: string) {
 
 // Set up › Settings (Commonhall's settingsPage): one form, one save. In view: the name, the logo file, the colour and
 // the preview; the rest folds under Advanced with its defaults chosen. Changes are written to the audit log.
-export function SettingsForm({ saved, uploadedLogo, isMailOn, serverPlan, managedBy, aside, beside, guided }: SettingsFormProps) {
+export function SettingsForm({ saved, uploadedLogo, isMailOn, serverPlan, managedBy, isLaunched = false, aside, beside, guided }: SettingsFormProps) {
   const router = useRouter();
   const flash = useFlash();
   const [values, setValues] = useState(saved);
@@ -278,6 +280,7 @@ export function SettingsForm({ saved, uploadedLogo, isMailOn, serverPlan, manage
               </Field>
             </section>
 
+            {isLaunched ? null : (
             <section className="fh-sheet" id="plan">
               <h2 className="fh-h3">Plan</h2>
               <Field htmlFor="s-plan" label="Your plan" hint="Sets the words on the launch checklist on Home." className="fh-field">
@@ -289,6 +292,7 @@ export function SettingsForm({ saved, uploadedLogo, isMailOn, serverPlan, manage
               </Field>
               {input("managedSetupBy", "Village sets up mail and the network by", "Managed plan: the date Village gave you. Empty: the checklist says Village sets it up, with no date.", { type: "date" })}
             </section>
+            )}
 
             <ButtonRow>
               <Button type="submit" disabled={save.isPending}>

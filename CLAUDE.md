@@ -47,6 +47,7 @@ Better Auth, Vitest, pnpm. Village is optional (network search, intro paths, pro
   `.ai/features/commonhall-ai-live/NOTES.md` (commonhall.ai: the Worker, the call form, mail),
   `.ai/features/fh-search-ask/NOTES.md` (search, asks),
   `.ai/features/fh-console/NOTES.md` (the admin console screens),
+  `.ai/features/less-choice/NOTES.md` (round 7: defaults instead of choices; Part 4, the admin's first hour: one setup checklist, the Set up badge),
   `.ai/features/fh-directory-profile/NOTES.md` (Directory, profiles, My profile, Your data),
   `.ai/features/fh-final-pass/NOTES.md` (round 4: 404, 410, intro email, print),
   `.ai/features/fh-followup/NOTES.md` (emailed invite link confirms, job board on by default, "copied" words),

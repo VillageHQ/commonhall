@@ -19,7 +19,7 @@ export async function readAdminTabFacts(database: Database, environment: Environ
   const isNetworkOn = enabledIds.has(networkManifest.id);
   const isChatOn = enabledIds.has(chatManifest.id);
   const [{ isComplete, stepsLeft, currentStepId }, confirmations, pendingLinks, openReports, outOfCreditsAt, villageHealth, chatConnections] = await Promise.all([
-    readSetupProgress(database),
+    readSetupProgress(database, environment),
     readConfirmationBadgeCount(database, environment),
     isNetworkOn ? readPendingLinkCount(database) : 0,
     readOpenReportCount(database),

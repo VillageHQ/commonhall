@@ -71,11 +71,11 @@ function SentList({ sent }: { sent: readonly SentAnnouncement[] }) {
   );
 }
 
-type AnnouncementsPageProps = { searchParams?: Promise<{ m?: string }> };
+type AnnouncementsPageProps = { searchParams?: Promise<{ m?: string; schedule?: string }> };
 
 // The weekly email on Announce: when it goes out, its schedule behind "Change the schedule", and this week's email as
 // the admin gets it (any member's on the Weekly email tab).
-async function WeeklyEmailSheet({ admin }: { admin: Awaited<ReturnType<typeof requireMember>> }) {
+async function WeeklyEmailSheet({ admin, isScheduleOpen }: { admin: Awaited<ReturnType<typeof requireMember>>; isScheduleOpen: boolean }) {
   const database = getDatabase();
   const [plan, preview] = await Promise.all([readWeeklyEmailPlan(database), previewMemberDigest(database, process.env, admin, admin.id)]);
   return (
@@ -87,7 +87,8 @@ async function WeeklyEmailSheet({ admin }: { admin: Awaited<ReturnType<typeof re
         <Link href={ROUTES.adminDigest}>Preview for anyone</Link>
       </div>
       <p className="fh-small">{plan.nextLabel ? <>Next: {plan.nextLabel}.</> : <b>Off.</b>}</p>
-      <details className="mt-2">
+      {/* Set up's Weekly email row opens it (?schedule=open). */}
+      <details className="mt-2" open={isScheduleOpen}>
         <summary className="cursor-pointer fh-small">Change the schedule</summary>
         <WeeklyEmailScheduleForm isEnabled={plan.isEnabled} schedule={plan.schedule} />
       </details>
@@ -112,7 +113,7 @@ export default modulePage(adminManifest, async function AdminAnnouncementsPage({
   // Only admins: a member gets a real 404, not a redirect that hints the page exists.
   const admin = await requireMember();
   if (!isAdminMember(admin)) notFound();
-  const { m } = (await searchParams) ?? {};
+  const { m, schedule } = (await searchParams) ?? {};
   const database = getDatabase();
   const [members, sent, branding, isFeedOn] = await Promise.all([
     readAnnouncementMembers(database),
@@ -132,7 +133,7 @@ export default modulePage(adminManifest, async function AdminAnnouncementsPage({
           isEmailOn={readResendConfig(process.env) !== null}
           isFeedOn={isFeedOn}
         />
-        <WeeklyEmailSheet admin={admin} />
+        <WeeklyEmailSheet admin={admin} isScheduleOpen={schedule === "open"} />
         <section className="mt-8" aria-labelledby="sent-heading">
           <h2 id="sent-heading" className="fh-h2 mb-3">
             Sent

@@ -72,8 +72,8 @@ export default modulePage(PLATFORM_MANIFEST, async function SetupPage() {
   return (
     <PublicPage community={community}>
       <h1 className="fh-h2">Set up {community.isSaved ? community.name : "your community"}</h1>
-      <p className="fh-lede">First, create the admin account. Setup closes for good after this.</p>
-      <SetupForm />
+      <p className="fh-lede">Name your community and create the admin account. Setup closes for good after this.</p>
+      <SetupForm communityName={community.isSaved ? community.name : ""} />
     </PublicPage>
   );
 });

@@ -1,10 +1,10 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
-import { Copy, Mail, Send } from "lucide-react";
+import { Check, Copy, Link2, Mail, Send } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useId, useRef, useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 
 import { Button, ButtonRow } from "@/components/ui/button";
 import { OptionCard } from "@/components/ui/checkbox-card";
@@ -31,10 +31,11 @@ type Outcome = { isOk: boolean; summary: string; lines: string[]; links: SentLin
 function readOutcome(result: BulkInviteResult): Outcome {
   const invited = result.invitedCount + result.renewedCount;
   const lines = [...result.skipped.map(({ email, why }) => `${email}: ${why}`), ...result.problems.map(({ text, why }) => `${text}: ${why}`)];
-  const how = !result.isEmailOn && invited > 0 ? " Mail is not set up: send their links yourself below." : "";
+  // Mail off: nothing went out, so the line says the links are ready to copy, not "invited".
+  const done = result.isEmailOn ? `${invited} invited.` : invited === 1 ? "1 link ready: copy it and send it to that founder." : `${invited} links ready: copy each one and send it to that founder.`;
   const summary =
     invited > 0
-      ? `${invited} invited.${how}${lines.length ? ` ${lines.length} skipped:` : ""}`
+      ? `${done}${lines.length ? ` ${lines.length} skipped:` : ""}`
       : lines.length
         ? `Nobody new to invite. ${lines.length} skipped:`
         : EMPTY_MESSAGE;
@@ -61,62 +62,70 @@ function mailtoFor(link: SentLink, signature: Signature) {
   return `mailto:${encodeURIComponent(link.email).replace("%40", "@")}?subject=${encodeURIComponent(words.subject)}&body=${encodeURIComponent(body)}`;
 }
 
-// Commonhall's "Send the sign-in links yourself": one ready mail per founder, each with only their own link.
-function SendYourself({ links, signature }: { links: SentLink[]; signature: Signature }) {
-  const allId = useId();
+const COPIED_RESET_MS = 2_000;
+
+// Copies a text, and says "Copied" for a moment.
+function CopyButton({ text, label, variant = "secondary" }: { text: string; label: string; variant?: "secondary" | "quiet" }) {
   const [wasCopied, setWasCopied] = useState(false);
+  return (
+    <Button
+      type="button"
+      size="sm"
+      variant={variant}
+      onClick={() => {
+        void navigator.clipboard.writeText(text).then(() => {
+          setWasCopied(true);
+          setTimeout(() => setWasCopied(false), COPIED_RESET_MS);
+        });
+      }}
+    >
+      {wasCopied ? <Check aria-hidden="true" strokeWidth={1.5} /> : <Copy aria-hidden="true" strokeWidth={1.5} />}
+      <span aria-live="polite">{wasCopied ? "Copied" : label}</span>
+    </Button>
+  );
+}
+
+// Round 7: right after the links are made, one row per founder with its own "Copy link" (never a link to read off
+// the screen), and "Open in your email" as the second way: one ready mail with only their own link.
+function SendYourself({ links, signature }: { links: SentLink[]; signature: Signature }) {
   const allLinks = links.map(({ email, link }) => `${email} ${link}`).join("\n");
   return (
-    <div className="fh-copybox fh-sendself mt-3.5">
-      <h3 className="fh-h3">{links.length === 1 ? "Send the sign-in link yourself" : `Send the ${links.length} sign-in links yourself`}</h3>
-      <p className="fh-hint mt-1 mb-2.5">Each “Open in your email” starts one ready mail to one founder, with only their own link. A link works once, for 14 days.</p>
+    <div className="fh-copybox fh-sendself mt-3.5" data-testid="invite-links">
+      <h3 className="fh-h3">{links.length === 1 ? "Their sign-in link" : `${links.length} sign-in links`}</h3>
+      <p className="fh-hint mt-1 mb-2.5">Each link signs in as one founder: send it only to them. It works once, for 14 days.</p>
       <div className="fh-rows">
         {links.map((link) => (
-          <div key={link.email} className="fh-r">
+          <div key={link.email} className="fh-r" data-invite-link={link.email}>
             <span className="fh-avatar fh-sm inline-flex size-7 items-center justify-center rounded-full bg-vellum">
               <Mail aria-hidden="true" className="size-3.5" strokeWidth={1.5} />
             </span>
             <div className="fh-who">
               {/* One line each, cut with "…" on a narrow phone, as on Commonhall: an address is never split mid-word. */}
               <b title={link.name || link.email}>{link.name || link.email}</b>
-              <span title={link.email}>{link.email}</span>
+              {link.name ? <span title={link.email}>{link.email}</span> : null}
+              {/* The second way, a small link under the person, so the row keeps its room for their name on a phone. */}
+              <a className="fh-small underline decoration-1 underline-offset-[3px]" href={mailtoFor(link, signature)}>
+                Open in your email
+              </a>
             </div>
             <div className="fh-end">
-              <Button asChild size="sm" variant="secondary">
-                <a href={mailtoFor(link, signature)}>
-                  <Send aria-hidden="true" strokeWidth={1.5} />
-                  Open in your email
-                </a>
-              </Button>
+              <CopyButton text={link.link} label="Copy link" />
             </div>
           </div>
         ))}
       </div>
-      <label className="fh-label mt-3.5" htmlFor={allId}>
-        All links, one line per founder
-      </label>
-      <textarea className="fh-textarea fh-mono fh-copyfield" id={allId} readOnly value={allLinks} />
-      <ButtonRow className="mt-2">
-        <Button
-          type="button"
-          size="sm"
-          variant="secondary"
-          onClick={() => {
-            void navigator.clipboard.writeText(allLinks).then(() => setWasCopied(true));
-          }}
-        >
-          <Copy aria-hidden="true" strokeWidth={1.5} />
-          <span aria-live="polite">{wasCopied ? "Copied" : "Copy all links"}</span>
-        </Button>
-      </ButtonRow>
-      <p className="fh-small fh-muted mt-2">Anyone with a link can sign in as that person, so send each one only to them.</p>
+      {links.length > 1 ? (
+        <ButtonRow className="mt-2">
+          <CopyButton text={allLinks} label="Copy all links" variant="quiet" />
+        </ButtonRow>
+      ) : null}
     </div>
   );
 }
 
 type InviteSheetProps = Signature & {
   isEmailOn: boolean;
-  // The profile fill-in's consent choice is Village's; it shows only while the network is on.
+  // The profile fill-in's consent choice is Village's; it shows only while fill-in can run (readIsFillInOffered).
   isFillInShown: boolean;
   savedBasis: FillInBasis | null;
   savedTermsDate: string | null;
@@ -128,7 +137,9 @@ function readToday() {
   return new Date().toISOString().slice(0, 10);
 }
 
-// Commonhall's "Invite members" sheet: one box for many people, the profile fill-in's consent, Send invites.
+// Commonhall's "Invite members" sheet: one box for many people and one button, "Send invites" with mail on or "Create
+// invite links" with it off. The cohort is folded; the profile fill-in's consent shows only while fill-in can run,
+// on "Ask each member at sign-in".
 export function InviteSheet({ community, inviterName, inviterRole, isEmailOn, isFillInShown, savedBasis, savedTermsDate, children }: InviteSheetProps) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
@@ -192,21 +203,24 @@ export function InviteSheet({ community, inviterName, inviterRole, isEmailOn, is
         />
         {isEmailOn ? null : (
           <p className="fh-hint">
-            <Link href={MAIL_PAGE}>Mail</Link> isn&apos;t set up: you send the sign-in links yourself.
+            <Link href={MAIL_PAGE}>Mail</Link> is off: you get a link to copy for each founder.
           </p>
         )}
 
         {/* Community's cohort (group), as on Import members' CSV column and the setup step's single invite: one for
             everyone pasted here, on their card when they join. */}
-        <label className="fh-label mt-3.5" htmlFor="invite-cohort">
-          Cohort (optional)
-        </label>
-        <input className="fh-input" id="invite-cohort" name="cohort" autoComplete="off" maxLength={PROFILE_LIMITS.cohort} placeholder="e.g. Fall 2025" />
+        <details className="mt-3">
+          <summary className="fh-small cursor-pointer">Add a cohort</summary>
+          <label className="fh-label mt-2" htmlFor="invite-cohort">
+            Cohort
+          </label>
+          <input className="fh-input" id="invite-cohort" name="cohort" autoComplete="off" maxLength={PROFILE_LIMITS.cohort} placeholder="e.g. Fall 2025" />
+        </details>
 
         {isFillInShown ? (
           <fieldset className="fh-basis mt-4 border-0 p-0" id="basis">
             <legend className="fh-label">Profile fill-in: how did these members agree?</legend>
-            <p className="fh-hint mt-0 mb-2">Required. Saved with today’s date and your name.</p>
+            <p className="fh-hint mt-0 mb-2">Saved with today’s date and your name.</p>
             <div className="grid gap-2.5">
               <OptionCard
                 id="basis-terms"
@@ -245,22 +259,10 @@ export function InviteSheet({ community, inviterName, inviterRole, isEmailOn, is
           </fieldset>
         ) : null}
 
-        {isEmailOn ? null : (
-          <div className="fh-btn-stack mt-3.5">
-            <Button type="submit" size="sm" variant="secondary">
-              <Mail aria-hidden="true" strokeWidth={1.5} />
-              Send from your email (one ready mail, each founder gets only their own link)
-            </Button>
-            <Button type="submit" size="sm" variant="quiet">
-              <Copy aria-hidden="true" strokeWidth={1.5} />
-              Copy all links
-            </Button>
-          </div>
-        )}
         <ButtonRow className="mt-3">
           <Button type="submit" size="sm" disabled={send.isPending}>
-            <Send aria-hidden="true" strokeWidth={1.5} />
-            {send.isPending ? "Sending…" : "Send invites"}
+            {isEmailOn ? <Send aria-hidden="true" strokeWidth={1.5} /> : <Link2 aria-hidden="true" strokeWidth={1.5} />}
+            {send.isPending ? (isEmailOn ? "Sending…" : "Creating…") : isEmailOn ? "Send invites" : "Create invite links"}
           </Button>
         </ButtonRow>
       </form>

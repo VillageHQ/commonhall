@@ -33,6 +33,12 @@ export default modulePage(adminManifest, async function AdminLinksPage() {
     <AdminSection title="Members">
       <p className="fh-small mb-3">{isMailOn ? MAIL_ON_LINE : MAIL_OFF_LINE}</p>
       {links.length ? (
+        // Said before the first Copy: only a hash of each link is kept, so a Copy can't hand back the one already sent.
+        <p className="fh-small fh-muted mb-2" data-testid="copy-makes-new-link">
+          A link signs in as that person. Copy makes a new link; the one you sent before stops working.
+        </p>
+      ) : null}
+      {links.length ? (
         <div className="fh-rows">
           {links.map(({ id, email, createdAt, expiresAt }) => (
             <WaitingLinkRow key={id} inviteId={id} email={email} detail={`Made ${formatMoment(createdAt)} · ends ${formatMoment(expiresAt)}`} />
@@ -41,11 +47,6 @@ export default modulePage(adminManifest, async function AdminLinksPage() {
       ) : (
         <EmptyState title="No links waiting" description="A link shows here when its email can’t go out." />
       )}
-      {links.length ? (
-        <p className="fh-small fh-muted" style={{ marginTop: 12 }}>
-          A link signs in as that person. Copy makes a new one; the old one stops working.
-        </p>
-      ) : null}
     </AdminSection>
   );
 });

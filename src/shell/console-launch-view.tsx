@@ -1,10 +1,11 @@
 import { Check } from "lucide-react";
 
-import { TextLink } from "@/shell/console-home-parts";
+import { PartnerReportTile, TextLink } from "@/shell/console-home-parts";
 import type { LaunchStep } from "@/shell/console-launch";
 import { ROUTES } from "@/platform/http/routes";
 
-// The console's Home before launch (Commonhall's launch checklist): four steps, in order, each with its status.
+// The console's Home before launch: the one setup checklist (the guided start's steps among them), four steps in order,
+// each with its status, and the partner report's tile.
 export function ConsoleLaunchView({ firstName, steps }: { firstName: string; steps: readonly LaunchStep[] }) {
   return (
     <>
@@ -41,6 +42,8 @@ export function ConsoleLaunchView({ firstName, steps }: { firstName: string; ste
           ))}
         </ol>
       </section>
+      {/* As wide as the checklist above it. */}
+      <PartnerReportTile className="mt-4 max-w-[720px]" />
       <p className="fh-small fh-muted fh-launch-foot">
         Everything else is in <TextLink href={ROUTES.adminSettings}>Set up</TextLink>.
       </p>

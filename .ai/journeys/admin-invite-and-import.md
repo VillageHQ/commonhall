@@ -24,3 +24,9 @@ forms, with the email switch.
 Tests: `src/modules/members/bulk-invites.test.ts`, `src/modules/members/invites.test.ts`,
 `src/modules/members/accept-invite.test.ts`, `src/modules/members/onboarding.test.ts`.
 Known gap (roadmap, open): the single invite form has no cohort field.
+
+## Round 7 (less-choice, Part 4)
+The guided start now opens on the invites (step 1 of 2, right after /setup, which also names the community): one
+box and one button, "Create invite links" with mail off ("Send invites" with it on); the cohort is folded and the
+profile fill-in question shows only while Village is connected. Each founder gets a "Copy link" right after. From
+/setup to a copyable link: 2 screens, 0 decisions (proof: `.ai/features/less-choice/reports/choice-admin/`).

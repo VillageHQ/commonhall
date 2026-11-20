@@ -24,7 +24,6 @@ import { user } from "@/platform/database/auth-schema";
 import { EMAIL_KINDS } from "@/platform/email/kinds";
 import { emailOutbox, emailSuppression } from "@/platform/email/schema";
 import { saveModuleState } from "@/platform/modules/enablement";
-import { readSetupProgress, SETUP_STEPS } from "@/shell/admin-setup";
 import { clearDatabase, createTestDatabase } from "@/test/database";
 import { FAKE_RESEND_API_KEY } from "@/test/fake-resend-server";
 import { joinMemberToGroup, nameMember } from "@/test/intros";
@@ -399,20 +398,19 @@ describe("the partner report", () => {
       expect(entry?.detail).toBe("2 addresses");
     });
 
-    it("finishes the last setup step", async () => {
+    it("marks the report shared", async () => {
       turnEmailOn();
-      const before = await readSetupProgress(database);
-      expect(before.steps.at(-1)).toEqual({ id: SETUP_STEPS.report, isDone: false });
+      expect((await readPartnerReportSettings(database)).sharedAt).toBeNull();
 
       await call(postSend, admin, { recipients: "one@example.com", note: "" });
 
-      expect((await readSetupProgress(database)).steps.at(-1)).toEqual({ id: SETUP_STEPS.report, isDone: true });
+      expect((await readPartnerReportSettings(database)).sharedAt).not.toBeNull();
     });
 
     it("can be marked shared another way, for a site with no email", async () => {
       expect((await call(postShared, admin, {})).status).toBe(OK_STATUS);
 
-      expect((await readSetupProgress(database)).steps.at(-1)).toEqual({ id: SETUP_STEPS.report, isDone: true });
+      expect((await readPartnerReportSettings(database)).sharedAt).not.toBeNull();
     });
 
     it("refuses more than 20 addresses, or none", async () => {

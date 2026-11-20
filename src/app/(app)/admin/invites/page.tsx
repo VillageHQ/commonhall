@@ -13,7 +13,7 @@ import { modulePage } from "@/platform/modules/module-page";
 import { AdminSection } from "@/shell/admin-section";
 
 import { formatShortDate } from "@/modules/admin/console-members";
-import { readInviterSignature, readListedInvites } from "@/modules/admin/reads-members";
+import { readInviterSignature, readIsFillInOffered, readListedInvites } from "@/modules/admin/reads-members";
 import { readInviteFlash, INVITE_FLASH_PARAM } from "@/modules/admin/components/invite-flashes";
 import { InviteEmailPreview } from "@/modules/admin/components/invite-email-preview";
 import { InviteResendButton } from "@/modules/admin/components/invite-resend-button";
@@ -25,7 +25,7 @@ import { adminManifest } from "@/modules/admin/manifest";
 
 export const metadata: Metadata = { title: "Invites" };
 
-// Commonhall's Invites: paste many people at once, the profile fill-in's consent, who is still waiting to sign in,
+// Commonhall's Invites: paste many people at once, the profile fill-in's consent (only while fill-in can run), who is still waiting to sign in,
 // and the email that goes out. Community-only: Revoke, and expired and revoked invites stay listed, marked, with Resend.
 export default modulePage(adminManifest, async function AdminInvitesPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const admin = await requireAdmin();
@@ -40,6 +40,7 @@ export default modulePage(adminManifest, async function AdminInvitesPage({ searc
   ]);
   const mail = readResendConfig(process.env);
   const community = branding.name;
+  const isFillInShown = await readIsFillInOffered(database, enabled.has(networkManifest.id));
 
   return (
     <>
@@ -51,7 +52,7 @@ export default modulePage(adminManifest, async function AdminInvitesPage({ searc
           inviterName={signature.name}
           inviterRole={signature.role}
           isEmailOn={mail !== null}
-          isFillInShown={enabled.has(networkManifest.id)}
+          isFillInShown={isFillInShown}
           savedBasis={fillIn.basis}
           savedTermsDate={fillIn.termsDate}
         >

@@ -29,3 +29,7 @@
 - **Tests:** `src/shell/guided-start.test.ts` (steps, network off, step fallback), `src/shell/landing.test.ts`,
   `src/app/api/setup/route.test.ts` (pending after setup, done after finishing). Proof:
   `reports/` (desktop and phone from /setup to the console Home, `desktop-flow.mp4`).
+
+## Round 7 (less-choice, Part 4)
+The guided start is now Invite founders, then Your card: no Your look step (`/setup` names the community) and no
+Connect Village step (Village is Set up's optional "Network search" row). See `.ai/features/less-choice/NOTES.md`.

@@ -6,7 +6,7 @@ import { ROUTES } from "@/platform/http/routes";
 import { formatDateAndTimeUtc } from "@/platform/text/format-date";
 import { VILLAGE_TROUBLES, type VillageHealth } from "@/platform/village/health";
 
-import { SETUP_STEPS } from "./admin-setup-steps";
+import { VILLAGE_KEYS_ANCHOR } from "./admin-home-anchors";
 
 function readLastWorked({ lastOkAt }: VillageHealth) {
   return lastOkAt ? `It last worked on ${formatDateAndTimeUtc(lastOkAt)}.` : "It hasn't worked since the app started keeping track.";
@@ -29,7 +29,7 @@ export function VillageTroubleNotice({ health }: { health: VillageHealth }) {
       </p>
       {isKeys ? (
         <p>
-          <Link href={`${ROUTES.adminSettings}?step=${SETUP_STEPS.keys}`} className="font-bold underline underline-offset-4">
+          <Link href={`${ROUTES.adminSettings}#${VILLAGE_KEYS_ANCHOR}`} className="font-bold underline underline-offset-4">
             Check the Village keys
           </Link>
         </p>

@@ -1,6 +1,3 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { createElement } from "react";
-import { renderToStaticMarkup } from "react-dom/server";
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { POST as dismissReport } from "@/app/api/admin/reports/dismiss/route";
@@ -30,7 +27,6 @@ import { selectNavigationItems } from "./navigation";
 import { readNavigationBadges } from "./navigation-badges";
 import { selectNextSteps } from "./next-steps";
 import { resolveOnboardingStep } from "./onboarding";
-import { SetupChecklist } from "./setup-checklist";
 
 const APP_URL = "http://localhost:3000";
 const ENVIRONMENT = { APP_URL };
@@ -70,23 +66,21 @@ describe("the shell with modules off", () => {
     it("asks for no Village setup", async () => {
       const { steps } = await readSetupProgress(database);
 
-      expect(steps.map(({ id }) => id)).toEqual([SETUP_STEPS.brand, SETUP_STEPS.invite, SETUP_STEPS.report]);
+      expect(steps.map(({ id }) => id)).toEqual([SETUP_STEPS.name, SETUP_STEPS.invite, SETUP_STEPS.card, SETUP_STEPS.mail]);
     });
 
     describe("a request for a Village setup step", () => {
       it("is refused, however it's asked for", async () => {
         const { steps } = await readSetupProgress(database);
 
-        expect(parseSetupStep(SETUP_STEPS.group, steps.map(({ id }) => id))).toBeNull();
+        expect(parseSetupStep("group", steps.map(({ id }) => id))).toBeNull();
       });
 
       it("calls Village for nothing, even with keys saved", async () => {
         const fetchSpy = vi.spyOn(globalThis, "fetch");
-        const admin = await createSignedInMember(database, "admin");
         await saveVillageKeys(database, FAKE_VILLAGE_KEYS);
-        const progress = await readSetupProgress(database);
 
-        await SetupChecklist({ database, admin: { id: admin.userId, email: admin.email, role: "admin" }, progress, openStepId: SETUP_STEPS.group, basePath: "/admin" });
+        await readSetupProgress(database);
 
         expect(fetchSpy).not.toHaveBeenCalled();
       });
@@ -136,17 +130,6 @@ describe("the shell with modules off", () => {
       const response = await leaveGroup(postJson("/api/network/leave", member.cookie, { confirmed: true }));
 
       expect(response.status).not.toBe(404);
-    });
-  });
-
-  describe("the first Village step of setup", () => {
-    it("offers to run without Village", async () => {
-      const admin = await createSignedInMember(database, "admin");
-      const progress = await readSetupProgress(database);
-
-      const checklist = await SetupChecklist({ database, admin: { id: admin.userId, email: admin.email, role: "admin" }, progress, openStepId: SETUP_STEPS.keys, basePath: "/admin" });
-
-      expect(renderToStaticMarkup(createElement(QueryClientProvider, { client: new QueryClient() }, checklist))).toContain("Run without Village");
     });
   });
 

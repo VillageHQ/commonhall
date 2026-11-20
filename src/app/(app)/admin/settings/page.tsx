@@ -26,6 +26,7 @@ import { readOutcomeDays } from "@/modules/intros/reads-outcome-days";
 import { readSetupPage, SETUP_ROW_PLACES } from "@/shell/admin-setup-rows";
 import { SetupRowList } from "@/shell/admin-setup-rows-view";
 import { VILLAGE_KEYS_ANCHOR } from "@/shell/admin-home-anchors";
+import { hasLaunched } from "@/shell/console-launch";
 import { readEnabledIds } from "@/shell/enabled-modules";
 
 export const metadata: Metadata = { title: PAGE_TITLES.adminSettings };
@@ -44,12 +45,12 @@ async function readVillageLine(isNetworkOn: boolean) {
   return { text: keys ? "Connected" : "Not connected", href: ROUTES.adminVillage, link: "Village settings", status };
 }
 
-// Set up (round 6): the one settings page. In view: the branding, Mail and Features, and the asks allowance and the
+// Set up (round 6): the one settings page. In view: the branding, Mail, the weekly email, Features, network search, and the asks allowance and the
 // outcome question. Folded under Advanced: the rest of the settings and every page for an engineer.
 export default modulePage(adminManifest, async function AdminSettingsPage() {
   await requireAdmin();
   const database = getDatabase();
-  const [saved, branding, plan, mail, enabledIds, rows, weeklyAllowance, outcomeDays] = await Promise.all([
+  const [saved, branding, plan, mail, enabledIds, rows, weeklyAllowance, outcomeDays, isLaunched] = await Promise.all([
     readSettingsValues(database),
     readBranding(database),
     readPlanSettings(database),
@@ -58,6 +59,7 @@ export default modulePage(adminManifest, async function AdminSettingsPage() {
     readSetupPage(database, process.env),
     readWeeklyAllowance(database),
     readOutcomeDays(database),
+    hasLaunched(database),
   ]);
   const village = await readVillageLine(enabledIds.has(networkManifest.id));
 
@@ -94,6 +96,7 @@ export default modulePage(adminManifest, async function AdminSettingsPage() {
         isMailOn={mail.isMailOn}
         serverPlan={PLANS.selfHost}
         managedBy={plan.managedSetupBy ? formatDayWord(plan.managedSetupBy) : null}
+        isLaunched={isLaunched}
         aside={aside}
         beside={beside}
       />
