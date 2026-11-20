@@ -6,8 +6,8 @@ export const JOB_BOARD_PAGES = {
   board: "/jobs",
   // The old page; it forwards to `ours`.
   yours: "/jobs/yours",
-  // Commonhall's "Our jobs" sheet on My profile.
-  ours: "/me#jobs",
+  // "Our jobs": its own page under My profile (round 6).
+  ours: "/me/jobs",
   admin: "/admin/jobs",
   // The public board's address, as Commonhall: /jobs. A visitor there gets the page at `publicPage` (src/proxy.ts).
   public: "/jobs",

@@ -18,11 +18,12 @@ import {
   readIntroLede,
   readIntroTitle,
   readNames,
+  readConnectorQuestion,
   readNoteLabel,
-  readPrivacyLine,
   readStatusPill,
   readTrackerSteps,
   readWithdrawHint,
+  SHORT_PRIVACY_LINE,
 } from "./intro-words";
 
 const ICON = { "aria-hidden": true, className: "fh-i fh-xs", strokeWidth: 1.5 } as const;
@@ -82,8 +83,8 @@ function readAnsweredOn(intro: Intro) {
   return answeredAt ? `You answered on ${formatDayMonth(answeredAt)}.` : null;
 }
 
-function ConnectorMain({ intro, community, canEmail, hasThread }: IntroPageProps) {
-  if (intro.state === INTRO_STATES.requested) return <ConnectorAnswer intro={intro} community={community} canEmail={canEmail} />;
+function ConnectorMain({ intro, canEmail, hasThread }: IntroPageProps) {
+  if (intro.state === INTRO_STATES.requested) return <ConnectorAnswer intro={intro} canEmail={canEmail} />;
   const pill = readStatusPill(intro);
   const answeredOn = readAnsweredOn(intro);
   return (
@@ -104,24 +105,26 @@ function ConnectorMain({ intro, community, canEmail, hasThread }: IntroPageProps
   );
 }
 
-// One intro (Commonhall's introPage()): back link, title and pill, the lede, then two columns: the asker's tracker or
-// the connector's answer, and the note.
+// One intro: back link, title and pill, who the person is, then two columns: the asker's tracker or the connector's
+// answer, and the note. A connector with an ask to answer sees the question as the title and yes or no first.
 export function IntroPage(props: IntroPageProps) {
-  const { intro, community } = props;
+  const { intro } = props;
   const pill = readStatusPill(intro);
   const isConnector = intro.viewerRole === INTRO_ROLES.introducer;
+  const isAskingConnector = isConnector && intro.state === INTRO_STATES.requested;
+  const lede = readIntroLede(intro);
   return (
     <>
       <FlashOnArrival />
-      <BackLink href={ROUTES.intros}>Your intros</BackLink>
+      <BackLink href={ROUTES.intros}>Intros</BackLink>
       <div className="fh-pagehead">
         {/* Commonhall's row (gap 12). The column gap is a hair under, so a title and pill that fill the phone row exactly
             stay on one line as on Commonhall instead of wrapping on a sub-pixel. */}
         <div className="flex flex-wrap items-start justify-between gap-x-[11.9px] gap-y-3">
-          <h1 className="fh-h1">{readIntroTitle(intro)}</h1>
-          <Pill tone={pill.tone}>{pill.label}</Pill>
+          <h1 className="fh-h1">{isAskingConnector ? readConnectorQuestion(intro) : readIntroTitle(intro)}</h1>
+          {isAskingConnector ? null : <Pill tone={pill.tone}>{pill.label}</Pill>}
         </div>
-        <p className="fh-lede">{readIntroLede(intro)}</p>
+        {lede ? <p className="fh-lede">{lede}</p> : null}
       </div>
       <div className="fh-flow">
         <div>{isConnector ? <ConnectorMain {...props} /> : <AskerMain {...props} />}</div>
@@ -131,7 +134,8 @@ export function IntroPage(props: IntroPageProps) {
             {readNoteLabel(intro)}
           </div>
           <p className="fh-notetext">{intro.note}</p>
-          <p className="fh-small fh-muted mt-2.5">{readPrivacyLine(community)}</p>
+          {/* The privacy line is for the note's writer; the connector only reads it. */}
+          {isConnector ? null : <p className="fh-small fh-muted mt-2.5">{SHORT_PRIVACY_LINE}</p>}
           {isConnector ? (
             <div className="fh-btn-row mt-2.5">
               <ReportNote intro={intro} />

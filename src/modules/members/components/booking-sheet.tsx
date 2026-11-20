@@ -1,7 +1,6 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
-import { CalendarPlus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
@@ -29,7 +28,7 @@ function saveBooking(body: { bookingUrl: string; bookingVisibility: BookingVisib
 
 type BookingSheetProps = { communityName: string; bookingUrl: string | null; bookingVisibility: BookingVisibility };
 
-// My profile's "Book a call" sheet: any https booking page (Calendly, Cal.com, a Google appointment page), and who sees it.
+// My profile › Booking link (/me/booking): any https booking page (Calendly, Cal.com, a Google appointment page), and who sees it.
 export function BookingSheet({ communityName, bookingUrl, bookingVisibility }: BookingSheetProps) {
   const router = useRouter();
   const flash = useFlash();
@@ -63,13 +62,9 @@ export function BookingSheet({ communityName, bookingUrl, bookingVisibility }: B
 
   const error = localError ?? save.error?.message ?? null;
   return (
-    <section className="fh-sheet" id="booking" aria-labelledby="booking-title">
-      <h2 id="booking-title" className="fh-h3 flex items-center gap-1.5">
-        <CalendarPlus aria-hidden="true" className="fh-i fh-s" strokeWidth={1.5} /> Book a call
-      </h2>
-      <p className="fh-small mt-1.5">Add your booking page and members see “Book a call” on your profile.</p>
+    <section className="fh-sheet" id="booking" aria-label="Booking link">
       <form onSubmit={submit} noValidate>
-        <label htmlFor={URL_INPUT_ID} className="fh-label mt-3 block">
+        <label htmlFor={URL_INPUT_ID} className="fh-label block">
           Booking link
         </label>
         <Input
@@ -92,7 +87,6 @@ export function BookingSheet({ communityName, bookingUrl, bookingVisibility }: B
             checked={visibility === BOOKING_VISIBILITIES.community}
             onChange={() => setVisibility(BOOKING_VISIBILITIES.community)}
             title={`Everyone in ${communityName}`}
-            description="Any member can book time with you"
           />
           <OptionCard
             id="booking-visibility-introduced"
@@ -101,13 +95,12 @@ export function BookingSheet({ communityName, bookingUrl, bookingVisibility }: B
             checked={visibility === BOOKING_VISIBILITIES.introduced}
             onChange={() => setVisibility(BOOKING_VISIBILITIES.introduced)}
             title="Only people whose intro I accepted"
-            description="Everyone else never sees the link"
           />
         </div>
         <FormError message={error} />
         <div className="fh-btn-row mt-3">
           <Button type="submit" variant="primary" size="sm" disabled={save.isPending}>
-            Save booking link
+            Save
           </Button>
           {bookingUrl ? (
             <Button type="button" variant="quiet" size="sm" disabled={save.isPending} onClick={remove}>

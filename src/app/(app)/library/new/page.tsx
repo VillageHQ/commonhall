@@ -46,7 +46,7 @@ export default modulePage(libraryManifest, async function PublishPage({ searchPa
       <PageHeader
         back={itemId ? { href: toLibraryItemPage(itemId), label: initial.title } : { href: LIBRARY_PAGES.browse, label: "Library" }}
         title={itemId ? "Edit or upload a new version" : "Share in the library"}
-        description={itemId ? "New files make a new version; the words change in place." : "A skill, an agent, a prompt or a tool connection your team uses. Others upvote what worked for them."}
+        description={itemId ? "New files make a new version; the words change in place." : undefined}
       />
       <PublishForm initial={initial} ownCompany={profile?.company?.trim() || null} />
     </>

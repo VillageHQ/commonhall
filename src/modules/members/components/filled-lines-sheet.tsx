@@ -24,20 +24,24 @@ type FilledLinesSheetProps = {
   emptyNote: string | null;
   // "You asked not to be looked up": the note links Your data.
   isRefused?: boolean;
+  // My profile (round 6): folded, its heading the summary, so the lines stay one tap away.
+  isFolded?: boolean;
 };
 
-export function FilledLinesSheet({ lines, refreshedAt, isOwn, ownWordsFields = [], emptyNote, isRefused = false }: FilledLinesSheetProps) {
+export function FilledLinesSheet({ lines, refreshedAt, isOwn, ownWordsFields = [], emptyNote, isRefused = false, isFolded = false }: FilledLinesSheetProps) {
   const shown = lines.filter((line) => isOwn || !line.isHidden);
   const wordedLines = WORDED_LINE_FIELDS.flatMap((field) => shown.filter((line) => line.field === field));
   const pastRolesLine = shown.find((line) => line.field === FILL_IN_FIELDS.pastRoles);
   const pastRoles = readPastRoles(pastRolesLine?.value);
   const isEmpty = wordedLines.length === 0 && pastRoles.length === 0;
-  return (
-    <section className="fh-sheet" id="village-lines" aria-label="Filled in from public profiles">
-      <div className="fh-source">
-        <RefreshCw aria-hidden="true" className="fh-i fh-xs" strokeWidth={1.5} />
-        <span>Filled in from public profiles{refreshedAt && !isRefused && !emptyNote ? ` · refreshed ${formatDayMonth(refreshedAt)}` : ""}</span>
-      </div>
+  const head = (
+    <>
+      <RefreshCw aria-hidden="true" className="fh-i fh-xs" strokeWidth={1.5} />
+      <span>Filled in from public profiles{refreshedAt && !isRefused && !emptyNote ? ` · refreshed ${formatDayMonth(refreshedAt)}` : ""}</span>
+    </>
+  );
+  const body = (
+    <>
       {isRefused ? (
         <p className="fh-small fh-muted">
           You asked not to be looked up on public profiles, so nothing is filled in. <Link href={ROUTES.yourData}>Your data</Link>
@@ -78,11 +82,25 @@ export function FilledLinesSheet({ lines, refreshedAt, isOwn, ownWordsFields = [
           ) : null}
           {isOwn && pastRolesLine ? <PastRolesToggle isHidden={pastRolesLine.isHidden} /> : null}
           {isOwn ? (
-            <p className="fh-small fh-muted mt-2">Correct a line by writing your own words above; they always win. Hidden lines stay hidden when the profile refreshes.</p>
+            <p className="fh-small fh-muted mt-2">Your own words always win. Hidden lines stay hidden.</p>
           ) : null}
           {isEmpty ? <p className="fh-small fh-muted">Nothing to show.</p> : null}
         </>
       )}
+    </>
+  );
+  if (isFolded) {
+    return (
+      <details className="fh-sheet" id="village-lines" aria-label="Filled in from public profiles">
+        <summary className="fh-source cursor-pointer">{head}</summary>
+        {body}
+      </details>
+    );
+  }
+  return (
+    <section className="fh-sheet" id="village-lines" aria-label="Filled in from public profiles">
+      <div className="fh-source">{head}</div>
+      {body}
     </section>
   );
 }

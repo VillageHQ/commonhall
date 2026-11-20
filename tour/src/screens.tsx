@@ -74,7 +74,6 @@ import {
   SENT_ANNOUNCEMENTS,
   SHARING_MEMBER_COUNT,
   toCandidatesHref,
-  TOUR_NOW,
   toShellMember,
 } from "./data";
 
@@ -108,7 +107,6 @@ function LibraryPage() {
       communityName={COMMUNITY_NAME}
       items={LIBRARY_ITEMS}
       filters={{ kind: null, job: null, search: null, mine: false }}
-      topPeople={LIBRARY_BOARD.people}
       askHref={null}
       flash={null}
     />
@@ -197,7 +195,7 @@ function SearchAskPage() {
 }
 
 function AsksPage() {
-  return <AsksBoard communityName={COMMUNITY_NAME} tab="open" search={null} posts={ASK_POSTS} counts={ASK_COUNTS} allowance={ASK_ALLOWANCE} flash={null} draft={null} now={TOUR_NOW} />;
+  return <AsksBoard tab="open" search={null} posts={ASK_POSTS} counts={ASK_COUNTS} allowance={ASK_ALLOWANCE} flash={null} draft={null} />;
 }
 
 // src/app/(app)/directory/page.tsx

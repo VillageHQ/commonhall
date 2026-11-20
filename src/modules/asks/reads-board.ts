@@ -10,9 +10,9 @@ import { companyLogoColumn, filledFaceColumn, shownCompanyColumn, toShownFaceUrl
 import { memberAvatar, memberProfile } from "../members/schema.ts";
 import {
   ASK_ANSWER_KINDS,
-  ASK_BOARD_TABS,
   ASK_HELPER_REASONS,
   ASK_KINDS,
+  ASK_PAGE_TABS,
   ASK_STATES,
   describeAskWho,
   describeWhyYou,
@@ -25,8 +25,9 @@ import { hasNoBlockBetween, isOpenAsk, readSearchWords } from "./reads.ts";
 import { canRenewAsk, readAskState } from "./rules-state.ts";
 import { ask, askAnswer, askHelper, askOffer } from "./schema.ts";
 
-// Commonhall's Asks & updates and one ask's page, read on the server. The board's tabs: Open (open asks), Updates,
-// Yours (the viewer's own), Answered (closed asks, the archive). A search looks through every ask and its answers.
+// The Asks page and one ask's page, read on the server. The filters: Open (open asks and updates), For you (open asks
+// routed to the viewer), Yours (the viewer's own), and Answered (closed asks, the archive) at its old address. A search
+// looks through every ask and its answers.
 
 const BOARD_LIMIT = 100;
 const HELPER_FACES = 3;
@@ -192,11 +193,18 @@ function toPost(row: PostRow, viewerId: string, helpers: PostHelper[], answers: 
   };
 }
 
+// An open ask from someone else that was routed to the viewer (a path, or their "can help with" words).
+function isForViewer(viewerId: string, now: Date) {
+  const routed = sql`exists (select 1 from ${askHelper} where ${askHelper.askId} = ${ask.id} and ${askHelper.helperId} = ${viewerId})`;
+  return and(eq(ask.kind, ASK_KINDS.ask), isOpenAsk(now), ne(ask.authorId, viewerId), routed);
+}
+
 function isOnTab(tab: AskTab, viewerId: string, now: Date): SQL | undefined {
-  if (tab === ASK_BOARD_TABS.updates) return eq(ask.kind, ASK_KINDS.update);
-  if (tab === ASK_BOARD_TABS.yours) return eq(ask.authorId, viewerId);
-  if (tab === ASK_BOARD_TABS.answered) return and(eq(ask.kind, ASK_KINDS.ask), isNotNull(ask.closedAt));
-  return and(eq(ask.kind, ASK_KINDS.ask), isOpenAsk(now));
+  if (tab === ASK_PAGE_TABS.forYou) return isForViewer(viewerId, now);
+  if (tab === ASK_PAGE_TABS.yours) return eq(ask.authorId, viewerId);
+  if (tab === ASK_PAGE_TABS.answered) return and(eq(ask.kind, ASK_KINDS.ask), isNotNull(ask.closedAt));
+  // Open: open asks and updates together, newest first.
+  return isOpenAsk(now);
 }
 
 function toContainsPattern(word: string) {
@@ -220,15 +228,15 @@ async function readTabCounts(database: Database, viewerId: string, now: Date): P
   const visible = and(isActiveMember(now), hasNoBlockBetween(viewerId, ask.authorId));
   const [row] = await database
     .select({
-      open: sql<number>`count(*) filter (where ${and(eq(ask.kind, ASK_KINDS.ask), isOpenAsk(now))})::int`,
-      updates: sql<number>`count(*) filter (where ${eq(ask.kind, ASK_KINDS.update)})::int`,
-      yours: sql<number>`count(*) filter (where ${eq(ask.authorId, viewerId)})::int`,
-      answered: sql<number>`count(*) filter (where ${and(eq(ask.kind, ASK_KINDS.ask), isNotNull(ask.closedAt))})::int`,
+      open: sql<number>`count(*) filter (where ${isOnTab(ASK_PAGE_TABS.open, viewerId, now)})::int`,
+      forYou: sql<number>`count(*) filter (where ${isOnTab(ASK_PAGE_TABS.forYou, viewerId, now)})::int`,
+      yours: sql<number>`count(*) filter (where ${isOnTab(ASK_PAGE_TABS.yours, viewerId, now)})::int`,
+      answered: sql<number>`count(*) filter (where ${isOnTab(ASK_PAGE_TABS.answered, viewerId, now)})::int`,
     })
     .from(ask)
     .innerJoin(user, eq(user.id, ask.authorId))
     .where(visible);
-  return { open: row?.open ?? 0, updates: row?.updates ?? 0, yours: row?.yours ?? 0, answered: row?.answered ?? 0 };
+  return { [ASK_PAGE_TABS.open]: row?.open ?? 0, [ASK_PAGE_TABS.forYou]: row?.forYou ?? 0, [ASK_PAGE_TABS.yours]: row?.yours ?? 0, [ASK_PAGE_TABS.answered]: row?.answered ?? 0 };
 }
 
 async function toPosts(database: Database, rows: PostRow[], viewerId: string, now: Date) {

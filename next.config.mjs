@@ -102,6 +102,8 @@ export const nextConfig = {
     // in its module's `paths`.
     // Part 1 (shell and tabs):
     // Part 2 (member screens):
+    // The library's leaderboard became its "Top" sort (LIBRARY_TOP_PAGE); ?period= is ignored there.
+    { source: "/library/leaderboard", destination: "/library?sort=top", permanent: true },
   ],
 };
 

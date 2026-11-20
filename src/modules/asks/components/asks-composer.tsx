@@ -2,7 +2,7 @@
 
 import { Clock, Hand, Megaphone, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,12 +13,18 @@ import { ICON } from "./post-parts";
 
 import type { AskDraftParts } from "../rules-board-url";
 
-type ComposerProps = { communityName: string; allowance: AskAllowance; draft?: AskDraftParts | null };
+type ComposerProps = { allowance: AskAllowance; draft?: AskDraftParts | null; isComposing?: boolean };
 
-// Commonhall's composer (crop composer-ask.png): Ask | Update, one line and Post, "Who are you trying to reach?"
-// folded away, then the week's allowance as pips. A post goes to its own page with the flash.
-export function AsksComposer({ communityName, allowance, draft = null }: ComposerProps) {
+// The "What do you need?" box: Ask | Update, one line and Post, "Who are you trying to reach?" folded away, then the
+// week's allowance as pips. `?compose=1` or `#compose` focuses it. A post goes to its own page with the flash.
+export function AsksComposer({ allowance, draft = null, isComposing = false }: ComposerProps) {
   const router = useRouter();
+  const bodyRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (!isComposing && window.location.hash !== "#compose") return;
+    bodyRef.current?.focus();
+    bodyRef.current?.scrollIntoView({ block: "center" });
+  }, [isComposing]);
   const [kind, setKind] = useState<AskKind>(ASK_KINDS.ask);
   const [error, setError] = useState<{ text: string; field: "body" | "cap" } | null>(null);
   const [isPending, setIsPending] = useState(false);
@@ -45,7 +51,7 @@ export function AsksComposer({ communityName, allowance, draft = null }: Compose
       );
       element.reset();
       setIsPending(false);
-      router.push(isUpdate ? `${ASKS_PAGE}?tab=updates&m=updated` : `${toAskPage(id)}?m=${helperCount > 0 ? "posted" : "posted0"}`);
+      router.push(isUpdate ? `${ASKS_PAGE}?m=updated` : `${toAskPage(id)}?m=${helperCount > 0 ? "posted" : "posted0"}`);
       router.refresh();
     } catch (failure) {
       const isCap = failure instanceof RequestFailure && failure.code === ASK_ERROR_CODES.allowanceUsed;
@@ -74,9 +80,10 @@ export function AsksComposer({ communityName, allowance, draft = null }: Compose
       </div>
       <div className="fh-oneline">
         <label className="fh-sr" htmlFor="p-body">
-          Your ask or update
+          What do you need?
         </label>
         <Input
+          ref={bodyRef}
           id="p-body"
           name="body"
           maxLength={ASK_LIMITS.titleLength}
@@ -97,7 +104,7 @@ export function AsksComposer({ communityName, allowance, draft = null }: Compose
       <details className="fh-askonly fh-more" open={Boolean(draft?.target) || undefined}>
         <summary>
           <Search {...ICON} />
-          Who are you trying to reach? <span className="fh-muted">Optional; it helps us find who can help</span>
+          Who are you trying to reach? <span className="fh-muted">(optional)</span>
         </summary>
         <div className="fh-pair">
           <div>
@@ -120,7 +127,7 @@ export function AsksComposer({ communityName, allowance, draft = null }: Compose
             <i key={position} aria-hidden="true" className={position < allowance.left ? "fh-on" : undefined} />
           ))}
         </span>{" "}
-        {describeAllowance(allowance)}. We check who in {communityName} can help, and tell them.
+        {describeAllowance(allowance)}
       </p>
       {error?.field === "cap" ? (
         <div className="fh-note fh-needs" role="alert" style={{ marginTop: 10 }}>

@@ -31,9 +31,12 @@ Files download only as attachments, with `nosniff` and a sandbox policy.
 
 ## Votes, leaderboard, featured, reports
 - Upvote toggles; never on your own item (422). Counts come from `library_vote`.
-- `/library/leaderboard`: people and companies by upvotes received, "This month" (votes since the 1st, UTC) and "All
-  time", counted in SQL and only over items the viewer may see. Companies group by the author's company on show,
-  without case.
+- The "Top" sort (`/library?sort=top`, round 6): items by upvotes alone (featured items don't lead); no people
+  ranking (no persona used it). `/library/leaderboard` redirects there (`next.config.mjs`). `readLeaderboard` still counts
+  people and companies, "This month" (votes since the 1st, UTC) or "All time", in SQL and only over items the viewer
+  may see; companies group by the author's company on show, without case.
+- Browse (round 6): a search with Kind and Role (the address keeps `?job=`) behind "Filter"; All / Top / Yours chips.
+  Cards show the kind (not the role) and the author's name (not the company).
 - Admins feature (featured items lead the browse order) and remove; both go in the audit log. Authors remove their own
   (not audited). A removal deletes the item's feed post too (the route passes `deleteLibraryFeedPost` from
   `src/shell/library-publish.ts`; the report queue deletes it in `admin/service-reports.ts`).

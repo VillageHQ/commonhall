@@ -16,7 +16,8 @@ import { API_ROUTES } from "@/platform/http/routes";
 
 const preferenceSchema = z.object({ topic: z.enum(Object.values(EMAIL_TOPICS)), isOn: z.boolean() });
 
-export type EmailSettingRow = { topic: EmailTopic; title: string; description: string; isOn: boolean };
+// A hint only where the title isn't enough (round 6's text rule).
+export type EmailSettingRow = { topic: EmailTopic; title: string; description: string | null; isOn: boolean };
 
 async function saveChanges(changes: readonly { topic: EmailTopic; isOn: boolean }[]) {
   for (const change of changes) await postRequest(API_ROUTES.emailPreferences, change, preferenceSchema);
@@ -47,7 +48,7 @@ export function EmailSettingsForm({ rows }: { rows: readonly EmailSettingRow[] }
           key={topic}
           htmlFor={`email-topic-${topic}`}
           label={title}
-          hint={description}
+          hint={description ?? undefined}
           control={<Switch id={`email-topic-${topic}`} checked={choices[topic] ?? true} onCheckedChange={(isOn) => setChoices((current) => ({ ...current, [topic]: isOn }))} />}
         />
       ))}

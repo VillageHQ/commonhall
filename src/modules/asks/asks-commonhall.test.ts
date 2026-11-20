@@ -217,7 +217,7 @@ describe("Commonhall's asks and Today", () => {
   });
 
   describe("the board", () => {
-    it("counts and lists Open, Updates, Yours and Answered, and searches every ask and its answers", async () => {
+    it("counts and lists Open (asks and updates), For you and Yours, and searches every ask and its answers", async () => {
       const open = await post(amara, { title: ASK, targetText: "a plant manager in cement" });
       const update = await post(sam, { title: "We just signed our 40th clinic.", kind: "update" });
       const own = await post(sam, { title: "Who has hired a first VP Sales selling to US hospitals?" });
@@ -225,10 +225,11 @@ describe("Commonhall's asks and Today", () => {
       expect((await call(postAnswer, priya, { askId: open, body: "Try the kiln makers' trade group." })).status).toBe(OK_STATUS);
 
       const page = await readAsksPage(database, { viewerId: sam.userId, tab: "open", search: null });
-      expect(page.counts).toEqual({ open: 2, updates: 1, yours: 2, answered: 0 });
+      expect(page.counts).toEqual({ open: 3, "for-you": 1, yours: 2, answered: 0 });
+      expect(page.posts.map(({ id }) => id).toSorted()).toEqual([open, update, own].toSorted());
       const card = page.posts.find(({ id }) => id === open);
       expect(card).toMatchObject({ who: "a plant manager in cement", helperCount: 1, answerCount: 1, viewerWhyYou: "Your profile says you can help with “Cement and ceramics”." });
-      expect((await readAsksPage(database, { viewerId: sam.userId, tab: "updates", search: null })).posts.map(({ id }) => id)).toEqual([update]);
+      expect((await readAsksPage(database, { viewerId: sam.userId, tab: "for-you", search: null })).posts.map(({ id }) => id)).toEqual([open]);
       expect((await readAsksPage(database, { viewerId: sam.userId, tab: "yours", search: null })).posts.map(({ id }) => id).toSorted()).toEqual([update, own].toSorted());
       expect((await readAsksPage(database, { viewerId: sam.userId, tab: "open", search: "kiln" })).posts.map(({ id }) => id)).toEqual([open]);
       expect((await readAsksPage(database, { viewerId: sam.userId, tab: "open", search: "nothing-matches" })).posts).toEqual([]);

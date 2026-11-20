@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Pin, Send, X } from "lucide-react";
+import { Check, Hand, Pin, Send, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent, type ReactNode } from "react";
 
@@ -74,16 +74,17 @@ export function AnswerForm({ askId }: { askId: string }) {
   );
 }
 
-// The "I can help" form in the rail: I know someone, or I've done this myself, with an optional name and line.
-export function HelpForm({ askId, authorFirstName, defaultPerson }: { askId: string; authorFirstName: string; defaultPerson: string }) {
+// "I can help" (round 6: the one way to respond to someone else's open ask): an optional note, then the button. A
+// member the ask was routed through a path offers the person they know; anyone else offers what they've done.
+export function HelpForm({ askId, authorFirstName, knownPerson }: { askId: string; authorFirstName: string; knownPerson: string | null }) {
   const { error, isPending, run } = useAction();
+  const kind = knownPerson ? ASK_HELP_KINDS.knowSomeone : ASK_HELP_KINDS.doneMyself;
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const element = event.currentTarget;
-    const form = new FormData(element);
-    const kind = form.get("kind") === ASK_HELP_KINDS.doneMyself ? ASK_HELP_KINDS.doneMyself : ASK_HELP_KINDS.knowSomeone;
+    const note = String(new FormData(element).get("note") ?? "");
     void run(async () => {
-      await postRequest(ASK_API_ROUTES.help, { askId, kind, person: String(form.get("person") ?? ""), note: String(form.get("note") ?? "") }, anySchema);
+      await postRequest(ASK_API_ROUTES.help, { askId, kind, person: knownPerson ?? "", note }, anySchema);
       return `${toAskPage(askId)}?m=${kind === ASK_HELP_KINDS.knowSomeone ? "knows" : "helped"}#answers`;
     }, element);
   }
@@ -91,39 +92,15 @@ export function HelpForm({ askId, authorFirstName, defaultPerson }: { askId: str
     <>
       {error ? <ErrorNote>{error}</ErrorNote> : null}
       <form method="post" className="fh-decide" onSubmit={submit}>
-        <fieldset className="fh-choices">
-          <legend className="fh-sr">How can you help?</legend>
-          <label className="fh-opt">
-            <input type="radio" name="kind" value={ASK_HELP_KINDS.knowSomeone} defaultChecked />
-            <span>
-              <b>I know someone</b>
-              <span>{authorFirstName} writes a note; you decide whether to forward it. Nobody is introduced without saying yes.</span>
-            </span>
-          </label>
-          <label className="fh-opt">
-            <input type="radio" name="kind" value={ASK_HELP_KINDS.doneMyself} />
-            <span>
-              <b>I’ve done this myself</b>
-              <span>Your answer shows under the ask.</span>
-            </span>
-          </label>
-        </fieldset>
-        <div className="fh-field fh-ifknow">
-          <label className="fh-label fh-small" htmlFor="h-person">
-            Who do you know? <span className="fh-muted">(optional)</span>
-          </label>
-          <Input id="h-person" name="person" maxLength={ASK_LIMITS.personNameLength} defaultValue={defaultPerson} placeholder="Their name" />
-        </div>
         <div className="fh-field">
           <label className="fh-label fh-small" htmlFor="h-note">
-            A line for {authorFirstName} <span className="fh-muted">(optional)</span>
+            A note for {authorFirstName} <span className="fh-muted">(optional)</span>
           </label>
           <Textarea id="h-note" name="note" rows={3} maxLength={ASK_LIMITS.answerLength} style={{ minHeight: 84 }} placeholder="How you know them, or what worked for you" />
         </div>
-        {/* 18 px, as on Commonhall: its textarea is inline-block and leaves a 6 px line gap under it; ours is block. */}
-        <div className="fh-btn-row" style={{ marginTop: 18 }}>
+        <div className="fh-btn-row" style={{ marginTop: 12 }}>
           <Button type="submit" disabled={isPending}>
-            Offer help
+            <Hand aria-hidden="true" className="fh-i fh-xs" strokeWidth={1.5} />I can help
           </Button>
         </div>
       </form>

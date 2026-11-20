@@ -34,29 +34,29 @@ export async function readEmailSettingRows(database: Database, memberId: string)
     {
       topic: EMAIL_TOPICS.weekly,
       title: "The weekly digest",
-      description: `Every ${WEEKDAYS[schedule.weekday]} at ${hour}:00 (${schedule.timeZone}): asks you could help with, intros waiting for your yes, lines on your profile to check. Answer from your inbox. Not sent when there’s nothing to answer.`,
+      description: `${WEEKDAYS[schedule.weekday]}s at ${hour}:00 ${schedule.timeZone}, only when something needs you.`,
       isOn: isOn(EMAIL_TOPICS.weekly),
     },
     {
       topic: EMAIL_TOPICS.announcements,
       title: "Announcements from the team",
-      description: "News from the people who run this community: events, perks, demo days. Only when they send one.",
+      description: null,
       isOn: isOn(EMAIL_TOPICS.announcements),
     },
   ];
   if (enabledIds.has(asksManifest.id)) {
     rows.push({
       topic: EMAIL_TOPICS.asks,
-      title: "Email me when an ask needs someone I know",
-      description: "At most one email per ask, the moment it’s posted. Reply to answer under the ask.",
+      title: "When an ask needs someone I know",
+      description: null,
       isOn: isOn(EMAIL_TOPICS.asks),
     });
   }
   if (enabledIds.has(messagesManifest.id)) {
     rows.push({
       topic: EMAIL_TOPICS.messages,
-      title: "Email me when someone messages me",
-      description: "At most one email per conversation every 15 minutes. Reply to it to answer.",
+      title: "When someone messages me",
+      description: "At most one every 15 minutes.",
       isOn: isOn(EMAIL_TOPICS.messages),
     });
   }
@@ -64,14 +64,14 @@ export async function readEmailSettingRows(database: Database, memberId: string)
     rows.push(
       {
         topic: EMAIL_TOPICS.intros,
-        title: "Email me about intro asks and introductions",
-        description: "When a member asks you for an intro, and each step of one you asked for. Off, you’ll still find them on Intros.",
+        title: "Intro asks and introductions",
+        description: null,
         isOn: isOn(EMAIL_TOPICS.intros),
       },
       {
         topic: EMAIL_TOPICS.introReminders,
-        title: "Remind me about intros",
-        description: "One reminder when an intro ask waits for your answer, and one more “was it helpful?”.",
+        title: "Intro reminders",
+        description: "One reminder, then “was it helpful?”",
         isOn: isOn(EMAIL_TOPICS.introReminders),
       },
     );
@@ -80,7 +80,7 @@ export async function readEmailSettingRows(database: Database, memberId: string)
     rows.push({
       topic: EMAIL_TOPICS.network,
       title: "Remind me to connect my network",
-      description: "An admin’s reminder, at most one every 30 days.",
+      description: "At most once a month.",
       isOn: isOn(EMAIL_TOPICS.network),
     });
   }

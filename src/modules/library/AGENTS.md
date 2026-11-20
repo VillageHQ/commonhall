@@ -1,7 +1,8 @@
 # Library
 
 Members share AI skills, agents, prompts, tool connections, automations and playbooks across the portfolio, upvote what
-worked and write one-line reviews; a leaderboard ranks people and companies by upvotes received. Toggleable, on where no
+worked and write one-line reviews; the browse page's "Top" sort (`?sort=top`) ranks items by upvotes and shows the
+month's top sharers (the old `/library/leaderboard` redirects there). Toggleable, on where no
 admin chose, no Village needed. How it works today: `.ai/features/ai-library/NOTES.md`.
 
 - `manifest.ts`: identity, the nav entry, owned paths (`/library`, `/api/library`). `integration.ts`: the removal hook.

@@ -1,4 +1,4 @@
-import { Hand, Pin } from "lucide-react";
+import { Pin, Search } from "lucide-react";
 import Link from "next/link";
 
 import { FlashNote } from "@/components/flash";
@@ -124,122 +124,106 @@ type AskDetailProps = {
   now: Date;
 };
 
-// Commonhall's one ask (postPage): back link, the ask, who can help, the answers and the reply box; "I can help" or
-// the owner's box in the right rail.
+// One ask (round 6): back link, the ask, who can help, the answers, then one way to respond: "I can help" with an
+// optional note on someone else's open ask, or the reply box on your own ask and on an update.
 export function AskDetail({ detail, viewer, isViewerAdmin, flash, now }: AskDetailProps) {
   const { post, helpers, privateOffers } = detail;
   const answers = [...detail.answers, ...privateOffers].toSorted((first, second) => first.createdAt.localeCompare(second.createdAt));
   const isOwn = post.isMine;
   const isAsk = post.kind === ASK_KINDS.ask;
   const isOpen = post.state === ASK_STATES.open;
-  const who = post.who;
+  const canOfferHelp = !isOwn && isOpen && isAsk && !post.viewerHasHelped;
   const offeredBy = new Map(detail.answers.filter(({ kind }) => kind !== ASK_ANSWER_KINDS.answer).map(({ author, kind }) => [author.id, kind]));
   const viewerHelper = helpers.find(({ member }) => member.id === viewer.id) ?? null;
+  // Others see who can help only as a count; the author sees each helper, with the intro buttons.
+  const shownHelpers = isOwn ? helpers : [];
   const pinned = post.isPinned;
   const privateIds = new Set(privateOffers.map(({ id }) => id));
   return (
-    <>
+    <div className="fh-narrow">
       {flash ? <FlashNote>{flash}</FlashNote> : null}
       <BackLink href={ASKS_PAGE}>All asks</BackLink>
-      <div className="fh-asks-grid">
-        <div>
-          <div className="fh-ph fh-askhead">
-            <MemberAvatar member={post.author} />
-            <b>{post.author.name}</b>
-            <span>
-              <CompanyMark url={post.author.companyLogoUrl} />
-              {[describeAbout(post.author), describeAgo(post.createdAt, now)].filter(Boolean).join(" · ")}
-            </span>
-          </div>
-          <h1 className="fh-askbody">{post.body}</h1>
-          <div className="fh-tags" style={{ marginTop: 12 }}>
-            <PostStatusPill kind={post.kind} state={post.state} />
-            {post.targetCompany ? <span className="fh-tag">{post.targetCompany}</span> : null}
-            {post.targetText ? <span className="fh-tag">{post.targetText}</span> : null}
-            {pinned ? (
-              <span className="fh-tag">
-                <Pin {...ICON} />
-                Pinned
-              </span>
-            ) : null}
-          </div>
-          <StatusButtons askId={post.id} isOwn={isOwn} isAsk={isAsk} isOpen={isOpen} isAdmin={isViewerAdmin} isPinned={pinned} />
-          {isOwn && detail.canRenew ? (
-            <div className="fh-btn-row" style={{ marginTop: 8 }}>
-              <RenewButton askId={post.id} />
-            </div>
-          ) : null}
-          {isAsk ? (
-            <section className="fh-section">
-              <h2 className="fh-h2">{helpers.length > 0 ? describeCanHelp(helpers.length) : "Nobody found yet"}</h2>
-              <div className="fh-rule" style={{ margin: "12px 0 0" }} />
-              {helpers.length > 0 ? (
-                helpers.map((helper) => (
-                  <HelperRow
-                    key={helper.member.id}
-                    helper={helper}
-                    viewer={viewer}
-                    viewerId={viewer.id}
-                    isOwn={isOwn}
-                    isOpen={isOpen}
-                    askId={post.id}
-                    askTarget={post.targetName ?? ""}
-                    offeredKind={offeredBy.get(helper.member.id) ?? null}
-                  />
-                ))
-              ) : (
-                <p className="fh-small" style={{ marginTop: 12 }}>
-                  No member has a path to {who || "them"} yet, and no profile fits. The ask still goes into Thursday’s digest, and anyone can answer below.
-                </p>
-              )}
-              <p className="fh-small fh-muted">Paths come only from members who agreed to share their network. Nobody else is named.</p>
-            </section>
-          ) : null}
-          <section className="fh-section" id="answers">
-            <h2 className="fh-h2">{answers.length > 0 ? describeAnswerCount(answers.length) : "No answers yet"}</h2>
-            {answers.length > 0 ? (
-              <div className="fh-comments">
-                {answers.map((answer) => (
-                  <AnswerRow key={answer.id} answer={answer} now={now} canReport={!answer.isMine && !privateIds.has(answer.id)} />
-                ))}
-              </div>
-            ) : null}
-            <AnswerForm askId={post.id} />
-          </section>
-          {isOwn ? null : (
-            <p style={{ marginTop: 16 }}>
-              <ReportLink target="ask" id={post.id} noun={isAsk ? "ask" : "update"} />
-            </p>
-          )}
-        </div>
-        <aside>
-          {!isOwn && isOpen && isAsk ? (
-            <section className="fh-sheet fh-helpbox" id="help">
-              <h2 className="fh-h3">
-                <Hand aria-hidden="true" className="fh-i fh-s inline-block align-[-3px]" strokeWidth={1.5} /> I can help
-              </h2>
-              {post.viewerWhyYou && viewerHelper ? (
-                <p className="fh-small" style={{ marginTop: 6 }}>
-                  <b>Why you:</b> {post.viewerWhyYou}
-                </p>
-              ) : null}
-              <HelpForm askId={post.id} authorFirstName={firstName(post.author.name)} defaultPerson={viewerHelper?.personName ?? ""} />
-            </section>
-          ) : null}
-          {isOwn && isAsk ? (
-            <section className="fh-sheet">
-              <h2 className="fh-h3">Your ask</h2>
-              <p className="fh-small" style={{ marginTop: 6 }}>
-                {helpers.length > 0
-                  ? `${helpers.length} member${helpers.length === 1 ? " was" : "s were"} told by email, and see it on their Today page.`
-                  : "It goes into Thursday’s digest."}{" "}
-                When it’s solved, mark it answered: it stays in the archive.
-              </p>
-              <AskConsent />
-            </section>
-          ) : null}
-        </aside>
+      <div className="fh-ph fh-askhead">
+        <MemberAvatar member={post.author} />
+        <b>{post.author.name}</b>
+        <span>
+          <CompanyMark url={post.author.companyLogoUrl} />
+          {[post.author.company, describeAgo(post.createdAt, now)].filter(Boolean).join(" · ")}
+        </span>
       </div>
-    </>
+      <h1 className="fh-askbody">{post.body}</h1>
+      <div className="fh-tags" style={{ marginTop: 12 }}>
+        {isAsk && isOpen ? null : <PostStatusPill kind={post.kind} state={post.state} />}
+        {isAsk && post.who ? (
+          <span className="fh-tag">
+            <Search {...ICON} />
+            {post.who}
+          </span>
+        ) : null}
+        {pinned ? (
+          <span className="fh-tag">
+            <Pin {...ICON} />
+            Pinned
+          </span>
+        ) : null}
+      </div>
+      <StatusButtons askId={post.id} isOwn={isOwn} isAsk={isAsk} isOpen={isOpen} isAdmin={isViewerAdmin} isPinned={pinned} />
+      {isOwn && detail.canRenew ? (
+        <div className="fh-btn-row" style={{ marginTop: 8 }}>
+          <RenewButton askId={post.id} />
+        </div>
+      ) : null}
+      {isAsk && isOpen && (helpers.length > 0 || answers.length === 0) ? (
+        <p className="fh-small fh-muted" style={{ marginTop: 12 }}>
+          {helpers.length > 0 ? `${describeCanHelp(helpers.length)}.` : "Nobody has a path yet; anyone can help."}
+        </p>
+      ) : null}
+      {shownHelpers.length > 0 ? (
+        <section className="fh-section">
+          {shownHelpers.map((helper) => (
+            <HelperRow
+              key={helper.member.id}
+              helper={helper}
+              viewer={viewer}
+              viewerId={viewer.id}
+              isOwn={isOwn}
+              isOpen={isOpen}
+              askId={post.id}
+              askTarget={post.targetName ?? ""}
+              offeredKind={offeredBy.get(helper.member.id) ?? null}
+            />
+          ))}
+          {isOpen ? <AskConsent /> : null}
+        </section>
+      ) : null}
+      {canOfferHelp ? (
+        <section className="fh-sheet fh-helpbox" id="help" style={{ marginTop: 16 }}>
+          {post.viewerWhyYou && viewerHelper ? (
+            <p className="fh-small">
+              <b>Why you:</b> {post.viewerWhyYou}
+            </p>
+          ) : null}
+          <HelpForm askId={post.id} authorFirstName={firstName(post.author.name)} knownPerson={viewerHelper?.personName ?? null} />
+        </section>
+      ) : null}
+      <section className="fh-section" id="answers">
+        {answers.length > 0 ? (
+          <>
+            <h2 className="fh-h2">{describeAnswerCount(answers.length)}</h2>
+            <div className="fh-comments">
+              {answers.map((answer) => (
+                <AnswerRow key={answer.id} answer={answer} now={now} canReport={!answer.isMine && !privateIds.has(answer.id)} />
+              ))}
+            </div>
+          </>
+        ) : null}
+        {canOfferHelp ? null : <AnswerForm askId={post.id} />}
+      </section>
+      {isOwn ? null : (
+        <p style={{ marginTop: 16 }}>
+          <ReportLink target="ask" id={post.id} noun={isAsk ? "ask" : "update"} />
+        </p>
+      )}
+    </div>
   );
 }

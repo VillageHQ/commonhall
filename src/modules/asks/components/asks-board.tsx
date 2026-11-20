@@ -1,29 +1,25 @@
 import Link from "next/link";
 
-import { EmptyState } from "@/components/empty-state";
 import { FlashNote } from "@/components/flash";
 import { PageHeader } from "@/components/page-header";
 import { ChipCount, ChipRow, CHIP_CLASSES } from "@/components/ui/chip";
 import { SearchBox } from "@/components/ui/search-box";
-import { Stepper } from "@/components/ui/stepper";
 
-import { ASK_BOARD_TABS, ASK_TABS, ASKS_PAGE, type AskAllowance, type AskTab } from "../contract";
+import { ASK_PAGE_TABS, ASK_TABS, ASKS_PAGE, type AskAllowance, type AskTab } from "../contract";
 import type { AskTabCounts, BoardPost } from "../reads-board";
 import type { AskDraftParts } from "../rules-board-url";
 import { AsksComposer } from "./asks-composer";
 import { AskConsent, PostCard } from "./post-parts";
 
-const EMPTY_ASKS = "No open asks yet. When a founder needs someone, the ask shows here and in Thursday’s digest.";
-
-const EMPTY_TABS: Record<AskTab, { title: string; line: string }> = {
-  [ASK_BOARD_TABS.open]: { title: "No open asks", line: EMPTY_ASKS },
-  [ASK_BOARD_TABS.updates]: { title: "No updates yet", line: "Share a hire, a launch or a round in one line." },
-  [ASK_BOARD_TABS.yours]: { title: "You haven’t posted yet", line: "Post an ask in one line above. It goes to the members who can help." },
-  [ASK_BOARD_TABS.answered]: { title: "Nothing answered yet", line: "Answered asks stay here, searchable." },
+// An empty state is one line (the box above is its button).
+const EMPTY_TABS: Record<AskTab, string> = {
+  [ASK_PAGE_TABS.open]: "No open asks yet.",
+  [ASK_PAGE_TABS.forYou]: "Nothing for you right now.",
+  [ASK_PAGE_TABS.yours]: "You haven’t posted yet.",
+  [ASK_PAGE_TABS.answered]: "Nothing answered yet.",
 };
 
 type AsksBoardProps = {
-  communityName: string;
   tab: AskTab;
   search: string | null;
   posts: BoardPost[];
@@ -31,76 +27,57 @@ type AsksBoardProps = {
   allowance: AskAllowance;
   flash: string | null;
   draft: AskDraftParts | null;
-  now: Date;
+  // `?compose=1` (Today's "Post an ask"): the box takes the focus.
+  isComposing?: boolean;
 };
 
-function toTabHref(tab: AskTab, search: string | null) {
-  const params = new URLSearchParams({ tab });
-  if (search) params.set("q", search);
-  return `${ASKS_PAGE}?${params.toString()}`;
+function toTabHref(tab: AskTab) {
+  return tab === ASK_PAGE_TABS.open ? ASKS_PAGE : `${ASKS_PAGE}?tab=${tab}`;
 }
 
-// Commonhall's Asks & updates (asksPage): head, then the composer, the archive search, the tabs and the posts in one
-// column; "How asks work" in the right rail on a desktop.
-export function AsksBoard({ communityName, tab, search, posts, counts, allowance, flash, draft, now }: AsksBoardProps) {
+// The Asks page (round 6): "What do you need?" first, then the archive search, the Open · For you · Yours filters and
+// the posts, in one column. "How asks work" stays folded at the foot.
+export function AsksBoard({ tab, search, posts, counts, allowance, flash, draft, isComposing = false }: AsksBoardProps) {
   return (
-    <>
+    <div className="fh-narrow">
       {flash ? <FlashNote>{flash}</FlashNote> : null}
-      <PageHeader
-        title="Asks & updates"
-        description={`Ask ${communityName} for a person, a hire or an answer. Each ask goes to the members who can help, and into Thursday’s digest.`}
-      />
-      <div className="fh-asks-grid">
-        <div>
-          <AsksComposer communityName={communityName} allowance={allowance} draft={draft} />
-          <form method="get" action={ASKS_PAGE} role="search" className="fh-archive">
-            <input type="hidden" name="tab" value={search ? "all" : tab} />
-            <SearchBox name="q" defaultValue={search ?? ""} placeholder="Search every ask and its answers" aria-label="Search the archive" />
-          </form>
-          {search ? (
-            <p className="fh-small fh-muted" style={{ margin: "12px 0 4px" }}>
-              {posts.length} result{posts.length === 1 ? "" : "s"} in the archive for “{search}” · <Link href={ASKS_PAGE}>Clear</Link>
-            </p>
-          ) : (
-            <ChipRow className="fh-tabs" aria-label="Asks">
-              {ASK_TABS.map(([key, label]) => (
-                <Link key={key} className={CHIP_CLASSES} href={toTabHref(key, null)} aria-pressed={tab === key}>
-                  {label}
-                  <ChipCount>{counts[key]}</ChipCount>
-                </Link>
-              ))}
-            </ChipRow>
-          )}
-          <div className="fh-posts">
-            {posts.length > 0 ? (
-              posts.map((post) => <PostCard key={post.id} post={post} now={now} isYoursTab={tab === ASK_BOARD_TABS.yours} />)
-            ) : (
-              <div style={{ marginTop: 12 }}>
-                {search ? (
-                  <EmptyState title={`No ask matches “${search}”`} description="The archive covers every ask and its answers. Try fewer words." />
-                ) : (
-                  <EmptyState title={EMPTY_TABS[tab].title} description={EMPTY_TABS[tab].line} />
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-        <aside className="fh-desk-only">
-          <section className="fh-sheet">
-            <h2 className="fh-h3">How asks work</h2>
-            <Stepper
-              className="mt-3.5"
-              steps={[
-                { key: "post", state: "done", title: "Post it in one line", detail: `${allowance.cap} asks a week, posts and intro asks together, so every one gets read.` },
-                { key: "find", state: "done", title: "We find who can help", detail: "Members with a warm path, and members whose profile fits. They get an email and see it on Today." },
-                { key: "help", state: "done", title: "“I can help”", detail: "Someone who knows the person starts an intro; someone who has done it answers here." },
-                { key: "answered", state: "todo", title: "Answered", detail: "Mark it answered. It stays in the archive." },
-              ]}
-            />
-            <AskConsent />
-          </section>
-        </aside>
+      <PageHeader title="Asks" />
+      <AsksComposer allowance={allowance} draft={draft} isComposing={isComposing} />
+      <form method="get" action={ASKS_PAGE} role="search" className="fh-archive">
+        <SearchBox name="q" defaultValue={search ?? ""} placeholder="Search every ask and its answers" aria-label="Search asks" />
+      </form>
+      {search ? (
+        <p className="fh-small fh-muted" style={{ margin: "12px 0 4px" }}>
+          {posts.length} result{posts.length === 1 ? "" : "s"} for “{search}” · <Link href={ASKS_PAGE}>Clear</Link>
+        </p>
+      ) : (
+        <ChipRow className="fh-tabs" aria-label="Asks">
+          {ASK_TABS.map(([key, label]) => (
+            <Link key={key} className={CHIP_CLASSES} href={toTabHref(key)} aria-pressed={tab === key}>
+              {label}
+              {key === ASK_PAGE_TABS.forYou && counts[key] > 0 ? <ChipCount>{counts[key]}</ChipCount> : null}
+            </Link>
+          ))}
+        </ChipRow>
+      )}
+      <div className="fh-posts">
+        {posts.length > 0 ? (
+          posts.map((post) => <PostCard key={post.id} post={post} isYoursTab={tab === ASK_PAGE_TABS.yours} />)
+        ) : (
+          <p className="fh-empty" style={{ marginTop: 12 }}>
+            {search ? `No ask matches “${search}”.` : EMPTY_TABS[tab]}
+          </p>
+        )}
       </div>
-    </>
+      <details className="fh-more" style={{ marginTop: 20 }}>
+        <summary className="fh-small">How asks work</summary>
+        <ul className="fh-small fh-muted" style={{ margin: "8px 0 0", paddingLeft: 18, listStyle: "disc" }}>
+          <li>We tell the members who know the person, or have done it.</li>
+          <li>They answer under the ask, or offer an intro.</li>
+          <li>Mark it answered when it’s solved.</li>
+        </ul>
+        <AskConsent />
+      </details>
+    </div>
   );
 }

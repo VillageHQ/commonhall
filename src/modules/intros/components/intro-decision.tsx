@@ -12,7 +12,7 @@ import { RequestFailure } from "@/platform/http/post-request";
 import { INTRO_ERROR_CODES, INTRO_LIMITS } from "../contract";
 import { RESULT_LABELS } from "./intro-words";
 
-// Commonhall's decision form (`.decide`, crop decide-form.png): option cards, the person's email (only with a yes),
+// Commonhall's decision form (`.decide`, crop decide-form.png): option cards, the person's email (only once yes is picked),
 // "Edit the note before it goes on", one block button, the consent line. Used by the connector on the intro page and
 // on the public page, by the person asked, and for "Was it helpful?".
 
@@ -32,9 +32,13 @@ const FIELD_BY_CODE: Record<string, Field> = {
 
 type DecisionFormProps = {
   legend: string;
+  // The page's own heading asks the question, so the legend is read out but not shown again.
+  isLegendShown?: boolean;
+  submitLabel?: string;
+  noteLabel?: string;
   choices: readonly DecisionChoice[];
   initialChoice?: string | null;
-  // The person's email, shown while "yes" is picked (Commonhall's `.ifyes`).
+  // The person's email, shown once "yes" is picked.
   email?: { label: string; hint: string; initial: string | null } | null;
   // The connector may edit the note before it goes on.
   note?: string | null;
@@ -49,7 +53,7 @@ type DecisionFormProps = {
   onClosed?: () => void;
 };
 
-export function DecisionForm({ legend, choices, initialChoice = null, email = null, note = null, withResults = false, hasConsentLine = true, withPrivateNote = false, submit, after, onClosed }: DecisionFormProps) {
+export function DecisionForm({ legend, isLegendShown = true, submitLabel = "Send my answer", noteLabel = "Edit the note before it goes on", choices, initialChoice = null, email = null, note = null, withResults = false, hasConsentLine = true, withPrivateNote = false, submit, after, onClosed }: DecisionFormProps) {
   const id = useId();
   const [error, setError] = useState<{ message: string; field: Field | null } | null>(null);
   const [isPending, setIsPending] = useState(false);
@@ -95,8 +99,8 @@ export function DecisionForm({ legend, choices, initialChoice = null, email = nu
           <span>{error.message}</span>
         </div>
       ) : null}
-      <fieldset className="fh-choices">
-        <legend className="fh-label">{legend}</legend>
+      <fieldset className="fh-choices" aria-label={isLegendShown ? undefined : legend}>
+        {isLegendShown ? <legend className="fh-label">{legend}</legend> : null}
         {choices.map((choice) => (
           <OptionCard
             key={choice.value}
@@ -121,7 +125,7 @@ export function DecisionForm({ legend, choices, initialChoice = null, email = nu
         </fieldset>
       ) : null}
       {email ? (
-        <div className="fh-field fh-ifyes">
+        <div className={emailError ? "fh-field" : "fh-field hidden [.fh-decide:has(input[name=a][value=yes]:checked)_&]:block"}>
           <label className="fh-label" htmlFor={`${id}-email`}>
             {email.label}
           </label>
@@ -144,7 +148,7 @@ export function DecisionForm({ legend, choices, initialChoice = null, email = nu
       ) : null}
       {note !== null ? (
         <details className="fh-field" open={noteError ? true : undefined}>
-          <summary className="fh-small">Edit the note before it goes on</summary>
+          <summary className="fh-small">{noteLabel}</summary>
           <Textarea name={FIELDS.note} maxLength={INTRO_LIMITS.noteLength} rows={6} defaultValue={note} className="mt-2" />
           {noteError ? <p className="fh-hint fh-err">{noteError}</p> : null}
         </details>
@@ -160,7 +164,7 @@ export function DecisionForm({ legend, choices, initialChoice = null, email = nu
       ) : null}
       <div className="fh-btn-row mt-3.5">
         <Button type="submit" width="block" disabled={isPending}>
-          Send my answer
+          {submitLabel}
         </Button>
       </div>
       {hasConsentLine ? (

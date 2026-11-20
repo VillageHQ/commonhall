@@ -110,11 +110,12 @@ describe("the intro screens (Commonhall's)", () => {
 
       expect(screen.getByRole("heading", { level: 1, name: "Sam ↔ Rosa, via Marcus" })).toBeTruthy();
       expect(screen.getByText("With Marcus")).toBeTruthy();
-      expect(screen.getByText("CTO, Halcyon Health. Nobody is introduced without saying yes.")).toBeTruthy();
+      expect(screen.getByText("CTO, Halcyon Health")).toBeTruthy();
       for (const step of ["You asked Marcus", "Marcus decides", "Rosa decides", "Introduced by email from Northwind Founders", "Was it helpful?"]) {
         expect(screen.getByText(step)).toBeTruthy();
       }
       expect(screen.getByText("Sam’s note, as sent")).toBeTruthy();
+      expect(screen.getByText("Admins see names, never the note.")).toBeTruthy();
       expect(screen.getByText("Marcus won’t be asked again, and the ask comes back to you.")).toBeTruthy();
 
       fireEvent.click(screen.getByRole("button", { name: "Withdraw my ask" }));
@@ -185,26 +186,44 @@ describe("the intro screens (Commonhall's)", () => {
   describe("the connector's answer", () => {
     const asked = makeIntro({ viewerRole: INTRO_ROLES.introducer, requester: { ...MARCUS }, introducer: { ...SAM }, target: { name: "Rachel Kim", headline: "CFO at Brightside Clinics", linkedinSlug: null, isNamed: true } });
 
-    it("shows Commonhall's three choices, the person's email and the note to edit", () => {
+    it("asks the question first: three choices, the person's email and the note to edit, the consent line once", () => {
       renderInApp(createElement(IntroPage, { intro: asked, community: COMMUNITY, canEmail: true, hasThread: false }));
 
-      expect(screen.getByText("Would you introduce them?")).toBeTruthy();
-      expect(screen.getByText("We email Rachel once, from Northwind Founders, in your name.")).toBeTruthy();
-      expect(screen.getByText("Marcus is told you can’t make this one. Never why.")).toBeTruthy();
-      expect(screen.getByText("Same message to Marcus: you can’t make this one.")).toBeTruthy();
-      expect(screen.getByLabelText("Rachel’s email, if you say yes")).toBeTruthy();
-      expect(screen.getByText("Used for this one ask. Rachel sees Marcus’ address only if they say yes.")).toBeTruthy();
-      expect(screen.getByText("Edit the note before it goes on")).toBeTruthy();
+      expect(screen.getByRole("heading", { level: 1, name: "Introduce Marcus to Rachel?" })).toBeTruthy();
+      expect(screen.getByRole("group", { name: "Introduce Marcus to Rachel?" })).toBeTruthy();
+      expect(screen.getByText("Marcus is never told why.")).toBeTruthy();
+      expect(screen.getByLabelText(/I don’t know them well/)).toBeTruthy();
+      expect(screen.getByLabelText("Rachel’s email")).toBeTruthy();
+      expect(screen.getByText("Rachel sees Marcus’ address only after saying yes.")).toBeTruthy();
+      expect(screen.getByText("Edit the note")).toBeTruthy();
       expect(screen.getByText("Marcus’ note")).toBeTruthy();
+      expect(screen.getAllByText("Nobody is introduced without saying yes.")).toHaveLength(1);
       expect(screen.getByRole("button", { name: "Report this note" })).toBeTruthy();
+    });
+
+    it("needs no email typed when the asker gave the person's address, and never shows it", async () => {
+      const withAddress = { ...asked, suggestedTargetEmail: "rachel@brightside.example" };
+      const { container } = renderInApp(createElement(IntroPage, { intro: withAddress, community: COMMUNITY, canEmail: true, hasThread: false }));
+
+      expect(screen.queryByLabelText("Rachel’s email")).toBeNull();
+      expect(container.innerHTML).not.toContain("rachel@brightside.example");
+      fireEvent.click(screen.getByLabelText(/Yes, introduce them/));
+      fireEvent.click(screen.getByRole("button", { name: "Send" }));
+
+      await waitFor(() =>
+        expect(posts).toContainEqual({
+          path: API_ROUTES.introConnectorAnswer,
+          body: { introId: asked.id, choice: "yes", targetEmail: null, note: NOTE, reason: null },
+        }),
+      );
     });
 
     it("sends the yes with the address and the edited note in one step", async () => {
       renderInApp(createElement(IntroPage, { intro: asked, community: COMMUNITY, canEmail: true, hasThread: false }));
 
       fireEvent.click(screen.getByLabelText(/Yes, introduce them/));
-      fireEvent.change(screen.getByLabelText("Rachel’s email, if you say yes"), { target: { value: "rachel@brightside.example" } });
-      fireEvent.click(screen.getByRole("button", { name: "Send my answer" }));
+      fireEvent.change(screen.getByLabelText("Rachel’s email"), { target: { value: "rachel@brightside.example" } });
+      fireEvent.click(screen.getByRole("button", { name: "Send" }));
 
       await waitFor(() =>
         expect(posts).toContainEqual({
@@ -217,8 +236,8 @@ describe("the intro screens (Commonhall's)", () => {
     it("asks for an answer before sending", async () => {
       renderInApp(createElement(IntroPage, { intro: asked, community: COMMUNITY, canEmail: false, hasThread: false }));
 
-      expect(screen.queryByLabelText("Rachel’s email, if you say yes")).toBeNull();
-      fireEvent.click(screen.getByRole("button", { name: "Send my answer" }));
+      expect(screen.queryByLabelText("Rachel’s email")).toBeNull();
+      fireEvent.click(screen.getByRole("button", { name: "Send" }));
 
       expect(await screen.findByText("Pick an answer.")).toBeTruthy();
       expect(posts).toEqual([]);

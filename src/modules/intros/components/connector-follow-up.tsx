@@ -194,9 +194,9 @@ export function ReportNote({ intro }: { intro: Intro }) {
   }
   return (
     <div>
-      <Button ref={reportButton} type="button" variant="quiet" size="sm" onClick={() => setIsConfirming(true)}>
+      <Button ref={reportButton} type="button" variant="quiet" size="sm" aria-label="Report this note" title="Report this note" onClick={() => setIsConfirming(true)}>
         <Flag aria-hidden="true" />
-        Report this note
+        Report
       </Button>
     </div>
   );

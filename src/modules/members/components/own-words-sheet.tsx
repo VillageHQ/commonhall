@@ -19,8 +19,9 @@ import { API_ROUTES, ROUTES } from "@/platform/http/routes";
 import { OWN_FIELD_KEYS, type OwnFieldKey } from "@/modules/members/contract-own-words";
 
 
-// Commonhall's "In your own words" (member-me-profile, member-me-edit-field): one ruled block per field with its
-// source ("you" or "from public profiles") and an Edit link; Edit opens that one field in place, Save or Cancel.
+// Commonhall's "In your own words" (member-me-profile, member-me-edit-field): one ruled block per field and an Edit link;
+// Edit opens that one field in place, Save or Cancel. A line filled in from public profiles carries that badge; the
+// member's own words carry none (round 6: a badge only where it applies).
 
 export type OwnField = {
   key: OwnFieldKey;
@@ -124,12 +125,12 @@ function FieldEditor({ field, onDone }: { field: OwnField; onDone: () => void })
 
 function FieldRow({ field, isEditing, onEdit, onDone }: { field: OwnField; isEditing: boolean; onEdit: () => void; onDone: () => void }) {
   const shownValue = field.ownValue || field.filledValue;
-  const source = field.ownValue ? "you" : field.filledValue ? "village" : null;
+  const isFilledIn = !field.ownValue && Boolean(field.filledValue);
   return (
     <div className={cn("fh-fieldblock", isEditing && "fh-editing")} id={`f-${field.key}`}>
       <div className="fh-k">
         <span>
-          {field.label} {source ? <SourceBadge source={source} /> : null}
+          {field.label} {isFilledIn ? <SourceBadge source="village" /> : null}
         </span>
         <Button asChild variant="quiet" size="sm">
           <Link
@@ -152,7 +153,7 @@ function FieldRow({ field, isEditing, onEdit, onDone }: { field: OwnField; isEdi
   );
 }
 
-export function OwnWordsSheet({ fields, isFillInOn, communityName }: { fields: readonly OwnField[]; isFillInOn: boolean; communityName: string }) {
+export function OwnWordsSheet({ fields }: { fields: readonly OwnField[] }) {
   const searchParams = useSearchParams();
   const asked = searchParams.get("edit");
   const [editing, setEditing] = useState<string | null>(asked);
@@ -171,10 +172,6 @@ export function OwnWordsSheet({ fields, isFillInOn, communityName }: { fields: r
       {fields.map((field) => (
         <FieldRow key={field.key} field={field} isEditing={editing === field.key} onEdit={() => setEditing(field.key)} onDone={() => setEditing(null)} />
       ))}
-      <p className="fh-small fh-muted mt-2">
-        “you” marks your own words. Lines “from public profiles” are filled in{isFillInOn ? "" : ` once ${communityName} switches on profile fill-in`}; your own words always win.{" "}
-        <Link href={ROUTES.yourData}>Your data</Link>
-      </p>
     </section>
   );
 }

@@ -80,8 +80,11 @@ function describeSize(bytes: number) {
   return bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))} KB` : `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-// Publish in one form: what it is, the files or a link, how to install it, and who can see it. A new version of your
-// own item uses the same form, filled in.
+// The upload's one promise, shown once, on the form that spends it.
+export const LIBRARY_FILES_HINT = "Checked for keys and passwords. 10 MB at most.";
+
+// Publish in one form: what it is, the files, who can see it; a link and install steps under "More details". A new
+// version of your own item uses the same form, filled in.
 export function PublishForm({ initial, ownCompany }: { initial: PublishDraft; ownCompany: string | null }) {
   const router = useRouter();
   const [draft, setDraft] = useState(initial);
@@ -129,7 +132,7 @@ export function PublishForm({ initial, ownCompany }: { initial: PublishDraft; ow
       <Field htmlFor="library-title" label="Title">
         <Input id="library-title" value={draft.title} onChange={(event) => set("title", event.target.value)} maxLength={LIBRARY_LIMITS.titleLength} required placeholder="Outbound email reviewer" />
       </Field>
-      <Field htmlFor="library-pitch" label="One-line pitch" hint="What it does for you, in one line." className="mt-4">
+      <Field htmlFor="library-pitch" label="One-line pitch" className="mt-4">
         <Input id="library-pitch" value={draft.pitch} onChange={(event) => set("pitch", event.target.value)} maxLength={LIBRARY_LIMITS.pitchLength} required placeholder="Scores a cold email and rewrites the opening line" />
       </Field>
       <div className="fh-lib-two mt-4">
@@ -143,7 +146,7 @@ export function PublishForm({ initial, ownCompany }: { initial: PublishDraft; ow
             ))}
           </Select>
         </Field>
-        <Field htmlFor="library-job" label="Job it helps with">
+        <Field htmlFor="library-job" label="Role">
           <Select id="library-job" value={draft.job} onChange={(event) => set("job", event.target.value as LibraryJob)} required>
             <option value="">Pick one</option>
             {(Object.entries(LIBRARY_JOB_LABELS) as [LibraryJob, string][]).map(([job, label]) => (
@@ -154,13 +157,13 @@ export function PublishForm({ initial, ownCompany }: { initial: PublishDraft; ow
           </Select>
         </Field>
       </div>
-      <Field htmlFor="library-description" label="Description" hint="What it is, when to use it, what it needs." className="mt-4">
+      <Field htmlFor="library-description" label="Description" className="mt-4">
         <Textarea id="library-description" rows={5} value={draft.description} onChange={(event) => set("description", event.target.value)} maxLength={LIBRARY_LIMITS.descriptionLength} />
       </Field>
       <Field
         htmlFor="library-files"
         label={isNewVersion ? "Files for the new version" : "Files"}
-        hint={`zip, md, txt, json, yaml, py, js or ts; 10 MB at most in all. Each file is checked for keys and passwords before it is saved.${isNewVersion ? " Leave empty to keep the current files." : ""}`}
+        hint={`${LIBRARY_FILES_HINT}${isNewVersion ? " Empty keeps the current files." : ""}`}
         className="mt-4"
       >
         <Input id="library-files" type="file" multiple accept={LIBRARY_FILE_ACCEPT} onChange={(event) => setFiles([...(event.target.files ?? [])])} />
@@ -174,12 +177,15 @@ export function PublishForm({ initial, ownCompany }: { initial: PublishDraft; ow
           ))}
         </ul>
       ) : null}
-      <Field htmlFor="library-link" label="Or a link" hint="A repo, a gist or a page, if it lives somewhere else." className="mt-4">
-        <Input id="library-link" type="url" value={draft.link} onChange={(event) => set("link", event.target.value)} maxLength={LIBRARY_LIMITS.linkLength} placeholder="https://" />
-      </Field>
-      <Field htmlFor="library-install" label="How to install" hint="The steps someone follows to use it." className="mt-4">
-        <Textarea id="library-install" rows={4} value={draft.install} onChange={(event) => set("install", event.target.value)} maxLength={LIBRARY_LIMITS.installLength} />
-      </Field>
+      <details className="fh-others mt-4" open={Boolean(initial.link || initial.install)}>
+        <summary className="fh-small">More details</summary>
+        <Field htmlFor="library-link" label="Or a link" className="mt-3">
+          <Input id="library-link" type="url" value={draft.link} onChange={(event) => set("link", event.target.value)} maxLength={LIBRARY_LIMITS.linkLength} placeholder="https://github.com/…" />
+        </Field>
+        <Field htmlFor="library-install" label="How to install" className="mt-4">
+          <Textarea id="library-install" rows={4} value={draft.install} onChange={(event) => set("install", event.target.value)} maxLength={LIBRARY_LIMITS.installLength} />
+        </Field>
+      </details>
       <fieldset className="mt-4">
         <legend className="fh-label">Who can see it</legend>
         {(Object.entries(LIBRARY_VISIBILITY_LABELS) as [LibraryVisibility, string][]).map(([visibility, label]) => (
@@ -190,7 +196,7 @@ export function PublishForm({ initial, ownCompany }: { initial: PublishDraft; ow
         ))}
       </fieldset>
       {draft.visibility === LIBRARY_VISIBILITIES.companies ? (
-        <Field htmlFor="library-companies" label="Companies" hint={`Their names as on members’ cards, with commas between.${ownCompany ? ` You always see your own items.` : ""}`} className="mt-3">
+        <Field htmlFor="library-companies" label="Companies" hint="Names as on members’ cards, with commas between." className="mt-3">
           <Input id="library-companies" value={draft.companies} onChange={(event) => set("companies", event.target.value)} placeholder={ownCompany ?? "Ledgerline, Gridwise"} />
         </Field>
       ) : null}

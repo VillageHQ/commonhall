@@ -285,19 +285,19 @@ describe("an intro asked from a profile, with Village off", () => {
       const page = await renderJonasProfile();
 
       expect(page).not.toContain("Ask for an intro via Jonas");
-      expect(page).toContain("intros go through members the admins chose");
+      expect(page).toContain("Intros here go through members the admins chose.");
     });
 
     it("shows who they can introduce only while the network is on", async () => {
       expect(await renderJonasProfile()).not.toContain("Who Jonas can introduce you to");
 
       await saveModuleState(database, networkManifest, true);
-      expect(await renderJonasProfile()).toContain("Jonas hasn’t shared a network, so there are no paths through them yet.");
+      expect(await renderJonasProfile()).toContain("Jonas hasn’t shared a network yet.");
 
       await joinMemberToGroup(database, jonas.userId, "jonas-lindqvist");
       const page = await renderJonasProfile();
       expect(page).toContain("Who Jonas can introduce you to");
-      expect(page).toContain("network is shared with");
+      expect(page).toContain("You see who Jonas knows, never the contact list.");
     });
   });
 });

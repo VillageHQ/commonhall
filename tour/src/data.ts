@@ -158,7 +158,7 @@ export const ASK_POSTS: BoardPost[] = [
   post("00000000-0000-4000-8000-0000000a0003", "kwame.asante", "Freight forwarders in Rotterdam", 70, { helperCount: 1, pathHelperCount: 1, helperFaces: [askMember("marcus.webb")], answerCount: 1 }),
 ];
 
-export const ASK_COUNTS: AskTabCounts = { open: 3, updates: 2, yours: 0, answered: 14 };
+export const ASK_COUNTS: AskTabCounts = { open: 3, "for-you": 1, yours: 0, answered: 14 };
 
 export const ASK_ALLOWANCE: AskAllowance = { cap: 5, used: 1, left: 4, backAt: null };
 

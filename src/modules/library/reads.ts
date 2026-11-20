@@ -116,7 +116,7 @@ export type LibraryCard = {
   updatedAt: string;
 };
 
-export type LibraryFilters = { kind: LibraryKind | null; job: LibraryJob | null; search: string | null; mine?: boolean };
+export type LibraryFilters = { kind: LibraryKind | null; job: LibraryJob | null; search: string | null; mine?: boolean; top?: boolean };
 
 function readSearchWords(search: string | null) {
   return (search ?? "").split(/\s+/).filter(Boolean).slice(0, 8);
@@ -172,9 +172,9 @@ function toCard(row: CardRow, viewerId: string): LibraryCard {
   };
 }
 
-// Browse: featured items first, then the most upvoted, then the newest. Search matches every typed word in the title
+// Browse: featured items first (not under "Top"), then the most upvoted, then the newest. Search matches every typed word in the title
 // or the pitch.
-export async function readLibraryItems(database: Database, viewer: LibraryViewer, { kind, job, search, mine = false }: LibraryFilters, now = new Date()) {
+export async function readLibraryItems(database: Database, viewer: LibraryViewer, { kind, job, search, mine = false, top = false }: LibraryFilters, now = new Date()) {
   const words = readSearchWords(search);
   const rows = await database
     .select(cardColumns(viewer.id))
@@ -190,7 +190,7 @@ export async function readLibraryItems(database: Database, viewer: LibraryViewer
         ...words.map((word) => or(ilike(libraryItem.title, `%${escapeLike(word)}%`), ilike(libraryItem.pitch, `%${escapeLike(word)}%`))),
       ),
     )
-    .orderBy(sql`${libraryItem.featuredAt} is null`, desc(upvoteCount), desc(libraryItem.updatedAt), desc(libraryItem.id))
+    .orderBy(...(top ? [] : [sql`${libraryItem.featuredAt} is null`]), desc(upvoteCount), desc(libraryItem.updatedAt), desc(libraryItem.id))
     .limit(LIBRARY_LIMITS.itemsPerPage);
   return rows.map((row) => toCard(row, viewer.id));
 }
@@ -351,20 +351,6 @@ export async function readLeaderboard(database: Database, viewer: LibraryViewer,
     people: people.map((row) => ({ member: toAuthor(row), upvotes: row.upvotes })),
     companies: companies.map(({ company: name, logoUrl, upvotes, people: count }) => ({ company: name, logoUrl, upvotes, people: count })),
   };
-}
-
-// Today's "New in the library": the newest items the member may see from the last two weeks, not their own.
-export async function readNewLibraryItems(database: Database, viewer: LibraryViewer, now = new Date()) {
-  const since = new Date(now.getTime() - LIBRARY_LIMITS.todayDays * 24 * 60 * 60 * 1000);
-  const rows = await database
-    .select(cardColumns(viewer.id))
-    .from(libraryItem)
-    .innerJoin(user, eq(user.id, libraryItem.authorId))
-    .leftJoin(memberProfile, eq(memberProfile.userId, libraryItem.authorId))
-    .where(and(isItemVisibleTo(viewer, now), gte(libraryItem.createdAt, since), sql`${libraryItem.authorId} <> ${viewer.id}`))
-    .orderBy(desc(libraryItem.createdAt))
-    .limit(LIBRARY_LIMITS.todayItems);
-  return rows.map((row) => toCard(row, viewer.id));
 }
 
 export async function countFeaturedItems(connection: DatabaseOrTransaction) {

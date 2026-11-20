@@ -138,9 +138,9 @@ export const TOUR_STEPS: readonly TourStep[] = [
   {
     id: "library",
     label: "AI library",
-    caption: "Founders share the AI skills, agents and prompts that work for them. Upvote what helped; the leaderboard shows who shares most.",
+    caption: "Founders share the AI skills, agents and prompts that work for them. Upvote what helped; Top shows what others use most.",
     start: "/library",
-    still: "/library/leaderboard",
+    still: "/library",
     async play(hands) {
       await hands.wait(500);
       await hands.point("[data-testid='library-card'] .fh-lib-title");
@@ -148,11 +148,7 @@ export const TOUR_STEPS: readonly TourStep[] = [
       // An upvote is a request: the tour only presses.
       await hands.tap("[data-testid='library-card']:nth-child(2) .fh-lib-vote button");
       await hands.wait(700);
-      await hands.click("main .fh-btn-row a[href='/library/leaderboard']");
-      await hands.wait(900);
-      await hands.point("[data-testid='board-people'] li");
-      await hands.wait(1400);
-      await hands.point("[data-testid='board-companies'] li");
+      await hands.point("main .fh-chips a[href$='sort=top']");
       await hands.wait(1800);
     },
   },

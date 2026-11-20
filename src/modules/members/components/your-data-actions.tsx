@@ -38,11 +38,11 @@ export function ExportSheet() {
       <h2 id="export-title" className="fh-h3 flex items-center gap-1.5">
         <Download aria-hidden="true" className="fh-i fh-s" strokeWidth={1.5} /> Take it with you
       </h2>
-      <p className="fh-small mt-1.5">Everything above about you, as one JSON file.</p>
+      <p className="fh-small mt-1.5">Everything above, as one file.</p>
       <div className="fh-btn-row mt-2.5">
         <Button type="button" variant="secondary" size="sm" disabled={download.isPending} onClick={() => download.mutate()}>
           <Download aria-hidden="true" className="fh-i fh-xs" strokeWidth={1.5} />
-          Export my data (JSON)
+          Export my data
         </Button>
       </div>
       <FormError message={download.error?.message ?? null} />
@@ -73,8 +73,8 @@ export function DeleteAccountSheet({ communityName, isAdmin }: { communityName: 
         <X aria-hidden="true" className="fh-i fh-s" strokeWidth={1.5} /> Delete my account
       </h2>
       <p className="fh-small mt-1.5">
-        Deletes your profile, asks and messages from {communityName} for good. If you joined network search, Village is asked to remove you too. Intros you were part of
-        stay only as anonymous counts. There is no undo: export your data first if you want a copy.
+        Deletes your profile, asks and messages from {communityName} for good. If you joined network search, Village is asked to remove you too. Intros stay as anonymous counts. No
+        undo.
       </p>
       {isAdmin ? <p className="fh-small mt-1.5">You are an admin. If you are the only one, make another member an admin first.</p> : null}
       {deletion.data?.isVillageIncomplete ? (
