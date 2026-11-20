@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { detectImageContentType } from "@/platform/image-rules";
 import { parseReturnPath, toSignInPath } from "@/platform/http/return-path";
-import { parseDirectoryFilters, toDirectoryQueryString } from "./rules-directory-url";
+import { parseDirectoryFilters, toDirectoryQueryString, toSearchWords } from "./rules-directory-url";
 import { parseExternalUrl, readExternalHost } from "./rules-external-url";
 import { parseTagsText, toProfileBody } from "./rules-profile-form";
 
@@ -108,5 +108,22 @@ describe("image rules", () => {
   it("detects by content, not by name", () => {
     expect(detectImageContentType(new Uint8Array([0xff, 0xd8, 0xff]))).toBe("image/jpeg");
     expect(detectImageContentType(new TextEncoder().encode("<svg></svg>"))).toBeNull();
+  });
+});
+
+describe("People's search words (round 7)", () => {
+  it("looks for each word, dropping small linking words and plurals' s", () => {
+    expect(toSearchWords("seed investors in fintech")).toEqual(["seed", "investor", "fintech"]);
+    expect(toSearchWords("Fintech  INVESTOR fintech")).toEqual(["fintech", "investor"]);
+  });
+
+  it("keeps words that only end in s", () => {
+    expect(toSearchWords("business ops")).toEqual(["business", "ops"]);
+  });
+
+  it("looks for a search of only small words or a sign as typed", () => {
+    expect(toSearchWords("in")).toEqual(["in"]);
+    expect(toSearchWords("%")).toEqual(["%"]);
+    expect(toSearchWords("   ")).toEqual([]);
   });
 });

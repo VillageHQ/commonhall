@@ -4,7 +4,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { cn } from "cn";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { SlidersHorizontal } from "lucide-react";
+import { GraduationCap, SlidersHorizontal } from "lucide-react";
 import { useDeferredValue, useState, type ReactNode } from "react";
 
 import { EmptyState } from "@/components/empty-state";
@@ -40,10 +40,10 @@ function applyFilters(filters: DirectoryFilters) {
   window.history.replaceState(null, "", `${ROUTES.people}${toDirectoryQueryString(filters)}`);
 }
 
-// "An expert" on People: the experts and mentors view, keeping the words typed.
-export function openExpertsView() {
+// "Mentors and experts" on People (and back to everyone), keeping the words typed.
+function switchView(isExpertsView: boolean) {
   const filters = parseDirectoryFilters(Object.fromEntries(new URLSearchParams(window.location.search)));
-  applyFilters({ ...filters, isExpertsView: true, communityRole: "", updatedWithinDays: 0, page: 1 });
+  applyFilters({ ...filters, isExpertsView, communityRole: "", updatedWithinDays: 0, page: 1 });
 }
 
 function scheduleSearch(search: string, filters: DirectoryFilters) {
@@ -140,7 +140,11 @@ export function ExpertRow({ member }: { member: DirectoryMember }) {
   );
 }
 
-function DirectoryEmpty({ filters, onClear }: { filters: DirectoryFilters; onClear: () => void }) {
+// The words a member typed, looked for outside the member list (People's "Search their networks"): as the empty
+// state's main action when no member matches, and as one line under the list when some do.
+export type ElsewhereOffer = (search: string, place: "empty" | "after") => ReactNode;
+
+function DirectoryEmpty({ filters, onClear, elsewhere }: { filters: DirectoryFilters; onClear: () => void; elsewhere: ReactNode }) {
   if (filters.isExpertsView && !hasDirectoryFilters(filters)) {
     return <EmptyState title="No experts or mentors yet" description="An admin marks who mentors, and they show here." />;
   }
@@ -148,8 +152,9 @@ function DirectoryEmpty({ filters, onClear }: { filters: DirectoryFilters; onCle
     return <EmptyState title="No members yet" description="Members show here once they accept their invite." />;
   }
   return (
-    <EmptyState title="No member matches" description="Try other words, or clear the filters.">
-      <Button type="button" variant="secondary" size="sm" onClick={onClear}>
+    <EmptyState title="No member matches" description={elsewhere ? "Nobody in the community matches those words." : "Try other words, or clear the filters."}>
+      {elsewhere}
+      <Button type="button" variant={elsewhere ? "quiet" : "secondary"} size="sm" onClick={onClear}>
         Clear
       </Button>
     </EmptyState>
@@ -250,9 +255,9 @@ function MoreLinks({ page, pageCount, filters }: { page: number; pageCount: numb
   );
 }
 
-type DirectoryResultsProps = { filters: DirectoryFilters; onClear: () => void; isStale: boolean; isFilterOpen: boolean; isEmptyQuiet: boolean };
+type DirectoryResultsProps = { filters: DirectoryFilters; onClear: () => void; isStale: boolean; isFilterOpen: boolean; isEmptyQuiet: boolean; elsewhere?: ElsewhereOffer };
 
-function DirectoryResults({ filters, onClear, isStale, isFilterOpen, isEmptyQuiet }: DirectoryResultsProps) {
+function DirectoryResults({ filters, onClear, isStale, isFilterOpen, isEmptyQuiet, elsewhere }: DirectoryResultsProps) {
   const { data: directory } = useSuspenseQuery(directoryQuery(filters));
   const { members, matchCount, page, pageCount, filterOptions } = directory;
   const isFiltered = hasDirectoryFilters(filters);
@@ -272,7 +277,7 @@ function DirectoryResults({ filters, onClear, isStale, isFilterOpen, isEmptyQuie
         ) : null}
         {members.length === 0 && !isEmptyQuiet ? (
           <div className="mt-4">
-            <DirectoryEmpty filters={filters} onClear={onClear} />
+            <DirectoryEmpty filters={filters} onClear={onClear} elsewhere={filters.search && elsewhere ? elsewhere(filters.search, "empty") : null} />
           </div>
         ) : null}
         {members.length > 0 ? (
@@ -287,6 +292,7 @@ function DirectoryResults({ filters, onClear, isStale, isFilterOpen, isEmptyQuie
         ) : null}
       </div>
       <MoreLinks page={page} pageCount={pageCount} filters={filters} />
+      {members.length > 0 && filters.search && elsewhere ? elsewhere(filters.search, "after") : null}
     </>
   );
 }
@@ -321,15 +327,27 @@ function countFilters(filters: DirectoryFilters) {
 }
 
 type MemberDirectoryProps = {
-  // What a member typed can also be looked for elsewhere (People's chips and "Search their networks"): shown between
-  // the box and the members.
+  // Results found elsewhere for the same words (People's network search, once asked for): between the box and the
+  // members.
   between?: ReactNode;
+  // Looking for the typed words elsewhere (People's "Search their networks"): see ElsewhereOffer.
+  elsewhere?: ElsewhereOffer;
   placeholder?: string;
   // While other results show above (People's network search), no member matching is one quiet line, not a box.
   isEmptyQuiet?: boolean;
 };
 
-export function MemberDirectory({ between, placeholder = "Name, company or skill", isEmptyQuiet = false }: MemberDirectoryProps) {
+// "Mentors and experts" under the box (round 7: the only shortcut above the list); "Everyone" while that view shows.
+function ViewLink({ isExpertsView }: { isExpertsView: boolean }) {
+  return (
+    <button type="button" className="fh-linkbtn mt-1.5" data-slot="people-view-link" onClick={() => switchView(!isExpertsView)}>
+      <GraduationCap aria-hidden="true" className="fh-i fh-xs" strokeWidth={1.5} />
+      {isExpertsView ? "Everyone" : "Mentors and experts"}
+    </button>
+  );
+}
+
+export function MemberDirectory({ between, elsewhere, placeholder = "Name, company or skill", isEmptyQuiet = false }: MemberDirectoryProps) {
   const searchParams = useSearchParams();
   const queryString = searchParams.toString();
   const deferredQueryString = useDeferredValue(queryString);
@@ -360,6 +378,7 @@ export function MemberDirectory({ between, placeholder = "Name, company or skill
           {filterCount ? `Filter · ${filterCount}` : "Filter"}
         </Button>
       </div>
+      <ViewLink isExpertsView={filters.isExpertsView} />
       {between}
       <QueryBoundary loadingMessage="Gathering everyone…">
         <DirectoryResults
@@ -368,6 +387,7 @@ export function MemberDirectory({ between, placeholder = "Name, company or skill
           isStale={queryString !== deferredQueryString}
           isFilterOpen={isFilterOpen}
           isEmptyQuiet={isEmptyQuiet}
+          elsewhere={elsewhere}
         />
       </QueryBoundary>
     </>

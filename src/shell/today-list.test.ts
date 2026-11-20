@@ -44,7 +44,34 @@ function renderToday(overrides: Partial<Parameters<typeof TodayPage>[0]> = {}) {
   );
 }
 
+function answeredAsk(index: number) {
+  return { id: `ask-${index}`, body: `Ask number ${index}`, answerCount: 1 } as unknown as TodayItems["ownPosts"][number];
+}
+
 describe("Today (round 6)", () => {
+  it("puts what waits above the live room and the one-time cards (round 7)", () => {
+    const html = renderToday({
+      today: { ...NOTHING, ownPosts: [answeredAsk(1)] },
+      liveRoom: ROOM,
+      installCard: createElement("section", { "data-testid": "install-card" }),
+      lookupQuestion: createElement("section", { id: "lookup-question-title" }),
+    });
+
+    const waiting = html.indexOf("Waiting on you");
+    expect(waiting).toBeGreaterThan(-1);
+    expect(waiting).toBeLessThan(html.indexOf("Live now"));
+    expect(waiting).toBeLessThan(html.indexOf("install-card"));
+    expect(waiting).toBeLessThan(html.indexOf("lookup-question-title"));
+  });
+
+  it("counts in its heading exactly the things it shows (round 7)", () => {
+    const html = renderToday({ today: { ...NOTHING, ownPosts: [1, 2, 3, 4, 5].map(answeredAsk) } });
+
+    expect(html).toContain("Sam, 3 things wait for you");
+    expect(html.match(/Your ask · /g)).toHaveLength(3);
+  });
+
+
   it("opens with a full-width Live now card and a Join link while a room is live", () => {
     const html = renderToday({ liveRoom: ROOM });
 

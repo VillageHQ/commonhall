@@ -67,11 +67,12 @@ export default modulePage(membersManifest, async function TodayRoute({ searchPar
     readLiveRooms(database, member.id, LIVE_ROOMS_SHOWN),
   ]);
 
+  const isCardFilled = profile !== null && isCardFilledIn(profile);
   const nextSteps = selectNextSteps({
     setupProgress: null,
     networkProgress,
     communityName: community.isSaved ? community.name : "your community",
-    isCardFilled: profile !== null && isCardFilledIn(profile),
+    isCardFilled,
     confirmationCopy: describeEmailConfirmation(community.isSaved ? community.name : "your admin", readResendConfig(process.env) !== null),
   });
   const flashKey = Array.isArray(query.m) ? query.m[0] : query.m;
@@ -93,7 +94,8 @@ export default modulePage(membersManifest, async function TodayRoute({ searchPar
       isAsksOn={enabledIds.has(asksManifest.id)}
       nextSteps={nextSteps}
       installCard={<InstallCard communityName={community.name} alertsHref={ROUTES.alerts} />}
-      lookupQuestion={lookupState?.needsAnswer ? <LookupQuestionCard communityName={community.name} /> : null}
+      // Filling in from public profiles is offered only while the member's card is still empty (round 7).
+      lookupQuestion={lookupState?.needsAnswer && !isCardFilled ? <LookupQuestionCard communityName={community.name} /> : null}
       flash={readAskFlash(flashKey)}
       moreLinks={moreLinks}
       now={now}
