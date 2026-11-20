@@ -193,13 +193,12 @@ describe("the avatar menu", () => {
     expect(within(menu).getByRole("menuitem", { name: "Alerts" }).getAttribute("href")).toBe(ROUTES.alerts);
   });
 
-  it("offers the founder view, the Intro log and the Job board from the console", async () => {
+  it("offers the founder view from the console, and the Report (no phone tab), with no member pages", async () => {
     const menu = await openMenu(ROUTES.adminMembers);
 
     expect(within(menu).getByRole("menuitem", { name: "See it as a founder" })).toBeTruthy();
     expect(within(menu).queryByRole("menuitem", { name: "Admin console" })).toBeNull();
-    expect(within(menu).getByRole("menuitem", { name: "Intro log" }).getAttribute("href")).toBe(ROUTES.adminIntroLog);
-    expect(within(menu).getByRole("menuitem", { name: "Job board" }).getAttribute("href")).toBe("/admin/jobs");
     expect(within(menu).queryByRole("menuitem", { name: "Perks" })).toBeNull();
+    expect(within(menu).getByRole("menuitem", { name: "Report" }).getAttribute("href")).toBe(ROUTES.adminReport);
   });
 });

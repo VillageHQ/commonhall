@@ -18,8 +18,7 @@ export type ShellMember = { id: string; name: string; email: string; image?: str
 
 // The avatar's menu (round 6, SPEC "The member tab set"): My profile, Alerts, Email, Your data, then "More" (Jobs,
 // Perks, Library, Feed, each while it's on), the admin's switch between the console and the founder view, Dark mode
-// and Sign out. In the console, More lists the Intro log and the Job board. On a phone the avatar sits top right; on a
-// desktop the member's name at the foot of the sidebar opens it.
+// and Sign out. On a phone the avatar sits top right; on a desktop the member's name at the foot of the sidebar opens it.
 const ACCOUNT_LINKS: readonly { label: string; href: string; icon: LucideIcon }[] = [
   { label: "My profile", href: ROUTES.editCard, icon: UserRound },
   { label: "Alerts", href: ROUTES.alerts, icon: Bell },
@@ -55,8 +54,10 @@ type AccountMenuProps = { member: ShellMember; navigation: ShellNavigation; trig
 export function AccountMenu({ member, navigation, trigger, side, pathname }: AccountMenuProps) {
   const isDark = useIsDarkTheme();
   const mode = useShellMode(member.isAdmin, pathname);
-  // In the console, More holds the console pages with no item of their own; elsewhere Jobs, Perks, Library and Feed.
-  const more = (mode === SHELL_MODES.console ? navigation.console : navigation.member).filter((item) => item.place === MENU_PLACES.more);
+  // More holds the member pages with no tab (Jobs, Perks, Library, Feed). In the console it holds the items with no
+  // phone tab (the Report), on a phone only: the desktop sidebar lists them.
+  const isConsole = mode === SHELL_MODES.console;
+  const more = isConsole ? navigation.console.filter((item) => !item.tabLabel) : navigation.member.filter((item) => item.place === MENU_PLACES.more);
   return (
     <DropdownMenu.Root modal={false}>
       <DropdownMenu.Trigger asChild>{trigger}</DropdownMenu.Trigger>
@@ -75,7 +76,7 @@ export function AccountMenu({ member, navigation, trigger, side, pathname }: Acc
             </MenuLink>
           ))}
           {more.length > 0 ? (
-            <DropdownMenu.Group>
+            <DropdownMenu.Group className={isConsole ? "min-[1000px]:hidden" : undefined}>
               <DropdownMenu.Separator className={MENU_RULE} />
               <DropdownMenu.Label className={MENU_LABEL}>More</DropdownMenu.Label>
               {more.map((item) => (

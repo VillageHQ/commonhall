@@ -78,14 +78,6 @@ describe("the navigation", () => {
     expect(withNeither.filter(({ place }) => place === MENU_PLACES.tab).map(({ label }) => label)).toEqual(["Home", "Members", "Announce", "Report", "Set up"]);
   });
 
-  it("keeps the Intro log and the Job board one tap away under the avatar's More in the console, while they're on", () => {
-    const more = (ids: readonly string[]) =>
-      selectNavigationItems(NAVIGATION_SECTIONS.admin, true, new Set(ids)).flatMap(({ place, href }) => (place === MENU_PLACES.more ? [href] : []));
-
-    expect(more(ALL_ON)).toEqual([ROUTES.adminIntroLog, "/admin/jobs"]);
-    expect(more(["members", "admin"])).toEqual([]);
-  });
-
   describe("which item a page lights", () => {
     it("lights Today only on the root path", () => {
       expect(isNavigationItemActive(ROUTES.feed, ROUTES.feed)).toBe(true);

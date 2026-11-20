@@ -37,8 +37,6 @@ export const MEMBER_KEYS = {
 
 export const CONSOLE_KEYS = {
   home: "home",
-  introLog: "intro-log",
-  jobs: "job-board",
   members: "members",
   asks: "asks-intros",
   announce: "announce",

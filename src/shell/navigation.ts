@@ -1,11 +1,10 @@
 import "server-only";
 
-import { ArrowLeftRight, AudioLines, CalendarCheck, FileChartColumn, Gift, Hand, Inbox, LayoutDashboard, LibraryBig, Megaphone, Newspaper, Settings2, Building2, Users, type LucideIcon } from "lucide-react";
+import { AudioLines, CalendarCheck, FileChartColumn, Gift, Hand, Inbox, LayoutDashboard, LibraryBig, Megaphone, Newspaper, Settings2, Building2, Users, type LucideIcon } from "lucide-react";
 import { createElement } from "react";
 
 import { ANNOUNCEMENT_PAGE } from "@/modules/admin/contract-announcements";
 import { ASKS_ADMIN_PAGE } from "@/modules/asks/contract";
-import { JOB_BOARD_PAGES } from "@/modules/job-board/contract";
 import { MODULES } from "@/modules/registry";
 import { ROUTES } from "@/platform/http/routes";
 import { NAVIGATION_SECTIONS, type NavigationSection } from "@/platform/modules/manifest";
@@ -56,9 +55,6 @@ const CONSOLE_MENU: readonly MenuEntry[] = [
   { key: CONSOLE_KEYS.announce, label: "Announce", tabLabel: "Announce", icon: Megaphone, href: ANNOUNCEMENT_PAGE },
   { key: CONSOLE_KEYS.report, label: "Report", icon: FileChartColumn, href: ROUTES.adminReport },
   { key: CONSOLE_KEYS.setup, label: "Set up", tabLabel: "Set up", icon: Settings2, href: ROUTES.adminSettings, badge: NAVIGATION_BADGES.admin },
-  // Pages with no item of their own until part 5 folds them into Asks & intros and Set up: the avatar's More, in the console.
-  { key: CONSOLE_KEYS.introLog, label: "Intro log", icon: ArrowLeftRight, moduleIds: ["intros"], href: ROUTES.adminIntroLog, place: MENU_PLACES.more },
-  { key: CONSOLE_KEYS.jobs, label: "Job board", icon: Building2, moduleIds: ["job-board"], href: JOB_BOARD_PAGES.admin, place: MENU_PLACES.more },
 ];
 
 const MODULE_ENTRIES = new Map(MODULES.map(({ manifest }) => [manifest.id, manifest.navigation[0]]));

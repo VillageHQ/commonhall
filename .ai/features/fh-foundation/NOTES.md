@@ -88,6 +88,5 @@ log, need cards) have their Commonhall classes in `parts.css` and a worked examp
 `/parts`, a test page that answers 404 unless `SHOW_PARTS_PAGE=true`. It reads Commonhall's crops from
 `.ai/features/fh-foundation/crops/` and shows each beside Community's part. Four of Commonhall's crops caught a
 neighbouring element (helpers strip, KV tiles, status checklist, moderation row, table); the page says so and shows both.
-- Phones: the menu items with no phone tab (Jobs, Perks; in the console the Partner report, Invites, Job board) are
-  listed as small links in the phone foot, so nothing becomes unreachable. Commonhall reaches them from its pages;
-  the area that adds those links removes them here (`PhoneMoreLinks` in `src/shell/shell-chrome.tsx`).
+- Phones: the phone foot lists no links (round 6). The member pages with no tab sit under the avatar's More; the
+  console's Report is in the sidebar, and on a phone under the avatar's More; its other pages are tabs of their area.
