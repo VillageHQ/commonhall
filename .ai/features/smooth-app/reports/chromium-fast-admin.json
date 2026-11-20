@@ -1,0 +1,253 @@
+{
+ "engine": "chromium",
+ "profile": "fast",
+ "who": "admin",
+ "cold": [
+  {
+   "tab": "Rooms",
+   "href": "/rooms",
+   "wallLoadMs": 69,
+   "ttfb": 22,
+   "fcp": 60,
+   "dcl": 29,
+   "load": 68,
+   "htmlKBwire": 48,
+   "htmlKB": 48,
+   "requests": 51,
+   "jsFiles": 20,
+   "jsKBwire": 316,
+   "jsKB": 973,
+   "totalKBwire": 743,
+   "domNodes": 245
+  },
+  {
+   "tab": "Today",
+   "href": "/today",
+   "wallLoadMs": 74,
+   "ttfb": 35,
+   "fcp": 64,
+   "dcl": 41,
+   "load": 73,
+   "htmlKBwire": 43,
+   "htmlKB": 43,
+   "requests": 54,
+   "jsFiles": 20,
+   "jsKBwire": 315,
+   "jsKB": 969,
+   "totalKBwire": 738,
+   "domNodes": 235
+  },
+  {
+   "tab": "Asks",
+   "href": "/asks",
+   "wallLoadMs": 63,
+   "ttfb": 22,
+   "fcp": 52,
+   "dcl": 29,
+   "load": 62,
+   "htmlKBwire": 66,
+   "htmlKB": 66,
+   "requests": 59,
+   "jsFiles": 20,
+   "jsKBwire": 311,
+   "jsKB": 958,
+   "totalKBwire": 767,
+   "domNodes": 357
+  },
+  {
+   "tab": "People",
+   "href": "/people",
+   "wallLoadMs": 89,
+   "ttfb": 38,
+   "fcp": 76,
+   "dcl": 47,
+   "load": 88,
+   "htmlKBwire": 79,
+   "htmlKB": 79,
+   "requests": 85,
+   "jsFiles": 20,
+   "jsKBwire": 320,
+   "jsKB": 987,
+   "totalKBwire": 864,
+   "domNodes": 416
+  },
+  {
+   "tab": "Inbox",
+   "href": "/inbox",
+   "wallLoadMs": 47,
+   "ttfb": 22,
+   "fcp": 40,
+   "dcl": 27,
+   "load": 47,
+   "htmlKBwire": 40,
+   "htmlKB": 40,
+   "requests": 40,
+   "jsFiles": 20,
+   "jsKBwire": 313,
+   "jsKB": 965,
+   "totalKBwire": 706,
+   "domNodes": 192
+  }
+ ],
+ "prefetchedOnTodayIdle": 22,
+ "taps": [
+  {
+   "round": 1,
+   "tab": "Today",
+   "feedbackMs": 31,
+   "urlMs": 31,
+   "paintedMs": 60,
+   "rscWaitMs": 3,
+   "rscKB": 6,
+   "rscTotalMs": 24,
+   "rscOnTap": "/today"
+  },
+  {
+   "round": 1,
+   "tab": "Asks",
+   "feedbackMs": 25,
+   "urlMs": 25,
+   "paintedMs": 56,
+   "rscWaitMs": 2,
+   "rscKB": 1,
+   "rscTotalMs": 8,
+   "rscOnTap": "/asks"
+  },
+  {
+   "round": 1,
+   "tab": "People",
+   "feedbackMs": 44,
+   "urlMs": 49,
+   "paintedMs": 76,
+   "rscWaitMs": 2,
+   "rscKB": 16,
+   "rscTotalMs": 33,
+   "rscOnTap": "/people"
+  },
+  {
+   "round": 1,
+   "tab": "Inbox",
+   "feedbackMs": 20,
+   "urlMs": 32,
+   "paintedMs": 66,
+   "rscWaitMs": 1,
+   "rscKB": 1,
+   "rscTotalMs": 4,
+   "rscOnTap": "/inbox"
+  },
+  {
+   "round": 1,
+   "tab": "Rooms",
+   "feedbackMs": 22,
+   "urlMs": 23,
+   "paintedMs": 54,
+   "rscWaitMs": 5,
+   "rscKB": 5,
+   "rscTotalMs": 16,
+   "rscOnTap": "/rooms"
+  },
+  {
+   "round": 2,
+   "tab": "Today",
+   "feedbackMs": 36,
+   "urlMs": 45,
+   "paintedMs": 79,
+   "rscWaitMs": 4,
+   "rscKB": 6,
+   "rscTotalMs": 31,
+   "rscOnTap": "/today"
+  },
+  {
+   "round": 2,
+   "tab": "Asks",
+   "feedbackMs": 20,
+   "urlMs": 23,
+   "paintedMs": 58,
+   "rscWaitMs": 4,
+   "rscKB": 14,
+   "rscTotalMs": 15,
+   "rscOnTap": "/asks"
+  },
+  {
+   "round": 2,
+   "tab": "People",
+   "feedbackMs": 43,
+   "urlMs": 44,
+   "paintedMs": 75,
+   "rscWaitMs": 3,
+   "rscKB": 16,
+   "rscTotalMs": 35,
+   "rscOnTap": "/people"
+  },
+  {
+   "round": 2,
+   "tab": "Inbox",
+   "feedbackMs": 20,
+   "urlMs": 31,
+   "paintedMs": 64,
+   "rscWaitMs": 3,
+   "rscKB": 4,
+   "rscTotalMs": 17,
+   "rscOnTap": "/inbox"
+  },
+  {
+   "round": 2,
+   "tab": "Rooms",
+   "feedbackMs": 19,
+   "urlMs": 31,
+   "paintedMs": 65,
+   "rscWaitMs": 4,
+   "rscKB": 5,
+   "rscTotalMs": 15,
+   "rscOnTap": "/rooms"
+  }
+ ],
+ "scroll": [
+  {
+   "path": "/today",
+   "pageHeightPx": 915,
+   "frames": 180,
+   "p50": 16.7,
+   "p95": 16.7,
+   "maxMs": 17,
+   "over33ms": 0
+  },
+  {
+   "path": "/people",
+   "pageHeightPx": 2378,
+   "frames": 179,
+   "p50": 16.7,
+   "p95": 16.8,
+   "maxMs": 33,
+   "over33ms": 0
+  },
+  {
+   "path": "/rooms",
+   "pageHeightPx": 972,
+   "frames": 180,
+   "p50": 16.7,
+   "p95": 16.7,
+   "maxMs": 17,
+   "over33ms": 0
+  }
+ ],
+ "css": {
+  "topbar": {
+   "position": "sticky",
+   "backdropFilter": "saturate(1.2) blur(8px)",
+   "height": "56px"
+  },
+  "tabbar": {
+   "position": "fixed",
+   "backdropFilter": "none",
+   "height": "64px"
+  },
+  "htmlOverscroll": "auto",
+  "bodyOverscroll": "auto",
+  "touchAction": "auto",
+  "tapHighlight": "rgba(0, 0, 0, 0)",
+  "userSelect": "auto",
+  "viewport": "width=device-width, initial-scale=1",
+  "scroller": "HTML"
+ }
+}

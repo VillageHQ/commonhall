@@ -1,0 +1,220 @@
+{
+ "engine": "webkit",
+ "profile": "fast",
+ "who": "member",
+ "cold": [
+  {
+   "tab": "Rooms",
+   "href": "/rooms",
+   "wallLoadMs": 1301,
+   "ttfb": 185,
+   "fcp": 612,
+   "dcl": 580,
+   "load": 1299,
+   "htmlKBwire": 12,
+   "htmlKB": 44,
+   "requests": 51,
+   "jsFiles": 20,
+   "jsKBwire": 316,
+   "jsKB": 973,
+   "totalKBwire": 708,
+   "domNodes": 244
+  },
+  {
+   "tab": "Today",
+   "href": "/today",
+   "wallLoadMs": 920,
+   "ttfb": 188,
+   "fcp": 390,
+   "dcl": 364,
+   "load": 914,
+   "htmlKBwire": 13,
+   "htmlKB": 47,
+   "requests": 54,
+   "jsFiles": 20,
+   "jsKBwire": 6,
+   "jsKB": 16,
+   "totalKBwire": 66,
+   "domNodes": 271
+  },
+  {
+   "tab": "Asks",
+   "href": "/asks",
+   "wallLoadMs": 994,
+   "ttfb": 175,
+   "fcp": 399,
+   "dcl": 364,
+   "load": 989,
+   "htmlKBwire": 17,
+   "htmlKB": 64,
+   "requests": 51,
+   "jsFiles": 20,
+   "jsKBwire": 2,
+   "jsKB": 5,
+   "totalKBwire": 82,
+   "domNodes": 365
+  },
+  {
+   "tab": "People",
+   "href": "/people",
+   "wallLoadMs": 1250,
+   "ttfb": 198,
+   "fcp": 249,
+   "dcl": 253,
+   "load": 1247,
+   "htmlKBwire": 18,
+   "htmlKB": 75,
+   "requests": 76,
+   "jsFiles": 20,
+   "jsKBwire": 12,
+   "jsKB": 34,
+   "totalKBwire": 80,
+   "domNodes": 411
+  },
+  {
+   "tab": "Inbox",
+   "href": "/inbox",
+   "wallLoadMs": 765,
+   "ttfb": 178,
+   "fcp": 392,
+   "dcl": 373,
+   "load": 763,
+   "htmlKBwire": 12,
+   "htmlKB": 41,
+   "requests": 45,
+   "jsFiles": 20,
+   "jsKBwire": 5,
+   "jsKB": 12,
+   "totalKBwire": 67,
+   "domNodes": 210
+  }
+ ],
+ "prefetchedOnTodayIdle": 20,
+ "taps": [
+  {
+   "round": 1,
+   "tab": "Today",
+   "feedbackMs": 288,
+   "urlMs": 289,
+   "paintedMs": 335,
+   "rscOnTap": "/today"
+  },
+  {
+   "round": 1,
+   "tab": "Asks",
+   "feedbackMs": 322,
+   "urlMs": 322,
+   "paintedMs": 374,
+   "rscOnTap": "/asks"
+  },
+  {
+   "round": 1,
+   "tab": "People",
+   "feedbackMs": 347,
+   "urlMs": 347,
+   "paintedMs": 401,
+   "rscOnTap": "/people"
+  },
+  {
+   "round": 1,
+   "tab": "Inbox",
+   "feedbackMs": 282,
+   "urlMs": 291,
+   "paintedMs": 338,
+   "rscOnTap": "/inbox"
+  },
+  {
+   "round": 1,
+   "tab": "Rooms",
+   "feedbackMs": 222,
+   "urlMs": 222,
+   "paintedMs": 261,
+   "rscOnTap": "/rooms"
+  },
+  {
+   "round": 2,
+   "tab": "Today",
+   "feedbackMs": 220,
+   "urlMs": 220,
+   "paintedMs": 259,
+   "rscOnTap": "/today"
+  },
+  {
+   "round": 2,
+   "tab": "Asks",
+   "feedbackMs": 225,
+   "urlMs": 225,
+   "paintedMs": 278,
+   "rscOnTap": "/asks"
+  },
+  {
+   "round": 2,
+   "tab": "People",
+   "feedbackMs": 318,
+   "urlMs": 318,
+   "paintedMs": 372,
+   "rscOnTap": "/people"
+  },
+  {
+   "round": 2,
+   "tab": "Inbox",
+   "feedbackMs": 219,
+   "urlMs": 219,
+   "paintedMs": 261,
+   "rscOnTap": "/inbox"
+  },
+  {
+   "round": 2,
+   "tab": "Rooms",
+   "feedbackMs": 219,
+   "urlMs": 219,
+   "paintedMs": 259,
+   "rscOnTap": "/rooms"
+  }
+ ],
+ "scroll": [
+  {
+   "path": "/today",
+   "pageHeightPx": 1593,
+   "frames": 194,
+   "p50": 15,
+   "p95": 16,
+   "maxMs": 29,
+   "over33ms": 0
+  },
+  {
+   "path": "/people",
+   "pageHeightPx": 2325,
+   "frames": 178,
+   "p50": 15,
+   "p95": 30,
+   "maxMs": 33,
+   "over33ms": 0
+  },
+  {
+   "path": "/rooms",
+   "pageHeightPx": 919,
+   "frames": 194,
+   "p50": 15,
+   "p95": 16,
+   "maxMs": 31,
+   "over33ms": 0
+  }
+ ],
+ "css": {
+  "topbar": {
+   "position": "sticky",
+   "backdropFilter": "saturate(1.2) blur(8px)",
+   "height": "56px"
+  },
+  "tabbar": {
+   "position": "fixed",
+   "backdropFilter": "none",
+   "height": "64px"
+  },
+  "touchAction": "auto",
+  "userSelect": "auto",
+  "viewport": "width=device-width, initial-scale=1",
+  "scroller": "HTML"
+ }
+}
