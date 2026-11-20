@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { AdvancedSection } from "@/components/advanced-section";
+import { ROUTES } from "@/platform/http/routes";
 import { Note } from "@/components/ui/note";
 import { readFillInSettings } from "@/modules/members/service-fill-in";
 import { DAILY_LOOKUP_LIMITS, MONTHLY_CREDIT_CAPS, VILLAGE_KEY_STATUSES } from "@/platform/village/contract";
@@ -112,10 +113,7 @@ export default modulePage(networkManifest, async function AdminVillagePage() {
   const { unconnected, noAsks } = nudges;
 
   return (
-    <AdminSection
-      title="Village"
-      description="Village shows which members know whom, so your founders find a warm intro to the people they need."
-    >
+    <AdminSection title="Village" back={{ href: ROUTES.adminSettings, label: "Set up" }}>
       <div className="fh-grid">
         <div className="fh-c7 fh-stack">
           <section className="fh-sheet">
@@ -129,9 +127,6 @@ export default modulePage(networkManifest, async function AdminVillagePage() {
             <ConnectionTestResult check={check} members={members} />
             <VillageConnect appUrl={appUrl} connectedAppName={areKeysReadable ? (villageAppName ?? "") : null} />
             {isConfigured ? <TestConnectionButton /> : null}
-            <p className="fh-small fh-muted mt-2.5">
-              Village’s address: <span className="fh-mono">{apiUrl}</span> · for the sync screen: <span className="fh-mono">{appUrl}</span>. Both are set on the server.
-            </p>
             {isConfigured && !group ? <GroupStep database={database} admin={admin} defaultName={branding.isSaved ? branding.name : ""} /> : null}
           </section>
         </div>
@@ -152,7 +147,7 @@ export default modulePage(networkManifest, async function AdminVillagePage() {
               <NudgeButton
                 audience="unconnected"
                 label={`Nudge ${unconnected.dueCount} member${unconnected.dueCount === 1 ? " who hasn’t" : "s who haven’t"} connected`}
-                hint="One email each, at most once a month: what connecting gives them, and the line on what others see."
+                hint="One email each, at most once a month."
               />
             ) : unconnected.lastSentAt && unconnected.nextAllowedAt ? (
               <NudgeSentNote sentAt={unconnected.lastSentAt} nextAt={unconnected.nextAllowedAt} />
@@ -163,7 +158,7 @@ export default modulePage(networkManifest, async function AdminVillagePage() {
               <NudgeButton
                 audience="no_asks"
                 label={`Nudge ${noAsks.dueCount} member${noAsks.dueCount === 1 ? "" : "s"} not allowing asks`}
-                hint="The same email, asking them to let members ask for intros. At most once a month."
+                hint="One email each, at most once a month."
               />
             ) : noAsks.lastSentAt && noAsks.nextAllowedAt ? (
               <NudgeSentNote sentAt={noAsks.lastSentAt} nextAt={noAsks.nextAllowedAt} isNoAsks />
@@ -171,7 +166,7 @@ export default modulePage(networkManifest, async function AdminVillagePage() {
           </section>
         </div>
 
-        <AdvancedSection summary="Limits and switches, profile fill-in, what Village sees, and what it costs.">
+        <AdvancedSection summary="Limits, profile fill-in, what Village sees, costs.">
           <div className="fh-grid">
             <div className="fh-c7 fh-stack">
               <VillageLimitsForm

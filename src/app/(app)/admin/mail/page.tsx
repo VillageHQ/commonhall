@@ -7,6 +7,7 @@ import { Pill, type PillTone } from "@/components/ui/pill";
 import { requireAdmin } from "@/platform/auth/session";
 import { PAGE_TITLES } from "@/platform/branding/page-metadata";
 import { getDatabase } from "@/platform/database/client";
+import { ROUTES } from "@/platform/http/routes";
 import { modulePage } from "@/platform/modules/module-page";
 import { PLANS, readPlanSettings } from "@/platform/settings/plan";
 import { formatDayMonth, formatDayMonthTimeUtc } from "@/platform/text/format-date";
@@ -166,7 +167,7 @@ export default modulePage(adminManifest, async function AdminMailPage() {
   const database = getDatabase();
   const [mail, plan] = await Promise.all([readMailOverview(database, process.env), readPlanSettings(database)]);
   return (
-    <AdminSection title="Mail" description="Invites, sign-in links and intros reach your founders from your community’s own address.">
+    <AdminSection title="Mail" back={{ href: ROUTES.adminSettings, label: "Set up" }}>
       <div className="fh-grid">
         <div className="fh-c7 fh-stack">
           <MailStatus mail={mail} isManaged={plan.plan === PLANS.managed} />

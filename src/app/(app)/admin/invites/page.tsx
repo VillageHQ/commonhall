@@ -10,6 +10,7 @@ import { readResendConfig } from "@/platform/email/resend";
 import { readEnabledModuleIds } from "@/platform/modules/enablement";
 import { requireAdmin } from "@/platform/auth/session";
 import { modulePage } from "@/platform/modules/module-page";
+import { AdminSection } from "@/shell/admin-section";
 
 import { formatShortDate } from "@/modules/admin/console-members";
 import { readInviterSignature, readListedInvites } from "@/modules/admin/reads-members";
@@ -43,10 +44,7 @@ export default modulePage(adminManifest, async function AdminInvitesPage({ searc
   return (
     <>
       {flash ? <FlashNote>{flash}</FlashNote> : null}
-      <div className="fh-pagehead">
-        <h1 className="fh-h1">Invites</h1>
-        <p className="fh-lede">{community} is invite-only. Each invite link works once, for 14 days, and only for the email it went to.</p>
-      </div>
+      <AdminSection title="Members">
       <div className="fh-grid">
         <InviteSheet
           community={community}
@@ -82,7 +80,7 @@ export default modulePage(adminManifest, async function AdminInvitesPage({ searc
                           Expired
                         </Pill>
                       ) : null}
-                      Sent {formatShortDate(invite.createdAt.toISOString())},{" "}
+                      {invite.isEmailed ? "Sent" : "Added"} {formatShortDate(invite.createdAt.toISOString())},{" "}
                       {invite.revokedAt
                         ? `revoked ${formatShortDate(invite.revokedAt.toISOString())}`
                         : `${invite.isExpired ? "ended" : "ends"} ${formatShortDate(invite.expiresAt.toISOString())}`}
@@ -106,11 +104,14 @@ export default modulePage(adminManifest, async function AdminInvitesPage({ searc
             <p className="fh-small fh-muted mt-2">No open invites.</p>
           )}
         </InviteSheet>
-        <section className="fh-c5">
-          <InviteEmailPreview community={community} from={mail?.fromAddress ?? community} inviterName={signature.name} inviterRole={signature.role} />
-          <p className="fh-small fh-muted mt-2.5">The email that goes out. Plain text, from your community’s name.</p>
-        </section>
+        <details className="fh-c5">
+          <summary className="fh-h3 cursor-pointer">The email they get</summary>
+          <div className="mt-3">
+            <InviteEmailPreview community={community} from={mail?.fromAddress ?? community} inviterName={signature.name} inviterRole={signature.role} />
+          </div>
+        </details>
       </div>
+      </AdminSection>
     </>
   );
 });

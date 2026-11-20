@@ -57,7 +57,7 @@ export function PublicBoardForm({ isPublic: savedPublic }: { isPublic: boolean }
       <SetRow
         htmlFor="jobs-public"
         label="Public job board"
-        hint="Anyone with the link sees company, job title, location and the apply link. Never members’ names or emails."
+        hint="Shows company, title, place and apply link; never members."
         control={<Switch id="jobs-public" checked={isPublic} onCheckedChange={setPublic} aria-label="Public job board" />}
       />
       <FormError message={save.error?.message ?? null} />

@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { BackLink } from "@/components/page-header";
 import { EmptyState } from "@/components/empty-state";
-import { KvTiles } from "@/components/ui/figures";
 import { getDatabase } from "@/platform/database/client";
 import { ROUTES } from "@/platform/http/routes";
 import { requireAdmin } from "@/platform/auth/session";
@@ -15,6 +13,7 @@ import { WEEKS_SHOWN } from "@/modules/admin/calls";
 import { readCalls } from "@/modules/admin/reads-calls";
 import { CallsCsvButton } from "@/modules/admin/components/calls-csv-button";
 import { COMMUNITY_ROLE_LABELS } from "@/modules/members/contract-community-roles";
+import { AdminSection } from "@/shell/admin-section";
 
 export const metadata: Metadata = { title: "Calls requested" };
 
@@ -26,19 +25,15 @@ export default modulePage(adminManifest, async function AdminCallsPage() {
   await requireAdmin();
   const calls = await readCalls(getDatabase());
   return (
-    <>
-      <BackLink href={ROUTES.admin}>Home</BackLink>
-      <div className="fh-pagehead">
-        <h1 className="fh-h1" data-testid="calls-total">
-          {calls.total} {calls.total === 1 ? "call" : "calls"} requested
-        </h1>
-        <p className="fh-lede">Each “Book a call” a member pressed on a mentor’s or expert’s profile, counted. Bookings themselves happen in their own calendar.</p>
-        <div className="fh-btn-row mt-3.5">
-          <CallsCsvButton />
-        </div>
+    <AdminSection title="Members">
+      <div className="fh-sheet-head mb-3">
+        <h2 className="fh-h2" data-testid="calls-total">
+          {calls.total} {calls.total === 1 ? "call" : "calls"} requested · {calls.lastThirtyDays} in 30 days
+        </h2>
+        <CallsCsvButton />
       </div>
       {calls.total === 0 ? (
-        <EmptyState title="No calls requested yet" description="Members add a booking link on My profile; once someone presses “Book a call”, it is counted here." />
+        <EmptyState title="No calls yet" description="Each “Book a call” on a profile counts here." />
       ) : (
         <div className="fh-grid">
           <div className="fh-c7 fh-stack">
@@ -87,19 +82,9 @@ export default modulePage(adminManifest, async function AdminCallsPage() {
             </section>
           </div>
           <div className="fh-c5 fh-stack">
-            <section className="fh-sheet">
-              <h2 className="fh-h3">At a glance</h2>
-              <KvTiles
-                className="fh-kv-two"
-                tiles={[
-                  { value: calls.total, label: "since launch" },
-                  { value: calls.lastThirtyDays, label: "in the last 30 days" },
-                ]}
-              />
-            </section>
-            <section className="fh-sheet">
-              <h2 className="fh-h3">Per week</h2>
-              <p className="fh-small fh-muted mt-1">The last {WEEKS_SHOWN} weeks, each starting Monday.</p>
+            <details className="fh-sheet">
+              <summary className="fh-h3 cursor-pointer">Per week</summary>
+              <p className="fh-small fh-muted mt-1">The last {WEEKS_SHOWN} weeks, from Monday.</p>
               <table className="fh-tbl mt-3" data-testid="calls-per-week">
                 <thead>
                   <tr>
@@ -116,10 +101,10 @@ export default modulePage(adminManifest, async function AdminCallsPage() {
                   ))}
                 </tbody>
               </table>
-            </section>
+            </details>
           </div>
         </div>
       )}
-    </>
+    </AdminSection>
   );
 });

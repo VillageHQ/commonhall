@@ -1,6 +1,5 @@
 import Link from "next/link";
 
-import { KvTiles } from "@/components/ui/figures";
 import type { AdminHomeItem } from "@/shell/admin-home";
 import type { ThisWeek } from "@/shell/admin-this-week";
 import { INTRO_WAIT_DAYS, THIS_WEEK_DAYS } from "@/shell/admin-this-week-rules";
@@ -16,7 +15,21 @@ function readTiles({ activeFounders, asksWithNoHelp, introsWaiting, roomJoins }:
     introsWaiting === null ? null : { value: introsWaiting, label: `intros waiting over ${INTRO_WAIT_DAYS} days` },
     roomJoins === null ? null : { value: roomJoins, label: "room joins", isGood: roomJoins > 0 },
   ];
-  return tiles.filter((tile) => tile !== null).map((tile) => ({ ...tile, value: NUMBER.format(tile.value) }));
+  return tiles.filter((tile) => tile !== null).map((tile) => ({ label: tile.label, value: NUMBER.format(tile.value), isGood: "isGood" in tile ? Boolean(tile.isGood) : false }));
+}
+
+// Three or four tiles in one row on a desktop; two a row on a phone, three in a row when Rooms is off.
+function ThisWeekTiles({ tiles }: { tiles: ReturnType<typeof readTiles> }) {
+  return (
+    <div data-slot="kv-tiles" className="fh-kv" style={tiles.length === 4 ? undefined : { gridTemplateColumns: `repeat(${tiles.length}, minmax(0, 1fr))` }}>
+      {tiles.map(({ label, value, isGood }) => (
+        <div key={label} className={isGood ? "fh-good" : undefined}>
+          <b>{value}</b>
+          <span>{label}</span>
+        </div>
+      ))}
+    </div>
+  );
 }
 
 function NeedsYou({ items }: { items: readonly AdminHomeItem[] }) {
@@ -52,7 +65,7 @@ export function AdminHomeView({ communityName, thisWeek, items }: AdminHomeViewP
         <p className="fh-lede">{communityName}, the last {THIS_WEEK_DAYS} days.</p>
       </div>
       <section className="mb-4" aria-label="This week in numbers" data-testid="admin-home-this-week">
-        <KvTiles className="fh-askkv" tiles={readTiles(thisWeek)} />
+        <ThisWeekTiles tiles={readTiles(thisWeek)} />
       </section>
       <NeedsYou items={items} />
     </>

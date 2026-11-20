@@ -53,14 +53,12 @@ export function PerksForm({ savedUrl, isShown }: { savedUrl: string | null; isSh
   return (
     <Card className="fh-sheet">
       <form ref={formRef} onSubmit={submit}>
-        <h2 className="type-h3">BuiltFirst embed code</h2>
         <Field
           htmlFor={CODE_FIELD}
-          label="Embed code"
+          label="BuiltFirst embed code"
           hint={
             <>
-              In BuiltFirst, open your marketplace’s Settings › Embed and copy the code. <a href={PERKS_HELP_URL}>BuiltFirst’s guide</a>. Only the frame’s address on
-              builtfirst.com is kept; any script in the code is dropped.
+              From BuiltFirst’s Settings › Embed (<a href={PERKS_HELP_URL}>guide</a>).
             </>
           }
           error={error}
@@ -87,7 +85,6 @@ export function PerksForm({ savedUrl, isShown }: { savedUrl: string | null; isSh
           <SetRow
             htmlFor={SHOWN_FIELD}
             label="Show Perks to members"
-            hint="On: a Perks page, a card on Today and a menu entry. Off: hidden from members."
             control={<Switch id={SHOWN_FIELD} checked={isOn} onCheckedChange={setIsOn} />}
           />
         </div>

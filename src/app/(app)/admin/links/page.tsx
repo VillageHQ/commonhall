@@ -13,9 +13,8 @@ import { AdminSection } from "@/shell/admin-section";
 
 export const metadata: Metadata = { title: PAGE_TITLES.adminLinks };
 
-const MAIL_OFF_LINE =
-  "Mail is not set up on this portal, so invite and sign-in links are not emailed. Copy a link and send it to the person yourself. Once mail is set up (Set up › Mail), they are emailed.";
-const MAIL_ON_LINE = "Links whose email failed to send. Copy one and send it yourself.";
+const MAIL_OFF_LINE = "Mail isn’t set up: copy each link and send it yourself.";
+const MAIL_ON_LINE = "Links whose email failed. Copy one and send it yourself.";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -32,20 +31,22 @@ export default modulePage(adminManifest, async function AdminLinksPage() {
   const links = await readWaitingInviteLinks(getDatabase(), { isMailOn });
 
   return (
-    <AdminSection title="Sign-in links" description={isMailOn ? MAIL_ON_LINE : MAIL_OFF_LINE}>
+    <AdminSection title="Members">
+      <p className="fh-small mb-3">{isMailOn ? MAIL_ON_LINE : MAIL_OFF_LINE}</p>
       {links.length ? (
         <div className="fh-rows">
           {links.map(({ id, email, createdAt, expiresAt }) => (
-            <WaitingLinkRow key={id} inviteId={id} email={email} detail={`Invite · made ${formatMoment(createdAt)} · ends ${formatMoment(expiresAt)}`} />
+            <WaitingLinkRow key={id} inviteId={id} email={email} detail={`Made ${formatMoment(createdAt)} · ends ${formatMoment(expiresAt)}`} />
           ))}
         </div>
       ) : (
-        <EmptyState title="No links waiting" description="An invite link shows here when its email can’t go out, until it is used or ends." />
+        <EmptyState title="No links waiting" description="A link shows here when its email can’t go out." />
       )}
-      <p className="fh-small fh-muted" style={{ marginTop: 12 }}>
-        Anyone with a link can sign in as that person, so send it only to them.
-        {links.length ? " Copy makes a new link for that person; one sent before stops working." : null}
-      </p>
+      {links.length ? (
+        <p className="fh-small fh-muted" style={{ marginTop: 12 }}>
+          A link signs in as that person. Copy makes a new one; the old one stops working.
+        </p>
+      ) : null}
     </AdminSection>
   );
 });

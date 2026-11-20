@@ -55,10 +55,6 @@ export default modulePage(adminManifest, async function AdminDigestPage({ search
                   <span className="fh-k">From</span>
                   <span className="fh-v">{from}</span>
                 </div>
-                <div>
-                  <span className="fh-k">To</span>
-                  <span className="fh-v">{preview.recipientName}</span>
-                </div>
                 <div className="fh-subj">{preview.subject}</div>
               </div>
               <div className="fh-mail-b">
@@ -70,7 +66,6 @@ export default modulePage(adminManifest, async function AdminDigestPage({ search
         <aside>
           <section className="fh-sheet">
             <h2 className="fh-h3">Send me a test</h2>
-            <p className="fh-small mt-1.5">To {admin.email}, with your own items.</p>
             <DigestTestButton />
           </section>
         </aside>
