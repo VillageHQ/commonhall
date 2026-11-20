@@ -28,6 +28,7 @@ import {
   type ShellNavigation,
   type ShellNavigationItem,
 } from "./navigation-rules";
+import { readPressHandlers, TabOutlines } from "./pressed-tab";
 
 // A plain link where the page needs a full load (its own security headers), the app's link elsewhere.
 function NavigationLink({ isFullPageLoad, ...linkProps }: ComponentProps<typeof Link> & { href: string; isFullPageLoad?: boolean }) {
@@ -118,6 +119,12 @@ function useCurrentItems({ navigation, isAdmin, pathname: pathnameOverride }: Om
   return { mode, items, currentKey, currentTabKey };
 }
 
+// The outlines of this menu's places (smooth-app Part A), shown when one is tapped: pressed-tab.tsx.
+export function MenuTabOutlines({ navigation, isAdmin }: Omit<ShellNavigationProps, "badges">) {
+  const { items } = useCurrentItems({ navigation, isAdmin });
+  return <TabOutlines hrefs={items.filter((item) => !item.isFullPageLoad).map((item) => item.href)} />;
+}
+
 // The sidebar's menu (crops shell-sidebar-member.png, shell-sidebar-admin.png): a group label, then flat links; the
 // current one is a Leaf pill with its icon in the fund colour.
 export function SidebarNavigation({ navigation, isAdmin, badges, pathname }: ShellNavigationProps) {
@@ -132,6 +139,7 @@ export function SidebarNavigation({ navigation, isAdmin, badges, pathname }: She
           href={item.href}
           isFullPageLoad={item.isFullPageLoad}
           aria-current={item.key === currentKey ? "page" : undefined}
+          {...(item.isFullPageLoad ? {} : readPressHandlers(item.href))}
         >
           {item.icon}
           <span>{item.label}</span>
@@ -156,13 +164,20 @@ export function TabBar({ navigation, isAdmin, badges, pathname }: ShellNavigatio
   const tabs = orderTabs(items.filter((item) => item.tabLabel), mode);
   const liveBadges = useLiveBadges(tabs, badges);
   return (
-    <nav aria-label="Sections" data-slot="tab-bar" data-count={tabs.length} className="fh-tabbar" style={{ gridTemplateColumns: `repeat(${tabs.length}, 1fr)` }}>
+    <nav
+      aria-label="Sections"
+      data-slot="tab-bar"
+      data-count={tabs.length}
+      className="fh-tabbar"
+      style={{ gridTemplateColumns: `repeat(${tabs.length}, 1fr)` }}
+    >
       {tabs.map((item) => (
         <NavigationLink
           key={item.key}
           href={item.href}
           isFullPageLoad={item.isFullPageLoad}
           aria-current={item.key === currentTabKey ? "page" : undefined}
+          {...(item.isFullPageLoad ? {} : readPressHandlers(item.href))}
         >
           {item.icon}
           <span>{item.tabLabel}</span>

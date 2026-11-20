@@ -1,0 +1,74 @@
+[
+ {
+  "id": "P-avatar-mid",
+  "pass": null,
+  "ev": "150ms after tapping Asks (held): pressing=1 pressed=1 pend=/asks visOl=[\"/asks\"]",
+  "proof": ""
+ },
+ {
+  "id": "P-avatar-1s",
+  "pass": true,
+  "ev": "phone Maya Today, tap Asks (held 1.5s), avatar menu Admin console; 1s after switch: {\"path\":\"/admin\",\"cur\":\"/admin\",\"color\":\"rgb(17, 17, 16)\",\"fund\":\"rgb(17, 17, 16)\",\"before\":\"\\\"\\\"\",\"beforeBg\":\"rgb(17, 17, 16)\",\"pressing\":0,\"pressed\":0,\"pend\":null,\"visOl\":[],\"pageDisp\":\"contents\"}",
+  "proof": "reports/verify/r3-phone-avatar-1s.jpg"
+ },
+ {
+  "id": "P-avatar-6s",
+  "pass": true,
+  "ev": "phone Maya Today, tap Asks (held 1.5s), avatar menu Admin console; 6s after switch: {\"path\":\"/admin\",\"cur\":\"/admin\",\"color\":\"rgb(17, 17, 16)\",\"fund\":\"rgb(17, 17, 16)\",\"before\":\"\\\"\\\"\",\"beforeBg\":\"rgb(17, 17, 16)\",\"pressing\":0,\"pressed\":0,\"pend\":null,\"visOl\":[],\"pageDisp\":\"contents\"}",
+  "proof": "reports/verify/r3-phone-avatar-6s.jpg"
+ },
+ {
+  "id": "P-strip-mid",
+  "pass": null,
+  "ev": "150ms after tapping Asks (held): pressing=1 pressed=1 pend=/asks visOl=[\"/asks\"]",
+  "proof": ""
+ },
+ {
+  "id": "P-strip-1s",
+  "pass": true,
+  "ev": "phone Maya Today, tap Asks (held 1.5s), strip Back to console; 1s after switch: {\"path\":\"/admin\",\"cur\":\"/admin\",\"color\":\"rgb(17, 17, 16)\",\"fund\":\"rgb(17, 17, 16)\",\"before\":\"\\\"\\\"\",\"beforeBg\":\"rgb(17, 17, 16)\",\"pressing\":0,\"pressed\":0,\"pend\":null,\"visOl\":[],\"pageDisp\":\"contents\"}",
+  "proof": "reports/verify/r3-phone-strip-1s.jpg"
+ },
+ {
+  "id": "P-strip-6s",
+  "pass": true,
+  "ev": "phone Maya Today, tap Asks (held 1.5s), strip Back to console; 6s after switch: {\"path\":\"/admin\",\"cur\":\"/admin\",\"color\":\"rgb(17, 17, 16)\",\"fund\":\"rgb(17, 17, 16)\",\"before\":\"\\\"\\\"\",\"beforeBg\":\"rgb(17, 17, 16)\",\"pressing\":0,\"pressed\":0,\"pend\":null,\"visOl\":[],\"pageDisp\":\"contents\"}",
+  "proof": "reports/verify/r3-phone-strip-6s.jpg"
+ },
+ {
+  "id": "D-mid",
+  "pass": null,
+  "ev": "150ms after clicking Members (held): {\"pressing\":1,\"pressed\":1,\"pend\":\"/admin/members\"}",
+  "proof": ""
+ },
+ {
+  "id": "D-1s",
+  "pass": true,
+  "ev": "desktop Maya /admin, click Members (held), avatar See it as a founder; 1s: {\"path\":\"/today\",\"cur\":\"/today\",\"bg\":\"rgb(255, 255, 255)\",\"leaf\":\"rgb(255, 255, 255)\",\"weight\":\"600\",\"plainBg\":\"rgba(0, 0, 0, 0)\",\"pressing\":0,\"pressed\":0,\"pend\":null}",
+  "proof": "reports/verify/r3-desk-founder-1s.jpg"
+ },
+ {
+  "id": "D-6s",
+  "pass": true,
+  "ev": "desktop Maya /admin, click Members (held), avatar See it as a founder; 6s: {\"path\":\"/today\",\"cur\":\"/today\",\"bg\":\"rgb(255, 255, 255)\",\"leaf\":\"rgb(255, 255, 255)\",\"weight\":\"600\",\"plainBg\":\"rgba(0, 0, 0, 0)\",\"pressing\":0,\"pressed\":0,\"pend\":null}",
+  "proof": "reports/verify/r3-desk-founder-6s.jpg"
+ },
+ {
+  "id": "B-1s",
+  "pass": true,
+  "ev": "Sam Today, tap Asks (held), 300ms tap Today; 1s: 1000:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\" pressing=0 cur=[\"/today\",\"/today\"] h1Vis=true",
+  "proof": "reports/verify/r3-bugb-1s.jpg"
+ },
+ {
+  "id": "B-6s",
+  "pass": true,
+  "ev": "Sam Today, tap Asks (held), 300ms tap Today; 6s: 6000:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\" pressing=0 cur=[\"/today\",\"/today\"] h1Vis=true",
+  "proof": "reports/verify/r3-bugb-6s.jpg"
+ },
+ {
+  "id": "H",
+  "pass": null,
+  "ev": "outline shown: {\"path\":\"/admin/members\",\"outlineFor\":\"/admin\",\"outlineText\":\"Home Loading…\",\"pend\":\"/admin\"} | page text: This week Northwind Founders, the last 7 days. 6 founders active 3 open asks with no help 1 intros waiting over 3 days 5 room joins Partner report What your partners see: intros made, asks answered, who helped. Needs you 3 asks have no help yet 1 intro waiting over 3 days 2 invites not accepted yet",
+  "proof": "reports/verify/r3-home-outline.jpg , reports/verify/r3-home-page.jpg"
+ }
+]

@@ -521,8 +521,10 @@
   text-underline-offset: 3px;
 }
 
-:where(.fh-credit, .fh-pub-foot, .fh-section-head, .fh-sheet-head, .fh-preview-strip, .fh-pub-card, .fh-note, .fh-hint, .fh-lede, .fh-small, .fh-strip, .fh-empty, .fh-sheet, .fh-mail, .fh-report, .fh-pathtext, .fh-gsteps, p.fh-btn-row) a:not([class]):hover {
-  color: var(--fund-deep);
+@media (hover: hover) {
+  :where(.fh-credit, .fh-pub-foot, .fh-section-head, .fh-sheet-head, .fh-preview-strip, .fh-pub-card, .fh-note, .fh-hint, .fh-lede, .fh-small, .fh-strip, .fh-empty, .fh-sheet, .fh-mail, .fh-report, .fh-pathtext, .fh-gsteps, p.fh-btn-row) a:not([class]):hover {
+    color: var(--fund-deep);
+  }
 }
 
 :where(.fh-credit, .fh-pub-foot) a:not([class]) {
@@ -533,6 +535,18 @@
 .dark .fh-demo-bar {
   background: #9c4e22;
   color: #ffffff;
+}
+
+/* The tabs' outlines wait hidden until their tab is tapped (src/shell/pressed-tab.tsx shows one and hides the page). */
+[data-slot="tab-outline"] {
+  display: none;
+}
+
+/* A tab's outline (src/components/page-outline.tsx): its grey blocks a shade stronger than the Skeleton part's, so
+   the page's shape reads at a glance on Paper, in light and dark; the shimmer stays. */
+[data-slot="page-outline"] [data-slot="skeleton"] {
+  background-color: color-mix(in srgb, var(--rule) 60%, var(--paper));
+  background-image: linear-gradient(90deg, transparent 0%, color-mix(in srgb, var(--paper) 45%, transparent) 50%, transparent 100%);
 }
 
 /* Commonhall leaves the browser's own margin on radios and checkboxes; Tailwind's reset removes it. */
@@ -558,8 +572,10 @@
   color: var(--fh-placeholder);
 }
 
-.dark .fh-chip:hover {
-  background: var(--fh-chip-hover);
+@media (hover: hover) {
+  .dark .fh-chip:hover {
+    background: var(--fh-chip-hover);
+  }
 }
 
 .dark :is(.fh-toggle, input.fh-switch, [data-slot="switch"]):not([aria-checked="true"]):not(:checked) {
@@ -582,13 +598,17 @@
   background: var(--fh-declined);
 }
 
-.dark :is(a.fh-r, .fh-r.fh-click):hover {
-  background: linear-gradient(90deg, transparent, rgb(47 44 37 / 0.8) 8%, rgb(47 44 37 / 0.8) 92%, transparent);
+@media (hover: hover) {
+  .dark :is(a.fh-r, .fh-r.fh-click):hover {
+    background: linear-gradient(90deg, transparent, rgb(47 44 37 / 0.8) 8%, rgb(47 44 37 / 0.8) 92%, transparent);
+  }
 }
 
-.dark .fh-btn-ink:hover {
-  background: #f4f2ec;
-  color: var(--paper);
+@media (hover: hover) {
+  .dark .fh-btn-ink:hover {
+    background: #f4f2ec;
+    color: var(--paper);
+  }
 }
 
 .dark :is(.fh-seg button[aria-pressed="true"], .fh-seg a.fh-segbtn[aria-current="true"], .fh-composer .fh-seg.fh-kind input:checked + span) {

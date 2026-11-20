@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { createElement } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -10,7 +10,8 @@ import { API_ROUTES, ROUTES } from "@/platform/http/routes";
 
 import { buildShellNavigation } from "./navigation";
 import { readSettingsLinks } from "./settings-links";
-import { FounderViewStrip, SidebarNavigation, TabBar } from "./navigation-links";
+import { FounderViewStrip, MenuTabOutlines, SidebarNavigation, TabBar } from "./navigation-links";
+import { endPress, PressEnd, PRESSED_TIMEOUT_MS } from "./pressed-tab";
 import { PhoneAccountButton } from "./user-menu";
 
 const location = vi.hoisted(() => ({ pathname: "/" }));
@@ -57,6 +58,7 @@ function readNames(label: string) {
 }
 
 afterEach(() => {
+  endPress();
   cleanup();
   vi.unstubAllGlobals();
   location.pathname = ROUTES.feed;
@@ -95,6 +97,116 @@ describe("the phone tab bar", () => {
 
     expect(readNames("Sections")).toEqual(["Home", "Asks", "Members", "Announce", "Set up"]);
     expect(screen.getByRole("link", { name: "Members" }).getAttribute("aria-current")).toBe("page");
+  });
+
+  it("lights a tapped tab at once, while aria-current stays on the page shown until the address changes", () => {
+    location.pathname = ROUTES.today;
+    renderShellPart(TabBar);
+    const bar = screen.getByRole("navigation", { name: "Sections" });
+    const people = within(bar).getByRole("link", { name: /People/ });
+
+    fireEvent.pointerDown(people, { button: 0 });
+
+    expect(people.getAttribute("data-pressed")).toBe("true");
+    expect(people.getAttribute("aria-current")).toBeNull();
+    expect(within(bar).getByRole("link", { name: /Today/ }).getAttribute("aria-current")).toBe("page");
+    expect(bar.getAttribute("data-pressing")).toBe("true");
+  });
+
+  it("shows the tapped tab's outline in place of the page until the new page comes, and only after a tap", () => {
+    location.pathname = ROUTES.today;
+    window.history.replaceState(null, "", ROUTES.today);
+    stubCounts(0);
+    const navigation = buildShellNavigation(undefined, false);
+    const shell = () =>
+      createElement(
+        "div",
+        null,
+        createElement(
+          "div",
+          { "data-slot": "page-width" },
+          createElement("div", { "data-slot": "page" }, createElement("h1", null, "Today's page")),
+          createElement(PressEnd),
+          createElement(MenuTabOutlines, { navigation, isAdmin: false }),
+        ),
+        createElement(TabBar, { navigation, isAdmin: false, badges: {} }),
+      );
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Number.POSITIVE_INFINITY } } });
+    const view = render(createElement(QueryClientProvider, { client: queryClient }, shell()));
+    const html = document.documentElement;
+    const page = () => screen.getByText("Today's page").parentElement as HTMLElement;
+    const people = within(screen.getByRole("navigation", { name: "Sections" })).getByRole("link", { name: /People/ });
+    const today = within(screen.getByRole("navigation", { name: "Sections" })).getByRole("link", { name: /Today/ });
+    expect(getComputedStyle(page()).display).not.toBe("none");
+
+    // A finger on the tab lights it, but the page stays until the tap.
+    fireEvent.pointerDown(people, { button: 0 });
+    expect(html.getAttribute("data-pending-tab")).toBeNull();
+
+    fireEvent.click(people, { button: 0 });
+    expect(html.getAttribute("data-pending-tab")).toBe(ROUTES.people);
+    const outline = document.querySelector('[data-slot="tab-outline"][data-for="/people"]') as HTMLElement;
+    expect(within(outline).getByRole("heading", { name: "People" })).toBeTruthy();
+    expect(getComputedStyle(outline).display).toBe("block");
+    expect(getComputedStyle(page()).display).toBe("none");
+
+    // The address changes (the new page commits): no outline, nothing pressed.
+    location.pathname = ROUTES.people;
+    window.history.replaceState(null, "", ROUTES.people);
+    view.rerender(createElement(QueryClientProvider, { client: queryClient }, shell()));
+    expect(html.getAttribute("data-pending-tab")).toBeNull();
+    expect(people.getAttribute("data-pressed")).toBeNull();
+
+    // Back to Today (Back, the iOS back swipe): Today's own page, not People's outline.
+    location.pathname = ROUTES.today;
+    window.history.replaceState(null, "", ROUTES.today);
+    view.rerender(createElement(QueryClientProvider, { client: queryClient }, shell()));
+    expect(html.getAttribute("data-pending-tab")).toBeNull();
+    expect(getComputedStyle(page()).display).not.toBe("none");
+
+    // Tapping the tab already shown lights nothing; tapped while another tab's page is on the way, it gives that tab
+    // up (the router keeps this page, so the address never changes to end the press).
+    fireEvent.pointerDown(today, { button: 0 });
+    fireEvent.click(today, { button: 0 });
+    expect(today.getAttribute("data-pressed")).toBeNull();
+    fireEvent.click(people, { button: 0 });
+    expect(html.getAttribute("data-pending-tab")).toBe(ROUTES.people);
+    fireEvent.pointerDown(today, { button: 0 });
+    expect(html.getAttribute("data-pending-tab")).toBeNull();
+    expect(people.getAttribute("data-pressed")).toBeNull();
+    expect(getComputedStyle(page()).display).not.toBe("none");
+  });
+
+  it("lets go of every press mark, also when the pressed link left the page (a view switch)", () => {
+    location.pathname = ROUTES.today;
+    window.history.replaceState(null, "", ROUTES.today);
+    renderShellPart(TabBar);
+    const bar = screen.getByRole("navigation", { name: "Sections" });
+    const people = within(bar).getByRole("link", { name: /People/ });
+    fireEvent.pointerDown(people, { button: 0 });
+    people.remove();
+
+    endPress();
+
+    expect(bar.hasAttribute("data-pressing")).toBe(false);
+    expect(document.querySelectorAll("[data-pressed]").length).toBe(0);
+  });
+
+  it("forgets a press after a while, and a ⌘-click lights nothing", () => {
+    vi.useFakeTimers();
+    location.pathname = ROUTES.today;
+    renderShellPart(TabBar);
+    const people = within(screen.getByRole("navigation", { name: "Sections" })).getByRole("link", { name: /People/ });
+
+    fireEvent.pointerDown(people, { button: 0 });
+    act(() => vi.advanceTimersByTime(PRESSED_TIMEOUT_MS));
+
+    expect(people.getAttribute("data-pressed")).toBeNull();
+
+    fireEvent.click(people, { button: 0, metaKey: true });
+
+    expect(people.getAttribute("data-pressed")).toBeNull();
+    vi.useRealTimers();
   });
 
   it("lights nothing on My profile or the job board", () => {

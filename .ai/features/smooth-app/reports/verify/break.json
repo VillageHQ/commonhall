@@ -1,0 +1,92 @@
+[
+ {
+  "id": "8",
+  "pass": null,
+  "evidence": "8b offline (RSC and document for /asks aborted): seen=[\"rsc /asks\"] url=http://localhost:9737/asks trace: 0:/today ol=[\"Asks\"] pr=[\"/asks\"] pg=none | 504:/asks ol=[] pr=[] pg=contents | 1019:/asks ol=[] pr=[] pg=contents | 1524:/asks ol=[] pr=[] pg=contents | 2032:/asks ol=[] pr=[] pg=contents | 2540:/asks ol=[] pr=[] pg=contents | 3054:/asks ol=[] pr=[] pg=contents | 3560:/asks ol=[] pr=[] pg=contents | 4075:/asks ol=[] pr=[] pg=contents | 4589:/asks ol=[] pr=[] pg=contents | 5099:/asks ol=[] pr=[] pg=contents | 5614:/asks ol=[] pr=[] pg=contents",
+  "proof": "reports/verify/c8b-phone-offline.jpg"
+ },
+ {
+  "id": "8",
+  "pass": true,
+  "evidence": "8c hang 8 s: at 5616ms path=/today outline=[] pressed=[] page=contents h1=\"Sam, 2 things wait for you\"; end: /asks h1=\"Asks\". trace: 0:/today ol=[\"Asks\"] pr=[\"/asks\"] pg=none | 511:/today ol=[\"Asks\"] pr=[\"/asks\"] pg=none | 1015:/today ol=[\"Asks\"] pr=[\"/asks\"] pg=none | 1522:/today ol=[\"Asks\"] pr=[\"/asks\"] pg=none | 2039:/today ol=[\"Asks\"] pr=[\"/asks\"] pg=none | 2555:/today ol=[\"Asks\"] pr=[\"/asks\"] pg=none | 3067:/today ol=[\"Asks\"] pr=[\"/asks\"] pg=none | 3576:/today ol=[\"Asks\"] pr=[\"/asks\"] pg=none | 4085:/today ol=[\"Asks\"] pr=[\"/asks\"] pg=none | 4595:/today ol=[\"Asks\"] pr=[\"/asks\"] pg=none | 5106:/today ol=[] pr=[] pg=contents | 5616:/today ol=[] pr=[] pg=contents | 6120:/today ol=[] pr=[] pg=contents | 6627:/today ol=[] pr=[] pg=contents | 7134:/today ol=[] pr=[] pg=contents | 7641:/today ol=[] pr=[] pg=contents | 8146:/asks ol=[] pr=[] pg=contents | 8655:/asks ol=[] pr=[] pg=contents | 9158:/asks ol=[] pr=[] pg=contents",
+  "proof": "reports/verify/c8c-trace.json"
+ },
+ {
+  "id": "9",
+  "pass": null,
+  "evidence": "phone /asks chips: A:Open:true | A:For you2:false | A:Yours:false",
+  "proof": ""
+ },
+ {
+  "id": "9",
+  "pass": null,
+  "evidence": "phone /people button chips: A customer:false:rgb(242, 241, 236) | A hire:false:rgb(242, 241, 236) | An investor:false:rgb(242, 241, 236) | An expert:false:rgb(242, 241, 236)",
+  "proof": ""
+ },
+ {
+  "id": "9",
+  "pass": false,
+  "evidence": "phone chip \"A customer\": after 1st tap true rgb(17, 17, 16) hover=true; final bg=rgb(17, 17, 16) :hover=true aria-pressed=true vs untouched rgb(242, 241, 236)",
+  "proof": "reports/verify/c9b-phone-chip.jpg"
+ },
+ {
+  "id": "9",
+  "pass": true,
+  "evidence": "phone \"Filter\" (.fh-btn-secondary) after tap + close: bg=rgb(255, 255, 255) :hover=true (untouched is rgb(255, 255, 255); the mouse hover look is rgb(242, 241, 236))",
+  "proof": "reports/verify/c9b-phone-filter.jpg"
+ },
+ {
+  "id": "break",
+  "pass": true,
+  "evidence": "rapid Asks→People taps 60 ms apart: end /people h1=\"People\" current=[\"/people\"]; trace 0:/today ol=[\"People\"] pr=[\"/people\"] pg=none | 252:/today ol=[\"People\"] pr=[\"/people\"] pg=none | 513:/today ol=[\"People\"] pr=[\"/people\"] pg=none | 769:/today ol=[\"People\"] pr=[\"/people\"] pg=none | 1029:/today ol=[\"People\"] pr=[\"/people\"] pg=none | 1289:/today ol=[\"People\"] pr=[\"/people\"] pg=none | 1548:/today ol=[\"People\"] pr=[\"/people\"] pg=none | 1805:/people ol=[] pr=[] pg=contents | 2058:/people ol=[] pr=[] pg=contents | 2321:/people ol=[] pr=[] pg=contents | 2579:/people ol=[] pr=[] pg=contents | 2840:/people ol=[] pr=[] pg=contents | 3103:/people ol=[] pr=[] pg=contents | 3362:/people ol=[] pr=[] pg=contents | 3616:/people ol=[] pr=[] pg=contents | 3871:/people ol=[] pr=[] pg=contents",
+  "proof": "reports/verify/b1-rapid-two-tabs.jpg"
+ },
+ {
+  "id": "break",
+  "pass": true,
+  "evidence": "double tap Rooms: 0:/today ol=[\"Rooms\"] pr=[\"/rooms\"] pg=none | 259:/today ol=[\"Rooms\"] pr=[\"/rooms\"] pg=none | 525:/today ol=[\"Rooms\"] pr=[\"/rooms\"] pg=none | 791:/today ol=[\"Rooms\"] pr=[\"/rooms\"] pg=none | 1057:/today ol=[\"Rooms\"] pr=[\"/rooms\"] pg=none | 1323:/today ol=[\"Rooms\"] pr=[\"/rooms\"] pg=none | 1588:/rooms ol=[] pr=[] pg=contents | 1848:/rooms ol=[] pr=[] pg=contents | 2108:/rooms ol=[] pr=[] pg=contents | 2369:/rooms ol=[] pr=[] pg=contents | 2629:/rooms ol=[] pr=[] pg=contents | 2889:/rooms ol=[] pr=[] pg=contents | 3150:/rooms ol=[] pr=[] pg=contents | 3410:/rooms ol=[] pr=[] pg=contents",
+  "proof": ""
+ },
+ {
+  "id": "break",
+  "pass": null,
+  "evidence": "tap Asks then Today 300 ms later: 0:/today ol=[] pr=[\"/today\"] pg=contents | 510:/today ol=[] pr=[\"/today\"] pg=contents | 1016:/today ol=[] pr=[\"/today\"] pg=contents | 1522:/today ol=[] pr=[\"/today\"] pg=contents | 2028:/today ol=[] pr=[\"/today\"] pg=contents | 2533:/today ol=[] pr=[\"/today\"] pg=contents | 3042:/today ol=[] pr=[\"/today\"] pg=contents | 3545:/today ol=[] pr=[\"/today\"] pg=contents | 4052:/today ol=[] pr=[\"/today\"] pg=contents | 4556:/today ol=[] pr=[\"/today\"] pg=contents | 5069:/today ol=[] pr=[] pg=contents | 5587:/today ol=[] pr=[] pg=contents | 6093:/today ol=[] pr=[] pg=contents",
+  "proof": "reports/verify/b2-tap-then-current.jpg"
+ },
+ {
+  "id": "break",
+  "pass": true,
+  "evidence": "tap Asks on /today (came from /rooms), Back 300 ms later: end /rooms h1=\"Rooms\" current=[\"/rooms\"]; 0:/rooms ol=[] pr=[] pg=contents | 258:/rooms ol=[] pr=[] pg=contents | 521:/rooms ol=[] pr=[] pg=contents | 782:/rooms ol=[] pr=[] pg=contents | 1041:/rooms ol=[] pr=[] pg=contents | 1301:/rooms ol=[] pr=[] pg=contents | 1564:/rooms ol=[] pr=[] pg=contents | 1825:/rooms ol=[] pr=[] pg=contents | 2086:/rooms ol=[] pr=[] pg=contents | 2346:/rooms ol=[] pr=[] pg=contents | 2607:/rooms ol=[] pr=[] pg=contents | 2867:/rooms ol=[] pr=[] pg=contents | 3130:/rooms ol=[] pr=[] pg=contents | 3391:/rooms ol=[] pr=[] pg=contents | 3653:/rooms ol=[] pr=[] pg=contents | 3915:/rooms ol=[] pr=[] pg=contents",
+  "proof": "reports/verify/b3-tap-then-back.jpg"
+ },
+ {
+  "id": "break",
+  "pass": true,
+  "evidence": "keyboard Tab to \"Main:/asks\" + Enter: at 0.4s outline=[\"Asks\"] pressed=[\"/asks\"]; end /asks outline=[] pressed=[] focus=A#",
+  "proof": "reports/verify/b4-keyboard-enter-outline.jpg"
+ },
+ {
+  "id": "break",
+  "pass": true,
+  "evidence": "ctrl-click People: at 0.2s pressed=[] outline=[]; at 1.2s path=/today pressed=[]; new tab=http://localhost:9737/people",
+  "proof": "reports/verify/b5-ctrl-click.jpg"
+ },
+ {
+  "id": "break",
+  "pass": true,
+  "evidence": "middle-click People: at 0.2s pressed=[] outline=[]; at 1.2s path=/today pressed=[]; new tab=http://localhost:9737/people",
+  "proof": ""
+ },
+ {
+  "id": "break",
+  "pass": false,
+  "evidence": "Back/Forward between Today and Rooms: outline ever=true pressed=[] end /rooms",
+  "proof": ""
+ },
+ {
+  "id": "break",
+  "pass": null,
+  "evidence": "admin sidebar Report (/admin/report, no outline by design): at 0.4s outline=[] pressed=[\"/admin/report\"] page=contents h1=\"This week\"; end /admin/report pressed=[]",
+  "proof": "reports/verify/b6-admin-report-pending.jpg"
+ }
+]

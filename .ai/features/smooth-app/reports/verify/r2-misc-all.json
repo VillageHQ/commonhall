@@ -1,0 +1,146 @@
+[
+ {
+  "id": "7",
+  "pass": true,
+  "evidence": "phone a room: /rooms → /rooms/8132c2dd-b1bf-4171-95e0-e76e3b6f713f (held 1.2s, 1 navigation request(s) held): at 0.5s 0.5:/rooms ol=[] pr=[] pend=null pg=contents h1=\"Rooms\"; arrived end:/rooms/8132c2dd-b1bf-4171-95e0-e76e3b6f713f ol=[] pr=[] pend=null pg=contents h1=\"Pricing your first enterprise deal\"; frames with a visible outline=0 of 110",
+  "proof": "reports/verify/r2-c7-phone-room.jpg"
+ },
+ {
+  "id": "7",
+  "pass": true,
+  "evidence": "phone a profile: /people → /people/f15858a7-d8b6-4b8c-b84c-4cb70388933a (held 1.2s, 1 navigation request(s) held): at 0.5s 0.5:/people ol=[] pr=[] pend=null pg=contents h1=\"People\"; arrived end:/people/f15858a7-d8b6-4b8c-b84c-4cb70388933a ol=[] pr=[] pend=null pg=contents h1=\"Ada Okafor\"; frames with a visible outline=0 of 109",
+  "proof": "reports/verify/r2-c7-phone-profile.jpg"
+ },
+ {
+  "id": "7",
+  "pass": true,
+  "evidence": "phone an ask: /asks → /asks/f1d2bf97-90fa-4050-b688-41ae96d38f2d (held 1.2s, 1 navigation request(s) held): at 0.5s 0.5:/asks ol=[] pr=[] pend=null pg=contents h1=\"Asks\"; arrived end:/asks/f1d2bf97-90fa-4050-b688-41ae96d38f2d ol=[] pr=[] pend=null pg=contents h1=\"Looking for a plant manager with cement or ceramics experience, ideally in France.\"; frames with a visible outline=0 of 107",
+  "proof": "reports/verify/r2-c7-phone-ask.jpg"
+ },
+ {
+  "id": "7",
+  "pass": true,
+  "evidence": "phone a conversation: /inbox → /inbox/c50e599a-2679-49d1-915d-6ca298867ff6 (held 1.2s, 1 navigation request(s) held): at 0.5s 0.5:/inbox ol=[] pr=[] pend=null pg=contents h1=\"Inbox\"; arrived end:/inbox/c50e599a-2679-49d1-915d-6ca298867ff6 ol=[] pr=[] pend=null pg=contents h1=\"Priya Shah\"; frames with a visible outline=0 of 107",
+  "proof": "reports/verify/r2-c7-phone-conversation.jpg"
+ },
+ {
+  "id": "7",
+  "pass": true,
+  "evidence": "phone Today's first card link: /today → /intros/d26797b6-95a1-4cbd-9f44-222d668ca0c6 (held 1.2s, 1 navigation request(s) held): at 0.5s 0.5:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\"; arrived end:/intros/d26797b6-95a1-4cbd-9f44-222d668ca0c6 ol=[] pr=[] pend=null pg=contents h1=\"Introduce Marcus to Rachel?\"; frames with a visible outline=0 of 107",
+  "proof": "reports/verify/r2-c7-phone-today-card.jpg"
+ },
+ {
+  "id": "8",
+  "pass": true,
+  "evidence": "phone People held 8s: 1000:/today ol=[\"People\"] pr=[\"/people\"] pend=/people pg=none h1=\"Sam, 2 things wait for you\" | 4700:/today ol=[\"People\"] pr=[\"/people\"] pend=/people pg=none h1=\"Sam, 2 things wait for you\" | 5300:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\" | 6000:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\" | 7500:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\"; old page text 701→701 chars; when the reply came (~8s): 8.8s:/people ol=[] pr=[] pend=null pg=contents h1=\"People\"",
+  "proof": "reports/verify/r2-c8-hang-5_3s.jpg, reports/verify/r2-c8-hang-after.jpg"
+ },
+ {
+  "id": "8",
+  "pass": true,
+  "evidence": "phone Inbox request aborted (3 aborted): 150:/inbox ol=[] pr=[] pend=null pg=contents h1=\"Inbox\" text=191 | 500:/inbox ol=[] pr=[] pend=null pg=contents h1=\"Inbox\" text=191 | 1500:/inbox ol=[] pr=[] pend=null pg=contents h1=\"Inbox\" text=191 | 3000:/inbox ol=[] pr=[] pend=null pg=contents h1=\"Inbox\" text=191 | 6000:/inbox ol=[] pr=[] pend=null pg=contents h1=\"Inbox\" text=191; blank samples=0",
+  "proof": "reports/verify/r2-c8-abort.jpg"
+ },
+ {
+  "id": "9",
+  "pass": true,
+  "evidence": "phone tap Asks then People 60ms later (both held 1s): at ~0.2s 0.2:/asks ol=[\"People\"] pr=[\"/people\"] pend=/people pg=none h1=\"Asks\"; settled end:/people ol=[] pr=[] pend=null pg=contents h1=\"People\"; 5s later late:/people ol=[] pr=[] pend=null pg=contents h1=\"People\"; frames showing Asks' outline=2 (any time), People's=63",
+  "proof": "reports/verify/r2-c9-rapid-mid.jpg, reports/verify/r2-c9-rapid-end.jpg"
+ },
+ {
+  "id": "11",
+  "pass": true,
+  "evidence": "phone /today: 5 hidden outlines in the DOM; getByRole('heading')=[\"Sam, 2 things wait for you\",\"Waiting on you\",\"You could help\"]; of which inside the page=3/3; getByRole('status') with \"Loading\"=0; main's aria snapshot mentions Loading=false",
+  "proof": ""
+ },
+ {
+  "id": "11",
+  "pass": true,
+  "evidence": "phone /people: 5 hidden outlines in the DOM; getByRole('heading')=[\"People\"]; of which inside the page=1/1; getByRole('status') with \"Loading\"=0; main's aria snapshot mentions Loading=false",
+  "proof": ""
+ },
+ {
+  "id": "11",
+  "pass": true,
+  "evidence": "phone after a tab tap to /asks: headings=[\"Asks\"]; Loading statuses=0; headings inside outlines exposed=0",
+  "proof": ""
+ },
+ {
+  "id": "7",
+  "pass": true,
+  "evidence": "phone admin Members → Invites: /admin/members → /admin/invites (held 1.2s, 1 navigation request(s) held): at 0.5s 0.5:/admin/members ol=[] pr=[] pend=null pg=contents h1=\"Members\"; arrived end:/admin/invites ol=[] pr=[] pend=null pg=contents h1=\"Members\"; frames with a visible outline=0 of 107",
+  "proof": "reports/verify/r2-c7-phone-admin-invites.jpg"
+ },
+ {
+  "id": "7",
+  "pass": true,
+  "evidence": "phone admin Members → Import: /admin/members → /admin/import (held 1.2s, 1 navigation request(s) held): at 0.5s 0.5:/admin/members ol=[] pr=[] pend=null pg=contents h1=\"Members\"; arrived end:/admin/import ol=[] pr=[] pend=null pg=contents h1=\"Members\"; frames with a visible outline=0 of 107",
+  "proof": "reports/verify/r2-c7-phone-admin-import.jpg"
+ },
+ {
+  "id": "7",
+  "pass": true,
+  "evidence": "phone admin a member: /admin/members → /admin/members/f15858a7-d8b6-4b8c-b84c-4cb70388933a (held 1.2s, 1 navigation request(s) held): at 0.5s 0.5:/admin/members ol=[] pr=[] pend=null pg=contents h1=\"Members\"; arrived end:/admin/members/f15858a7-d8b6-4b8c-b84c-4cb70388933a ol=[] pr=[] pend=null pg=contents h1=\"Ada Okafor\"; frames with a visible outline=0 of 107",
+  "proof": "reports/verify/r2-c7-phone-admin-member.jpg"
+ },
+ {
+  "id": "7",
+  "pass": true,
+  "evidence": "phone admin Asks → Intro log: /admin/asks → /admin/intros (held 1.2s, 1 navigation request(s) held): at 0.5s 0.5:/admin/asks ol=[] pr=[] pend=null pg=contents h1=\"Asks & intros\"; arrived end:/admin/intros ol=[] pr=[] pend=null pg=contents h1=\"Asks & intros\"; frames with a visible outline=0 of 108",
+  "proof": "reports/verify/r2-c7-phone-admin-introlog.jpg"
+ },
+ {
+  "id": "7",
+  "pass": true,
+  "evidence": "phone admin Home → Partner report: /admin → /admin/report (held 1.2s, 1 navigation request(s) held): at 0.5s 0.5:/admin ol=[] pr=[] pend=null pg=contents h1=\"This week\"; arrived end:/admin/report ol=[] pr=[] pend=null pg=contents h1=\"13 asks and 4 intros made in Q4 2026 to date, median 3 days from ask to intro, 1 customer conversation started, 1 hire, 1 outcome pending.\"; frames with a visible outline=0 of 108",
+  "proof": "reports/verify/r2-c7-phone-admin-report.jpg"
+ },
+ {
+  "id": "9",
+  "pass": true,
+  "evidence": "phone Maya: avatar menu → See it as a founder → /today (:/today ol=[] pr=[] pend=null pg=contents h1=\"Nothing needs you right now\"; outlines now [\"/rooms\",\"/today\",\"/asks\",\"/people\",\"/inbox\"]); tap Asks (held): 0.3:/today ol=[\"Asks\"] pr=[\"/asks\"] pend=/asks pg=none h1=\"Nothing needs you right now\"; then end:/asks ol=[] pr=[] pend=null pg=contents h1=\"Asks\"",
+  "proof": "reports/verify/r2-c9-switch-founder-tap-asks.jpg"
+ },
+ {
+  "id": "9",
+  "pass": true,
+  "evidence": "phone Maya: avatar menu → Admin console → /admin (:/admin ol=[] pr=[] pend=null pg=contents h1=\"This week\"; outlines now [\"/admin\",\"/admin/members\",\"/admin/asks\",\"/admin/announcements\",\"/admin/settings\"]); tap Members (held): 0.3:/admin ol=[\"Members\"] pr=[\"/admin/members\"] pend=/admin/members pg=none h1=\"This week\"; then end:/admin/members ol=[] pr=[] pend=null pg=contents h1=\"Members\"",
+  "proof": "reports/verify/r2-c9-switch-console-tap-members.jpg"
+ },
+ {
+  "id": "9",
+  "pass": true,
+  "evidence": "phone Maya: tap Asks (held) then avatar menu → Admin console 150ms later (menu opened=true): at ~1.2s :/admin ol=[] pr=[] pend=null pg=contents h1=\"This week\"; at ~6s :/admin ol=[] pr=[] pend=null pg=contents h1=\"This week\"",
+  "proof": "reports/verify/r2-c9-switch-while-pending.jpg"
+ },
+ {
+  "id": "11",
+  "pass": true,
+  "evidence": "phone Maya /admin: headings=[\"This week\",\"Needs you\"]; inside the page 2/2; Loading statuses=0",
+  "proof": ""
+ },
+ {
+  "id": "7",
+  "pass": true,
+  "evidence": "desktop a profile: /people → /people/f15858a7-d8b6-4b8c-b84c-4cb70388933a (held 1.2s, 1 navigation request(s) held): at 0.5s 0.5:/people ol=[] pr=[] pend=null pg=contents h1=\"People\"; arrived end:/people/f15858a7-d8b6-4b8c-b84c-4cb70388933a ol=[] pr=[] pend=null pg=contents h1=\"Ada Okafor\"; frames with a visible outline=0 of 107",
+  "proof": "reports/verify/r2-c7-desk-profile.jpg"
+ },
+ {
+  "id": "9",
+  "pass": true,
+  "evidence": "desktop keyboard Tab to the sidebar's People (reached=true), Enter (held 1.5s): at 0.3s 0.3:/today ol=[\"People\"] pr=[\"/people\"] pend=/people pg=none h1=\"Sam, 2 things wait for you\"; then end:/people ol=[] pr=[] pend=null pg=contents h1=\"People\"",
+  "proof": "reports/verify/r2-c9-keyboard-enter.jpg"
+ },
+ {
+  "id": "9",
+  "pass": true,
+  "evidence": "desktop Ctrl-click Asks: new tab=http://localhost:9737/asks; this page at 0.15s 0.15:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\"; at 1.15s 1.15:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\"; ever lit=[]; outline frames=0",
+  "proof": "reports/verify/r2-c9-ctrl-click.jpg"
+ },
+ {
+  "id": "9",
+  "pass": true,
+  "evidence": "desktop middle-click People: new tab=yes; this page 1:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\"; ever lit=[]",
+  "proof": ""
+ }
+]

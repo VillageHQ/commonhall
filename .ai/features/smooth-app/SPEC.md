@@ -1,6 +1,6 @@
 ---
 id: smooth-app
-status: planned
+status: built (parts 0, A, B, C; pull request open) — Part D waits for the TestFlight 4 test
 waits-on: []
 size: about a day (a small first part, then 3 parts side by side; a 4th only if the phone still lags)
 touches: ["src/app/(app)/", "src/app/layout.tsx", "src/shell/navigation-links.tsx", "src/shell/app-actions-group.tsx", "src/shell/user-menu.tsx (one line)", "src/app/parts.css", "src/app/in-app.css", "src/platform/native-app/", "next.config.mjs", "mobile/src/components/", "mobile/src/screens/PortalScreen.tsx", "mobile/src/lib/"]
@@ -12,6 +12,8 @@ on the main tabs, measured before and after. The causes: [DIAGNOSIS.md](DIAGNOSI
 option (a), with (b)'s native tab bar held behind a measured gate. The council confirms the path before the build.
 
 ## Depends on / check-ins
+- Built 20 Nov 2026: how it works today, and why Part A draws its outlines from the tap instead of `loading.tsx`:
+  [NOTES.md](NOTES.md).
 - Runs beside [room-start-instant](../room-start-instant/SPEC.md) and [less-choice](../less-choice/SPEC.md). Shared
   files, and who does what in them:
   - `src/shell/user-menu.tsx`: Part C adds **one line** rendering `<AppActionsGroup />` (its own new file);

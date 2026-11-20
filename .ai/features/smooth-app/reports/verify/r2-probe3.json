@@ -1,0 +1,20 @@
+[
+ {
+  "id": "8",
+  "pass": null,
+  "evidence": "phone Today scrolled to 500px, People hangs 8s: at 5.4s 5.4:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\" scrollY=0 (the tap scrolls to the top; the old page comes back at the top, not where it was)",
+  "proof": "reports/verify/r2-c8-hang-scroll.jpg"
+ },
+ {
+  "id": "9",
+  "pass": null,
+  "evidence": "phone Maya founder view: while People is pending the page is hidden; \"Back to console\" link visible=true",
+  "proof": ""
+ },
+ {
+  "id": "9",
+  "pass": false,
+  "evidence": "phone Maya: tap People (held), then \"Back to console\" in the founder strip; 6s later on /admin tab bar data-pressing=true",
+  "proof": "reports/verify/r2-c9-strip-while-pending.jpg"
+ }
+]

@@ -1,7 +1,8 @@
 // Addresses inside the app: which pages stay in the portal, where an alert or an invite link leads.
 
 export const APP_SCHEME = "commonhall";
-export const START_PATH = "/";
+// The app opens on Today itself, not on "/" (which redirects there: one round trip less at launch).
+export const START_PATH = "/today";
 
 // Only a path on the community's own server: never another site, never "//elsewhere".
 export function toSafePath(value: unknown): string | null {

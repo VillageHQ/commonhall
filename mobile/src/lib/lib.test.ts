@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { runInNewContext } from "node:vm";
 
-import { buildBootstrapScript, buildCallScript, buildRoomClosedScript, isAllowedCall, parseBridgeMessage, readErrorCode, readFailureMessage, ROOM_CLOSED_EVENT, toApiAnswer } from "./bridge.ts";
+import { buildBootstrapScript, buildCallScript, buildRoomClosedScript, isAllowedCall, parseBridgeMessage, readErrorCode, readFailureMessage, readPortalMessage, ROOM_CLOSED_EVENT, toApiAnswer } from "./bridge.ts";
 import { checkCommunity, readAddress, type FetchLike } from "./community.ts";
 import { opensInPortal, readAlertPath, readJoinLink, toPortalUrl } from "./links.ts";
 
@@ -76,7 +76,12 @@ describe("links inside the app", () => {
     assert.equal(readAlertPath({ url: "//elsewhere.example/x" }), null);
     assert.equal(readAlertPath(null), null);
     assert.equal(toPortalUrl(origin, "/intros/42"), `${origin}/intros/42`);
-    assert.equal(toPortalUrl(origin, "//elsewhere.example"), `${origin}/`);
+    assert.equal(toPortalUrl(origin, "//elsewhere.example"), `${origin}/today`);
+  });
+
+  it("opens on Today unless an alert or a link names a page", () => {
+    assert.equal(toPortalUrl(origin, null), `${origin}/today`);
+    assert.equal(toPortalUrl(origin, "/invite/abc"), `${origin}/invite/abc`);
   });
 
   it("keeps the community's pages in the web view and sends other sites to the browser", () => {
@@ -112,6 +117,37 @@ describe("the bridge between the app and the portal page", () => {
     assert.equal(parseBridgeMessage(JSON.stringify({ type: "api.result", id: "1", status: 200, body: "" })), null);
   });
 
+  it("takes the avatar menu's app actions, only known ones, only from the community's own pages", () => {
+    const origin = "https://northwind.example.com";
+    for (const action of ["reload", "browser", "switch"]) {
+      assert.deepEqual(readPortalMessage(JSON.stringify({ type: "app.action", action }), `${origin}/today`, origin), { type: "app.action", action });
+    }
+    assert.equal(readPortalMessage(JSON.stringify({ type: "app.action", action: "delete" }), `${origin}/today`, origin), null);
+    assert.equal(readPortalMessage(JSON.stringify({ type: "app.action" }), `${origin}/today`, origin), null);
+    assert.equal(readPortalMessage(JSON.stringify({ type: "app.action", action: "reload" }), "https://elsewhere.example.com/x", origin), null);
+    assert.equal(readPortalMessage(JSON.stringify({ type: "voice.open", roomId: ROOM_ID }), "https://northwind.example.com.evil.example/x", origin), null);
+  });
+
+  it("marks every page as inside the app, also when the bootstrap runs again after load", () => {
+    const sent: string[] = [];
+    const dataset: Record<string, string> = {};
+    const window: Record<string, unknown> = { ReactNativeWebView: { postMessage: (text: string) => sent.push(text) }, dispatchEvent: () => true };
+    const context = { window, document: { documentElement: { dataset } }, Event: class {} };
+    const script = buildBootstrapScript({ platform: "ios", pushToken: null });
+    runInNewContext(script, context);
+    assert.equal(dataset.app, "commonhall");
+    const app = window.CommonhallApp as { appActions: boolean; appAction: (action: string) => void };
+    assert.equal(app.appActions, true);
+    app.appAction("switch");
+    assert.deepEqual(parseBridgeMessage(sent.shift() ?? ""), { type: "app.action", action: "switch" });
+
+    // The load-end re-run on a page whose attribute went missing (or that never got it) sets it again.
+    delete dataset.app;
+    runInNewContext(script, context);
+    assert.equal(dataset.app, "commonhall");
+    assert.equal(window.CommonhallApp, app);
+  });
+
   it("runs the page's fetch with its own cookie and sends the answer back", async () => {
     const sent: string[] = [];
     const events: string[] = [];
@@ -122,6 +158,7 @@ describe("the bridge between the app and the portal page", () => {
     };
     const context = {
       window,
+      document: { documentElement: { dataset: {} } },
       Event: class {
         type: string;
         constructor(type: string) {

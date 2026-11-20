@@ -1,0 +1,32 @@
+[
+ {
+  "id": "10",
+  "pass": null,
+  "evidence": "joined http://localhost:9738 in the app, Sam signed in; frame at http://localhost:9738/today; html[data-app]=commonhall",
+  "proof": ""
+ },
+ {
+  "id": "10",
+  "pass": true,
+  "evidence": "app frame /today→/people (held 1.5s, 1 held): lit 0ms after down; at 0.35s 0.35:/today ol=[\"People\"] pr=[\"/people\"] pend=/people pg=none h1=\"Sam, 2 things wait for you\" cur=[\"/today\",\"/today\"]; after end:/people ol=[] pr=[] pend=null pg=contents h1=\"People\" cur=[\"/people\",\"/people\"]",
+  "proof": "reports/verify/r2-c10-app-people-outline.jpg, reports/verify/r2-c10-app-people-page.jpg"
+ },
+ {
+  "id": "10",
+  "pass": true,
+  "evidence": "app frame /people→/rooms (held 1.5s, 1 held): lit 0ms after down; at 0.35s 0.35:/people ol=[\"Rooms\"] pr=[\"/rooms\"] pend=/rooms pg=none h1=\"People\" cur=[\"/people\",\"/people\"]; after end:/rooms ol=[] pr=[] pend=null pg=contents h1=\"Rooms\" cur=[\"/rooms\",\"/rooms\"]",
+  "proof": "reports/verify/r2-c10-app-rooms-outline.jpg, reports/verify/r2-c10-app-rooms-page.jpg"
+ },
+ {
+  "id": "10",
+  "pass": true,
+  "evidence": "app frame on Rooms: tap Asks (held), Rooms 120ms later: at ~1s 1:/rooms ol=[] pr=[] pend=null pg=contents h1=\"Rooms\"; at ~6s 6:/rooms ol=[] pr=[] pend=null pg=contents h1=\"Rooms\"",
+  "proof": "reports/verify/r2-c10-app-bugb-6s.jpg"
+ },
+ {
+  "id": "10",
+  "pass": true,
+  "evidence": "app frame Rooms→Today then history.back(): at 0.3s 0.3:/rooms ol=[] pr=[] pend=null pg=contents h1=\"Rooms\"; at 5.8s 5.8:/rooms ol=[] pr=[] pend=null pg=contents h1=\"Rooms\"",
+  "proof": "reports/verify/r2-c10-app-back.jpg"
+ }
+]

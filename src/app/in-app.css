@@ -1,0 +1,34 @@
+/* The site inside the Commonhall store app (smooth-app, Part C). The app marks its pages `html[data-app]`
+   (mobile/src/lib/bridge.ts) and gets `viewport-fit=cover` (src/platform/native-app/viewport.ts), so its web view runs
+   up to the top edge and the site's own top bar reaches under the status bar. Nothing here applies in a browser:
+   without `data-app` every rule below is skipped, and `env(safe-area-inset-top)` is 0 there anyway.
+   parts.css is generated; these rules only add to it. */
+
+/* One solid bar: the theme's paper (light and dark), no blur behind it on every scroll frame (DIAGNOSIS S4, S5).
+   Its height grows by the status bar's, and the content keeps its 56 px. */
+html[data-app] .fh-topbar {
+  height: calc(56px + env(safe-area-inset-top, 0px));
+  padding-top: env(safe-area-inset-top, 0px);
+  background: var(--paper);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+/* What sticks under the bar on a phone moves down with it (from 1000 px the bar is hidden and these stick at 0). */
+@media (max-width: 999.98px) {
+  html[data-app] :is(.fh-preview-strip, .fh-report-actions) {
+    top: calc(56px + env(safe-area-inset-top, 0px));
+  }
+}
+
+/* Pages without the bar (sign-in, invites, onboarding) start below the status bar: parts.css's 40 px (72 px from
+   1000 px) plus the status bar. */
+html[data-app] .fh-pub {
+  padding-top: calc(40px + env(safe-area-inset-top, 0px));
+}
+
+@media (min-width: 1000px) {
+  html[data-app] .fh-pub {
+    padding-top: calc(72px + env(safe-area-inset-top, 0px));
+  }
+}

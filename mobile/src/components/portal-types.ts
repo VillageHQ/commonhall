@@ -1,4 +1,4 @@
-import type { ApiAnswer, ApiMethod, RoomClosedReason } from "../lib/bridge";
+import type { ApiAnswer, ApiMethod, AppAction, RoomClosedReason } from "../lib/bridge";
 
 // The portal web view, seen from the app: calls through the page (its cookie, its origin), and page moves.
 export type PortalHandle = {
@@ -15,6 +15,8 @@ export type PortalViewProps = {
   startUrl: string;
   pushToken: string | null;
   onOpenRoom: (roomId: string, title: string, hasNotified: boolean) => void;
+  // The avatar menu's "This app" group: reload, open in the browser, switch community.
+  onAppAction: (action: AppAction) => void;
   // A page of the community finished loading (its path), so the app may register for alerts.
   onPageLoaded: (path: string) => void;
   // The page couldn't load at all: the app shows its own error with Try again, never a blank view.

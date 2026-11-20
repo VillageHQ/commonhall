@@ -1,0 +1,104 @@
+[
+ {
+  "id": "1",
+  "pass": true,
+  "evidence": "phone member /inbox->/today: pressed 0ms after down, outline visible 15ms after click; during 350:/inbox ol=[\"Today\"] pr=[\"/today\"] pend=/today pg=none h1=\"Inbox\" cur=[\"/inbox\",\"/inbox\",\"/inbox\"]; outline h1 \"Today\"@154,16 vs page h1 \"Sam, 2 things wait for you\"@154,16; after end:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\" cur=[\"/today\",\"/today\"]; ",
+  "proof": "reports/verify/r2-c1-sam-today-outline.jpg, reports/verify/r2-c1-sam-today-page.jpg"
+ },
+ {
+  "id": "1",
+  "pass": true,
+  "evidence": "phone member /today->/rooms: pressed 0ms after down, outline visible 14ms after click; during 350:/today ol=[\"Rooms\"] pr=[\"/rooms\"] pend=/rooms pg=none h1=\"Sam, 2 things wait for you\" cur=[\"/today\",\"/today\"]; outline h1 \"Rooms\"@128,16 vs page h1 \"Rooms\"@128,16; after end:/rooms ol=[] pr=[] pend=null pg=contents h1=\"Rooms\" cur=[\"/rooms\",\"/rooms\"]; ",
+  "proof": "reports/verify/r2-c1-sam-rooms-outline.jpg, reports/verify/r2-c1-sam-rooms-page.jpg"
+ },
+ {
+  "id": "1",
+  "pass": true,
+  "evidence": "phone member /rooms->/asks: pressed 0ms after down, outline visible 14ms after click; during 350:/rooms ol=[\"Asks\"] pr=[\"/asks\"] pend=/asks pg=none h1=\"Rooms\" cur=[\"/rooms\",\"/rooms\"]; outline h1 \"Asks\"@130,16 vs page h1 \"Asks\"@130,16; after end:/asks ol=[] pr=[] pend=null pg=contents h1=\"Asks\" cur=[\"/asks\",\"/asks\"]; ",
+  "proof": "reports/verify/r2-c1-sam-asks-outline.jpg, reports/verify/r2-c1-sam-asks-page.jpg"
+ },
+ {
+  "id": "1",
+  "pass": true,
+  "evidence": "phone member /asks->/people: pressed 0ms after down, outline visible 15ms after click; during 350:/asks ol=[\"People\"] pr=[\"/people\"] pend=/people pg=none h1=\"Asks\" cur=[\"/asks\",\"/asks\"]; outline h1 \"People\"@128,16 vs page h1 \"People\"@128,16; after end:/people ol=[] pr=[] pend=null pg=contents h1=\"People\" cur=[\"/people\",\"/people\"]; ",
+  "proof": "reports/verify/r2-c1-sam-people-outline.jpg, reports/verify/r2-c1-sam-people-page.jpg"
+ },
+ {
+  "id": "1",
+  "pass": true,
+  "evidence": "phone member /people->/inbox: pressed 0ms after down, outline visible 13ms after click; during 350:/people ol=[\"Inbox\"] pr=[\"/inbox\"] pend=/inbox pg=none h1=\"People\" cur=[\"/people\",\"/people\"]; outline h1 \"Inbox\"@128,16 vs page h1 \"Inbox\"@128,16; after end:/inbox ol=[] pr=[] pend=null pg=contents h1=\"Inbox\" cur=[\"/inbox\",\"/inbox\",\"/inbox\"]; ",
+  "proof": "reports/verify/r2-c1-sam-inbox-outline.jpg, reports/verify/r2-c1-sam-inbox-page.jpg"
+ },
+ {
+  "id": "1",
+  "pass": true,
+  "evidence": "phone admin /admin/settings->/admin: pressed 0ms after down, outline visible 14ms after click; during 350:/admin/settings ol=[\"Home\"] pr=[\"/admin\"] pend=/admin pg=none h1=\"Set up\" cur=[\"/admin/settings\",\"/admin/settings\"]; outline h1 \"Home\"@128,16 vs page h1 \"This week\"@128,16; after end:/admin ol=[] pr=[] pend=null pg=contents h1=\"This week\" cur=[\"/admin\",\"/admin\"]; ",
+  "proof": "reports/verify/r2-c1-maya-admin-outline.jpg, reports/verify/r2-c1-maya-admin-page.jpg"
+ },
+ {
+  "id": "1",
+  "pass": true,
+  "evidence": "phone admin /admin->/admin/asks: pressed 0ms after down, outline visible 15ms after click; during 350:/admin ol=[\"Asks & intros\"] pr=[\"/admin/asks\"] pend=/admin/asks pg=none h1=\"This week\" cur=[\"/admin\",\"/admin\"]; outline h1 \"Asks & intros\"@128,16 vs page h1 \"Asks & intros\"@128,16; after end:/admin/asks ol=[] pr=[] pend=null pg=contents h1=\"Asks & intros\" cur=[\"/admin/asks\",\"/admin/asks\",\"/admin/asks\"]; ",
+  "proof": "reports/verify/r2-c1-maya-admin-asks-outline.jpg, reports/verify/r2-c1-maya-admin-asks-page.jpg"
+ },
+ {
+  "id": "1",
+  "pass": true,
+  "evidence": "phone admin /admin/asks->/admin/members: pressed 0ms after down, outline visible 14ms after click; during 350:/admin/asks ol=[\"Members\"] pr=[\"/admin/members\"] pend=/admin/members pg=none h1=\"Asks & intros\" cur=[\"/admin/asks\",\"/admin/asks\",\"/admin/asks\"]; outline h1 \"Members\"@128,16 vs page h1 \"Members\"@128,16; after end:/admin/members ol=[] pr=[] pend=null pg=contents h1=\"Members\" cur=[\"/admin/members\",\"/admin/members\",\"/admin/members\"]; ",
+  "proof": "reports/verify/r2-c1-maya-admin-members-outline.jpg, reports/verify/r2-c1-maya-admin-members-page.jpg"
+ },
+ {
+  "id": "1",
+  "pass": true,
+  "evidence": "phone admin /admin/members->/admin/announcements: pressed 0ms after down, outline visible 12ms after click; during 350:/admin/members ol=[\"Announce\"] pr=[\"/admin/announcements\"] pend=/admin/announcements pg=none h1=\"Members\" cur=[\"/admin/members\",\"/admin/members\",\"/admin/members\"]; outline h1 \"Announce\"@128,16 vs page h1 \"Announce\"@128,16; after end:/admin/announcements ol=[] pr=[] pend=null pg=contents h1=\"Announce\" cur=[\"/admin/announcements\",\"/admin/announcements\",\"/admin/announcements\"]; ",
+  "proof": "reports/verify/r2-c1-maya-admin-announcements-outline.jpg, reports/verify/r2-c1-maya-admin-announcements-page.jpg"
+ },
+ {
+  "id": "1",
+  "pass": true,
+  "evidence": "phone admin /admin/announcements->/admin/settings: pressed 0ms after down, outline visible 15ms after click; during 350:/admin/announcements ol=[\"Set up\"] pr=[\"/admin/settings\"] pend=/admin/settings pg=none h1=\"Announce\" cur=[\"/admin/announcements\",\"/admin/announcements\",\"/admin/announcements\"]; outline h1 \"Set up\"@128,16 vs page h1 \"Set up\"@128,16; after end:/admin/settings ol=[] pr=[] pend=null pg=contents h1=\"Set up\" cur=[\"/admin/settings\",\"/admin/settings\"]; ",
+  "proof": "reports/verify/r2-c1-maya-admin-settings-outline.jpg, reports/verify/r2-c1-maya-admin-settings-page.jpg"
+ },
+ {
+  "id": "2",
+  "pass": true,
+  "evidence": "desktop member /inbox->/today: pressed 0ms after down, outline visible 12ms after click; during 350:/inbox ol=[\"Today\"] pr=[\"/today\"] pend=/today pg=none h1=\"Inbox\" cur=[\"/inbox\",\"/inbox\",\"/inbox\"]; outline h1 \"Today\"@96,304 vs page h1 \"Sam, 2 things wait for you\"@96,304; after end:/today ol=[] pr=[] pend=null pg=contents h1=\"Sam, 2 things wait for you\" cur=[\"/today\",\"/today\"]; ",
+  "proof": "reports/verify/r2-c2-sam-today-outline.jpg, reports/verify/r2-c2-sam-today-page.jpg"
+ },
+ {
+  "id": "2",
+  "pass": true,
+  "evidence": "desktop member /today->/asks: pressed 0ms after down, outline visible 15ms after click; during 350:/today ol=[\"Asks\"] pr=[\"/asks\"] pend=/asks pg=none h1=\"Sam, 2 things wait for you\" cur=[\"/today\",\"/today\"]; outline h1 \"Asks\"@72,304 vs page h1 \"Asks\"@72,304; after end:/asks ol=[] pr=[] pend=null pg=contents h1=\"Asks\" cur=[\"/asks\",\"/asks\"]; ",
+  "proof": "reports/verify/r2-c2-sam-asks-outline.jpg, reports/verify/r2-c2-sam-asks-page.jpg"
+ },
+ {
+  "id": "2",
+  "pass": true,
+  "evidence": "desktop member /asks->/people: pressed 0ms after down, outline visible 14ms after click; during 350:/asks ol=[\"People\"] pr=[\"/people\"] pend=/people pg=none h1=\"Asks\" cur=[\"/asks\",\"/asks\"]; outline h1 \"People\"@70,304 vs page h1 \"People\"@70,304; after end:/people ol=[] pr=[] pend=null pg=contents h1=\"People\" cur=[\"/people\",\"/people\"]; ",
+  "proof": "reports/verify/r2-c2-sam-people-outline.jpg, reports/verify/r2-c2-sam-people-page.jpg"
+ },
+ {
+  "id": "2",
+  "pass": true,
+  "evidence": "desktop member /people->/inbox: pressed 0ms after down, outline visible 12ms after click; during 350:/people ol=[\"Inbox\"] pr=[\"/inbox\"] pend=/inbox pg=none h1=\"People\" cur=[\"/people\",\"/people\"]; outline h1 \"Inbox\"@70,304 vs page h1 \"Inbox\"@70,304; after end:/inbox ol=[] pr=[] pend=null pg=contents h1=\"Inbox\" cur=[\"/inbox\",\"/inbox\",\"/inbox\"]; ",
+  "proof": "reports/verify/r2-c2-sam-inbox-outline.jpg, reports/verify/r2-c2-sam-inbox-page.jpg"
+ },
+ {
+  "id": "2",
+  "pass": true,
+  "evidence": "desktop admin /admin/settings->/admin: pressed 0ms after down, outline visible 12ms after click; during 350:/admin/settings ol=[\"Home\"] pr=[\"/admin\"] pend=/admin pg=none h1=\"Set up\" cur=[\"/admin/settings\",\"/admin/settings\"]; outline h1 \"Home\"@70,304 vs page h1 \"This week\"@70,304; after end:/admin ol=[] pr=[] pend=null pg=contents h1=\"This week\" cur=[\"/admin\",\"/admin\"]; ",
+  "proof": "reports/verify/r2-c2-maya-admin-outline.jpg, reports/verify/r2-c2-maya-admin-page.jpg"
+ },
+ {
+  "id": "2",
+  "pass": true,
+  "evidence": "desktop admin /admin->/admin/members: pressed 0ms after down, outline visible 14ms after click; during 350:/admin ol=[\"Members\"] pr=[\"/admin/members\"] pend=/admin/members pg=none h1=\"This week\" cur=[\"/admin\",\"/admin\"]; outline h1 \"Members\"@70,304 vs page h1 \"Members\"@70,304; after end:/admin/members ol=[] pr=[] pend=null pg=contents h1=\"Members\" cur=[\"/admin/members\",\"/admin/members\",\"/admin/members\"]; ",
+  "proof": "reports/verify/r2-c2-maya-admin-members-outline.jpg, reports/verify/r2-c2-maya-admin-members-page.jpg"
+ },
+ {
+  "id": "2",
+  "pass": true,
+  "evidence": "desktop admin /admin/members->/admin/settings: pressed 0ms after down, outline visible 12ms after click; during 350:/admin/members ol=[\"Set up\"] pr=[\"/admin/settings\"] pend=/admin/settings pg=none h1=\"Members\" cur=[\"/admin/members\",\"/admin/members\",\"/admin/members\"]; outline h1 \"Set up\"@70,304 vs page h1 \"Set up\"@70,304; after end:/admin/settings ol=[] pr=[] pend=null pg=contents h1=\"Set up\" cur=[\"/admin/settings\",\"/admin/settings\"]; ",
+  "proof": "reports/verify/r2-c2-maya-admin-settings-outline.jpg, reports/verify/r2-c2-maya-admin-settings-page.jpg"
+ }
+]

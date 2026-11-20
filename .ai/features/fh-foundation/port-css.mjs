@@ -53,7 +53,9 @@ function convert(text) {
       continue;
     }
     const selectors = convertSelectorList(head);
-    if (selectors) output += `${selectors}{${body.trim()}}\n`;
+    // Hover looks only where there is a mouse (smooth-app): a tapped item on a phone never keeps its hover look.
+    if (selectors && selectors.includes(":hover")) output += `@media (hover:hover){${selectors}{${body.trim()}}}\n`;
+    else if (selectors) output += `${selectors}{${body.trim()}}\n`;
   }
   return output;
 }

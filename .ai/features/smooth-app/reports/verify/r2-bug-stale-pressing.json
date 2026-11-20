@@ -1,0 +1,20 @@
+[
+ {
+  "id": "9",
+  "pass": false,
+  "evidence": "desktop Maya: /admin, click Members (held 1.5s), 150ms later avatar menu → See it as a founder; 6s later: sidebar nav data-pressing=true; current item /today bg=rgba(0, 0, 0, 0) weight=500; 6:/today ol=[] pr=[] pend=null pg=contents h1=\"Nothing needs you right now\"",
+  "proof": "reports/verify/r2-bug-stale-pressing-desk.jpg"
+ },
+ {
+  "id": "9",
+  "pass": null,
+  "evidence": "then a click on Asks: sidebar data-pressing=false",
+  "proof": ""
+ },
+ {
+  "id": "9",
+  "pass": false,
+  "evidence": "phone Maya: Today, tap Asks (held 1.5s), 150ms later avatar menu → Admin console; 6s later on /admin the current tab is drawn as not current: /admin color=rgb(74, 74, 70) ::before content=none; a plain tab's colour=rgb(74, 74, 70)",
+  "proof": "reports/verify/r2-bug-stale-pressing-phone-tabbar.jpg"
+ }
+]

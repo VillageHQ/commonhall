@@ -3,7 +3,7 @@ import { BackHandler, Linking, Platform } from "react-native";
 import { WebView, type WebViewMessageEvent, type WebViewProps } from "react-native-webview";
 import type { ShouldStartLoadRequest } from "react-native-webview/lib/WebViewTypes";
 
-import { buildBootstrapScript, buildCallScript, buildNavigateScript, buildPushTokenScript, buildRoomClosedScript, isAllowedCall, isRoomId, parseBridgeMessage, toApiAnswer, type ApiAnswer } from "../lib/bridge";
+import { buildBootstrapScript, buildCallScript, buildNavigateScript, buildPushTokenScript, buildRoomClosedScript, isAllowedCall, isRoomId, readPortalMessage, toApiAnswer, type ApiAnswer } from "../lib/bridge";
 import { isSameOrigin, opensInPortal, toSafePath } from "../lib/links";
 import type { PortalHandle, PortalViewProps } from "./portal-types";
 
@@ -18,7 +18,7 @@ type Pending = { resolve: (answer: ApiAnswer) => void; timer: ReturnType<typeof 
 
 // The whole portal, in a web view: the member's session lives in its cookie store, so it stays signed in between
 // launches. Other sites open in the phone's browser.
-export const PortalView = forwardRef<PortalHandle, PortalViewProps>(function PortalView({ origin, startUrl, pushToken, onOpenRoom, onPageLoaded, onFailed }, ref) {
+export const PortalView = forwardRef<PortalHandle, PortalViewProps>(function PortalView({ origin, startUrl, pushToken, onOpenRoom, onAppAction, onPageLoaded, onFailed }, ref) {
   const webView = useRef<WebViewHandle | null>(null);
   const pending = useRef(new Map<number, Pending>());
   const nextId = useRef(1);
@@ -81,11 +81,14 @@ export const PortalView = forwardRef<PortalHandle, PortalViewProps>(function Por
   const onMessage = useCallback(
     (event: WebViewMessageEvent) => {
       // Only the community's own pages speak to the app.
-      if (!isSameOrigin(event.nativeEvent.url, origin)) return;
-      const message = parseBridgeMessage(event.nativeEvent.data);
+      const message = readPortalMessage(event.nativeEvent.data, event.nativeEvent.url, origin);
       if (!message) return;
       if (message.type === "voice.open") {
         onOpenRoom(message.roomId, message.title, message.hasNotified);
+        return;
+      }
+      if (message.type === "app.action") {
+        onAppAction(message.action);
         return;
       }
       const waiting = pending.current.get(message.id);
@@ -94,7 +97,7 @@ export const PortalView = forwardRef<PortalHandle, PortalViewProps>(function Por
       clearTimeout(waiting.timer);
       waiting.resolve(toApiAnswer(message.status, message.body));
     },
-    [origin, onOpenRoom],
+    [origin, onOpenRoom, onAppAction],
   );
 
   const onShouldStartLoad = useCallback(
@@ -120,7 +123,13 @@ export const PortalView = forwardRef<PortalHandle, PortalViewProps>(function Por
       domStorageEnabled
       setSupportMultipleWindows={false}
       allowsBackForwardNavigationGestures
-      pullToRefreshEnabled
+      // Scrolls like the phone's own lists (smooth-app, S1–S3, S7): no bounce past the edges (iOS), no stretch glow
+      // (Android), native momentum, no pull-to-refresh reload (Reload is in the avatar menu), no long-press preview.
+      pullToRefreshEnabled={false}
+      bounces={false}
+      overScrollMode="never"
+      decelerationRate="normal"
+      allowsLinkPreview={false}
       allowsInlineMediaPlayback
       webviewDebuggingEnabled={__DEV__}
       onShouldStartLoadWithRequest={onShouldStartLoad}

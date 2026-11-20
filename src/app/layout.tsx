@@ -1,6 +1,6 @@
 import { cn } from "cn";
-import type { Metadata } from "next";
-import { cookies } from "next/headers";
+import type { Metadata, Viewport } from "next";
+import { cookies, headers } from "next/headers";
 import { connection } from "next/server";
 import type { ReactNode } from "react";
 
@@ -12,14 +12,20 @@ import { readBrandingForPage } from "@/platform/branding/branding";
 import { toRootMetadata } from "@/platform/branding/page-metadata";
 import { isDemoMode } from "@/platform/demo/mode";
 import { renderAccentCss } from "@/platform/design/accent";
+import { toViewport } from "@/platform/native-app/viewport";
 import { DARK_CLASS, parseTheme, SYSTEM_THEME_SCRIPT, THEME_COOKIE, THEMES } from "@/platform/design/theme";
 
 import { FONT_VARIABLES } from "./fonts";
 import "./globals.css";
+import "./in-app.css";
 
 export async function generateMetadata(): Promise<Metadata> {
   await connection();
   return toRootMetadata(await readBrandingForPage());
+}
+
+export async function generateViewport(): Promise<Viewport> {
+  return toViewport((await headers()).get("user-agent"));
 }
 
 export default async function RootLayout({ children }: { children: ReactNode }) {

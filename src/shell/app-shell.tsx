@@ -5,8 +5,9 @@ import { MAIN_CONTENT_ID } from "@/components/skip-link";
 import type { CommunityLogo } from "@/platform/branding/branding";
 
 import { ModuleOffNotice } from "./module-off-notice";
-import { FounderViewStrip, SidebarNavigation, TabBar } from "./navigation-links";
+import { FounderViewStrip, MenuTabOutlines, SidebarNavigation, TabBar } from "./navigation-links";
 import type { NavigationBadgeCounts, ShellNavigation } from "./navigation-rules";
+import { PressEnd } from "./pressed-tab";
 import { SearchReadyNotice } from "./search-ready-notice";
 import { PhoneFoot, ShellFooterLine, ShellFundMark } from "./shell-chrome";
 import { PhoneAccountButton, SidebarMember, type ShellMember } from "./user-menu";
@@ -45,7 +46,12 @@ export function AppShell({ community, member, navigation, badges, isNetworkOn, c
           <main id={MAIN_CONTENT_ID} tabIndex={-1} data-slot="main" className="fh-main">
             <FlashSlot />
             <div data-slot="page-width" className="w-full">
-              {children}
+              <div data-slot="page" className="contents">
+                {children}
+              </div>
+              {/* A tapped tab's outline shows here while the page above is hidden (pressed-tab.tsx). */}
+              <PressEnd />
+              <MenuTabOutlines navigation={navigation} isAdmin={member.isAdmin} />
             </div>
             <PhoneFoot isAdmin={member.isAdmin} />
           </main>
