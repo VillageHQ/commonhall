@@ -1,6 +1,30 @@
 import "server-only";
 
-import { AudioLines, CalendarCheck, FileChartColumn, Gift, Hand, Inbox, LayoutDashboard, LibraryBig, Megaphone, Newspaper, Settings2, Building2, Users, type LucideIcon } from "lucide-react";
+import {
+  AudioLines,
+  Bell,
+  BriefcaseBusiness,
+  Building2,
+  CalendarCheck,
+  CalendarClock,
+  Database,
+  FileChartColumn,
+  Gift,
+  Hand,
+  Inbox,
+  KeyRound,
+  LayoutDashboard,
+  LibraryBig,
+  Lock,
+  Mail,
+  Megaphone,
+  Network,
+  Newspaper,
+  Settings2,
+  UserRound,
+  Users,
+  type LucideIcon,
+} from "lucide-react";
 import { createElement } from "react";
 
 import { ANNOUNCEMENT_PAGE } from "@/modules/admin/contract-announcements";
@@ -10,6 +34,7 @@ import { ROUTES } from "@/platform/http/routes";
 import { NAVIGATION_SECTIONS, type NavigationSection } from "@/platform/modules/manifest";
 
 import { CONSOLE_KEYS, MEMBER_KEYS, MENU_PLACES, NAVIGATION_BADGES, type ShellNavigation, type ShellNavigationItem } from "./navigation-rules";
+import { readSettingsLinks, SETTINGS_KEYS, type SettingsKey } from "./settings-links";
 
 type MenuEntry = Omit<ShellNavigationItem, "icon" | "href" | "place"> & {
   icon: LucideIcon;
@@ -84,10 +109,23 @@ function renderIcons(entries: ReturnType<typeof readEntries>): ShellNavigationIt
   return entries.map(({ icon, ...entry }) => ({ ...entry, icon: createElement(icon, { "aria-hidden": true, className: "fh-i", strokeWidth: 1.5 }) }));
 }
 
+const SETTINGS_ICONS: Record<SettingsKey, LucideIcon> = {
+  [SETTINGS_KEYS.card]: UserRound,
+  [SETTINGS_KEYS.privacy]: Lock,
+  [SETTINGS_KEYS.alerts]: Bell,
+  [SETTINGS_KEYS.email]: Mail,
+  [SETTINGS_KEYS.booking]: CalendarClock,
+  [SETTINGS_KEYS.network]: Network,
+  [SETTINGS_KEYS.jobs]: BriefcaseBusiness,
+  [SETTINGS_KEYS.data]: Database,
+  [SETTINGS_KEYS.password]: KeyRound,
+};
+
 // A server component can't pass a Lucide component to a client one, so the shell gets rendered icons.
 export function buildShellNavigation(enabledIds = ALL_MODULE_IDS, isAdmin = false): ShellNavigation {
   return {
     member: renderIcons(readEntries(MEMBER_MENU, enabledIds)),
     console: isAdmin ? renderIcons(readEntries(CONSOLE_MENU, enabledIds)) : [],
+    settings: readSettingsLinks(enabledIds).map((link) => ({ ...link, icon: createElement(SETTINGS_ICONS[link.key], { "aria-hidden": true, strokeWidth: 1.5 }) })),
   };
 }

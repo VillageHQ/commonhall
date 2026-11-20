@@ -106,8 +106,8 @@ describe("who an alert reaches", () => {
     expect(skip({}, { kind: NOTIFICATION_KINDS.voiceBroadcast, fromUserId: "someone-else", mutedUserIds: muted })).toBeNull();
   });
 
-  it("holds back portfolio alerts in quiet times and lets direct ones through", () => {
-    const working = { quietTimes: [WORKING_HOURS] };
+  it("holds back portfolio alerts in quiet times and lets direct ones through while Let through is on", () => {
+    const working = { quietTimes: [WORKING_HOURS], letDirectThrough: true };
     expect(skip(working, { kind: NOTIFICATION_KINDS.voiceRoom })).toBe(SKIP_REASONS.quietHours);
     expect(skip(working, { kind: NOTIFICATION_KINDS.voiceBroadcast })).toBe(SKIP_REASONS.quietHours);
     expect(skip(working, { kind: NOTIFICATION_KINDS.library })).toBe(SKIP_REASONS.quietHours);
@@ -116,7 +116,9 @@ describe("who an alert reaches", () => {
     expect(skip(working, { kind: NOTIFICATION_KINDS.answer })).toBeNull();
   });
 
-  it("holds back direct alerts too in quiet times when Let through is off", () => {
+  it("holds back direct alerts too in quiet times when Let through is off, as it is for a new member", () => {
+    expect(DEFAULT_PREFERENCES.letDirectThrough).toBe(false);
+    expect(skip({ quietTimes: [WORKING_HOURS] }, { kind: NOTIFICATION_KINDS.message })).toBe(SKIP_REASONS.quietHours);
     expect(skip({ quietTimes: [WORKING_HOURS], letDirectThrough: false }, { kind: NOTIFICATION_KINDS.intro })).toBe(SKIP_REASONS.quietHours);
     expect(skip({ quietTimes: [WORKING_HOURS], letDirectThrough: false, timeZone: "Asia/Tokyo" }, { kind: NOTIFICATION_KINDS.intro })).toBeNull(); // 21:00 there
   });

@@ -20,6 +20,7 @@ import { Pill } from "@/components/ui/pill";
 import { acknowledgedResponseSchema } from "@/platform/http/contract";
 import { postRequest } from "@/platform/http/post-request";
 import { API_ROUTES, ROUTES } from "@/platform/http/routes";
+import { ME_PAGES } from "@/modules/members/contract-me-pages";
 import { NETWORK_STAGES, syncTokenSchema, type NetworkStatus } from "@/modules/network/contract";
 import { networkStatusQuery } from "@/modules/network/queries";
 import { toMembersOf } from "@/modules/network/rules-search-words";
@@ -106,7 +107,7 @@ function ConnectStart({ status, communityName, processedLine }: { status: Networ
               required
               style={{ accentColor: "var(--fund)", width: 18, height: 18, flex: "none", marginTop: 1 }}
             />
-            <span>Let {members} ask me for intros to people I know</span>
+            <span>Share whom I know with {members}, so they can ask me to introduce them</span>
           </label>
           <p className="fh-small fh-muted" style={{ marginTop: 6 }}>
             Connecting shares your network with {members}, so tick it to go on. You can stop sharing any time.
@@ -205,7 +206,8 @@ function stopSharing() {
   return postRequest(API_ROUTES.networkLeave, { confirmed: true }, acknowledgedResponseSchema);
 }
 
-// Round 6: sharing moved here from My profile's sheet. On, members can ask for intros through your network.
+// Round 6: sharing moved here from My profile's sheet. On, members can ask for intros through your network. Round 7:
+// its own consent, in its own words; whether members can ask you for intros at all is switched on Privacy only.
 function ShareRow({ communityName, isSharing }: { communityName: string; isSharing: boolean }) {
   const router = useRouter();
   const flash = useFlash();
@@ -220,7 +222,12 @@ function ShareRow({ communityName, isSharing }: { communityName: string; isShari
     <div className="fh-sheet mt-3.5">
       <SetRow
         label={`Share with ${communityName}`}
-        hint={isSharing ? "Members can ask you for intros." : "Off: only your own searches."}
+        hint={
+          <>
+            {isSharing ? "On: members can ask you to introduce people you know." : "Off: only your own searches."} Intro asks to you are switched on{" "}
+            <Link href={ME_PAGES.privacy}>Privacy</Link>.
+          </>
+        }
         control={
           isSharing ? (
             <Button type="button" variant="secondary" size="sm" className="whitespace-nowrap" disabled={leave.isPending} onClick={() => leave.mutate()}>

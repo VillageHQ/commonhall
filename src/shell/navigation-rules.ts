@@ -63,7 +63,10 @@ export type ShellNavigationItem = {
 
 type ItemPlace = { key: string; href: string };
 
-export type ShellNavigation = { member: readonly ShellNavigationItem[]; console: readonly ShellNavigationItem[] };
+// One row of the member's Settings list (settings-links.ts), with its icon rendered.
+export type ShellSettingsItem = { key: string; label: string; href: string; icon: ReactNode };
+
+export type ShellNavigation = { member: readonly ShellNavigationItem[]; console: readonly ShellNavigationItem[]; settings: readonly ShellSettingsItem[] };
 
 export const SHELL_MODES = { member: "member", console: "console" } as const;
 

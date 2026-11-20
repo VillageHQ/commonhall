@@ -8,6 +8,7 @@ import { user } from "../../platform/database/auth-schema.ts";
 import type { Database, DatabaseOrTransaction } from "../../platform/database/client.ts";
 import { memberAvatar, memberBlock, memberProfile, memberTag } from "../members/schema.ts";
 import { companyLogoColumn, filledFaceColumn, shownCompanyColumn, toShownFaceUrl } from "../members/reads-pictures.ts";
+import { isListedMember } from "../members/service-privacy.ts";
 import { readSettings } from "../../platform/settings/store.ts";
 import {
   ASK_ALLOWANCE,
@@ -475,7 +476,8 @@ export async function readReportableAnswer(database: Database, viewerId: string,
 export type WordHelper = { memberId: string; sharedWords: string[]; canHelpWith: string };
 
 // Members whose "can help with" line or tags share a word with the ask, by the same rule the Today list uses
-// (rules-help-match.ts). Plain word overlap, no AI. The most shared words first.
+// (rules-help-match.ts). Plain word overlap, no AI. The most shared words first. A member who hides from People
+// ("Nobody") isn't pointed to on asks either.
 export async function readWordHelpers(database: Database, authorId: string, askText: string, now = new Date()): Promise<WordHelper[]> {
   if (readWords(askText).size === 0) return [];
   const rows = await database
@@ -483,7 +485,7 @@ export async function readWordHelpers(database: Database, authorId: string, askT
     .from(user)
     .leftJoin(memberProfile, eq(memberProfile.userId, user.id))
     .leftJoin(memberTag, eq(memberTag.userId, user.id))
-    .where(and(or(isNotNull(memberProfile.canHelpWith), isNotNull(memberTag.tag)), ne(user.id, authorId), isActiveMember(now), hasNoBlockBetween(authorId, user.id)));
+    .where(and(or(isNotNull(memberProfile.canHelpWith), isNotNull(memberTag.tag)), ne(user.id, authorId), isActiveMember(now), hasNoBlockBetween(authorId, user.id), isListedMember(user.id)));
   const textByMember = new Map<string, { canHelpWith: string; tags: string[] }>();
   for (const { memberId, canHelpWith, tag } of rows) {
     const entry = textByMember.get(memberId) ?? { canHelpWith: canHelpWith ?? "", tags: [] };

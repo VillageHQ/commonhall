@@ -42,6 +42,7 @@ export async function savePreferences(database: Database, userId: string, prefer
     offKinds: [...new Set(preferences.offKinds)],
     timeZone: preferences.timeZone,
     letDirectThrough: preferences.letDirectThrough,
+    isSavedByMember: true,
     updatedAt: new Date(),
   };
   await database.transaction(async (transaction) => {
@@ -68,13 +69,16 @@ export async function savePreferences(database: Database, userId: string, prefer
 // Pause for an hour, until the next 08:00 in the member's time zone, or resume (null). For a member who never saved,
 // the browser's zone becomes theirs, as a first save does.
 export async function pauseAlerts(database: Database, userId: string, { until, timeZone: browserZone }: PauseBody, now: Date) {
-  const [row] = await database.select({ timeZone: notificationPreference.timeZone }).from(notificationPreference).where(eq(notificationPreference.userId, userId));
-  const timeZone = row?.timeZone ?? browserZone ?? DEFAULT_TIME_ZONE;
+  const [row] = await database
+    .select({ timeZone: notificationPreference.timeZone, isSavedByMember: notificationPreference.isSavedByMember })
+    .from(notificationPreference)
+    .where(eq(notificationPreference.userId, userId));
+  const timeZone = (row?.isSavedByMember ? row.timeZone : browserZone) ?? row?.timeZone ?? DEFAULT_TIME_ZONE;
   const pausedUntil = until === PAUSE_CHOICES.hour ? new Date(now.getTime() + HOUR_MS) : until === PAUSE_CHOICES.tomorrow ? readNextLocalMoment(now, timeZone, PAUSE_TOMORROW_AT) : null;
   await database
     .insert(notificationPreference)
     .values({ userId, pausedUntil, timeZone, updatedAt: now })
-    .onConflictDoUpdate({ target: notificationPreference.userId, set: { pausedUntil, timeZone, updatedAt: now } });
+    .onConflictDoUpdate({ target: notificationPreference.userId, set: { pausedUntil, timeZone, isSavedByMember: true, updatedAt: now } });
   return pausedUntil;
 }
 

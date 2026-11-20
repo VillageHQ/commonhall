@@ -10,7 +10,7 @@ import { modulePage } from "@/platform/modules/module-page";
 import { MESSAGE_POLICIES } from "@/modules/members/contract-privacy";
 import { PrivacySheet } from "@/modules/members/components/privacy-sheet";
 import { membersManifest } from "@/modules/members/manifest";
-import { readPrivacy } from "@/modules/members/service-privacy";
+import { readCommunityMessagePolicy, readPrivacy } from "@/modules/members/service-privacy";
 import { introsManifest } from "@/modules/intros/manifest";
 import { messagesManifest } from "@/modules/messages/manifest";
 
@@ -20,9 +20,10 @@ export const metadata: Metadata = { title: "Privacy" };
 export default modulePage(membersManifest, async function PrivacyPage() {
   const member = await requireMember();
   const database = getDatabase();
-  const [community, privacy, isIntrosOn, isMessagesOn] = await Promise.all([
+  const [community, privacy, communityPolicy, isIntrosOn, isMessagesOn] = await Promise.all([
     readBrandingForPage(),
     readPrivacy(database, member.id),
+    readCommunityMessagePolicy(database),
     isModuleEnabled(database, introsManifest),
     isModuleEnabled(database, messagesManifest),
   ]);
@@ -38,8 +39,8 @@ export default modulePage(membersManifest, async function PrivacyPage() {
           communityName={community.name}
           isHidden={privacy.isHidden}
           acceptsIntroAsks={isIntrosOn ? privacy.acceptsIntroAsks !== false : null}
-          // Commonhall selects "The community’s default" for a member who never chose.
-          messagePolicy={isMessagesOn ? (privacy.followsCommunityDefault ? MESSAGE_POLICIES.communityDefault : privacy.messagePolicy) : null}
+          // Two choices: a stored "community default" reads as the community's policy today.
+          messagePolicy={isMessagesOn ? (privacy.messagePolicy === MESSAGE_POLICIES.communityDefault ? communityPolicy : privacy.messagePolicy) : null}
         />
       </div>
     </>

@@ -13,15 +13,13 @@ import { Switch } from "@/components/ui/switch";
 import { acknowledgedResponseSchema } from "@/platform/http/contract";
 import { postRequest } from "@/platform/http/post-request";
 import { API_ROUTES } from "@/platform/http/routes";
-import { COMMUNITY_MESSAGE_POLICY, MESSAGE_POLICIES, type MessagePolicy, type PrivacyBody } from "@/modules/members/contract-privacy";
+import { MESSAGE_POLICIES, type MessagePolicy, type PrivacyBody } from "@/modules/members/contract-privacy";
 
 const VISIBILITY = { all: "all", none: "none" } as const;
 const ASKS_SWITCH_ID = "privacy-accepts-asks";
 
-const COMMUNITY_DEFAULT_WORDS: Record<string, string> = {
-  [MESSAGE_POLICIES.anyone]: "anyone",
-  [MESSAGE_POLICIES.introduced]: "people you were introduced to",
-};
+// What "Nobody" does, in one line (round 7): hidden from People and from the asks' helper matching.
+export const HIDDEN_LINE = "Members won’t find you in People or be pointed to you on asks.";
 
 function savePrivacy(body: PrivacyBody) {
   return postRequest(API_ROUTES.profilePrivacy, body, acknowledgedResponseSchema);
@@ -32,11 +30,13 @@ type PrivacySheetProps = {
   isHidden: boolean;
   // Null while intros are off: the intro asks row is not offered. Never answered counts as yes.
   acceptsIntroAsks: boolean | null;
-  // Null while messages are off: "Who can message me" is not offered.
+  // Null while messages are off: "Who can message me" is not offered. Anyone or introduced: a member who never chose
+  // sees the community's default picked, and keeps following it until they pick the other one.
   messagePolicy: MessagePolicy | null;
 };
 
-// My profile › Privacy (/me/privacy): who sees me in People, intro asks, who can message me, one Save.
+// My profile › Privacy (/me/privacy): who sees me in People, intro asks (the one place it is switched), who can
+// message me (two choices), one Save.
 export function PrivacySheet({ communityName, isHidden, acceptsIntroAsks, messagePolicy }: PrivacySheetProps) {
   const router = useRouter();
   const flash = useFlash();
@@ -96,7 +96,7 @@ export function PrivacySheet({ communityName, isHidden, acceptsIntroAsks, messag
             checked={visibility === VISIBILITY.none}
             onChange={() => setVisibility(VISIBILITY.none)}
             title="Nobody"
-            description="Admins still see you"
+            description={HIDDEN_LINE}
           />
         </div>
       </fieldset>
@@ -112,7 +112,6 @@ export function PrivacySheet({ communityName, isHidden, acceptsIntroAsks, messag
         <fieldset className="mt-3.5">
           <legend className="fh-label">Who can message me</legend>
           <div className="mt-2">
-            {radio(MESSAGE_POLICIES.communityDefault, "The community’s default", `Now: ${COMMUNITY_DEFAULT_WORDS[COMMUNITY_MESSAGE_POLICY]}`)}
             {radio(MESSAGE_POLICIES.anyone, `Anyone in ${communityName}`)}
             {radio(MESSAGE_POLICIES.introduced, "Only people I’ve been introduced to", "Admins can always write")}
           </div>
