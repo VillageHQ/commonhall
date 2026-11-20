@@ -37,6 +37,8 @@ export const MEMBER_KEYS = {
 
 export const CONSOLE_KEYS = {
   home: "home",
+  introLog: "intro-log",
+  jobs: "job-board",
   members: "members",
   asks: "asks-intros",
   announce: "announce",
@@ -44,7 +46,7 @@ export const CONSOLE_KEYS = {
   setup: "setup",
 } as const;
 
-// Where an item shows: the five tabs (sidebar and phone bar), or the avatar menu's "More".
+// Where an item shows: the menu (the sidebar, and the phone bar for those with a tabLabel), or the avatar menu's "More".
 export const MENU_PLACES = { tab: "tab", more: "more" } as const;
 
 export type MenuPlace = (typeof MENU_PLACES)[keyof typeof MENU_PLACES];

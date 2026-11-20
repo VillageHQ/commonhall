@@ -10,7 +10,7 @@ import { QueryBoundary } from "@/components/query-boundary";
 import { useIsInBrowser } from "@/components/use-is-in-browser";
 import { Button } from "@/components/ui/button";
 import { Chip, ChipRow } from "@/components/ui/chip";
-import { MemberDirectory, openExpertsView, SEARCH_INPUT_ID } from "@/modules/members/components/member-directory";
+import { cancelPendingSearch, MemberDirectory, openExpertsView, SEARCH_INPUT_ID } from "@/modules/members/components/member-directory";
 import { NetworkFailure } from "@/modules/network/components/network-failure";
 import { SearchResults } from "@/modules/network/components/search-results";
 import { NETWORK_STEP_PARAM, toNetworkSearchHref } from "@/modules/network/components/search-links";
@@ -91,6 +91,7 @@ function NetworkStepResults({ search }: { search: SearchScreenProps }) {
       focusSearchBox();
       return;
     }
+    cancelPendingSearch();
     const active: ActiveSearch = { prompt: words, scope: search.defaultScope, startedAtMs: Date.now(), wasSeen: false };
     queryClient.setQueryData(activeSearchQuery.queryKey, active);
     router.push(toNetworkSearchHref(words, search.defaultScope));
@@ -114,6 +115,7 @@ function NetworkStepResults({ search }: { search: SearchScreenProps }) {
 }
 
 export function PeopleScreen({ canAskIntro, network }: PeopleScreenProps) {
+  const isNetworkAsked = useSearchParams().get(NETWORK_STEP_PARAM) === "1";
   const [need, setNeed] = useState<NeedKey | null>(null);
   const chosen = NEEDS.find(({ key }) => key === need);
   const choose = (key: NeedKey) => {
@@ -128,5 +130,5 @@ export function PeopleScreen({ canAskIntro, network }: PeopleScreenProps) {
       {network?.state === "connect" ? <ConnectLine /> : null}
     </>
   );
-  return <MemberDirectory between={between} placeholder={chosen ? `e.g. ${chosen.example}` : undefined} />;
+  return <MemberDirectory between={between} placeholder={chosen ? `e.g. ${chosen.example}` : undefined} isEmptyQuiet={isNetworkAsked && network?.state === "ready"} />;
 }

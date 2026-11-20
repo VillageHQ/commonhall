@@ -63,7 +63,7 @@ describe("the navigation", () => {
   });
 
   it("lists the six console items for admins, five of them phone tabs", () => {
-    const items = selectNavigationItems(NAVIGATION_SECTIONS.admin, true);
+    const items = selectNavigationItems(NAVIGATION_SECTIONS.admin, true).filter(({ place }) => place === MENU_PLACES.tab);
 
     expect(items.map(({ label }) => label)).toEqual(["Home", "Members", "Asks & intros", "Announce", "Report", "Set up"]);
     expect(items.map(({ href }) => href)).toEqual(["/admin", "/admin/members", "/admin/asks", "/admin/announcements", "/admin/report", "/admin/settings"]);
@@ -75,7 +75,15 @@ describe("the navigation", () => {
     const withNeither = selectNavigationItems(NAVIGATION_SECTIONS.admin, true, new Set(["members", "admin"]));
 
     expect(withIntros.find(({ key }) => key === CONSOLE_KEYS.asks)?.href).toBe(ROUTES.adminIntroLog);
-    expect(withNeither.map(({ label }) => label)).toEqual(["Home", "Members", "Announce", "Report", "Set up"]);
+    expect(withNeither.filter(({ place }) => place === MENU_PLACES.tab).map(({ label }) => label)).toEqual(["Home", "Members", "Announce", "Report", "Set up"]);
+  });
+
+  it("keeps the Intro log and the Job board one tap away under the avatar's More in the console, while they're on", () => {
+    const more = (ids: readonly string[]) =>
+      selectNavigationItems(NAVIGATION_SECTIONS.admin, true, new Set(ids)).flatMap(({ place, href }) => (place === MENU_PLACES.more ? [href] : []));
+
+    expect(more(ALL_ON)).toEqual([ROUTES.adminIntroLog, "/admin/jobs"]);
+    expect(more(["members", "admin"])).toEqual([]);
   });
 
   describe("which item a page lights", () => {

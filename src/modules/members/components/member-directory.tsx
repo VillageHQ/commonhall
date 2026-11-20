@@ -53,6 +53,12 @@ function scheduleSearch(search: string, filters: DirectoryFilters) {
   }, SEARCH_DEBOUNCE_MS);
 }
 
+// A search typed in the box but not yet in the address is dropped (People's "Search their networks" moves the address
+// itself, and the late member search must not overwrite it).
+export function cancelPendingSearch() {
+  clearTimeout(pendingSearch);
+}
+
 function clearFilters(setSearchDraft: (search: string) => void, isExpertsView: boolean) {
   clearTimeout(pendingSearch);
   setSearchDraft("");
@@ -244,9 +250,9 @@ function MoreLinks({ page, pageCount, filters }: { page: number; pageCount: numb
   );
 }
 
-type DirectoryResultsProps = { filters: DirectoryFilters; onClear: () => void; isStale: boolean; isFilterOpen: boolean };
+type DirectoryResultsProps = { filters: DirectoryFilters; onClear: () => void; isStale: boolean; isFilterOpen: boolean; isEmptyQuiet: boolean };
 
-function DirectoryResults({ filters, onClear, isStale, isFilterOpen }: DirectoryResultsProps) {
+function DirectoryResults({ filters, onClear, isStale, isFilterOpen, isEmptyQuiet }: DirectoryResultsProps) {
   const { data: directory } = useSuspenseQuery(directoryQuery(filters));
   const { members, matchCount, page, pageCount, filterOptions } = directory;
   const isFiltered = hasDirectoryFilters(filters);
@@ -259,11 +265,17 @@ function DirectoryResults({ filters, onClear, isStale, isFilterOpen }: Directory
         </div>
       ) : null}
       <div id={RESULTS_ID} tabIndex={-1} aria-busy={isStale} className={cn("outline-none", isStale && "opacity-60")}>
-        {members.length === 0 ? (
+        {members.length === 0 && isEmptyQuiet ? (
+          <p role="status" className="fh-small fh-muted mt-3.5">
+            No member matches.
+          </p>
+        ) : null}
+        {members.length === 0 && !isEmptyQuiet ? (
           <div className="mt-4">
             <DirectoryEmpty filters={filters} onClear={onClear} />
           </div>
-        ) : (
+        ) : null}
+        {members.length > 0 ? (
           <>
             <p role="status" className="fh-small fh-muted mt-3.5 mb-1">
               {readCountLine(matchCount, isFiltered)}
@@ -272,7 +284,7 @@ function DirectoryResults({ filters, onClear, isStale, isFilterOpen }: Directory
               {members.map((member) => (filters.isExpertsView ? <ExpertRow key={member.id} member={member} /> : <MemberRow key={member.id} member={member} />))}
             </div>
           </>
-        )}
+        ) : null}
       </div>
       <MoreLinks page={page} pageCount={pageCount} filters={filters} />
     </>
@@ -313,9 +325,11 @@ type MemberDirectoryProps = {
   // the box and the members.
   between?: ReactNode;
   placeholder?: string;
+  // While other results show above (People's network search), no member matching is one quiet line, not a box.
+  isEmptyQuiet?: boolean;
 };
 
-export function MemberDirectory({ between, placeholder = "Name, company or skill" }: MemberDirectoryProps) {
+export function MemberDirectory({ between, placeholder = "Name, company or skill", isEmptyQuiet = false }: MemberDirectoryProps) {
   const searchParams = useSearchParams();
   const queryString = searchParams.toString();
   const deferredQueryString = useDeferredValue(queryString);
@@ -353,6 +367,7 @@ export function MemberDirectory({ between, placeholder = "Name, company or skill
           onClear={() => clearFilters(setSearchDraft, filters.isExpertsView)}
           isStale={queryString !== deferredQueryString}
           isFilterOpen={isFilterOpen}
+          isEmptyQuiet={isEmptyQuiet}
         />
       </QueryBoundary>
     </>

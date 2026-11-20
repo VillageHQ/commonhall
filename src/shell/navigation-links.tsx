@@ -111,8 +111,8 @@ function useCurrentItems({ navigation, isAdmin, pathname: pathnameOverride }: Om
   const currentPathname = usePathname();
   const pathname = pathnameOverride ?? currentPathname;
   const mode = readShellMode(pathname, isAdmin);
-  // A member's menu shows its five tabs; the rest sit under the avatar. The console lists all of its items.
-  const items = mode === SHELL_MODES.console ? navigation.console : navigation.member.filter((item) => item.place === MENU_PLACES.tab);
+  // The menus show their own items; the rest sit under the avatar's More.
+  const items = (mode === SHELL_MODES.console ? navigation.console : navigation.member).filter((item) => item.place === MENU_PLACES.tab);
   const currentKey = mode === SHELL_MODES.console ? readConsoleKey(pathname) : readMemberKey(pathname, items);
   const currentTabKey = mode === SHELL_MODES.console ? readConsoleTabKey(pathname) : readMemberTabKey(pathname, items);
   return { mode, items, currentKey, currentTabKey };
