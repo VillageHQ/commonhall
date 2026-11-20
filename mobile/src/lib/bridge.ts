@@ -97,6 +97,12 @@ export function toApiAnswer(status: number, body: string): ApiAnswer {
   }
 }
 
+// The server's { code } on a failed call (its RequestError code), or null.
+export function readErrorCode(answer: ApiAnswer) {
+  const code = answer.json && typeof answer.json === "object" ? (answer.json as { code?: unknown }).code : null;
+  return typeof code === "string" ? code : null;
+}
+
 // The server's { message } on a failed call, or a plain fallback.
 export function readFailureMessage(answer: ApiAnswer, fallback: string) {
   if (answer.status === 0) return "The app lost its connection to your community. Check your connection and try again.";
