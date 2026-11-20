@@ -173,3 +173,34 @@ Run from the worktree with `NODE_ENV=test` and `TEST_DATABASE_URL=…/room_test`
 - Not a failure: the full-page screenshots (`6-schedule-past-time-390.png`, `6-coming-up-card-390.png`) show the
   fixed tab bar in the middle of the page. That is how full-page capture draws a fixed bar, not a layout bug. In the
   viewport shots the bar sits at the bottom and covers nothing that matters.
+
+## Re-check after the fix (commit e7aa7bb6, app rebuilt on :9757)
+
+| Finding | Re-check | Result |
+|---------|----------|--------|
+| B1 | A double tap keeps the quiet line; one room is made | PASS |
+| B2 | `?quiet=1` shows the line only on a room that alerted nobody | PASS |
+| B3 | An all-day, every-day quiet time reads "Quiet all week" | PASS |
+
+**B1.** Sam had 3 alerting starts in the last 24 hours, so every new start was quiet.
+- At 390, a fast Playwright `dblclick` on "Start a room" sent **1** `POST /api/voice/create`, which answered
+  `{"roomId":"682940dc-…","isQuiet":true}`.
+  - It made 1 room.
+  - The room page showed "People weren't alerted this time: 3 rooms a day alert everyone." once.
+  - The line was gone after a reload, and no pushes were sent.
+- At 1280 the result was the same: 1 request, 1 room (`22513a6c-…`), the line shown once and gone after a reload.
+- Two forced concurrent `POST /api/voice/create {}` calls from the page both answered
+  `200 {"roomId":"cc43c687-…","isQuiet":true}`. The two answers were identical, and 1 room was made.
+- Screenshots: `re-b1-double-tap-quiet-line-390.png`, `re-b1-double-tap-quiet-line-1280.png`.
+
+**B2.** At 390, each room was opened by its host with `?quiet=1` added by hand.
+- Sam's room `79404164-…` alerted people (it has a `voice_broadcast` row for Sam). The line count was **0**.
+- Maya's room `054246de-…` alerted people (it has a row for Maya). The line count was **0**.
+- Sam's room `682940dc-…` was a truly quiet start (no row). The line count was **1**.
+- Screenshots: `re-b2-sam-alerting-390.png`, `re-b2-maya-alerting-390.png`, `re-b2-sam-quiet-390.png`.
+
+**B3.** At 390, Sam added a quiet time on /me/alerts with Custom → All day → every day → Save. The DB holds
+`all_day = t, days = {0..6}`.
+- The Rooms link read **"Quiet all week"** (`re-b3-quiet-all-week-390.png`).
+- The quiet time was then removed, which restored Sam's settings: 0 quiet times, `is_on = t`, `off_kinds = {}`, no
+  pause. The Rooms link reads "Quiet times" again.
