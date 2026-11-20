@@ -1,6 +1,6 @@
 ---
 id: notify-schedule
-status: planned
+status: in-review
 waits-on: []
 size: half a day
 touches: ["src/platform/notifications/", "src/components/alerts/", "src/app/(app)/me/alerts/", "src/app/(app)/rooms/page.tsx (the bell only)", "drizzle/"]
