@@ -37,6 +37,8 @@ export function WeeklyEmailScheduleForm({ isEnabled: savedEnabled, schedule }: {
     onSuccess: () => {
       router.replace(`${ANNOUNCEMENT_PAGE}?m=${SCHEDULE_SAVED_FLASH}`, { scroll: false });
       router.refresh();
+      // "Saved." shows at the top of the page: bring it into view.
+      window.scrollTo({ top: 0 });
     },
   });
   return (
