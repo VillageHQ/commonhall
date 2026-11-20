@@ -24,18 +24,24 @@ const PressedTabContext = createContext<PressedTab | null>(null);
 function usePressedState(): PressedTab {
   const pathname = usePathname();
   const [state, setState] = useState<Pressed | null>(null);
+  // A press ends for good when the address changes: coming back to the page it was made on (Back, the iOS back
+  // swipe, the fund mark) never brings its outline back. Adjusted while rendering, so the frame that shows the new
+  // page shows no press.
+  if (state && state.from !== pathname) setState(null);
   useEffect(() => {
     if (!state) return;
     const timer = setTimeout(() => setState(null), PRESSED_TIMEOUT_MS);
     return () => clearTimeout(timer);
   }, [state]);
   const press = useCallback(
-    (key: string, href: string, isTapped: boolean) =>
-      setState((current) => (current?.key === key && current.from === pathname && current.isTapped === isTapped ? current : { key, href, from: pathname, isTapped })),
+    (key: string, href: string, isTapped: boolean) => {
+      // The page already shown: nothing to light or wait for.
+      if (toPathname(href) === pathname) return;
+      setState((current) => (current?.key === key && current.from === pathname && current.isTapped === isTapped ? current : { key, href, from: pathname, isTapped }));
+    },
     [pathname],
   );
   const release = useCallback(() => setState(null), []);
-  // Derived, not cleared in an effect: the frame that shows the new page shows no press.
   const pressed = state && state.from === pathname ? state : null;
   return useMemo(() => ({ pressed, press, release }), [pressed, press, release]);
 }

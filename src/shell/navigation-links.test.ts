@@ -141,6 +141,20 @@ describe("the phone tab bar", () => {
     view.rerender(createElement(QueryClientProvider, { client: queryClient }, shell()));
     expect(screen.queryByRole("status")).toBeNull();
     expect(people.getAttribute("data-pressed")).toBeNull();
+
+    // Back to Today (Back, the iOS back swipe): Today's own page, not People's outline.
+    location.pathname = ROUTES.today;
+    view.rerender(createElement(QueryClientProvider, { client: queryClient }, shell()));
+    expect(screen.queryByRole("status")).toBeNull();
+    expect((screen.getByText("Today's page").parentElement as HTMLElement).style.display).toBe("contents");
+    expect(people.getAttribute("data-pressed")).toBeNull();
+
+    // Tapping the tab already shown lights nothing and swaps nothing.
+    const today = within(screen.getByRole("navigation", { name: "Sections" })).getByRole("link", { name: /Today/ });
+    fireEvent.pointerDown(today, { button: 0 });
+    fireEvent.click(today, { button: 0 });
+    expect(today.getAttribute("data-pressed")).toBeNull();
+    expect(screen.queryByRole("status")).toBeNull();
   });
 
   it("forgets a press after a while, and a ⌘-click lights nothing", () => {
