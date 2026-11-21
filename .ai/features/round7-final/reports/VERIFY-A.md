@@ -50,3 +50,16 @@ Left as is (the demo resets nightly):
 - The Marcus to Rachel intro is now introduced.
 - Maya's answer on Sam's VP Sales ask.
 - Sam's "I can help" on Lena's and Amara's asks.
+
+## Re-check (after the repair; demo rebuilt and restarted at `http://localhost:9571`)
+
+| # | Result | Proof | Screenshots |
+|---|---|---|---|
+| A2 | PASS | Same stub as before (3 links, `isEmailOn:false`). At 390 the mail mark is gone (measured `display:none`, 0 px). Each row is name and address on the left, with a short "Copy" on the right on the same line. Rows are aligned, with no overlap and nothing off-screen. The 56-character address and the no-name 42-character address cut with "…" (the column is 228 px). Realistic addresses (`sofia.mensah@brightsideclinics.com`, `marcus.webb@brightwater.example`, and a no-name `ada.okafor@gridwise.example`) show in full. 1280 is unchanged: mail mark shown, full long address, Copy on the right. | A-recheck-2-page-390, A-recheck-2-rows-390, A-recheck-2-rows-1280, A-recheck-2-realistic-page-390 |
+| A4 | PASS | Maya answered Sam's ask, and Sam's Today showed "Your ask · N answers / Read". Sam then opened it with Read (`/api/asks/seen` 200) and went back to Today. With the browser's Back, the line was gone at 390 and at 1280 ("Nothing needs you right now"). With the Today tab it was also gone at 390 and 1280. Each time, after Maya answered again, the line came back (3, 4, 5, 6, 7 answers). It stays gone on a fresh load. | A-recheck-4-today-before-390, A-recheck-4-today-after-back-390, A-recheck-4-today-after-tab-390, A-recheck-4-today-before-1280, A-recheck-4-today-after-back-1280, A-recheck-4-today-after-tab-1280, A-recheck-4-today-after-quick-back-390 |
+
+**Tried to break it (re-check):**
+- **A4:** A quick Back, 300 ms after tapping Read, still came back to Today without the line.
+- **A2:** Long and no-name rows at 390 keep Copy on the same line.
+
+**Left on the demo:** five extra answers by Maya on Sam's VP Sales ask ("Verifier A re-check …"). The demo resets nightly.
