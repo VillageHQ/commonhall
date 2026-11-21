@@ -24,8 +24,8 @@ type PortalScreenProps = {
 };
 
 // The page still sends `hasNotified` (always true since round 7, for app builds that offered "Tell people I'm here");
-// this build has no Tell people and ignores it.
-type OpenRoom = { roomId: string; title: string };
+// this build has no Tell people and ignores it. `notice` is the page's line for the host (a quiet start).
+type OpenRoom = { roomId: string; title: string; notice: string };
 
 export function PortalScreen({ community, startPath, openRequest, onSwitchCommunity }: PortalScreenProps) {
   const colors = useColors();
@@ -85,12 +85,12 @@ export function PortalScreen({ community, startPath, openRequest, onSwitchCommun
   }, [room]);
 
   const onOpenRoom = useCallback(
-    (roomId: string, title: string) => {
+    (roomId: string, title: string, notice: string) => {
       const current = roomRef.current;
       if (current?.roomId !== roomId) {
         // One room at a time: opening another leaves the one playing.
         if (current) void portal.call("POST", "/api/voice/leave", { roomId: current.roomId });
-        roomRef.current = { roomId, title: title || "Voice room" };
+        roomRef.current = { roomId, title: title || "Voice room", notice };
         setRoom(roomRef.current);
       }
       setIsRoomShown(true);
@@ -111,6 +111,16 @@ export function PortalScreen({ community, startPath, openRequest, onSwitchCommun
   );
 
   const onRoomStatus = useCallback((text: string, isLive: boolean) => setRoomStatus({ text, isLive }), []);
+
+  // The host renamed the room on its screen: the mini bar follows, and the page under it reads the new title.
+  const onRenamed = useCallback(
+    (title: string) => {
+      setRoom((current) => (current ? { ...current, title } : current));
+      if (roomRef.current) roomRef.current = { ...roomRef.current, title };
+      portal.reload();
+    },
+    [portal],
+  );
 
   // The page under the room learns why it closed (it says so and offers Join again).
   const closeRoom = useCallback(
@@ -168,10 +178,12 @@ export function PortalScreen({ community, startPath, openRequest, onSwitchCommun
           origin={community.origin}
           roomId={room.roomId}
           title={room.title}
+          notice={room.notice}
           isShown={isRoomShown}
           onMinimize={() => setIsRoomShown(false)}
           onClose={closeRoom}
           onStatus={onRoomStatus}
+          onRenamed={onRenamed}
         />
       ) : null}
     </View>

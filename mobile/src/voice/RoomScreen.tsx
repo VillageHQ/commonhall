@@ -1,6 +1,6 @@
 import { DisconnectReason, Room, RoomEvent, Track, type Participant, type RemoteTrack } from "livekit-client";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { listenToVoiceService, showVoiceService, stopVoiceService } from "../../modules/voice-service";
@@ -19,6 +19,8 @@ type Person = { id: string; name: string; role: RoomRole; isHandRaised: boolean;
 type JoinAnswer = { serverUrl: string; token: string };
 
 const REACTION_MS = 2400;
+// The server's limit on a room's title (VOICE_LIMITS.titleLength in the web app).
+const MAXIMUM_TITLE_LENGTH = 120;
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
@@ -52,13 +54,16 @@ type RoomScreenProps = {
   origin: string;
   roomId: string;
   title: string;
+  // A line from the page for the host, shown under the title until another notice replaces it ("" for none).
+  notice: string;
   isShown: boolean;
   onMinimize: () => void;
   onClose: (reason: RoomClosedReason) => void;
   onStatus: (status: string, isLive: boolean) => void;
+  onRenamed: (title: string) => void;
 };
 
-export function RoomScreen({ portal, origin, roomId, title, isShown, onMinimize, onClose, onStatus }: RoomScreenProps) {
+export function RoomScreen({ portal, origin, roomId, title, notice: pageNotice, isShown, onMinimize, onClose, onStatus, onRenamed }: RoomScreenProps) {
   const colors = useColors();
   const styles = makeStyles(colors);
   const insets = useSafeAreaInsets();
@@ -70,7 +75,9 @@ export function RoomScreen({ portal, origin, roomId, title, isShown, onMinimize,
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [reactions, setReactions] = useState<Record<string, string>>({});
   const [isReacting, setIsReacting] = useState(false);
-  const [notice, setNotice] = useState<{ text: string; isProblem: boolean } | null>(null);
+  const [notice, setNotice] = useState<{ text: string; isProblem: boolean } | null>(pageNotice ? { text: pageNotice, isProblem: false } : null);
+  // The host's Rename, as on the page: a one-tap room starts as "Sam's room".
+  const [draft, setDraft] = useState<string | null>(null);
   const [isBusy, setIsBusy] = useState(false);
 
   const refresh = useCallback(() => {
@@ -207,6 +214,15 @@ export function RoomScreen({ portal, origin, roomId, title, isShown, onMinimize,
     return answer;
   }
 
+  async function rename() {
+    const typed = (draft ?? "").trim();
+    if (!typed) return;
+    if ((await send("/api/voice/rename", { title: typed }, "That didn't work. Try again.")).status === 200) {
+      setDraft(null);
+      onRenamed(typed);
+    }
+  }
+
   async function act(memberId: string, action: RoleAction) {
     if ((await send("/api/voice/role", { memberId, action }, "That didn't work. Try again.")).status === 200) setSelectedId(null);
   }
@@ -288,9 +304,37 @@ export function RoomScreen({ portal, origin, roomId, title, isShown, onMinimize,
           <Text style={styles.liveText}>Live</Text>
         </View>
       </View>
-      <Text style={styles.title} accessibilityRole="header">
-        {title}
-      </Text>
+      {draft === null ? (
+        <>
+          <Text style={styles.title} accessibilityRole="header">
+            {title}
+          </Text>
+          {myRole === "host" ? (
+            <Pressable accessibilityRole="button" testID="rename-room" hitSlop={8} onPress={() => setDraft(title)} style={styles.renameButton}>
+              <Text style={styles.renameText}>Rename</Text>
+            </Pressable>
+          ) : null}
+        </>
+      ) : (
+        <View style={styles.renameRow} testID="rename-form">
+          <TextInput
+            accessibilityLabel="Room name"
+            value={draft}
+            onChangeText={setDraft}
+            maxLength={MAXIMUM_TITLE_LENGTH}
+            autoFocus
+            returnKeyType="done"
+            onSubmitEditing={() => void rename()}
+            style={styles.renameInput}
+          />
+          <Pressable accessibilityRole="button" disabled={isBusy || !draft.trim()} onPress={() => void rename()} style={[styles.primaryButtonSmall, isBusy || !draft.trim() ? styles.disabled : null]}>
+            <Text style={styles.primaryButtonText}>Save</Text>
+          </Pressable>
+          <Pressable accessibilityRole="button" onPress={() => setDraft(null)} style={styles.secondaryButton}>
+            <Text style={styles.secondaryButtonText}>Cancel</Text>
+          </Pressable>
+        </View>
+      )}
       {phase === "connecting" ? (
         <View style={styles.row}>
           <ActivityIndicator color={colors.ink} />
@@ -433,6 +477,11 @@ function makeStyles(colors: Colors) {
     liveDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.live },
     liveText: { color: colors.ink, fontFamily: SANS, fontSize: 13, fontWeight: "600" },
     title: { color: colors.ink, fontFamily: SERIF, fontSize: 26, fontWeight: "500", marginVertical: 8 },
+    renameButton: { alignSelf: "flex-start", paddingVertical: 4, marginTop: -4, marginBottom: 6 },
+    renameText: { color: colors.ink, fontFamily: SANS, fontSize: 14, fontWeight: "600", textDecorationLine: "underline" },
+    renameRow: { flexDirection: "row", alignItems: "center", gap: 8, marginVertical: 8 },
+    renameInput: { flex: 1, minWidth: 0, height: 40, borderWidth: 1, borderColor: colors.line, borderRadius: 6, paddingHorizontal: 10, color: colors.ink, backgroundColor: colors.sheet, fontFamily: SANS, fontSize: 16 },
+    disabled: { opacity: 0.5 },
     body: { color: colors.ink, fontFamily: SANS, fontSize: 16, lineHeight: 23, marginVertical: 12 },
     muted: { color: colors.muted, fontFamily: SANS, fontSize: 14, lineHeight: 20 },
     warning: { color: colors.rust },

@@ -212,7 +212,7 @@ describe("the admin screens", () => {
       render(
         wrap(
           queryClient,
-          createElement(FlashProvider, null, createElement(FlashSlot), ...members.map((member) => createElement(MemberManage, { key: member.id, member, viewerId: VIEWER_ID }))),
+          createElement(FlashProvider, null, createElement(FlashSlot), ...members.map((member) => createElement(MemberManage, { key: member.id, member, viewerId: VIEWER_ID, isNetworkSearchOn: true }))),
         ),
       );
     }

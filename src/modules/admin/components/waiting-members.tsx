@@ -7,8 +7,6 @@ import { QueryBoundary } from "@/components/query-boundary";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Pill } from "@/components/ui/pill";
-import { networkManifest } from "@/modules/network/manifest";
-import { useIsModuleEnabled } from "@/platform/modules/enabled-modules";
 import type { WaitingMember } from "@/modules/members/contract-invites";
 
 import { ConfirmDialog } from "@/modules/admin/components/confirm-dialog";
@@ -29,7 +27,7 @@ function useRefreshAfterConfirming() {
   };
 }
 
-function WaitingRow({ member }: { member: WaitingMember }) {
+function WaitingRow({ member, isNetworkSearchOn }: { member: WaitingMember; isNetworkSearchOn: boolean }) {
   const refresh = useRefreshAfterConfirming();
   const { id, name, email, avatarUrl, inviteId, isReportedNotThem } = member;
 
@@ -58,7 +56,7 @@ function WaitingRow({ member }: { member: WaitingMember }) {
           onDone={refresh}
         >
           <p className="wrap-anywhere">
-            Anyone holding an invite link could have used it. Confirm only if you recognize this person and {email} is theirs. This turns on network search for them.
+            Anyone holding an invite link could have used it. Confirm only if you recognize this person and {email} is theirs.{isNetworkSearchOn ? " This turns on network search for them." : ""}
           </p>
         </ConfirmDialog>}
         {inviteId ? <ReclaimAction inviteId={inviteId} email={email} fallbackFocusId={WAITING_TITLE_ID} onReclaimed={refresh} /> : null}
@@ -75,10 +73,10 @@ function WaitingRow({ member }: { member: WaitingMember }) {
   );
 }
 
-type WaitingMembersProps = { isEmailConfigured: boolean };
+// isNetworkSearchOn: Network is on and Village connected (readIsFillInOffered), so a yes turns search on.
+type WaitingMembersProps = { isEmailConfigured: boolean; isNetworkSearchOn: boolean };
 
-function WaitingList({ isEmailConfigured }: WaitingMembersProps) {
-  const isNetworkOn = useIsModuleEnabled(networkManifest.id);
+function WaitingList({ isEmailConfigured, isNetworkSearchOn }: WaitingMembersProps) {
   const { data } = useSuspenseQuery(waitingMembersQuery);
   if (data.members.length === 0) return null;
   const hiddenCount = data.waitingCount - data.members.length;
@@ -89,12 +87,12 @@ function WaitingList({ isEmailConfigured }: WaitingMembersProps) {
       </h2>
       <p className="fh-small fh-muted mt-1">
         These people accepted an invite, but anyone holding the link could have done that. Yes says this person really owns this email
-        {isNetworkOn ? ", and turns on network search for them" : ""}. Only confirm someone you recognize.
+        {isNetworkSearchOn ? ", and turns on network search for them" : ""}. Only confirm someone you recognize.
         {isEmailConfigured ? ` ${EMAIL_CONFIGURED_NOTE}` : ""}
       </p>
       <div className="fh-rows mt-3">
         {data.members.map((member) => (
-          <WaitingRow key={member.id} member={member} />
+          <WaitingRow key={member.id} member={member} isNetworkSearchOn={isNetworkSearchOn} />
         ))}
       </div>
       {hiddenCount > 0 ? <p className="fh-small fh-muted mt-2">{hiddenCount} more will show up as you go through these.</p> : null}

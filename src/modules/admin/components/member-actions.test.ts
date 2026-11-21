@@ -38,7 +38,7 @@ const MEMBER: AdminMember = {
 };
 
 function renderActions(member: AdminMember, enabledIds: string[]) {
-  const actions = createElement(MemberActions, { member, viewerId: "admin", manageButtonRef: createRef<HTMLButtonElement>(), fallbackFocusId: "fallback", onDone: vi.fn() });
+  const actions = createElement(MemberActions, { member, viewerId: "admin", manageButtonRef: createRef<HTMLButtonElement>(), fallbackFocusId: "fallback", isNetworkSearchOn: true, onDone: vi.fn() });
   render(createElement(QueryClientProvider, { client: new QueryClient() }, createElement(EnabledModulesProvider, { ids: enabledIds }, actions)));
 }
 

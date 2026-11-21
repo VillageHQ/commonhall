@@ -64,6 +64,7 @@ async function InviteContent({ database, admin, nextHref }: { database: Database
         inviterRole={signature.role}
         isEmailOn={isEmailOn}
         isFillInShown={isFillInShown}
+        isNetworkSearchOn={isFillInShown}
         savedBasis={fillIn.basis}
         savedTermsDate={fillIn.termsDate}
       />

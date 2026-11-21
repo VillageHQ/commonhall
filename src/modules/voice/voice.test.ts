@@ -174,6 +174,18 @@ describe("voice rooms", () => {
     expect(first?.roomId).toBe(second?.roomId);
   });
 
+  it("reopens the host's live room when they start again, and makes a new one once it ended", async () => {
+    const host = await createSignedInMember(database);
+    const first = await startRoom(host);
+    const again = await startRoom(host, "A different title");
+    expect(again.roomId).toBe(first.roomId);
+    expect(await database.select({ id: voiceRoom.id }).from(voiceRoom)).toHaveLength(1);
+    // Scheduling for later still makes its own room.
+    expect((await call(postCreate, host.cookie, { title: "Later", scheduledFor: new Date(Date.now() + 60 * 60_000).toISOString() })).status).toBe(200);
+    await call(postEnd, host.cookie, { roomId: first.roomId });
+    expect((await startRoom(host)).roomId).not.toBe(first.roomId);
+  });
+
   it("starts a room with one tap as '<first name>'s room', open to everyone, and lets only its host rename it", async () => {
     const [host, guest] = await Promise.all([createSignedInMember(database), createSignedInMember(database)]);
     await database.update(user).set({ name: "Sam Lee" }).where(eq(user.id, host.userId));

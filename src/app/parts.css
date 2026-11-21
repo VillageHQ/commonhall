@@ -383,6 +383,8 @@ details.fh-advanced .fh-advanced-body > .fh-sheet + .fh-sheet{margin-top:16px}
 .fh-btn-stack{display:flex;flex-direction:column;align-items:flex-start;gap:6px}
 .fh-btn-stack .fh-btn{white-space:normal;height:auto;min-height:32px;padding-top:6px;padding-bottom:6px;text-align:left}
 .fh-copybox.fh-sendself .fh-textarea{min-height:0;height:auto;field-sizing:content;max-height:200px}
+/* A phone gives the founder's name and address the row: no mail mark, a short "Copy". */
+@media (max-width:480px){.fh-sendself .fh-r{grid-template-columns:minmax(0,1fr) auto}.fh-sendself .fh-r>.fh-avatar{display:none}}
 .fh-setrow{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 0;border-bottom:1px solid var(--rule)}
 .fh-setrow:last-child{border-bottom:0}
 .fh-setrow b{display:block;font-weight:600;font-size:14.5px}

@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, asc, count, eq, gt, gte, inArray, isNotNull, isNull, lt, lte, ne, sql, type SQL } from "drizzle-orm";
+import { and, asc, count, desc, eq, gt, gte, inArray, isNotNull, isNull, lt, lte, ne, sql, type SQL } from "drizzle-orm";
 
 import { isAdminMember } from "@/platform/auth/roles";
 import { user } from "@/platform/database/auth-schema";
@@ -160,6 +160,16 @@ async function findRecentRoom(transaction: Transaction, memberId: string, where:
   return room?.id ?? null;
 }
 
+async function findHostedLiveRoom(transaction: Transaction, memberId: string) {
+  const [room] = await transaction
+    .select({ id: voiceRoom.id })
+    .from(voiceRoom)
+    .where(and(eq(voiceRoom.hostId, memberId), eq(voiceRoom.status, ROOM_STATUSES.live), eq(voiceRoom.isBroadcast, false)))
+    .orderBy(desc(voiceRoom.startedAt))
+    .limit(1);
+  return room?.id ?? null;
+}
+
 // A start that alerts people, ready to send once its transaction commits.
 export type ClaimedNotify = { broadcastId: string; roomId: string; senderId: string; audience: NotifyAudience; memberIds: string[] };
 
@@ -198,7 +208,10 @@ export async function createRoom({ database, member }: RequestContext, body: Cre
   return database.transaction(async (transaction) => {
     const me = await lockMember(transaction, member.id);
     const title = typed || toAutoRoomTitle(me.name);
-    const repeat = await findRecentRoom(transaction, member.id, and(eq(voiceRoom.title, title), eq(voiceRoom.isBroadcast, false)), now);
+    // A host runs one live room at a time: starting again while theirs is live reopens it (no second "Sam's room"),
+    // and a second tap within 10 seconds finds the room just made.
+    const live = scheduledAt ? null : await findHostedLiveRoom(transaction, member.id);
+    const repeat = live ?? (await findRecentRoom(transaction, member.id, and(eq(voiceRoom.title, title), eq(voiceRoom.isBroadcast, false)), now));
     // A second tap answers as the first did: a live room that alerted nobody is still quiet.
     if (repeat) return { roomId: repeat, notify: null, isQuiet: !scheduledAt && !(await hasAlerted(transaction, repeat, member.id)) };
     const roomId = await insertRoom(transaction, member.id, { title, scheduledAt }, now);

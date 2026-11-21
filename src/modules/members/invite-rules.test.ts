@@ -14,6 +14,7 @@ const FACTS = {
   link: "https://community.example/join/token",
   inviterName: "Priya Raman",
   communityName: "Northwind",
+  isNetworkSearchOn: true,
   accentColor: "#0f7f86",
 };
 
@@ -94,6 +95,13 @@ describe("the invite email", () => {
         "Sent by Northwind Founders via its member portal.",
       ].join("\n"),
     );
+  });
+
+  it("promises only members who can help while Village isn't connected", () => {
+    const { text } = renderInviteEmail({ ...FACTS, isNetworkSearchOn: false });
+
+    expect(text).toContain("see who in Northwind's circle can help you, and ask in one tap.");
+    expect(text).not.toContain("introduce you");
   });
 
   it('says "Hi," when the invite has no name', () => {

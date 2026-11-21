@@ -7,14 +7,13 @@ import type { Transaction } from "../../platform/database/client.ts";
 import { AUDIT_ACTIONS } from "../../platform/audit/actions.ts";
 import { withAdminTransaction } from "../../platform/audit/admin-transaction.ts";
 import { recordAdminActions } from "../../platform/audit/record.ts";
-import { readEmailBranding, type EmailBranding } from "../../platform/email/outbox.ts";
 import { sendQueuedEmailsSoon } from "../../platform/email/outbox-sender.ts";
 import { type RequestContext } from "../../platform/http/request-context.ts";
 import { invite } from "./schema.ts";
 import { INVITE_STATES, readInviteExpiry, readInviteState } from "./contract-invite-state.ts";
 import { type BulkInviteResult, type BulkPerson, type BulkSkip, type ParsedBulkInvites } from "./contract-bulk-invites.ts";
 import { createInviteToken, hashInviteToken } from "./service-invite-token.ts";
-import { OPEN_INVITE, queueInviteEmail, readInviter, toInviteLink } from "./service-invites.ts";
+import { OPEN_INVITE, queueInviteEmail, readInviteBranding, readInviter, toInviteLink, type InviteBranding } from "./service-invites.ts";
 
 const CHUNK_SIZE = 500;
 const BULK_AUDIT_DETAIL = "From a list";
@@ -44,7 +43,7 @@ function toInviteValues(person: BulkPerson, inviter: Inviter, token: string) {
   };
 }
 
-type ChunkContext = { request: RequestContext; inviter: Inviter; branding: EmailBranding | null; auditDetail: string };
+type ChunkContext = { request: RequestContext; inviter: Inviter; branding: InviteBranding | null; auditDetail: string };
 
 async function inviteChunk(transaction: Transaction, { request, inviter, branding, auditDetail }: ChunkContext, people: BulkPerson[]) {
   const emails = people.map(({ email }) => email);
@@ -116,7 +115,7 @@ type BulkInviteOptions = { sendEmail?: boolean; auditDetail?: string };
 
 export async function createBulkInvites(context: RequestContext, parsed: ParsedBulkInvites, { sendEmail = true, auditDetail = BULK_AUDIT_DETAIL }: BulkInviteOptions = {}): Promise<BulkInviteResult> {
   const inviter = await readInviter(context);
-  const branding = sendEmail ? await readEmailBranding(context.database, context.environment) : null;
+  const branding = sendEmail ? await readInviteBranding(context.database, context.environment) : null;
   const chunkContext: ChunkContext = { request: context, inviter, branding, auditDetail };
   const issued: IssuedInvite[] = [];
   const skipped = [...parsed.skipped];

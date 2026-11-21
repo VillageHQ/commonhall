@@ -102,7 +102,8 @@ function PersonTile({ person, reaction, isSelected, onSelect, size }: { person: 
   );
 }
 
-type LiveRoomProps = { roomId: string; title: string };
+// notice: a line the host reads with the room (the quiet start), shown on the app's room screen too.
+type LiveRoomProps = { roomId: string; title: string; notice?: string };
 
 const SERVER_SNAPSHOT = "unknown";
 
@@ -115,7 +116,7 @@ function readWhere() {
 export function LiveRoom(props: LiveRoomProps) {
   const where = useSyncExternalStore(subscribeToNativeApp, readWhere, () => SERVER_SNAPSHOT);
   if (where === SERVER_SNAPSHOT) return <p className="fh-small fh-muted">Joining {props.title}…</p>;
-  if (where === "app") return <AppRoomHandoff roomId={props.roomId} title={props.title} />;
+  if (where === "app") return <AppRoomHandoff roomId={props.roomId} title={props.title} notice={props.notice} />;
   return <BrowserRoom {...props} />;
 }
 
@@ -129,7 +130,7 @@ const APP_CLOSED_WORDS: Record<RoomClosedReason, string> = {
 // The app plays the room; this page says so until the app closes its room screen, then says why and offers Join again.
 // `hasNotified` is always true: "Tell people I'm here" is gone, and app builds from before round 7 (TestFlight 3, the
 // Android test APK) hide their Tell people button only on that flag.
-function AppRoomHandoff({ roomId, title }: { roomId: string; title: string }) {
+function AppRoomHandoff({ roomId, title, notice }: { roomId: string; title: string; notice?: string }) {
   const router = useRouter();
   const [closedReason, setClosedReason] = useState<RoomClosedReason | null>(null);
   // The latest title (the host may rename the room), without opening the room again when it changes.
@@ -137,7 +138,12 @@ function AppRoomHandoff({ roomId, title }: { roomId: string; title: string }) {
   useEffect(() => {
     titleRef.current = title;
   }, [title]);
-  const handOff = useCallback(() => readNativeApp()?.openRoom(roomId, titleRef.current, { hasNotified: true }), [roomId]);
+  // The notice goes with the first opening only: Join again doesn't repeat it.
+  const noticeRef = useRef(notice);
+  const handOff = useCallback(() => {
+    readNativeApp()?.openRoom(roomId, titleRef.current, { hasNotified: true, ...(noticeRef.current ? { notice: noticeRef.current } : {}) });
+    noticeRef.current = undefined;
+  }, [roomId]);
   function joinAgain() {
     setClosedReason(null);
     handOff();

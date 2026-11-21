@@ -54,10 +54,10 @@ function isNothingToInvite(text: string) {
   }
 }
 
-type Signature = { community: string; inviterName: string; inviterRole: string | null };
+type Signature = { community: string; inviterName: string; inviterRole: string | null; isNetworkSearchOn: boolean };
 
 function mailtoFor(link: SentLink, signature: Signature) {
-  const words = readInviteWords({ community: signature.community, inviteeName: link.name, inviterName: signature.inviterName, inviterRole: signature.inviterRole, apostrophe: "'" });
+  const words = readInviteWords({ community: signature.community, isNetworkSearchOn: signature.isNetworkSearchOn, inviteeName: link.name, inviterName: signature.inviterName, inviterRole: signature.inviterRole, apostrophe: "'" });
   const body = [words.hi, "", words.lead, "", `${words.how}:`, link.link, "", words.small, "", words.sign].join("\n");
   return `mailto:${encodeURIComponent(link.email).replace("%40", "@")}?subject=${encodeURIComponent(words.subject)}&body=${encodeURIComponent(body)}`;
 }
@@ -109,7 +109,7 @@ function SendYourself({ links, signature }: { links: SentLink[]; signature: Sign
               </a>
             </div>
             <div className="fh-end">
-              <CopyButton text={link.link} label="Copy link" />
+              <CopyButton text={link.link} label="Copy" />
             </div>
           </div>
         ))}
@@ -140,13 +140,13 @@ function readToday() {
 // Commonhall's "Invite members" sheet: one box for many people and one button, "Send invites" with mail on or "Create
 // invite links" with it off. The cohort is folded; the profile fill-in's consent shows only while fill-in can run,
 // on "Ask each member at sign-in".
-export function InviteSheet({ community, inviterName, inviterRole, isEmailOn, isFillInShown, savedBasis, savedTermsDate, children }: InviteSheetProps) {
+export function InviteSheet({ community, inviterName, inviterRole, isNetworkSearchOn, isEmailOn, isFillInShown, savedBasis, savedTermsDate, children }: InviteSheetProps) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
   const [outcome, setOutcome] = useState<Outcome | null>(null);
   const [basisError, setBasisError] = useState<string | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
-  const signature = { community, inviterName, inviterRole };
+  const signature = { community, inviterName, inviterRole, isNetworkSearchOn };
 
   const send = useMutation({
     mutationFn: async ({ text, cohort, basis, termsDate }: { text: string; cohort: string; basis: FillInBasis; termsDate: string }) => {

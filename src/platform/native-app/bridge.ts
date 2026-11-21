@@ -11,8 +11,9 @@ export type RoomClosedReason = (typeof ROOM_CLOSED_REASONS)[keyof typeof ROOM_CL
 export type RoomClosed = { roomId: string; reason: RoomClosedReason };
 
 // What the page tells the app with a room: whether the member already told people about it ("Tell people I'm here"
-// or a Notify when starting it), so the app doesn't offer it again. Apps before this ignore it.
-export type OpenRoomFacts = { hasNotified: boolean };
+// or a Notify when starting it), so the app doesn't offer it again; and a line for the host to read on the app's room
+// screen ("People weren't alerted this time…"), in the page's words. Apps before these ignore them.
+export type OpenRoomFacts = { hasNotified: boolean; notice?: string };
 
 // The app's own actions, which the avatar menu's "This app" group offers (mobile/src/lib/bridge.ts, APP_ACTIONS).
 export const APP_ACTIONS = { reload: "reload", browser: "browser", switch: "switch" } as const;

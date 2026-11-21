@@ -108,9 +108,12 @@ describe("the bridge between the app and the portal page", () => {
   });
 
   it("accepts only well-formed messages from the page", () => {
-    assert.deepEqual(parseBridgeMessage(JSON.stringify({ type: "voice.open", roomId: ROOM_ID, title: "Pricing AMA", hasNotified: true })), { type: "voice.open", roomId: ROOM_ID, title: "Pricing AMA", hasNotified: true });
+    assert.deepEqual(parseBridgeMessage(JSON.stringify({ type: "voice.open", roomId: ROOM_ID, title: "Pricing AMA", hasNotified: true })), { type: "voice.open", roomId: ROOM_ID, title: "Pricing AMA", hasNotified: true, notice: "" });
+    // The page's line for the host comes through as text, cut to 200 characters; anything else is no line.
+    assert.equal((parseBridgeMessage(JSON.stringify({ type: "voice.open", roomId: ROOM_ID, notice: "x".repeat(300) })) as { notice: string }).notice.length, 200);
+    assert.equal((parseBridgeMessage(JSON.stringify({ type: "voice.open", roomId: ROOM_ID, notice: { html: "<b>" } })) as { notice: string }).notice, "");
     // A page from before the fact, or anything but true, reads as not told yet.
-    assert.deepEqual(parseBridgeMessage(JSON.stringify({ type: "voice.open", roomId: ROOM_ID, title: "Pricing AMA" })), { type: "voice.open", roomId: ROOM_ID, title: "Pricing AMA", hasNotified: false });
+    assert.deepEqual(parseBridgeMessage(JSON.stringify({ type: "voice.open", roomId: ROOM_ID, title: "Pricing AMA" })), { type: "voice.open", roomId: ROOM_ID, title: "Pricing AMA", hasNotified: false, notice: "" });
     assert.equal((parseBridgeMessage(JSON.stringify({ type: "voice.open", roomId: ROOM_ID, hasNotified: "yes" })) as { hasNotified: boolean }).hasNotified, false);
     assert.equal(parseBridgeMessage(JSON.stringify({ type: "voice.open", roomId: "../admin" })), null);
     assert.equal(parseBridgeMessage("not json"), null);
@@ -172,13 +175,13 @@ describe("the bridge between the app and the portal page", () => {
     };
     runInNewContext(buildBootstrapScript({ platform: "android", pushToken: "ExponentPushToken[abcdefghijkl]" }), context);
     assert.deepEqual(events, ["commonhall-app-ready"]);
-    const app = window.CommonhallApp as { pushToken: string; openRoom: (id: string, title: string, facts?: { hasNotified: boolean }) => void };
+    const app = window.CommonhallApp as { pushToken: string; openRoom: (id: string, title: string, facts?: { hasNotified: boolean; notice?: string }) => void };
     assert.equal(app.pushToken, "ExponentPushToken[abcdefghijkl]");
 
-    app.openRoom(ROOM_ID, "Pricing AMA", { hasNotified: true });
-    assert.deepEqual(parseBridgeMessage(sent.shift() ?? ""), { type: "voice.open", roomId: ROOM_ID, title: "Pricing AMA", hasNotified: true });
+    app.openRoom(ROOM_ID, "Pricing AMA", { hasNotified: true, notice: "People weren't alerted this time." });
+    assert.deepEqual(parseBridgeMessage(sent.shift() ?? ""), { type: "voice.open", roomId: ROOM_ID, title: "Pricing AMA", hasNotified: true, notice: "People weren't alerted this time." });
     app.openRoom(ROOM_ID, "Pricing AMA");
-    assert.deepEqual(parseBridgeMessage(sent.shift() ?? ""), { type: "voice.open", roomId: ROOM_ID, title: "Pricing AMA", hasNotified: false });
+    assert.deepEqual(parseBridgeMessage(sent.shift() ?? ""), { type: "voice.open", roomId: ROOM_ID, title: "Pricing AMA", hasNotified: false, notice: "" });
 
     runInNewContext(buildCallScript(7, "POST", "/api/voice/join", { roomId: ROOM_ID }), context);
     await new Promise((resolve) => setTimeout(resolve, 10));
