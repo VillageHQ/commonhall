@@ -208,6 +208,16 @@ describe("Commonhall's asks and Today", () => {
       expect((await readAsksPage(database, { viewerId: sam.userId, tab: "open", search: null })).posts.map(({ id }) => id)).toContain(askId);
     });
 
+    it("takes an ask the member already helped on off For you", async () => {
+      const askId = await post(amara, { title: ASK });
+      await database.insert(askHelper).values({ askId, helperId: sam.userId, reason: "words", why: "can help with “Cement and ceramics”" });
+      expect((await call(postHelp, sam, { askId, kind: "done_myself", note: "" })).status).toBe(OK_STATUS);
+
+      const page = await readAsksPage(database, { viewerId: sam.userId, tab: "for-you", search: null });
+      expect(page.posts).toEqual([]);
+      expect(page.counts["for-you"]).toBe(0);
+    });
+
     it("can't be offered on your own ask", async () => {
       const askId = await post(amara, { title: ASK });
       expect((await call(postHelp, amara, { askId, kind: "done_myself", note: "" })).status).toBe(422);

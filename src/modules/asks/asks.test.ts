@@ -26,6 +26,7 @@ import {
   ASK_BOARD_TABS,
   ASK_CATEGORIES,
   ASK_ERROR_CODES,
+  ASK_KINDS,
   ASK_LIMITS,
   ASK_OUTCOMES,
   ASK_STATES,
@@ -45,6 +46,7 @@ import { messagesManifest } from "@/modules/messages/manifest";
 import { toConversationPair } from "@/modules/messages/rules-conversation-pair";
 import { AUDIT_ACTIONS } from "@/platform/audit/actions";
 import { adminAuditEntry } from "@/platform/audit/schema";
+import { readOpenOwnPosts } from "@/modules/asks/reads-board";
 import { user } from "@/platform/database/auth-schema";
 import { saveModuleState } from "@/platform/modules/enablement";
 import { saveSettings } from "@/platform/settings/store";
@@ -255,6 +257,8 @@ describe("asks", () => {
 
       expect(response.status).toBe(CONFLICT_STATUS);
       expect(await response.json()).toMatchObject({ code: ASK_ERROR_CODES.openLimit });
+      // A win isn't an ask: it posts, and doesn't count.
+      expect((await call(postCreate, asker, { title: "We closed our seed", kind: ASK_KINDS.update })).status).toBe(OK_STATUS);
     });
 
     it("holds when requests arrive at the same moment", async () => {
@@ -699,6 +703,22 @@ describe("asks", () => {
       await call(postSeen, asker);
 
       expect((await readOwn(asker)).asks[0]?.offers[0]?.isNew).toBe(false);
+    });
+
+    it("drops Today's Read line once the author opens the ask, and brings it back with the next answer", async () => {
+      const askId = await createAsk(asker);
+      const hasNewAnswers = async () => (await readOpenOwnPosts(database, asker.userId)).find(({ id }) => id === askId)?.hasNewAnswers;
+      await call(postAnswer, helper, { askId, body: "Try the trade group." });
+      expect(await hasNewAnswers()).toBe(true);
+
+      await call(postSeen, bystander, { askId });
+      expect(await hasNewAnswers()).toBe(true);
+      await call(postSeen, asker, { askId });
+      expect(await hasNewAnswers()).toBe(false);
+
+      await new Promise((resolve) => setTimeout(resolve, 5));
+      await call(postAnswer, bystander, { askId, body: "Me too." });
+      expect(await hasNewAnswers()).toBe(true);
     });
 
     it("doesn't let one member clear another's badge", async () => {

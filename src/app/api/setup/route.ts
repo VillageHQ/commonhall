@@ -65,7 +65,7 @@ export const POST = platformRoutes.open(
     const firstAdmin = firstAdminSchema.safeParse(body);
     if (!firstAdmin.success) {
       return Response.json(
-        { message: firstAdmin.error.issues[0]?.message ?? "The form is invalid." },
+        { message: firstAdmin.error.issues[0]?.message ?? "The form is invalid.", field: String(firstAdmin.error.issues[0]?.path[0] ?? "") },
         { status: UNPROCESSABLE_STATUS },
       );
     }

@@ -32,7 +32,7 @@ const SETTINGS: readonly (SettingsLink & { moduleId?: string })[] = [
   // "Our jobs", not "Jobs": the menu's More already holds the job board as "Jobs".
   { key: SETTINGS_KEYS.jobs, label: "Our jobs", href: ME_PAGES.jobs, moduleId: "job-board" },
   { key: SETTINGS_KEYS.data, label: "Your data", href: ROUTES.yourData },
-  { key: SETTINGS_KEYS.password, label: "Password", href: ME_PAGES.password },
+  { key: SETTINGS_KEYS.password, label: "How you sign in", href: ME_PAGES.password },
 ];
 
 export function readSettingsLinks(enabledIds: ReadonlySet<string>): SettingsLink[] {

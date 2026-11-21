@@ -143,11 +143,29 @@ once and tell everyone, and the app should ask for fewer decisions. The evidence
   - [ ] Part 2, Today and People lead with what waits (pull request open) — choice-today — [notes](features/choice-today/NOTES.md)
   - [ ] Part 3, member settings in one place — choice-settings — open pull request [#112](https://github.com/VillageHQ/commonhall/pull/112) — [spec](features/choice-settings/SPEC.md) · [notes](features/choice-settings/NOTES.md)
   - [ ] Part 5, sharing and posting forms (pull request open) — choice-forms — [spec](features/choice-forms/SPEC.md) · [notes](features/choice-forms/NOTES.md)
+  - [ ] The last fixes and the 12 personas again (pull request open) — round7-final — [charter](features/round7-final/CHARTER.md) · [notes](features/round7-final/NOTES.md)
 ### Follow-ups from the round-7 audit (no spec yet; [audit](features/less-choice/AUDIT.md))
 - [ ] One Notifications page for Alerts and Email (one row per event, push and email side by side, quiet hours for both)
 - [ ] A limit a member sets on intro asks received per week, with this week's count
 - [ ] The partner email's breakdown and top connectors match the report screen
 - [ ] A lighter first load for the store app (~970 KB of JavaScript per launch today)
+### Follow-ups from the round-7 re-study (no spec yet; [re-study](features/less-choice/RESTUDY.md))
+- [ ] The ask's target: open "Name who you're trying to reach" prefilled from the sentence, and let it be added after posting
+- [ ] Warn before posting an ask like one already answered ("You asked this on 8 Nov: Priya knows Alex Kim")
+- [ ] Find candidates matches the job's role and place, and says "nobody in reach yet" when nothing fits
+- [ ] The connector sees "What <person> will read" and can trim the asker's note before it goes on
+- [ ] A booking link lists the member under Mentors and experts (or offers "List me as a mentor")
+- [ ] The weekly email gets "New in the library this week"
+- [ ] A partner (or any member) can introduce two members from a profile or an ask, with a yes from both
+- [ ] A one-tap room's alert waits for the name (about 20 s, or until Rename is saved)
+- [ ] A room that can't connect: plain words, Try again, and End room for the host
+- [ ] Network search: leave members out of "in reach", and put the offer under the search box on a phone
+- [ ] The avatar menu: fewer items (Library easier to reach, Jobs and Our jobs not side by side)
+- [ ] A hiring request shows its job, and closes when the job is removed
+- [ ] The partner report leads with a verdict and the change since last quarter; its numbers agree with the log
+- [ ] One Perks switch (Features), shown on or off on Set up
+- [ ] The weekly email's time zone starts from the browser's and offers a list
+- [ ] Guided start disappears once its steps are done, and its consent default is the recommended answer
 
 ## Later (someday / deferred)
 - [ ] Admin console: member-view switch, mail page lists, Village test connection, the mail setup step (the home and the asks page are built) — parity — [spec](features/admin-console/SPEC.md)

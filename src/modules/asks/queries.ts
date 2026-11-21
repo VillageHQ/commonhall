@@ -86,6 +86,10 @@ export function markOffersSeenRequest() {
   return postRequest(ASK_API_ROUTES.seen, {}, acknowledgedResponseSchema);
 }
 
+export function markAnswersReadRequest(askId: string) {
+  return postRequest(ASK_API_ROUTES.seen, { askId }, acknowledgedResponseSchema);
+}
+
 export function reportAskRequest(askId: string) {
   return postRequest(ASK_API_ROUTES.report, { askId }, acknowledgedResponseSchema);
 }

@@ -257,7 +257,7 @@ export function NoteAskForm({ connector, viewerName, communityName, parts: initi
         </div>
         <div style={{ marginTop: 12 }}>
           <ConsentLine>
-            {`${connectorFirst} can say yes, not this time, or that they don’t know them well enough. If it’s a no, you’re told ${connectorFirst} can’t make this one, never why. ${CONSENT}`}
+            {`${connectorFirst} can say yes or no thanks. If it’s a no, you’re told ${connectorFirst} can’t make this one, never why. ${CONSENT}`}
           </ConsentLine>
           {/* The owner decided (2026-11-11): admins see who asked whom, and members are told where they ask. */}
           <p className="fh-small fh-muted mt-1.5">{readPrivacyLine(communityName)}</p>

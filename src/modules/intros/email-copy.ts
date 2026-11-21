@@ -57,7 +57,8 @@ type ConnectorAskFacts = {
   target: string;
   targetAbout: string | null;
   note: string;
-  links: { yes: string; notNow: string; dontKnow: string };
+  // The app's two answers (round 7); "I don't know them well enough" links from older emails still answer no.
+  links: { yes: string; notNow: string };
   // Replies by email are on, so the connector may answer YES or NO by replying.
   canReply: boolean;
   isReminder?: boolean;
@@ -80,8 +81,7 @@ export function renderConnectorAsk({ community, asker, askerAbout, connector, ta
     "Would you introduce them?",
     "",
     `Yes, introduce them: ${links.yes}`,
-    `Not this time: ${links.notNow}`,
-    `I don't know them well enough: ${links.dontKnow}`,
+    `No thanks: ${links.notNow}`,
     "",
     ...(canReply
       ? [

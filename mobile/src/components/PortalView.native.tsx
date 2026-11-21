@@ -84,7 +84,7 @@ export const PortalView = forwardRef<PortalHandle, PortalViewProps>(function Por
       const message = readPortalMessage(event.nativeEvent.data, event.nativeEvent.url, origin);
       if (!message) return;
       if (message.type === "voice.open") {
-        onOpenRoom(message.roomId, message.title, message.hasNotified);
+        onOpenRoom(message.roomId, message.title, message.notice);
         return;
       }
       if (message.type === "app.action") {

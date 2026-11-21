@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { memberTag } from "@/modules/members/schema";
+import { eq } from "drizzle-orm";
+import { memberProfile, memberTag } from "@/modules/members/schema";
 import { DIRECTORY_PAGE_SIZE, readMemberNeighbours, readNewMembers } from "@/modules/members/reads-directory";
 import { directorySchema } from "@/modules/members/contract-profile";
 import { clearDatabase, createTestDatabase } from "@/test/database";
@@ -117,6 +118,14 @@ describe("the member directory", () => {
 
     it("finds by tag", async () => {
       expect(await searchNames({ search: "healthtech" })).toEqual(["Noor Haddad"]);
+    });
+
+    it("finds a member by the badge their card shows, never a founder by theirs", async () => {
+      const mentor = await seedMember(database, { name: "Mira Okoye" });
+      await database.update(memberProfile).set({ communityRole: "mentor" }).where(eq(memberProfile.userId, mentor));
+
+      expect(await searchNames({ search: "mentors" })).toEqual(["Mira Okoye"]);
+      expect(await searchNames({ search: "Founder" })).toEqual([]);
     });
 
     it("finds by what they can help with", async () => {

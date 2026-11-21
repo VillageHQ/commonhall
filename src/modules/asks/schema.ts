@@ -44,6 +44,8 @@ export const ask = pgTable(
     // An admin's pin keeps an open ask at the top of the board. Closing the ask takes the pin off.
     pinnedAt: askTimestamp("pinned_at"),
     pinnedByUserId: text("pinned_by_user_id").references(() => user.id, { onDelete: "set null" }),
+    // When its author last opened the ask: Today's "Read" line shows only answers newer than this.
+    answersSeenAt: askTimestamp("answers_seen_at"),
     createdAt: askTimestamp("created_at").notNull().defaultNow(),
   },
   (table) => [

@@ -23,7 +23,9 @@ import {
   sortConsoleMembers,
   type ConsoleMemberFilter,
 } from "@/modules/admin/console-members";
-import { readConsoleMembers } from "@/modules/admin/reads-members";
+import { readConsoleMembers, readIsFillInOffered } from "@/modules/admin/reads-members";
+import { networkManifest } from "@/modules/network/manifest";
+import { isModuleEnabled } from "@/platform/modules/enablement";
 import { MemberTable } from "@/modules/admin/components/member-table";
 import { WaitingMembers } from "@/modules/admin/components/waiting-members";
 import { readWaitingMemberCount, readWaitingMembers } from "@/modules/members/service-admin";
@@ -51,11 +53,13 @@ export default modulePage(adminManifest, async function AdminMembersPage({ searc
   const search = (q ?? "").trim().slice(0, MAXIMUM_SEARCH_LENGTH);
 
   const database = getDatabase();
-  const [everyone, waiting, waitingCount] = await Promise.all([
+  const [everyone, waiting, waitingCount, isNetworkOn] = await Promise.all([
     readConsoleMembers(database),
     readWaitingMembers(database),
     readWaitingMemberCount(database),
+    isModuleEnabled(database, networkManifest),
   ]);
+  const isNetworkSearchOn = await readIsFillInOffered(database, isNetworkOn);
   const counts = countConsoleMembers(everyone);
   const shown = sortConsoleMembers(everyone.filter((member) => matchesConsoleFilter(member, filter) && matchesConsoleSearch(member, search)));
   const filters = [...ALWAYS_SHOWN_FILTERS, ...SHOWN_WHEN_FULL_FILTERS.filter((extra) => counts[extra] > 0 || extra === filter)];
@@ -66,7 +70,7 @@ export default modulePage(adminManifest, async function AdminMembersPage({ searc
   return (
     <AdminSection title="Members">
       <HydrationBoundary state={dehydrate(queryClient)}>
-        <WaitingMembers isEmailConfigured={readResendConfig(process.env) !== null} />
+        <WaitingMembers isEmailConfigured={readResendConfig(process.env) !== null} isNetworkSearchOn={isNetworkSearchOn} />
       </HydrationBoundary>
 
       <ChipRow role="group" aria-label="Filter members">

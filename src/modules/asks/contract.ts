@@ -321,6 +321,8 @@ export const allowanceBodySchema = z.object({
 export const offerHelpBodySchema = z.object({ askId: z.uuid(), note: offerNoteSchema });
 export const closeAskBodySchema = z.object({ askId: z.uuid(), outcome: askOutcomeSchema });
 export const askIdBodySchema = z.object({ askId: z.uuid() });
+// No ask: the author saw the new offers on their asks. An ask: its author opened it, so its answers are read.
+export const seenBodySchema = z.object({ askId: z.uuid().optional() });
 
 const askMemberSchema = z.object({
   id: z.string(),

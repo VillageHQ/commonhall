@@ -16,6 +16,7 @@ import { isModuleEnabled } from "@/platform/modules/enablement";
 import { modulePage } from "@/platform/modules/module-page";
 import { messagesManifest } from "@/modules/messages/manifest";
 import { readFindCandidatesLink } from "@/shell/find-candidates";
+import { readApplyByMessageHref } from "@/shell/job-apply-message";
 
 export const metadata: Metadata = { title: JOB_BOARD_PAGE_TITLES.board };
 
@@ -34,8 +35,7 @@ export default modulePage(jobBoardManifest, async function JobsPage({ searchPara
     readFindCandidatesLink(database, member),
     isModuleEnabled(database, messagesManifest),
   ]);
-  // A job with no apply link: Apply messages the founder who added it (never yourself).
-  const applyByMessageHref = isMessagingOn ? (memberId: string) => (memberId === member.id ? null : `${ROUTES.newMessage}?${new URLSearchParams({ to: memberId }).toString()}`) : undefined;
+  const applyByMessageHref = readApplyByMessageHref(member.id, isMessagingOn);
   const current = company ? (companies.find(({ slug }) => slug === company) ?? null) : null;
   if (company && !current) notFound();
   const empty = describeEmptyBoard(current);

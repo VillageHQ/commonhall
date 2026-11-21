@@ -13,15 +13,17 @@ function readFirstWord(name: string | null | undefined) {
   return (name ?? "").trim().split(/\s+/)[0] ?? "";
 }
 
-type InviteWordsFacts = { community: string; inviteeName?: string | null; inviterName?: string | null; inviterRole?: string | null; apostrophe?: string };
+// isNetworkSearchOn: Village is connected, so members see who in the circle knows someone. Without it the email
+// promises only what the app does: members who can help.
+type InviteWordsFacts = { community: string; isNetworkSearchOn: boolean; inviteeName?: string | null; inviterName?: string | null; inviterRole?: string | null; apostrophe?: string };
 
-export function readInviteWords({ community, inviteeName, inviterName, inviterRole, apostrophe = "’" }: InviteWordsFacts) {
+export function readInviteWords({ community, isNetworkSearchOn, inviteeName, inviterName, inviterRole, apostrophe = "’" }: InviteWordsFacts) {
   const inviter = (inviterName ?? "").trim();
   const firstName = readFirstWord(inviteeName);
   return {
     subject: `Your place in ${community}`,
     hi: firstName ? `Hi ${firstName},` : "Hi,",
-    lead: `${inviter ? `${inviter} invited you` : "You are invited"} to ${community}: see who in ${toPossessive(community, apostrophe)} circle can introduce you, and ask in one tap. Nobody is introduced without saying yes.`,
+    lead: `${inviter ? `${inviter} invited you` : "You are invited"} to ${community}: see who in ${toPossessive(community, apostrophe)} circle ${isNetworkSearchOn ? "can introduce you" : "can help you"}, and ask in one tap. Nobody is introduced without saying yes.`,
     how: "Open this link to sign in. It answers two questions about you, then you are in",
     button: `Sign in to ${community}`,
     small: `The link works once and lasts ${INVITE_LIFETIME_DAYS} days.`,

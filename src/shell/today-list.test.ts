@@ -45,7 +45,7 @@ function renderToday(overrides: Partial<Parameters<typeof TodayPage>[0]> = {}) {
 }
 
 function answeredAsk(index: number) {
-  return { id: `ask-${index}`, body: `Ask number ${index}`, answerCount: 1 } as unknown as TodayItems["ownPosts"][number];
+  return { id: `ask-${index}`, body: `Ask number ${index}`, answerCount: 1, hasNewAnswers: true } as unknown as TodayItems["ownPosts"][number];
 }
 
 describe("Today (round 6)", () => {

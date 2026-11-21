@@ -11,15 +11,17 @@ type InviteEmailFacts = {
   inviterRole?: string | null;
   // From a bulk list: "Hi Ada,".
   inviteeName?: string | null;
+  isNetworkSearchOn: boolean;
   communityName: string;
   accentColor: string;
 };
 
 // Commonhall's invite, word for word. Plain text first; the HTML is the same words, with the link as a button.
-export function renderInviteEmail({ link, inviterName, inviterRole, inviteeName, communityName, accentColor }: InviteEmailFacts) {
+export function renderInviteEmail({ link, inviterName, inviterRole, inviteeName, isNetworkSearchOn, communityName, accentColor }: InviteEmailFacts) {
   const community = toSingleLine(communityName);
   const words = readInviteWords({
     community,
+    isNetworkSearchOn,
     inviteeName: inviteeName ? toSingleLine(inviteeName) : null,
     inviterName: toSingleLine(inviterName),
     inviterRole: inviterRole ? toSingleLine(inviterRole) : null,

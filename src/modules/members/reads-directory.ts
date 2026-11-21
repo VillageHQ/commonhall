@@ -13,7 +13,7 @@ import { companyLogoColumn, shownFaceColumns, toShownFaceUrl } from "./reads-pic
 import { FILL_IN_FIELDS } from "./contract-fill-in.ts";
 import { shownFillInColumn } from "./service-fill-in.ts";
 import { isListedMember } from "./service-privacy.ts";
-import { COMMUNITY_ROLES, EXPERT_ROLES, isCommunityRole } from "./contract-community-roles.ts";
+import { COMMUNITY_ROLE_LABELS, COMMUNITY_ROLES, COMMUNITY_ROLE_VALUES, EXPERT_ROLES, isCommunityRole } from "./contract-community-roles.ts";
 import { readShownBookings, type IntroducedCheck } from "./service-booking.ts";
 
 // People (round 6) pages at 30, with a quiet "More".
@@ -50,14 +50,20 @@ function matchesText(column: AnyPgColumn | SQL, word: string) {
   return ilike(column, toContainsPattern(word));
 }
 
-// One word against the member's own words, the shown role, company and city, or a tag.
+// The badge a member's card shows ("Mentor", "Expert"…), so "mentor" finds them. A founder has no badge.
+const ROLE_BADGE = sql`case ${memberProfile.communityRole} ${sql.join(
+  COMMUNITY_ROLE_VALUES.filter((role) => role !== COMMUNITY_ROLES.founder).map((role) => sql`when ${role} then ${COMMUNITY_ROLE_LABELS[role]}`),
+  sql` `,
+)} end`;
+
+// One word against the member's own words, the shown role, company and city, their badge, or a tag.
 function matchesWord(database: Database, word: string) {
   const taggedMember = database
     .select({ userId: memberTag.userId })
     .from(memberTag)
     .where(and(eq(memberTag.userId, user.id), matchesText(memberTag.tag, word)));
   return or(
-    ...[user.name, shownTitle, shownCompany, shownLocation, memberProfile.bio, memberProfile.canHelpWith, memberProfile.needs, memberProfile.stage, memberProfile.sector, memberProfile.cohort].map((column) =>
+    ...[user.name, shownTitle, shownCompany, shownLocation, memberProfile.bio, memberProfile.canHelpWith, memberProfile.needs, memberProfile.stage, memberProfile.sector, memberProfile.cohort, ROLE_BADGE].map((column) =>
       matchesText(column, word),
     ),
     exists(taggedMember),

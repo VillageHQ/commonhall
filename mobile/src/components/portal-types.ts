@@ -14,7 +14,8 @@ export type PortalViewProps = {
   origin: string;
   startUrl: string;
   pushToken: string | null;
-  onOpenRoom: (roomId: string, title: string, hasNotified: boolean) => void;
+  // notice: a line the page asks the room screen to show its host ("People weren't alerted this time…"), or "".
+  onOpenRoom: (roomId: string, title: string, notice: string) => void;
   // The avatar menu's "This app" group: reload, open in the browser, switch community.
   onAppAction: (action: AppAction) => void;
   // A page of the community finished loading (its path), so the app may register for alerts.

@@ -53,6 +53,7 @@ export default modulePage(adminManifest, async function AdminInvitesPage({ searc
           inviterRole={signature.role}
           isEmailOn={mail !== null}
           isFillInShown={isFillInShown}
+          isNetworkSearchOn={isFillInShown}
           savedBasis={fillIn.basis}
           savedTermsDate={fillIn.termsDate}
         >
@@ -108,7 +109,7 @@ export default modulePage(adminManifest, async function AdminInvitesPage({ searc
         <details className="fh-c5">
           <summary className="fh-h3 cursor-pointer">The email they get</summary>
           <div className="mt-3">
-            <InviteEmailPreview community={community} from={mail?.fromAddress ?? community} inviterName={signature.name} inviterRole={signature.role} />
+            <InviteEmailPreview community={community} from={mail?.fromAddress ?? community} inviterName={signature.name} inviterRole={signature.role} isNetworkSearchOn={isFillInShown} />
           </div>
         </details>
       </div>

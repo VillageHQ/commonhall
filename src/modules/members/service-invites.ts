@@ -21,6 +21,7 @@ import { INVITE_ERROR_CODES, INVITE_FILTERS, type InviteFilter, type InviteSumma
 import { renderInviteEmail } from "./email-invites.ts";
 import { EMAIL_KINDS } from "../../platform/email/kinds.ts";
 import { cancelQueuedEmail, OUTBOX_STATUSES, queueEmail, readEmailBranding, type EmailBranding } from "../../platform/email/outbox.ts";
+import { readVillageKeys } from "../../platform/village/settings.ts";
 import { emailOutbox } from "../../platform/email/schema.ts";
 import { sendQueuedEmailNow } from "../../platform/email/outbox-sender.ts";
 import {
@@ -88,10 +89,19 @@ async function readInviterRole(connection: DatabaseOrTransaction, inviterId: str
   return profile?.title?.trim() || null;
 }
 
+export type InviteBranding = EmailBranding & { isNetworkSearchOn: boolean };
+
+// Read before the transaction; null means email is off. Network search is on once Village's keys are saved, so the
+// email names it only then.
+export async function readInviteBranding(database: Database, environment: Environment): Promise<InviteBranding | null> {
+  const branding = await readEmailBranding(database, environment);
+  return branding ? { ...branding, isNetworkSearchOn: (await readVillageKeys(database, environment)) !== null } : null;
+}
+
 // Call inside the transaction that creates or renews the invite, so the email can't be lost.
-// Takes the branding read before the transaction (readEmailBranding); null means email is off.
+// Takes the branding read before the transaction (readInviteBranding); null means email is off.
 // A renewed invite's older email still waiting in the queue carries a dead link, so it is stopped.
-export async function queueInviteEmail(transaction: Transaction, { environment }: RequestContext, branding: EmailBranding | null, row: InviteRow, token: string) {
+export async function queueInviteEmail(transaction: Transaction, { environment }: RequestContext, branding: InviteBranding | null, row: InviteRow, token: string) {
   await cancelQueuedEmail(transaction, row.emailOutboxId);
   // The emailed link carries its mark, so opening it from the email confirms the address (the copied link doesn't).
   const link = branding ? toInviteLink(environment, token, await signEmailedInvite(transaction, environment, token)) : "";
@@ -106,6 +116,7 @@ export async function queueInviteEmail(transaction: Transaction, { environment }
           inviterName: row.invitedByName,
           inviterRole,
           inviteeName: row.inviteeName,
+          isNetworkSearchOn: branding.isNetworkSearchOn,
           communityName: branding.name,
           accentColor: branding.accentColor,
         }),
@@ -201,7 +212,7 @@ export async function createInvite(context: RequestContext, email: string, cohor
   const { database, member } = context;
   const inviter = await readInviter(context);
   const token = createInviteToken();
-  const branding = await readEmailBranding(database, context.environment);
+  const branding = await readInviteBranding(database, context.environment);
   const issued = await withAdminTransaction(database, member.id, async (transaction) => {
     await requireNoMemberWithEmail(transaction, email);
     const [created] = await transaction
@@ -234,7 +245,7 @@ export async function createInvite(context: RequestContext, email: string, cohor
 
 // sendEmail false (Set up › Sign-in links): a new link for the admin to send by hand, and no email.
 export async function resendInvite(context: RequestContext, inviteId: string, { sendEmail = true }: { sendEmail?: boolean } = {}) {
-  const branding = sendEmail ? await readEmailBranding(context.database, context.environment) : null;
+  const branding = sendEmail ? await readInviteBranding(context.database, context.environment) : null;
   const { rotated, token, queuedEmailId } = await withAdminTransaction(context.database, context.member.id, async (transaction) => {
     const result = await rotateInvite(transaction, context, inviteId);
     await recordInviteAction(transaction, context, AUDIT_ACTIONS.inviteResent, result.rotated.email);

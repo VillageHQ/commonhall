@@ -2,7 +2,7 @@
 // and the site's own origin, so the server's checks stay as they are: no app tokens, no second sign-in.
 //   app -> page: `__commonhallBridge.call(id, method, path, body)` runs a fetch in the page.
 //   page -> app: JSON messages: the fetch's answer, "open this voice room" (with whether the member already told
-//   people about it), and the avatar menu's "This app" actions (reload, open in the browser, switch community).
+//   people about it, and a line for the host to read there, in the page's words), and the avatar menu's "This app" actions (reload, open in the browser, switch community).
 //   app -> page: the event "commonhall-room-closed" when the app's room screen closes, so the room page says why.
 // The page reads `window.CommonhallApp` (src/platform/native-app/bridge.ts in the web app).
 
@@ -24,7 +24,7 @@ export type AppAction = (typeof APP_ACTIONS)[number];
 
 export type BridgeMessage =
   | { type: "api.result"; id: number; status: number; body: string }
-  | { type: "voice.open"; roomId: string; title: string; hasNotified: boolean }
+  | { type: "voice.open"; roomId: string; title: string; hasNotified: boolean; notice: string }
   | { type: "app.action"; action: AppAction };
 
 export type ApiMethod = "POST" | "DELETE";
@@ -33,6 +33,7 @@ export type ApiAnswer = { status: number; json: unknown };
 
 const ROOM_ID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const MAXIMUM_TITLE_LENGTH = 120;
+const MAXIMUM_NOTICE_LENGTH = 200;
 // The app calls only what it needs: the voice rooms API and its own alert registration.
 const ALLOWED_PATHS: Record<ApiMethod, RegExp> = {
   POST: /^\/api\/(voice\/[a-z]+|notifications\/devices)$/,
@@ -61,8 +62,9 @@ export function parseBridgeMessage(raw: string): BridgeMessage | null {
   }
   if (message.type === "voice.open" && isRoomId(message.roomId)) {
     const title = typeof message.title === "string" ? message.title.slice(0, MAXIMUM_TITLE_LENGTH) : "";
-    // A page from before this fact sends nothing: the app then learns it from the server's answer, as before.
-    return { type: "voice.open", roomId: message.roomId, title, hasNotified: message.hasNotified === true };
+    // A page from before these facts sends nothing: the app then learns it from the server's answer, as before.
+    const notice = typeof message.notice === "string" ? message.notice.slice(0, MAXIMUM_NOTICE_LENGTH) : "";
+    return { type: "voice.open", roomId: message.roomId, title, hasNotified: message.hasNotified === true, notice };
   }
   if (message.type === "app.action" && typeof message.action === "string" && (APP_ACTIONS as readonly string[]).includes(message.action)) {
     return { type: "app.action", action: message.action as AppAction };
@@ -90,7 +92,7 @@ export function buildBootstrapScript({ platform, pushToken }: { platform: string
     platform: facts.platform,
     pushToken: facts.pushToken,
     appActions: true,
-    openRoom: function (roomId, title, facts) { send({ type: "voice.open", roomId: String(roomId), title: String(title || ""), hasNotified: Boolean(facts && facts.hasNotified === true) }); },
+    openRoom: function (roomId, title, facts) { send({ type: "voice.open", roomId: String(roomId), title: String(title || ""), hasNotified: Boolean(facts && facts.hasNotified === true), notice: facts && typeof facts.notice === "string" ? facts.notice : "" }); },
     appAction: function (action) { send({ type: "app.action", action: String(action) }); }
   };
   window.__commonhallBridge = {

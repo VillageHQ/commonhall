@@ -9,7 +9,9 @@ import { ROUTES } from "@/platform/http/routes";
 import { requireAdmin } from "@/platform/auth/session";
 import { modulePage } from "@/platform/modules/module-page";
 
-import { readAdminMember } from "@/modules/admin/reads-members";
+import { readAdminMember, readIsFillInOffered } from "@/modules/admin/reads-members";
+import { networkManifest } from "@/modules/network/manifest";
+import { isModuleEnabled } from "@/platform/modules/enablement";
 import { formatShortDate } from "@/modules/admin/console-members";
 import { MANAGE_TITLE_ID, MemberManage } from "@/modules/admin/components/member-manage";
 import { adminManifest } from "@/modules/admin/manifest";
@@ -20,7 +22,8 @@ export const metadata: Metadata = { title: "Members" };
 export default modulePage(adminManifest, async function AdminMemberPage({ params }: { params: Promise<{ memberId: string }> }) {
   const admin = await requireAdmin();
   const { memberId } = await params;
-  const member = await readAdminMember(getDatabase(), memberId);
+  const database = getDatabase();
+  const member = await readAdminMember(database, memberId);
   if (!member) notFound();
   const status = member.isRemoved ? <Pill tone="declined">Removed</Pill> : member.isInVillageGroup ? <Pill tone="made">Connected</Pill> : <Pill tone="made">Joined</Pill>;
   return (
@@ -39,7 +42,7 @@ export default modulePage(adminManifest, async function AdminMemberPage({ params
         </div>
         <div className="ml-auto">{status}</div>
       </div>
-      <MemberManage member={member} viewerId={admin.id} />
+      <MemberManage member={member} viewerId={admin.id} isNetworkSearchOn={await readIsFillInOffered(database, await isModuleEnabled(database, networkManifest))} />
     </>
   );
 });

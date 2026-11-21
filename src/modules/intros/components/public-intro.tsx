@@ -61,11 +61,11 @@ export function ConnectorLinkQuestion({ token, community, facts, initialChoice }
       <DecisionForm
         onClosed={() => setDone(NOTHING_TO_DO)}
         legend="Would you introduce them?"
-        initialChoice={initialChoice}
+        // The app's two answers. An older email's "I don't know them well enough" link opens on No thanks.
+        initialChoice={initialChoice === "dont_know" ? "not_now" : initialChoice}
         choices={[
           { value: "yes", title: "Yes, introduce them", description: `We email ${targetFirst} once, from ${community}, in your name.` },
-          { value: "not_now", title: "Not this time", description: `${askerFirst} is told you can’t make this one. Never why.` },
-          { value: "dont_know", title: "I don’t know them well enough", description: `Same message to ${askerFirst}: you can’t make this one.` },
+          { value: "not_now", title: "No thanks", description: `${askerFirst} is told you can’t make this one. Never why.` },
         ]}
         email={
           facts.canEmail
@@ -74,7 +74,7 @@ export function ConnectorLinkQuestion({ token, community, facts, initialChoice }
         }
         note={facts.note}
         submit={async ({ choice, targetEmail, note }) => {
-          const { result } = await answerByLinkRequest({ purpose: INTRO_LINK_PURPOSES.connector, token, choice: choice as "yes" | "not_now" | "dont_know", targetEmail, note });
+          const { result } = await answerByLinkRequest({ purpose: INTRO_LINK_PURPOSES.connector, token, choice: choice as "yes" | "not_now", targetEmail, note });
           setDone(
             result === "declined"
               ? { title: "Thanks for answering", text: `${askerFirst} is told you can’t make this one, never why. The ask goes back to ${askerFirst}.`, hasConsentLine: true }

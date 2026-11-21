@@ -1,20 +1,22 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useRef } from "react";
+import { z } from "zod";
 
 import { FormError } from "@/components/form-error";
 import { FormField } from "@/components/form-field";
 import { Button } from "@/components/ui/button";
-import { useFocusOnFailure } from "@/components/use-focus-on-failure";
 import { MAXIMUM_PASSWORD_LENGTH, MINIMUM_PASSWORD_LENGTH } from "@/platform/auth/password-policy";
 import { authClient } from "@/platform/auth/auth-client";
 import { MAXIMUM_COMMUNITY_NAME_LENGTH } from "@/platform/branding/branding-api";
-import { readResponseMessage } from "@/platform/http/read-response-message";
 import { API_ROUTES, ROUTES } from "@/platform/http/routes";
 
-type SetupState = { errorMessage: string | null; communityName: string; name: string; email: string };
+// After a refusal every typed value comes back (React clears a form once its action ends), and the field the answer
+// names gets the focus: a blank community name never costs the 64-character token again.
+type SetupState = { errorMessage: string | null; field: string; values: Record<string, string> };
 
-const INITIAL_STATE: SetupState = { errorMessage: null, communityName: "", name: "", email: "" };
+const INITIAL_STATE: SetupState = { errorMessage: null, field: "", values: {} };
+const failureSchema = z.object({ message: z.string(), field: z.string().optional() });
 const FALLBACK_ERROR_MESSAGE = "Setup failed. Try again.";
 // The README's "Setup token" section.
 const SETUP_TOKEN_GUIDE_URL = "https://github.com/VillageHQ/commonhall#setup-token";
@@ -26,11 +28,11 @@ async function submitSetup(_previousState: SetupState, formData: FormData): Prom
     body: JSON.stringify(Object.fromEntries(formData)),
   });
   if (!response.ok) {
+    const failure = failureSchema.safeParse(await response.json().catch(() => null));
     return {
-      errorMessage: await readResponseMessage(response, FALLBACK_ERROR_MESSAGE),
-      communityName: String(formData.get("communityName")),
-      name: String(formData.get("name")),
-      email: String(formData.get("email")),
+      errorMessage: failure.success ? failure.data.message : FALLBACK_ERROR_MESSAGE,
+      field: failure.data?.field || "token",
+      values: Object.fromEntries([...formData].map(([key, value]) => [key, String(value)])),
     };
   }
 
@@ -43,15 +45,18 @@ async function submitSetup(_previousState: SetupState, formData: FormData): Prom
 
 // The community's name and the first admin, on one screen: invitees see the name from their first link.
 export function SetupForm({ communityName = "" }: { communityName?: string }) {
-  const [state, formAction, isPending] = useActionState(submitSetup, { ...INITIAL_STATE, communityName });
-  const tokenRef = useFocusOnFailure(state);
+  const [state, formAction, isPending] = useActionState(submitSetup, { ...INITIAL_STATE, values: { communityName } });
+  const formRef = useRef<HTMLFormElement>(null);
+  useEffect(() => {
+    if (state.errorMessage) formRef.current?.querySelector<HTMLInputElement>(`[name="${state.field}"]`)?.focus();
+  }, [state]);
 
   return (
-    <form action={formAction} className="fh-field grid gap-4">
+    <form ref={formRef} action={formAction} className="fh-field grid gap-4">
       <FormError message={state.errorMessage} />
       <FormField
-        ref={tokenRef}
         name="token"
+        defaultValue={state.values.token}
         label="Setup token"
         type="password"
         autoComplete="off"
@@ -70,7 +75,7 @@ export function SetupForm({ communityName = "" }: { communityName?: string }) {
         label="Community name"
         autoComplete="organization"
         maxLength={MAXIMUM_COMMUNITY_NAME_LENGTH}
-        defaultValue={state.communityName}
+        defaultValue={state.values.communityName}
         hint="Founders see it on their invite and every page, e.g. Northwind Founders."
         required
       />
@@ -78,7 +83,7 @@ export function SetupForm({ communityName = "" }: { communityName?: string }) {
         name="name"
         label="Your name"
         autoComplete="name"
-        defaultValue={state.name}
+        defaultValue={state.values.name}
         required
       />
       <FormField
@@ -86,7 +91,7 @@ export function SetupForm({ communityName = "" }: { communityName?: string }) {
         label="Your email"
         type="email"
         autoComplete="email"
-        defaultValue={state.email}
+        defaultValue={state.values.email}
         required
       />
       <FormField
@@ -94,6 +99,7 @@ export function SetupForm({ communityName = "" }: { communityName?: string }) {
         label="Password"
         type="password"
         autoComplete="new-password"
+        defaultValue={state.values.password}
         minLength={MINIMUM_PASSWORD_LENGTH}
         maxLength={MAXIMUM_PASSWORD_LENGTH}
         hint={`At least ${MINIMUM_PASSWORD_LENGTH} characters.`}

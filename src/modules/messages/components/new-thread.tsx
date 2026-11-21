@@ -11,11 +11,11 @@ import { ROUTES } from "@/platform/http/routes";
 
 import { MessageComposer } from "./message-composer";
 
-type NewThreadProps = { member: { id: string; name: string }; communityName: string };
+type NewThreadProps = { member: { id: string; name: string }; communityName: string; draft?: string };
 
 // Commonhall's first message (`/messages/new?to=`): the thread page with no messages yet. The first Send starts the
 // conversation and opens it in the Inbox, so nobody gets an empty conversation from a click on Message.
-export function NewThread({ member, communityName }: NewThreadProps) {
+export function NewThread({ member, communityName, draft }: NewThreadProps) {
   const router = useRouter();
   const send = useMutation({
     mutationFn: async (body: string) => {
@@ -36,7 +36,7 @@ export function NewThread({ member, communityName }: NewThreadProps) {
       <div className="fh-msgs">
         <p className="fh-small fh-muted">{NEW_THREAD_LINE}</p>
       </div>
-      <MessageComposer peerName={member.name} isBusy={send.isPending || send.isSuccess} onSend={(body) => send.mutate(body)} />
+      <MessageComposer peerName={member.name} isBusy={send.isPending || send.isSuccess} initialDraft={draft} onSend={(body) => send.mutate(body)} />
       {send.error ? <FormError message={send.error.message} /> : null}
     </section>
   );

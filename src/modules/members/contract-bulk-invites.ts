@@ -27,7 +27,14 @@ export class BulkInviteLimitError extends Error {}
 const FORMULA_START = /^[=+\-@\t\r]+/;
 const ANGLE_ADDRESS = /^(.*?)<([^<>]+)>\s*$/;
 const LIST_SEPARATORS = /[,;\t]/;
-const HEADER_WORD = /e-?mail/i;
+const CSV_HEADERS = {
+  name: ["name", "full name", "full_name"],
+  email: ["email", "e-mail", "email address", "work email"],
+  company: ["company", "organisation", "organization", "startup"],
+  cohort: ["cohort", "batch", "class", "fund", "year"],
+  // Optional, never by position: "role" alone often means a job title, so it isn't read as one.
+  communityRole: ["community role", "community_role", "member type", "member_type"],
+} as const;
 const BYTE_ORDER_MARK = /^﻿/;
 
 export function toSafeCell(value: string, maximumLength = MAXIMUM_DETAIL_LENGTH) {
@@ -77,17 +84,26 @@ function readListLine(line: string) {
   return { email: readEmail(cells[emailIndex] ?? "") ?? "", name: cells.filter((_, index) => index !== emailIndex).join(" ") };
 }
 
+// A header row is the first line, made only of column names with an email one ("name, email"). Any other line without
+// an address is named, so a mistyped address never vanishes ("this is not an email" is not a header).
+function isHeaderLine(line: string) {
+  const cells = line.split(LIST_SEPARATORS).map((cell) => cell.trim().replace(/^"(.*)"$/, "$1").trim().toLowerCase()).filter(Boolean);
+  const isColumnName = (cell: string) => Object.values(CSV_HEADERS).some((aliases: readonly string[]) => aliases.includes(cell));
+  return cells.some((cell) => (CSV_HEADERS.email as readonly string[]).includes(cell)) && cells.every(isColumnName);
+}
+
 // One person per line: "Name, email", "Name <email>" or a bare email. A header row is skipped quietly.
 export function parseInviteList(text: string): ParsedBulkInvites {
   const collector = new PeopleCollector();
   const lines = text.replace(BYTE_ORDER_MARK, "").split(/\r?\n/);
+  const firstLineIndex = lines.findIndex((line) => line.trim());
   lines.forEach((rawLine, index) => {
     const line = rawLine.trim();
     if (!line) return;
     const lineNumber = index + 1;
     const person = readListLine(line);
     if (!person) {
-      if (!HEADER_WORD.test(line)) collector.reject(lineNumber, line, "There's no email address on this line.");
+      if (!(index === firstLineIndex && isHeaderLine(line))) collector.reject(lineNumber, line, "There's no email address on this line.");
       return;
     }
     collector.add({ line: lineNumber, email: person.email, name: toOptionalCell(person.name, MAXIMUM_NAME_LENGTH), company: null, cohort: null });
@@ -163,14 +179,6 @@ export function parseCsvRows(text: string): { rows: CsvRow[]; unclosedQuoteLine:
   return { rows, unclosedQuoteLine: isQuoted ? quoteLine : null };
 }
 
-const CSV_HEADERS = {
-  name: ["name", "full name", "full_name"],
-  email: ["email", "e-mail", "email address", "work email"],
-  company: ["company", "organisation", "organization", "startup"],
-  cohort: ["cohort", "batch", "class", "fund", "year"],
-  // Optional, never by position: "role" alone often means a job title, so it isn't read as one.
-  communityRole: ["community role", "community_role", "member type", "member_type"],
-} as const;
 
 const KNOWN_ROLES = COMMUNITY_ROLE_VALUES.map((role) => COMMUNITY_ROLE_LABELS[role]).join(", ");
 

@@ -56,7 +56,7 @@ export async function readCompanyJobs(database: DatabaseOrTransaction, { company
   const where = and(isListedSource(now), isMembersJob(jobSource.company, jobSource.memberId, sql`${company?.trim() ?? ""}`, sql`${memberId}`));
   // One query after the other: the connection may be a transaction.
   const jobs = await database
-    .select({ id: jobPosting.id, title: jobPosting.title, location: jobPosting.location, url: jobPosting.url, companySlug: jobSource.companySlug })
+    .select({ id: jobPosting.id, title: jobPosting.title, location: jobPosting.location, url: jobPosting.url, memberId: jobSource.memberId, companySlug: jobSource.companySlug })
     .from(jobPosting)
     .innerJoin(jobSource, eq(jobSource.id, jobPosting.sourceId))
     .innerJoin(user, eq(user.id, jobSource.memberId))

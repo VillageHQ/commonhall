@@ -75,7 +75,7 @@ export function JobList({
   jobs: readonly ListedJob[];
   memberHref?: (memberId: string) => string;
   findCandidatesHref?: (job: Pick<BoardJob, "id" | "companySlug" | "memberId">) => string | null;
-  applyByMessageHref?: (memberId: string) => string | null;
+  applyByMessageHref?: (job: { memberId: string; title: string; company: string }) => string | null;
 }) {
   return (
     <div className="fh-rows fh-jobrows mt-3.5">
@@ -83,7 +83,7 @@ export function JobList({
         const bits = [job.company, job.location, job.department].filter(Boolean).join(" · ");
         const when = job.postedAt ? ` · posted ${formatDay(job.postedAt)}` : "";
         const candidatesHref = findCandidatesHref && job.memberId ? findCandidatesHref({ id: job.id, companySlug: job.companySlug, memberId: job.memberId }) : null;
-        const messageHref = !job.url && applyByMessageHref && job.memberId ? applyByMessageHref(job.memberId) : null;
+        const messageHref = !job.url && applyByMessageHref && job.memberId ? applyByMessageHref({ memberId: job.memberId, title: job.title, company: job.company }) : null;
         return (
           <div key={job.id} className="fh-r">
             <span className="fh-jl">

@@ -186,7 +186,8 @@ export type BoardJob = {
 export type PublicJob = Pick<BoardJob, "id" | "title" | "location" | "department" | "url" | "postedAt" | "company" | "companySlug" | "companyLogoUrl">;
 
 // A company's open jobs on a member's profile: up to 5, and how many there are in all.
-export type CompanyJobs = { jobs: Pick<BoardJob, "id" | "title" | "location" | "url">[]; total: number; companySlug: string | null };
+// memberId: the founder who added the job (a job with no link is applied for by messaging them).
+export type CompanyJobs = { jobs: Pick<BoardJob, "id" | "title" | "location" | "url" | "memberId">[]; total: number; companySlug: string | null };
 
 // Today's jobs card: jobs new this week at the community's companies.
 export type NewJobs = { jobs: Pick<BoardJob, "id" | "title" | "location" | "url" | "company" | "companySlug" | "companyLogoUrl">[]; total: number };

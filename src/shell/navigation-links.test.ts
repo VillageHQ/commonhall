@@ -287,7 +287,7 @@ describe("the founder-view strip", () => {
 
 describe("the Settings list", () => {
   it("is one list for the avatar menu and My profile, Your network and Our jobs only while their feature is on", () => {
-    expect(readSettingsLinks(new Set()).map(({ label }) => label)).toEqual(["My card", "Privacy", "Alerts", "Email", "Booking link", "Your data", "Password"]);
+    expect(readSettingsLinks(new Set()).map(({ label }) => label)).toEqual(["My card", "Privacy", "Alerts", "Email", "Booking link", "Your data", "How you sign in"]);
     expect(buildShellNavigation(new Set(["network", "job-board"])).settings.map(({ label }) => label)).toEqual(
       readSettingsLinks(new Set(["network", "job-board"])).map(({ label }) => label),
     );
@@ -311,7 +311,7 @@ describe("the avatar menu", () => {
     const items = Array.from(menu.querySelectorAll("[role^='menuitem']"), (item) => item).map((item) => item.textContent?.replace(/(On|Off)$/, ""));
 
     expect(items).toEqual([
-      ...["My card", "Privacy", "Alerts", "Email", "Booking link", "Your network", "Our jobs", "Your data", "Password"],
+      ...["My card", "Privacy", "Alerts", "Email", "Booking link", "Your network", "Our jobs", "Your data", "How you sign in"],
       ...["Jobs", "Perks", "Library", "Feed", "Admin console", "Dark mode", "Sign out"],
     ]);
     expect(within(menu).getByText("Settings")).toBeTruthy();

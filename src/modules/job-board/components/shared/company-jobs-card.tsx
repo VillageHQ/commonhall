@@ -5,14 +5,23 @@ import { Button } from "@/components/ui/button";
 import { Card, CardTitle } from "@/components/ui/card";
 
 import { toCompanyBoardHref, type CompanyJobs } from "../../contract";
-import { ApplyLink } from "./apply-link";
+import { ApplyByMessage, ApplyLink } from "./apply-link";
 
 function readSeeAllLabel(total: number) {
   return total === 1 ? "See the job" : `See all ${total} jobs`;
 }
 
-// A member's profile: their company's open jobs, up to 5, then the board filtered to the company.
-export function CompanyJobsCard({ company, companyJobs }: { company: string; companyJobs: CompanyJobs }) {
+// A member's profile: their company's open jobs, up to 5, then the board filtered to the company. A job with no apply
+// link shows Apply too when `applyByMessageHref` gives a message link, as on the members' board.
+export function CompanyJobsCard({
+  company,
+  companyJobs,
+  applyByMessageHref,
+}: {
+  company: string;
+  companyJobs: CompanyJobs;
+  applyByMessageHref?: (job: { memberId: string; title: string; company: string }) => string | null;
+}) {
   const { jobs, total, companySlug } = companyJobs;
   if (total === 0) return null;
   return (
@@ -25,7 +34,7 @@ export function CompanyJobsCard({ company, companyJobs }: { company: string; com
               <p className="type-label wrap-anywhere">{job.title}</p>
               {job.location ? <p className="type-small wrap-anywhere text-foreground-soft">{job.location}</p> : null}
             </div>
-            {job.url ? <ApplyLink url={job.url} title={job.title} company={company} /> : null}
+            {job.url ? <ApplyLink url={job.url} title={job.title} company={company} /> : <ApplyByMessage href={job.memberId && applyByMessageHref ? applyByMessageHref({ memberId: job.memberId, title: job.title, company }) : null} title={job.title} company={company} />}
           </li>
         ))}
       </ul>

@@ -1,0 +1,1 @@
+ALTER TABLE "ask" ADD COLUMN "answers_seen_at" timestamp (3) with time zone;

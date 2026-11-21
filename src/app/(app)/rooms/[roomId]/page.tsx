@@ -6,7 +6,7 @@ import { LiveRoom } from "@/modules/voice/components/live-room";
 import { QuietStartNote } from "@/modules/voice/components/quiet-start-note";
 import { RenameRoom } from "@/modules/voice/components/rename-room";
 import { ScheduledRoom } from "@/modules/voice/components/scheduled-room";
-import { QUIET_START_PARAM, ROOM_ACCESS, ROOM_STATUSES, VOICE_PAGE, VOICE_PAGE_TITLE } from "@/modules/voice/contract";
+import { QUIET_START_LINE, QUIET_START_PARAM, ROOM_ACCESS, ROOM_STATUSES, VOICE_PAGE, VOICE_PAGE_TITLE } from "@/modules/voice/contract";
 import { voiceManifest } from "@/modules/voice/manifest";
 import { readRoomView } from "@/modules/voice/reads";
 import { requireMember } from "@/platform/auth/session";
@@ -32,6 +32,7 @@ export default modulePage(voiceManifest, async function RoomPage({ params, searc
   const isInviteOnly = room.access === ROOM_ACCESS.invite;
   const isHost = room.hostId === member.id;
   const isOpen = room.status !== ROOM_STATUSES.ended;
+  const isQuietStart = isHost && room.status === ROOM_STATUSES.live && Boolean(query[QUIET_START_PARAM]) && !room.hasAlerted;
   const status = room.status === ROOM_STATUSES.live ? "Live" : room.status === ROOM_STATUSES.scheduled ? "Coming up" : "Ended";
   const eyebrow = [status, isInviteOnly ? "Invite only" : null, "Never recorded"].filter(Boolean).join(" · ");
   return (
@@ -43,8 +44,8 @@ export default modulePage(voiceManifest, async function RoomPage({ params, searc
         description={room.status === ROOM_STATUSES.live ? undefined : `Hosted by ${room.hostName}`}
         action={isHost && isOpen ? <RenameRoom key={room.title} roomId={room.id} title={room.title} /> : undefined}
       />
-      {isHost && room.status === ROOM_STATUSES.live && query[QUIET_START_PARAM] && !room.hasAlerted ? <QuietStartNote /> : null}
-      {room.status === ROOM_STATUSES.live ? <LiveRoom roomId={room.id} title={room.title} /> : null}
+      {isQuietStart ? <QuietStartNote /> : null}
+      {room.status === ROOM_STATUSES.live ? <LiveRoom roomId={room.id} title={room.title} notice={isQuietStart ? QUIET_START_LINE : undefined} /> : null}
       {room.status === ROOM_STATUSES.scheduled ? (
         <ScheduledRoom roomId={room.id} scheduledFor={room.scheduledFor} isHost={isHost} hasReminder={room.hasReminder} />
       ) : null}

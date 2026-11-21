@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { Thread } from "@/modules/messages/components/thread";
-import { conversationIdSchema } from "@/modules/messages/contract";
+import { conversationIdSchema, MESSAGE_DRAFT_PARAM, readMessageDraft } from "@/modules/messages/contract";
 import { messagesManifest } from "@/modules/messages/manifest";
 import { threadQuery } from "@/modules/messages/queries";
 import { readThreadPage } from "@/modules/messages/reads";
@@ -13,7 +13,7 @@ import { PAGE_TITLES } from "@/platform/branding/page-metadata";
 import { getDatabase } from "@/platform/database/client";
 import { modulePage } from "@/platform/modules/module-page";
 
-type ConversationPageProps = { params: Promise<{ conversationId: string }> };
+type ConversationPageProps = { params: Promise<{ conversationId: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> };
 
 async function readPage(requestedId: string) {
   const member = await requireMember();
@@ -28,8 +28,8 @@ export async function generateMetadata({ params }: ConversationPageProps): Promi
   return { title: page?.peer.name ?? PAGE_TITLES.messages };
 }
 
-export default modulePage(messagesManifest, async function ConversationPage({ params }: ConversationPageProps) {
-  const [page, community] = await Promise.all([readPage((await params).conversationId), readBrandingForPage()]);
+export default modulePage(messagesManifest, async function ConversationPage({ params, searchParams }: ConversationPageProps) {
+  const [page, community, query] = await Promise.all([readPage((await params).conversationId), readBrandingForPage(), searchParams]);
   if (!page) notFound();
 
   const queryClient = new QueryClient();
@@ -37,7 +37,7 @@ export default modulePage(messagesManifest, async function ConversationPage({ pa
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <Thread conversationId={page.conversationId} communityName={community.name} />
+      <Thread conversationId={page.conversationId} communityName={community.name} draft={readMessageDraft(query[MESSAGE_DRAFT_PARAM])} />
     </HydrationBoundary>
   );
 });

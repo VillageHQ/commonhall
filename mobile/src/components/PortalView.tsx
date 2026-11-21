@@ -35,7 +35,8 @@ export const PortalView = forwardRef<PortalHandle, PortalViewProps>(function Por
         platform: "web",
         pushToken: token.current,
         appActions: true,
-        openRoom: (roomId: string, title: string, facts?: { hasNotified?: unknown }) => onOpenRoom(String(roomId), String(title ?? ""), facts?.hasNotified === true),
+        openRoom: (roomId: string, title: string, facts?: { notice?: unknown }) =>
+          onOpenRoom(String(roomId), String(title ?? ""), typeof facts?.notice === "string" ? facts.notice.slice(0, 200) : ""),
         appAction: (action: unknown) => {
           if ((APP_ACTIONS as readonly unknown[]).includes(action)) onAppAction(action as AppAction);
         },

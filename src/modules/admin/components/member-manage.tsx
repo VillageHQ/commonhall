@@ -31,7 +31,7 @@ function RemovedNote({ member }: { member: AdminMember }) {
 }
 
 // A member's Manage page (Community-only, from the Members table): each tool as a sheet; the result flashes at the top.
-export function MemberManage({ member, viewerId }: { member: AdminMember; viewerId: string }) {
+export function MemberManage({ member, viewerId, isNetworkSearchOn }: { member: AdminMember; viewerId: string; isNetworkSearchOn: boolean }) {
   const router = useRouter();
   const showFlash = useFlash();
   const manageButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -41,6 +41,7 @@ export function MemberManage({ member, viewerId }: { member: AdminMember; viewer
       <MemberActions
         member={member}
         viewerId={viewerId}
+        isNetworkSearchOn={isNetworkSearchOn}
         manageButtonRef={manageButtonRef}
         fallbackFocusId={MANAGE_TITLE_ID}
         onDone={(message, isWarning) => {

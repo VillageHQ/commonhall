@@ -70,7 +70,7 @@ async function readCheckedTargetEmail(database: Database, environment: Environme
 export async function answerAsConnector(context: RequestContext, { introId, choice, targetEmail, note, reason }: ConnectorAnswerBody, { fromLink = false } = {}) {
   if (choice !== CONNECTOR_CHOICES.yes) {
     const kind = choice === CONNECTOR_CHOICES.notNow ? INTRO_DECLINE_KINDS.notThisTime : INTRO_DECLINE_KINDS.doNotKnowThem;
-    return transitionIntro(context, { introId, action: INTRO_ACTIONS.decline, reason, kind });
+    return transitionIntro(context, { introId, action: INTRO_ACTIONS.decline, reason, kind }, { onlyFrom: INTRO_STATES.requested });
   }
   const { database, environment, member } = context;
   const { intro, address } = await readCheckedTargetEmail(database, environment, introId, member.id, targetEmail, fromLink);

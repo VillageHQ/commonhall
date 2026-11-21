@@ -30,8 +30,7 @@ import { requireCurrentAdmin } from "../../platform/audit/admin-transaction.ts";
 import { recordAdminAction } from "../../platform/audit/record.ts";
 import { resolveOpenReportsAgainstMember } from "./service-report-resolution.ts";
 import { randomUUID } from "node:crypto";
-import { cancelInviteEmail, inviteChangedError, issueInvite, OPEN_INVITE, queueInviteEmail, readInviter } from "../members/service-invites.ts";
-import { readEmailBranding } from "../../platform/email/outbox.ts";
+import { cancelInviteEmail, inviteChangedError, issueInvite, OPEN_INVITE, queueInviteEmail, readInviteBranding, readInviter } from "../members/service-invites.ts";
 import { staleGroupAfterLinkClears } from "../network/service.ts";
 import { INVITE_ERROR_CODES } from "../members/contract-invites.ts";
 import { toConfirmationIdentifier } from "../members/service-email-confirmation.ts";
@@ -207,7 +206,7 @@ export async function reclaimInvite(context: RequestContext, inviteId: string) {
   const { database, member } = context;
   const inviter = await readInviter(context);
   const token = createInviteToken();
-  const branding = await readEmailBranding(context.database, context.environment);
+  const branding = await readInviteBranding(context.database, context.environment);
   const now = new Date();
 
   const replacement = await withAdminRosterLock(database, member.id, async (transaction) => {
@@ -289,7 +288,7 @@ export async function reinviteRemovedMember(context: RequestContext, memberId: s
   const { database, member } = context;
   const inviter = await readInviter(context);
   const token = createInviteToken();
-  const branding = await readEmailBranding(context.database, context.environment);
+  const branding = await readInviteBranding(context.database, context.environment);
   const reinvited = await withAdminRosterLock(database, member.id, async (transaction) => {
     const [target] = await transaction
       .select({ id: user.id, name: user.name, email: user.email, banned: user.banned, banExpires: user.banExpires })

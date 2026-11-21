@@ -1,10 +1,10 @@
 import { readInviteWords } from "@/modules/members/contract-invite-email";
 
-type InviteEmailPreviewProps = { community: string; from: string; inviterName: string; inviterRole: string | null };
+type InviteEmailPreviewProps = { community: string; from: string; inviterName: string; inviterRole: string | null; isNetworkSearchOn: boolean };
 
 // Commonhall's mail preview (crop mail-preview.png): the invite as it goes out, with a made-up founder's name.
-export function InviteEmailPreview({ community, from, inviterName, inviterRole }: InviteEmailPreviewProps) {
-  const words = readInviteWords({ community, inviteeName: "Ada Okafor", inviterName, inviterRole });
+export function InviteEmailPreview({ community, from, inviterName, inviterRole, isNetworkSearchOn }: InviteEmailPreviewProps) {
+  const words = readInviteWords({ community, isNetworkSearchOn, inviteeName: "Ada Okafor", inviterName, inviterRole });
   return (
     <div className="fh-mail">
       <div className="fh-mail-h">

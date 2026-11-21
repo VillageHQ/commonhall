@@ -55,6 +55,8 @@ export type MemberActionContext = {
   viewerId: string;
   manageButtonRef: RefObject<HTMLButtonElement | null>;
   fallbackFocusId: string;
+  // Network on and Village connected: confirming an email turns network search on for them.
+  isNetworkSearchOn: boolean;
   onDone: (message: string, isWarning?: boolean) => void;
 };
 
@@ -113,11 +115,11 @@ function RoleActions({ member, viewerId, manageButtonRef, fallbackFocusId, onDon
   );
 }
 
-function EmailActions({ member, manageButtonRef, fallbackFocusId, onDone }: MemberActionContext) {
+function EmailActions({ member, manageButtonRef, fallbackFocusId, isNetworkSearchOn, onDone }: MemberActionContext) {
   const { id, name, email, isEmailConfirmed, isAdmin, inviteId } = member;
   if (isEmailConfirmed && (isAdmin || !inviteId)) return null;
   return (
-    <ActionGroup title="Email" note={isEmailConfirmed ? `${email} is confirmed.` : `${email} isn't confirmed. Network search stays off until it is.`}>
+    <ActionGroup title="Email" note={isEmailConfirmed ? `${email} is confirmed.` : `${email} isn't confirmed.${isNetworkSearchOn ? " Network search stays off until it is." : ""}`}>
       {isEmailConfirmed ? null : (
         <ConfirmDialog
           trigger={<ActionButton label="Confirm their email" icon={<MailCheck aria-hidden="true" />} variant="soft" />}
@@ -130,7 +132,7 @@ function EmailActions({ member, manageButtonRef, fallbackFocusId, onDone }: Memb
           onDone={({ message }) => onDone(message)}
         >
           <p className="wrap-anywhere">
-            Anyone holding an invite link could have used it. Confirm only if you recognize this person and {email} is theirs. This turns on network search for them.
+            Anyone holding an invite link could have used it. Confirm only if you recognize this person and {email} is theirs.{isNetworkSearchOn ? " This turns on network search for them." : ""}
           </p>
         </ConfirmDialog>
       )}
