@@ -20,7 +20,7 @@ How it works, the token API, the ports: `.ai/features/voice-sessions/NOTES.md`; 
 - `reads.ts`: one room. `reads-rooms-page.ts`: the Rooms page (cards with faces).
   `reads-live.ts`: the live-room reads other screens use (`readLiveRooms`, `countLiveRooms`, `countRoomJoins`),
   empty or 0 while Rooms is off; screens outside Rooms read rooms only through these.
-- `components/`: the UI (`room-start.tsx`, `room-alerts-switch.tsx`, `rename-room.tsx`). The phone app plays rooms natively (`readNativeApp()`, `mobile/src/voice/RoomScreen.tsx`); `room-left-mark.ts` keeps "You left the room." over a reload there (`.ai/features/room-polish/NOTES.md`).
+- `components/`: the UI (`room-start.tsx`, `room-alerts-switch.tsx`, `rename-room.tsx`). The phone app plays rooms natively (`readNativeApp()`, `mobile/src/voice/RoomScreen.tsx`).
 
 Rules:
 
