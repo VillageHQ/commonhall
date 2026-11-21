@@ -96,7 +96,8 @@ function SendYourself({ links, signature }: { links: SentLink[]; signature: Sign
       <div className="fh-rows">
         {links.map((link) => (
           <div key={link.email} className="fh-r" data-invite-link={link.email}>
-            <span className="fh-avatar fh-sm inline-flex size-7 items-center justify-center rounded-full bg-vellum">
+            {/* A phone gives the name and address this room (parts.css: the row's two columns). */}
+            <span className="fh-avatar fh-sm inline-flex size-7 items-center justify-center rounded-full bg-vellum max-[480px]:hidden">
               <Mail aria-hidden="true" className="size-3.5" strokeWidth={1.5} />
             </span>
             <div className="fh-who">
