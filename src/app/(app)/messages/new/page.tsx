@@ -5,6 +5,7 @@ import { notFound, redirect } from "next/navigation";
 import { PageHeader } from "@/components/page-header";
 import { Button, ButtonRow } from "@/components/ui/button";
 import { memberIdSchema } from "@/modules/members/contract-blocks";
+import { MESSAGE_DRAFT_PARAM, readMessageDraft } from "@/modules/messages/contract";
 import { NewThread } from "@/modules/messages/components/new-thread";
 import { messagesManifest } from "@/modules/messages/manifest";
 import { readNewMessageTarget } from "@/modules/messages/reads";
@@ -35,9 +36,10 @@ export async function generateMetadata({ searchParams }: NewMessagePageProps): P
 // Commonhall's "Message" button opens this page: an existing conversation opens in the Inbox; otherwise an empty thread
 // whose first Send starts it. A member who takes messages only after an intro gets Commonhall's explanation.
 export default modulePage(messagesManifest, async function NewMessagePage({ searchParams }: NewMessagePageProps) {
-  const [target, community] = await Promise.all([readTarget(searchParams), readBrandingForPage()]);
+  const [target, community, query] = await Promise.all([readTarget(searchParams), readBrandingForPage(), searchParams]);
   if (!target) notFound();
-  if (target.conversationId) redirect(`${ROUTES.messages}/${target.conversationId}`);
+  const draft = readMessageDraft(query[MESSAGE_DRAFT_PARAM]);
+  if (target.conversationId) redirect(`${ROUTES.messages}/${target.conversationId}${draft ? `?${new URLSearchParams({ [MESSAGE_DRAFT_PARAM]: draft })}` : ""}`);
   const { member } = target;
   const profileHref = `${ROUTES.people}/${member.id}`;
 
@@ -62,5 +64,5 @@ export default modulePage(messagesManifest, async function NewMessagePage({ sear
     );
   }
 
-  return <NewThread member={member} communityName={community.name} />;
+  return <NewThread member={member} communityName={community.name} draft={draft} />;
 });

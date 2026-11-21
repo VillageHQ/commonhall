@@ -63,7 +63,7 @@ export function AccountMenu({ member, navigation, trigger, side, pathname }: Acc
           sideOffset={6}
           collisionPadding={8}
           data-slot="account-menu"
-          className="z-50 max-h-[var(--radix-dropdown-menu-content-available-height)] w-[232px] overflow-y-auto rounded-[10px] border border-[var(--rule)] bg-[var(--leaf)] p-1.5 shadow-[var(--shadow)]"
+          className="z-50 max-h-[var(--radix-dropdown-menu-content-available-height)] w-[232px] overflow-y-auto rounded-[10px] border border-[var(--rule)] bg-[var(--leaf)] px-1.5 pt-1.5 shadow-[var(--shadow)]"
         >
           <DropdownMenu.Group aria-label="Settings">
             <DropdownMenu.Label className={MENU_LABEL}>Settings</DropdownMenu.Label>
@@ -85,6 +85,8 @@ export function AccountMenu({ member, navigation, trigger, side, pathname }: Acc
             </DropdownMenu.Group>
           ) : null}
           <AppActionsGroup />
+          {/* Pinned to the menu's foot, so Sign out shows on a short phone screen while the lists above scroll. */}
+          <div data-slot="account-menu-foot" className="sticky bottom-0 bg-[var(--leaf)] pb-1.5">
           <DropdownMenu.Separator className={MENU_RULE} />
           {member.isAdmin && mode === SHELL_MODES.console ? (
             <MenuLink href={ROUTES.feed} icon={<Eye aria-hidden="true" strokeWidth={1.5} />}>
@@ -112,6 +114,7 @@ export function AccountMenu({ member, navigation, trigger, side, pathname }: Acc
             <LogOut aria-hidden="true" strokeWidth={1.5} />
             Sign out
           </DropdownMenu.Item>
+          </div>
         </DropdownMenu.Content>
       </DropdownMenu.Portal>
     </DropdownMenu.Root>

@@ -78,9 +78,9 @@ function usePollFailureExit(error: Error | null) {
 
 // Commonhall's thread page (threadPage): "‹ Inbox", the name, one line, the messages, the reply box. Community keeps
 // older messages, retries, delete, report and block (a quiet link at the foot).
-type ThreadProps = { conversationId: string; communityName: string };
+type ThreadProps = { conversationId: string; communityName: string; draft?: string };
 
-function ThreadView({ conversationId, communityName }: ThreadProps) {
+function ThreadView({ conversationId, communityName, draft }: ThreadProps) {
   const thread = useSuspenseInfiniteQuery(threadQuery(conversationId));
   const changes = useQuery(threadChangesQuery(conversationId));
   const { data: pending } = useQuery(pendingMessagesQuery(conversationId));
@@ -179,7 +179,7 @@ function ThreadView({ conversationId, communityName }: ThreadProps) {
         </p>
       ) : null}
       {canCompose ? (
-        <MessageComposer peerName={peer.name} inputRef={composerRef} onSend={(body) => send.mutate({ clientKey: createClientKey(), body })} />
+        <MessageComposer peerName={peer.name} inputRef={composerRef} initialDraft={draft} onSend={(body) => send.mutate({ clientKey: createClientKey(), body })} />
       ) : (
         <ComposerReplacement peerName={peer.name} isBlockedByMe={isBlockedByMe} isUnblocking={setBlock.isPending} onUnblock={unblock} />
       )}
@@ -219,10 +219,10 @@ function ThreadView({ conversationId, communityName }: ThreadProps) {
   );
 }
 
-export function Thread({ conversationId, communityName }: ThreadProps) {
+export function Thread({ conversationId, communityName, draft }: ThreadProps) {
   return (
     <QueryBoundary loadingMessage="Opening your conversation…">
-      <ThreadView key={conversationId} conversationId={conversationId} communityName={communityName} />
+      <ThreadView key={conversationId} conversationId={conversationId} communityName={communityName} draft={draft} />
     </QueryBoundary>
   );
 }

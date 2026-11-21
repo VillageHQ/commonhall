@@ -36,6 +36,7 @@ import { isModuleEnabled, saveModuleState } from "@/platform/modules/enablement"
 import { instanceSettings } from "@/platform/settings/schema";
 import { clearDatabase, createTestDatabase } from "@/test/database";
 import { createSignedInMember } from "@/test/signed-in-member";
+import { readApplyByMessageHref } from "@/shell/job-apply-message";
 
 const APP_URL = "http://localhost:3000";
 const FAKE_FEED_PORT = 55511;
@@ -398,6 +399,15 @@ describe("the job board", () => {
     const jobs = await readBoardJobs(database, null);
     expect(Object.fromEntries(jobs.map(({ title, url }) => [title, url]))).toEqual({ "Founding engineer": "", "Head of sales": "mailto:jobs@stripe-example.test" });
     expect(jobs.every(({ memberId }) => memberId === founder.userId)).toBe(true);
+
+    // The founder's profile lists the job with its founder, so Apply there messages them too, its first line naming the job.
+    const profileJobs = await readCompanyJobs(database, { company: jobs[0]!.company, memberId: founder.userId });
+    expect(profileJobs.jobs.find(({ title }) => title === "Founding engineer")).toMatchObject({ url: "", memberId: founder.userId });
+    const applyHref = readApplyByMessageHref(other.userId, true)!;
+    const href = new URL(applyHref({ memberId: founder.userId, title: "Founding engineer", company: "Stripe Example" })!, "http://app.test");
+    expect(Object.fromEntries(href.searchParams)).toEqual({ to: founder.userId, draft: "I'd like to apply for Founding engineer at Stripe Example." });
+    expect(readApplyByMessageHref(founder.userId, true)!({ memberId: founder.userId, title: "Founding engineer", company: "Stripe Example" })).toBeNull();
+    expect(readApplyByMessageHref(other.userId, false)).toBeUndefined();
   });
 
   it(`stops at ${JOB_BOARD_LIMITS.sourcesPerMember} sources a member`, async () => {

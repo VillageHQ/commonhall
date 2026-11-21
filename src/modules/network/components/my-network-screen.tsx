@@ -110,7 +110,8 @@ function ConnectStart({ status, communityName, processedLine }: { status: Networ
             <span>Share whom I know with {members}, so they can ask me to introduce them</span>
           </label>
           <p className="fh-small fh-muted" style={{ marginTop: 6 }}>
-            Connecting shares your network with {members}, so tick it to go on. You can stop sharing any time.
+            Connecting shares your network with {members}. You can stop sharing any time; intro asks to you are switched
+            on <Link href={ME_PAGES.privacy}>Privacy</Link>.
           </p>
           <div className="fh-btn-row" style={{ marginTop: 14 }}>
             <Button type="submit" width="block" disabled={connectMutation.isPending}>

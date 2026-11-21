@@ -42,6 +42,8 @@ import { wereIntroducedForBooking } from "@/shell/booking-access";
 import { CompanyJobsCard } from "@/modules/job-board/components/shared/company-jobs-card";
 import { jobBoardManifest } from "@/modules/job-board/manifest";
 import { readCompanyJobs } from "@/modules/job-board/reads-hiring";
+import { messagesManifest } from "@/modules/messages/manifest";
+import { readApplyByMessageHref } from "@/shell/job-apply-message";
 
 type ProfilePageProps = { params: Promise<{ memberId: string }> };
 
@@ -80,11 +82,12 @@ export default modulePage(membersManifest, async function MemberProfilePage({ pa
   // "Hide me from the directory": members can't open the profile either. Admins still can.
   if (!isOwnProfile && !isAdminMember(viewer) && (await isHiddenMember(database, profile.id))) notFound();
   const isBlockedByViewer = !isOwnProfile && (await isBlockedBy(database, viewer.id, profile.id));
-  const [isIntrosOn, isNetworkOn, isJobBoardOn, isRoomsOn, lookup, lines] = await Promise.all([
+  const [isIntrosOn, isNetworkOn, isJobBoardOn, isRoomsOn, isMessagingOn, lookup, lines] = await Promise.all([
     isModuleEnabled(database, introsManifest),
     isModuleEnabled(database, networkManifest),
     isModuleEnabled(database, jobBoardManifest),
     isModuleEnabled(database, voiceManifest),
+    isModuleEnabled(database, messagesManifest),
     readLookupState(database, profile.id),
     readFilledLines(database, profile.id),
   ]);
@@ -234,7 +237,7 @@ export default modulePage(membersManifest, async function MemberProfilePage({ pa
               )}
             </section>
           ) : null}
-          {companyJobs && shown.company ? <CompanyJobsCard company={shown.company} companyJobs={companyJobs} /> : null}
+          {companyJobs && shown.company ? <CompanyJobsCard company={shown.company} companyJobs={companyJobs} applyByMessageHref={readApplyByMessageHref(viewer.id, isMessagingOn)} /> : null}
         </div>
       </div>
 

@@ -24,12 +24,13 @@ function keepFocusInField(event: { preventDefault: () => void }) {
   event.preventDefault();
 }
 
-type MessageComposerProps = { peerName: string; inputRef?: Ref<HTMLTextAreaElement>; isBusy?: boolean; onSend: (body: string) => void };
+// initialDraft: words a link put in the box (Apply on a job: "I'd like to apply for …"), for the member to edit and send.
+type MessageComposerProps = { peerName: string; inputRef?: Ref<HTMLTextAreaElement>; isBusy?: boolean; initialDraft?: string; onSend: (body: string) => void };
 
 // Commonhall's reply box (`.reply`): one Leaf bar under the messages, a textarea "Write a message" and Send.
 // Send stays ready, as Commonhall's; a blank or too-long message sends nothing.
-export function MessageComposer({ peerName, inputRef, isBusy = false, onSend }: MessageComposerProps) {
-  const [draft, setDraft] = useState("");
+export function MessageComposer({ peerName, inputRef, isBusy = false, initialDraft = "", onSend }: MessageComposerProps) {
+  const [draft, setDraft] = useState(initialDraft);
   const body = messageBodySchema.safeParse(draft);
   const charactersLeft = MESSAGE_LIMITS.bodyLength - draft.length;
   const isOverLimit = charactersLeft < 0;

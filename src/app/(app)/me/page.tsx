@@ -171,7 +171,10 @@ export default modulePage(membersManifest, async function MyProfilePage() {
         </div>
         <div className="fh-stack">
           {/* The old sheets' anchors (/me#privacy, #booking, #network, #jobs) land on these rows. */}
-          <section aria-label="Settings" className="fh-sheet">
+          <section aria-labelledby="settings-title" className="fh-sheet">
+            <h2 id="settings-title" className="fh-h3">
+              Settings
+            </h2>
             <span id="privacy" />
             <span id="booking" />
             <span id="network" />

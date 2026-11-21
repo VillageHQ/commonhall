@@ -128,3 +128,12 @@ export type ConversationPeer = z.infer<typeof peerSchema>;
 export function describeUnreadMessages(count: number) {
   return count === 1 ? "1 unread message" : `${count} unread messages`;
 }
+
+// A first line a link puts in the reply box (`?draft=`, e.g. Apply on a job with no link). Text only, kept short.
+export const MESSAGE_DRAFT_PARAM = "draft";
+const MAXIMUM_DRAFT_LENGTH = 300;
+
+export function readMessageDraft(value: string | string[] | undefined) {
+  const draft = (Array.isArray(value) ? value[0] : value)?.trim().slice(0, MAXIMUM_DRAFT_LENGTH);
+  return draft || undefined;
+}
