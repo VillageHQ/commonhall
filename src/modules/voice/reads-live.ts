@@ -5,7 +5,6 @@ import { and, count, desc, eq, gte, inArray } from "drizzle-orm";
 import { user } from "@/platform/database/auth-schema";
 import type { Database } from "@/platform/database/client";
 import type { Environment } from "@/platform/environment";
-import { isDemoMode } from "@/platform/demo/mode";
 import { isModuleEnabled } from "@/platform/modules/enablement";
 import { shownFaceColumns, toShownFaceUrl } from "@/modules/members/reads-pictures";
 
@@ -13,7 +12,7 @@ import { readConnectedIdentities } from "./client";
 import { ROOM_STATUSES, type RoomRole } from "./contract";
 import { voiceManifest } from "./manifest";
 import { visibleTo } from "./reads";
-import { toLiveKitRoomName } from "./service";
+import { readDemoSeededAt, toLiveKitRoomName } from "./service";
 import { readVoiceConfig } from "./service-settings";
 import { voiceRoom, voiceRoomMember } from "./schema";
 
@@ -51,8 +50,10 @@ const LIVE_ROOMS_RANKED = 50;
 
 // The live rooms the viewer may see, busiest first (the newest on a tie), with the faces of the people in each and
 // how many are in. The viewer's own face is left out ("who else is there"); the count is everyone. Who is in comes
-// from LiveKit; while it can't say (no server set up, or out of reach), everyone who joined counts. In demo mode the
-// seeded people count as in too, since nobody really connects for them (src/shell/demo-rooms.ts).
+// from LiveKit: someone who joined and left is gone from the card. While LiveKit can't say (no server set up, or out
+// of reach), everyone who joined counts. In demo mode the seeded people count as in too, since nobody really connects
+// for them (src/shell/demo-rooms.ts): their seats were taken before the demo was last seeded; a visitor's seat counts
+// only while LiveKit lists them.
 export async function readLiveRooms(database: Database, viewerId: string, limit: number, environment: Environment = process.env): Promise<LiveRoom[]> {
   if (limit <= 0 || !(await isRoomsOn(database))) return [];
   const rooms = await database
@@ -64,15 +65,15 @@ export async function readLiveRooms(database: Database, viewerId: string, limit:
     .limit(LIVE_ROOMS_RANKED);
   if (rooms.length === 0) return [];
   const roomIds = rooms.map(({ id }) => id);
-  const [config, joined] = await Promise.all([readVoiceConfig(database, environment), readJoined(database, roomIds)]);
+  const [config, joined, seededAt] = await Promise.all([readVoiceConfig(database, environment), readJoined(database, roomIds), readDemoSeededAt(database, environment)]);
   const connected = config ? await Promise.all(roomIds.map((id) => readConnectedIdentities(config, toLiveKitRoomName(id)))) : roomIds.map(() => null);
-  const isDemo = isDemoMode(environment);
+  const isSeeded = (joinedAt: Date) => seededAt !== null && joinedAt <= seededAt;
   const read = rooms.map((room, index) => {
     const present = connected[index] ?? null;
     const everyone = joined.get(room.id) ?? [];
-    const people = present === null || isDemo ? everyone : everyone.filter(({ id }) => present.includes(id));
+    const people = present === null ? everyone : everyone.filter(({ id, joinedAt }) => present.includes(id) || isSeeded(joinedAt));
     // Someone connected with no join row yet (a race with the join call) counts, with no face.
-    const count = present === null ? people.length : isDemo ? new Set([...people.map(({ id }) => id), ...present]).size : present.length;
+    const count = present === null ? people.length : new Set([...people.map(({ id }) => id), ...present]).size;
     const others = people.filter(({ id }) => id !== viewerId);
     return {
       ...room,

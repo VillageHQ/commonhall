@@ -144,6 +144,7 @@ once and tell everyone, and the app should ask for fewer decisions. The evidence
   - [ ] Part 3, member settings in one place — choice-settings — open pull request [#112](https://github.com/VillageHQ/commonhall/pull/112) — [spec](features/choice-settings/SPEC.md) · [notes](features/choice-settings/NOTES.md)
   - [ ] Part 5, sharing and posting forms (pull request open) — choice-forms — [spec](features/choice-forms/SPEC.md) · [notes](features/choice-forms/NOTES.md)
   - [ ] The last fixes and the 12 personas again (pull request open) — round7-final — [charter](features/round7-final/CHARTER.md) · [notes](features/round7-final/NOTES.md)
+  - [ ] Two room fixes: a reload after leaving keeps "You left the room." in the store app; room cards count only who is in now (pull request open) — room-polish — [spec](features/room-polish/SPEC.md) · [notes](features/room-polish/NOTES.md)
 ### Follow-ups from the round-7 audit (no spec yet; [audit](features/less-choice/AUDIT.md))
 - [ ] One Notifications page for Alerts and Email (one row per event, push and email side by side, quiet hours for both)
 - [ ] A limit a member sets on intro asks received per week, with this week's count
@@ -159,6 +160,7 @@ once and tell everyone, and the app should ask for fewer decisions. The evidence
 - [ ] A partner (or any member) can introduce two members from a profile or an ask, with a yes from both
 - [ ] A one-tap room's alert waits for the name (about 20 s, or until Rename is saved)
 - [ ] A room that can't connect: plain words, Try again, and End room for the host
+- [ ] In the store app, Back to a room page you left opens the room again (only a reload keeps "You left the room."); found by room-polish's check
 - [ ] Network search: leave members out of "in reach", and put the offer under the search box on a phone
 - [ ] The avatar menu: fewer items (Library easier to reach, Jobs and Our jobs not side by side)
 - [ ] A hiring request shows its job, and closes when the job is removed
