@@ -200,11 +200,12 @@ function toPost(row: PostRow, viewerId: string, helpers: PostHelper[], answers: 
 }
 
 // An open ask from someone else that was routed to the viewer (a path, or their "can help with" words), unless they
-// said "Not for me" on it (round 7: it leaves For you too, not only Today).
+// said "Not for me" on it (round 7: it leaves For you too, not only Today) or already answered or helped on it.
 function isForViewer(viewerId: string, now: Date) {
   const routed = sql`exists (select 1 from ${askHelper} where ${askHelper.askId} = ${ask.id} and ${askHelper.helperId} = ${viewerId})`;
   const skipped = sql`exists (select 1 from ${askSkip} where ${askSkip.askId} = ${ask.id} and ${askSkip.memberId} = ${viewerId})`;
-  return and(eq(ask.kind, ASK_KINDS.ask), isOpenAsk(now), ne(ask.authorId, viewerId), routed, not(skipped));
+  const answered = sql`exists (select 1 from ${askAnswer} where ${askAnswer.askId} = ${ask.id} and ${askAnswer.authorId} = ${viewerId})`;
+  return and(eq(ask.kind, ASK_KINDS.ask), isOpenAsk(now), ne(ask.authorId, viewerId), routed, not(skipped), not(answered));
 }
 
 function isOnTab(tab: AskTab, viewerId: string, now: Date): SQL | undefined {

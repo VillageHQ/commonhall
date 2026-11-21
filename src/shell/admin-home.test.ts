@@ -123,7 +123,8 @@ describe("the admin home", () => {
     expect(items.find(({ id }) => id === ADMIN_HOME_ITEMS.stuckIntros)).toEqual({
       id: ADMIN_HOME_ITEMS.stuckIntros,
       label: "3 intros waiting over 3 days",
-      href: ROUTES.adminIntroLog,
+      // The log's Open intros, not all of them.
+      href: `${ROUTES.adminIntroLog}?f=open`,
       isUrgent: false,
     });
   });
