@@ -16,7 +16,8 @@ What this part does now. The round's whole plan, its evidence and the council's 
 - **An intro ask** shows the asker's note first, then "Introduce" and "No thanks". Introduce shows the private link
   with "Copy link" first and "Copy with a message" quiet beside it; "Email it to <name>" is a folded second step,
   shown only when the community sends email. No thanks is one kind of no; the asker never hears why. The emailed
-  ask and its public answer page keep their three answers (the email's words are Commonhall's, checked word for word).
+  ask and its public answer page offer the same two answers, Yes and No thanks (round7-final); an older email's "I
+  don't know them well enough" link opens on No thanks.
 - **The drafted intro note** names the person asked for (name, role, company) and the asker from their own card;
   never an earlier need from the profile. On the profile ask it follows the person's boxes until the asker edits it.
 - **"I can help"** commits on the first tap from Today. Its public line is fixed ("I can help with this." or "I know
