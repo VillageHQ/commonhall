@@ -9,6 +9,8 @@ import { voiceRoom, voiceRoomMember } from "@/modules/voice/schema";
 import { toLiveKitRoomName } from "@/modules/voice/service";
 import { user } from "@/platform/database/auth-schema";
 import { saveModuleState } from "@/platform/modules/enablement";
+import { INSTANCE_SETTING_KEYS } from "@/platform/settings/schema";
+import { saveSettings } from "@/platform/settings/store";
 import { clearDatabase, createTestDatabase } from "@/test/database";
 import { FAKE_LIVEKIT_KEY, FAKE_LIVEKIT_SECRET, startFakeLiveKitServer } from "@/test/fake-livekit-server";
 import { createSignedInMember } from "@/test/signed-in-member";
@@ -102,6 +104,29 @@ describe("the live-room reads", () => {
     expect(room?.faces.map(({ name }) => name)).toEqual(["Maya Example"]);
     expect(room?.count).toBe(1);
     expect(await readLiveRooms(database, lina.userId, 0)).toEqual([]);
+  });
+
+  it("in demo mode counts the seeded people and whoever LiveKit lists, never someone who left", async () => {
+    const [maya, ada, sam, viewer] = await Promise.all([member("Maya Example"), member("Ada Example"), member("Sam Example"), member("Viewer Example")]);
+    const roomId = await openRoom(maya, "Pricing for seed founders");
+    // Ada's seat comes from the demo seed: taken before the demo was seeded, and she never connects.
+    const seededAt = new Date(Date.now() - 5 * 60_000);
+    await database.insert(voiceRoomMember).values({ roomId, memberId: ada.userId, role: "listener", joinedAt: new Date(seededAt.getTime() - 60_000) });
+    await saveSettings(database, { [INSTANCE_SETTING_KEYS.demoSeededAt]: seededAt.toISOString() });
+    await join(maya, roomId);
+    await join(sam, roomId);
+    livekit.connect(toLiveKitRoomName(roomId), maya.userId, sam.userId);
+    const demo = { ...process.env, DEMO_MODE: "true" };
+
+    const [before] = await readLiveRooms(database, viewer.userId, 3, demo);
+    expect(before?.faces.map(({ name }) => name)).toEqual(["Maya Example", "Ada Example", "Sam Example"]);
+    expect(before?.count).toBe(3);
+
+    // Sam left: off the card, and out of the count.
+    livekit.disconnect(toLiveKitRoomName(roomId), sam.userId);
+    const [after] = await readLiveRooms(database, viewer.userId, 3, demo);
+    expect(after?.faces.map(({ name }) => name)).toEqual(["Maya Example", "Ada Example"]);
+    expect(after?.count).toBe(2);
   });
 
   it("counts everyone who joined while LiveKit can't say who is in", async () => {

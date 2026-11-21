@@ -17,6 +17,7 @@ import { readNativeApp, ROOM_CLOSED_REASONS, subscribeToNativeApp, subscribeToRo
 
 import { isModerator, isOnStage, ROLE_ACTIONS, ROOM_ROLES, VOICE_ATTRIBUTES, VOICE_DATA_TOPICS, VOICE_LIMITS, VOICE_PAGE, VOICE_REACTIONS, type RoleAction, type RoomRole } from "../contract";
 import { voiceRequests } from "../queries";
+import { keepLeftMark, readLeftBeforeReload } from "./room-left-mark";
 
 const ROLE_WORDS: Record<RoomRole, string> = { host: "Host", cohost: "Co-host", speaker: "Speaker", listener: "" };
 const ROLE_ORDER: Record<RoomRole, number> = { host: 0, cohost: 1, speaker: 2, listener: 3 };
@@ -128,11 +129,13 @@ const APP_CLOSED_WORDS: Record<RoomClosedReason, string> = {
 };
 
 // The app plays the room; this page says so until the app closes its room screen, then says why and offers Join again.
+// A reload after leaving says it again instead of opening the room (room-left-mark.ts).
 // `hasNotified` is always true: "Tell people I'm here" is gone, and app builds from before round 7 (TestFlight 3, the
 // Android test APK) hide their Tell people button only on that flag.
 function AppRoomHandoff({ roomId, title, notice }: { roomId: string; title: string; notice?: string }) {
   const router = useRouter();
-  const [closedReason, setClosedReason] = useState<RoomClosedReason | null>(null);
+  const [closedReason, setClosedReason] = useState<RoomClosedReason | null>(() => readLeftBeforeReload(roomId));
+  const isLeftBeforeReload = useRef(closedReason !== null);
   // The latest title (the host may rename the room), without opening the room again when it changes.
   const titleRef = useRef(title);
   useEffect(() => {
@@ -150,8 +153,10 @@ function AppRoomHandoff({ roomId, title, notice }: { roomId: string; title: stri
   }
 
   useEffect(() => {
-    handOff();
+    if (!isLeftBeforeReload.current) handOff();
   }, [handOff]);
+
+  useEffect(() => (closedReason ? keepLeftMark(roomId, closedReason) : undefined), [roomId, closedReason]);
 
   useEffect(
     () =>

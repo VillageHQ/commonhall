@@ -465,8 +465,8 @@ export async function claimDueReminders(database: Database, now = new Date()) {
 }
 
 // In demo mode, the rooms the demo seed made stay as they are until the nightly reset: nobody real is in them, so the
-// upkeep would end them within minutes. Rooms that visitors make follow the usual rules.
-async function readDemoSeededAt(database: Database, environment: Environment) {
+// upkeep would end them within minutes. Rooms that visitors make follow the usual rules. Null outside demo mode.
+export async function readDemoSeededAt(database: Database, environment: Environment) {
   if (!isDemoMode(environment)) return null;
   const seededAt = (await readSettings(database, [INSTANCE_SETTING_KEYS.demoSeededAt])).get(INSTANCE_SETTING_KEYS.demoSeededAt);
   return seededAt ? new Date(seededAt) : null;
