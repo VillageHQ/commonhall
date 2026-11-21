@@ -399,8 +399,7 @@ export function PartsGallery({ crops, navigation }: { crops: Record<string, Crop
         <fieldset>
           <legend className="fh-label">Would you introduce them?</legend>
           <OptionCard name="parts-decide" id="parts-decide-yes" title="Yes, introduce them" description={`We email Rachel once, from ${COMMUNITY}, in your name.`} />
-          <OptionCard name="parts-decide" id="parts-decide-no" title="Not this time" description="Marcus is told you can’t make this one. Never why." />
-          <OptionCard name="parts-decide" id="parts-decide-unknown" title="I don’t know them well enough" description="Same message to Marcus: you can’t make this one." />
+          <OptionCard name="parts-decide" id="parts-decide-no" title="No thanks" description="Marcus is told you can’t make this one. Never why." />
           <Field htmlFor="parts-target-email" label="Rachel’s email, if you say yes" hint="Used for this one ask. Rachel sees Marcus’ address only if they say yes." className="fh-field">
             <Input id="parts-target-email" placeholder="e.g. name@company.example" />
           </Field>

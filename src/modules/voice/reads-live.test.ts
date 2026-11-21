@@ -73,9 +73,10 @@ describe("the live-room reads", () => {
   }
 
   it("returns the faces of the people in a live room, and only the rooms the viewer may see", async () => {
-    const [maya, sam, lina] = await Promise.all([member("Maya Example"), member("Sam Example"), member("Lina Example")]);
+    const [maya, sam, lina, omar] = await Promise.all([member("Maya Example"), member("Sam Example"), member("Lina Example"), member("Omar Example")]);
     const roomId = await openRoom(maya, "Pricing for seed founders");
-    await openInviteOnlyRoom(maya, "Board prep", [sam.userId]);
+    // A host runs one live room at a time, so the invite-only one is Omar's.
+    await openInviteOnlyRoom(omar, "Board prep", [sam.userId]);
     await join(maya, roomId);
     await join(sam, roomId);
     livekit.connect(toLiveKitRoomName(roomId), maya.userId, sam.userId);

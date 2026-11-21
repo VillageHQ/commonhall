@@ -129,6 +129,11 @@ describe("intro links from emails", () => {
       expect(answered.consentIssue).toMatchObject({ canEmailTarget: true });
       expect(answered.consentIssue?.link).toContain(answered.consentIssue?.token);
       expect(sent().filter(({ to }) => to.includes(TARGET_EMAIL))).toEqual([]);
+
+      // A No thanks from a tab drawn before the yes doesn't undo it.
+      const stale = answerAsConnector(createRequestContext(database, process.env, connector), { introId: intro.id, choice: "not_now", targetEmail: null, note: null, reason: null });
+      await expect(stale).rejects.toMatchObject({ status: 409 });
+      expect((await readRow(intro.id)).state).toBe(INTRO_STATES.askingTarget);
     });
 
     it("refuses the asker's own address", async () => {

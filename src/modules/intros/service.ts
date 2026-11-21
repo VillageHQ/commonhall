@@ -35,6 +35,7 @@ import {
   type Intro,
   type IntroAction,
   type IntroOutcomeBody,
+  type IntroState,
   type IntroTransitionBody,
   type NamedIntroBody,
   type PathIntroBody,
@@ -274,7 +275,9 @@ async function withholdFromOptedOutTarget(context: RequestContext, intro: Intro)
   throw introGoneError();
 }
 
-export async function transitionIntro(context: RequestContext, body: IntroTransitionBody) {
+// `onlyFrom`: the state the answer was given in. The connector's first answer passes "requested", so a No thanks from a
+// stale tab can't undo a yes already given (that is "I can't make this intro after all", its own button).
+export async function transitionIntro(context: RequestContext, body: IntroTransitionBody, { onlyFrom }: { onlyFrom?: IntroState } = {}) {
   const { database, member, environment } = context;
   await enforceIntroLimit(database, member.id, INTRO_LIMIT_KINDS.respond);
 
@@ -299,7 +302,7 @@ export async function transitionIntro(context: RequestContext, body: IntroTransi
       and(
         eq(introRequest.id, body.introId),
         eq(actorColumn, member.id),
-        inArray(introRequest.state, readStatesLeadingTo(nextState)),
+        inArray(introRequest.state, readStatesLeadingTo(nextState).filter((state) => !onlyFrom || state === onlyFrom)),
         gt(introRequest.expiresAt, now),
         hasConnectorJoined(database),
         isRequesterActing ? undefined : eq(introRequest.isWithheld, false),

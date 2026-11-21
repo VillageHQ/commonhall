@@ -9,6 +9,7 @@ import { Pill } from "@/components/ui/pill";
 import { ASK_ANSWER_KINDS, ASK_KINDS, ASK_STATES, describeAgo, describeAnswerCount, describeCanHelp, describeHelperLine, ASKS_PAGE, type AskMember } from "../contract";
 import type { AskDetail as AskDetailData, PostAnswer, PostHelper } from "../reads-board";
 import { AnswerForm, AskViaButton, HelpForm, RenewButton, ReportLink, StatusButtons } from "./ask-detail-forms";
+import { MarkAnswersRead } from "./mark-answers-read";
 import { AskConsent, CompanyMark, describeAbout, ICON, MemberAvatar, PostStatusPill } from "./post-parts";
 
 const ANSWER_KIND_LABELS: Record<string, string | null> = {
@@ -152,6 +153,7 @@ export function AskDetail({ detail, viewer, isViewerAdmin, flash, now }: AskDeta
   return (
     <div className="fh-narrow">
       {flash ? <FlashNote>{flash}</FlashNote> : null}
+      {post.hasNewAnswers ? <MarkAnswersRead askId={post.id} /> : null}
       <BackLink href={ASKS_PAGE}>All asks</BackLink>
       <div className="fh-ph fh-askhead">
         <MemberAvatar member={post.author} />

@@ -37,7 +37,7 @@ describe("intro emails match Commonhall's word for word", () => {
       target: "Rosa Lindqvist",
       targetAbout: "CTO, Halcyon Health",
       note: SAM_NOTE,
-      links: { yes: `${link}?a=yes`, notNow: `${link}?a=not_now`, dontKnow: `${link}?a=dont_know` },
+      links: { yes: `${link}?a=yes`, notNow: `${link}?a=not_now` },
       canReply: true,
     });
     expectSame(rendered, COMMONHALL["email-intro-ask-to-connector"]);

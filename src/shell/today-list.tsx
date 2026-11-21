@@ -100,7 +100,8 @@ export function TodayPage({ today, memberName, dateLabel, liveRoom, replyDay, sh
   const first = firstWord(memberName);
   const forYou = today.introsForYou ?? [];
   const intros = [...today.introsToAnswer, ...today.introsToFinish];
-  const answered = today.ownPosts.filter(({ answerCount }) => answerCount > 0);
+  // Gone once they open the ask, back with the next answer.
+  const answered = today.ownPosts.filter(({ hasNewAnswers }) => hasNewAnswers);
   const facts = showFacts ? today.profileLines : [];
   // Waiting on you: intros for your yes first, then intros you're asked to make, then answers to your asks; 3 at most.
   const shownForYou = forYou.slice(0, TODAY_LIMITS.waiting);

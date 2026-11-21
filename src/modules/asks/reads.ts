@@ -457,11 +457,12 @@ export async function isHiringRequestFree(connection: DatabaseOrTransaction, job
   return !row;
 }
 
+// Asks only: a win or update never counts toward the open limit.
 export async function readOpenAskCount(connection: DatabaseOrTransaction, memberId: string, now: Date) {
   const [row] = await connection
     .select({ openCount: count() })
     .from(ask)
-    .where(and(eq(ask.authorId, memberId), isOpenAsk(now)));
+    .where(and(eq(ask.authorId, memberId), eq(ask.kind, ASK_KINDS.ask), isOpenAsk(now)));
   return row?.openCount ?? 0;
 }
 

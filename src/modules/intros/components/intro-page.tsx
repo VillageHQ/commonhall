@@ -85,14 +85,11 @@ function readAnsweredOn(intro: Intro) {
 
 function ConnectorMain({ intro, hasThread }: IntroPageProps) {
   if (intro.state === INTRO_STATES.requested) return <ConnectorAnswer intro={intro} />;
-  const pill = readStatusPill(intro);
+  // The status pill sits beside the title already; here only when they answered.
   const answeredOn = readAnsweredOn(intro);
   return (
     <>
-      <p>
-        <Pill tone={pill.tone}>{pill.label}</Pill>
-      </p>
-      {answeredOn ? <p className="fh-small fh-muted mt-2">{answeredOn}</p> : null}
+      {answeredOn ? <p className="fh-small fh-muted">{answeredOn}</p> : null}
       <div className="fh-section empty:hidden">
         <ConnectorFollowUp intro={intro} />
       </div>

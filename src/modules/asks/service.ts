@@ -86,7 +86,7 @@ export async function createAsk(
   const category = hiringJobId ? ASK_CATEGORIES.hire : isAsk ? inferCategory(body) : (body.category ?? ASK_CATEGORIES.other);
   return database.transaction(async (transaction) => {
     await lockMemberAsks(transaction, member.id);
-    await assertRoomForAnotherOpenAsk(transaction, member.id, new Date());
+    if (isAsk) await assertRoomForAnotherOpenAsk(transaction, member.id, new Date());
     const isFree = hiringJobId !== null && (await isHiringRequestFree(transaction, hiringJobId, new Date()));
     if (isAsk && !isFree) await assertAllowance(transaction, member.id);
     const [created] = await transaction
@@ -283,13 +283,13 @@ export async function setAskPinned({ database, member }: RequestContext, { askId
 // applies, so a reopen can't be a way past it. Every reopen goes in the audit log.
 export async function reopenAsk({ database, member }: RequestContext, askId: string, isAdmin: boolean) {
   const reopen = async (transaction: Transaction) => {
-    const [owner] = await transaction.select({ authorId: ask.authorId }).from(ask).where(eq(ask.id, askId));
+    const [owner] = await transaction.select({ authorId: ask.authorId, kind: ask.kind }).from(ask).where(eq(ask.id, askId));
     if (!owner || (!isAdmin && owner.authorId !== member.id)) throw askGoneError();
     await lockMemberAsks(transaction, owner.authorId);
     const target = await lockAskForAdmin(transaction, askId);
     if (!target.closedAt) throw new RequestError(CONFLICT_STATUS, ASK_ERROR_CODES.notClosed, "This ask is already open.");
     const now = new Date();
-    if ((await readOpenAskCount(transaction, target.authorId, now)) >= ASK_LIMITS.openPerMember) {
+    if (owner.kind === ASK_KINDS.ask && (await readOpenAskCount(transaction, target.authorId, now)) >= ASK_LIMITS.openPerMember) {
       throw new RequestError(
         CONFLICT_STATUS,
         ASK_ERROR_CODES.openLimit,
@@ -324,11 +324,17 @@ export async function renewAsk({ database, member }: RequestContext, askId: stri
   });
 }
 
-export async function markOffersSeen({ database, member }: RequestContext) {
+// With an ask: its author opened it, so its answers are read (Today drops its "Read" line).
+export async function markOffersSeen({ database, member }: RequestContext, { askId }: { askId?: string } = {}) {
+  const now = new Date();
+  if (askId) {
+    await database.update(ask).set({ answersSeenAt: now }).where(and(eq(ask.id, askId), eq(ask.authorId, member.id)));
+    return;
+  }
   const ownAskIds = database.select({ id: ask.id }).from(ask).where(eq(ask.authorId, member.id));
   await database
     .update(askOffer)
-    .set({ seenAt: new Date() })
+    .set({ seenAt: now })
     .where(and(isNull(askOffer.seenAt), inArray(askOffer.askId, ownAskIds)));
 }
 

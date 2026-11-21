@@ -158,7 +158,7 @@ async function renderConnectorAskFor({ connection, environment, community, intro
     target: facts.targetName,
     targetAbout: toRoleAndCompany(facts.targetHeadline),
     note: facts.note,
-    links: { yes: `${link}?a=${CONNECTOR_CHOICES.yes}`, notNow: `${link}?a=${CONNECTOR_CHOICES.notNow}`, dontKnow: `${link}?a=${CONNECTOR_CHOICES.dontKnow}` },
+    links: { yes: `${link}?a=${CONNECTOR_CHOICES.yes}`, notNow: `${link}?a=${CONNECTOR_CHOICES.notNow}` },
     canReply,
     isReminder,
   });

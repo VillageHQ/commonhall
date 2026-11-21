@@ -148,6 +148,7 @@ function post(id: string, key: string, body: string, hoursAgo: number, extra: Pa
     viewerWhyYou: null,
     viewerHasHelped: false,
     answerCount: 0,
+    hasNewAnswers: false,
     ...extra,
   };
 }

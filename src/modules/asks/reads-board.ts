@@ -87,6 +87,8 @@ export type BoardPost = {
   viewerWhyYou: string | null;
   viewerHasHelped: boolean;
   answerCount: number;
+  // The viewer's own ask has an answer from someone else since they last opened it (Today's "Read" line).
+  hasNewAnswers: boolean;
 };
 
 function selectPosts(database: Database) {
@@ -99,6 +101,7 @@ function selectPosts(database: Database) {
       closedAt: ask.closedAt,
       createdAt: ask.createdAt,
       pinnedAt: ask.pinnedAt,
+      answersSeenAt: ask.answersSeenAt,
       targetText: ask.targetText,
       targetCompany: ask.targetCompany,
       targetName: ask.targetName,
@@ -192,6 +195,7 @@ function toPost(row: PostRow, viewerId: string, helpers: PostHelper[], answers: 
     viewerWhyYou: viewerHelper ? describeWhyYou(viewerHelper) : null,
     viewerHasHelped: answers.some(({ isMine: mine, kind }) => mine && kind !== ASK_ANSWER_KINDS.answer),
     answerCount: answers.length,
+    hasNewAnswers: isMine && answers.some(({ isMine: mine, createdAt }) => !mine && (row.answersSeenAt === null || new Date(createdAt) > row.answersSeenAt)),
   };
 }
 
