@@ -64,7 +64,7 @@ Better Auth, Vitest, pnpm. Village is optional (network search, intro paths, pro
   `.ai/features/find-candidates/NOTES.md` (Find candidates on a job: the button, the search, the hiring request),
   `.ai/features/notifications/NOTES.md` (alerts: notify(), devices, quiet hours, the manifest and service worker),
   `.ai/features/mobile-app/NOTES.md` (store app: bridge, code, alerts, rooms),
-  `.ai/features/room-join-notify/NOTES.md` (superseded), `.ai/features/room-start-instant/NOTES.md` (one-tap rooms, Room alerts),
+  `.ai/features/room-join-notify/NOTES.md` (superseded), `.ai/features/room-start-instant/NOTES.md` (one-tap rooms, Room alerts), `.ai/features/room-polish/NOTES.md` (a reload after leaving in the app; who the room cards count),
   `.ai/features/voice-sessions/NOTES.md` (Rooms: voice rooms on LiveKit, roles, the token API, ports, reminder alerts; never recorded),
   `.ai/features/ai-library/NOTES.md` (the portfolio AI library: visibility, the secret scan, votes, the leaderboard),
   `.ai/features/fix-installer/NOTES.md` (install.sh: build failures, swap, first install, DNS), `.ai/features/onboarding-claude-setup/NOTES.md` (setup:instance), `.ai/features/fix-network-page/NOTES.md`, `.ai/features/self-call-http/NOTES.md` (rewrites behind an https tunnel).
