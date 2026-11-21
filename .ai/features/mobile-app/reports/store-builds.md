@@ -23,3 +23,12 @@ screen locked and the Android voice service still wait for the owner's phone tes
 - **Android:** EAS build `5ebc6c79-ba40-4eb6-84ac-948cc0aa70c2` (profile `preview`): FINISHED, an APK:
   https://expo.dev/artifacts/eas/TPMVdOB3W9OE8kQYqKYhyFkkqYrp3sfIIEnwjiLmI-I.apk
 - **Web-preview check:** `build3/README.md`.
+
+## Build 4 (21 Nov 2026, round 7: five tabs with Rooms first, shorter screens, one-tap room start, quiet times)
+- **iOS:** EAS build `d83eb2b4-178d-458a-b4e7-ea446833bcb2` (profile `testflight`, 1.0.0 build 4): FINISHED.
+  EAS submission `c490de1a-ed5b-4cf1-98e2-1f6ec3559c87`. App Store Connect: build 4 `VALID usesNonExemptEncryption=false`,
+  `internalBuildState: IN_BETA_TESTING`, `externalBuildState: READY_FOR_BETA_SUBMISSION` (not submitted: internal only);
+  group "Absi" (internal, all builds).
+- **Android:** EAS build `7a097160-4a7a-4430-b3a6-e1a007ba0471` (profile `preview`): FINISHED, an APK:
+  https://expo.dev/artifacts/eas/9G08Vr2xdQyetVwcG3AF1NVUgTKRwdFUmf_k_S0_xdU.apk
+- **Web-preview check:** `build4/README.md`.
