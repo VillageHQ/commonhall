@@ -22,6 +22,7 @@ option (a), with (b)'s native tab bar held behind a measured gate. The council c
     layout, so it is built after room-start-instant Part 1 merges, or to its spec exactly.
   - `src/app/parts.css`: Part A only (hover rules, the pressed tab). Part C puts its rules in a new `src/app/in-app.css`.
 - Rebase on main before each pull request.
+- Part D was built in round 8 as [ui-polish Part 7](../ui-polish/parts/7-native-tabs.md) (the council, 23 Nov 2026).
 - TestFlight build 4 and an Android test APK carry parts B and C (a later step of the round, not this spec).
 
 ## What it does (after)

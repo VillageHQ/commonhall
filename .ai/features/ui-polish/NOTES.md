@@ -114,3 +114,27 @@ On `:root` in `globals.css`: `--sat`, `--sab` (the only readers of `env(safe-are
 - Members: `LookupQuestionCard` on Today has medium buttons.
 - The install card's ✕ is 16×24 (only its buttons were Part 4's).
 - The web card has no Cancel: Escape folds only an empty box (as the part file says).
+
+## Part 7, the store app's own tab bar (smooth-app Part D)
+
+The spec: [parts/7-native-tabs.md](parts/7-native-tabs.md). All of it is in `mobile/`; the site is unchanged.
+- **`PortalTabs`** (`mobile/src/components/PortalTabs.tsx`) replaces the single `PortalView` in `PortalScreen`. It keeps
+  one `PortalView` per tab, keyed by a view id with a `home` (the tab's own path). Hidden tabs keep their full size
+  under the open one (`opacity: 0`, no touches, hidden from screen readers): a 0×0 view would make the page lay itself out
+  again and lose its scroll. It exposes the same `PortalHandle` as before: `call` and `reload` go to the open tab,
+  `setPushToken` and `roomClosed` to all, and `navigate` opens the tab the path belongs to.
+- **The page's side** is a script string (`buildTabsScript` in `mobile/src/lib/tabs.ts`) injected with the bridge's
+  bootstrap (and run with `eval` in the web preview's iframe; the portal has no script-src policy). It reads the site's
+  member bar (`[data-slot="tab-bar"]` without `/admin` links) after every DOM change (a `MutationObserver`, 40 ms
+  coalesced, sent only when it differs) and hides it with an adopted style sheet (`visibility`, so `display` still says
+  whether the site would show it). It catches taps on links to another tab's own path in the capture phase on `window`,
+  before Next's `Link`. `__commonhallTabs.go(path)` clicks the hidden bar's own link for a client-side move.
+- **A web view can change tab:** when a page moves itself to another tab's own path (a `router.push`, the landing page after
+  sign-in) and that tab has no web view yet, the web view becomes that tab (`home` changes).
+- **Low memory:** an Android phone under 3 GB (`expo-device`'s `totalMemory`) keeps at most 3 tabs alive, dropping the
+  least recently shown; others keep all 5. A tab that fails while hidden is dropped and loads again when opened.
+- **Slide:** one `Animated.Value` for the open tab, started in a layout effect after the tab is drawn (started before it
+  is bound, the web build never moved it).
+- **Memory in the web preview** (desktop Chromium, 390×844, Sam, 23 Nov 2026): one tab 11 MB JS heap, 657 DOM nodes;
+  all five tabs 24 MB, 3,253 nodes. On a phone each web view also costs its renderer's memory; the real numbers on a
+  low-end Android come from store build 5 (Android Studio's profiler).
