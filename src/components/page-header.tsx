@@ -30,12 +30,13 @@ export function PageHeader({ title, description, action, eyebrow, back }: PageHe
   );
 }
 
-// Commonhall's back link (crop button-quiet-back.png): 500 Graphite, Vellum on hover.
+// Commonhall's back link (crop button-quiet-back.png): 500 Graphite, Vellum on hover. On a phone inside the app's
+// shell it moves into the top bar as iOS's back button (src/shell/frame.css); a page with its own header hides it.
 export function BackLink({ href, children }: { href: string; children: ReactNode }) {
   return (
-    <Link href={href} className="fh-back">
+    <Link href={href} data-slot="back-link" className="fh-back">
       <ChevronLeft aria-hidden="true" className="fh-i fh-xs" strokeWidth={1.5} />
-      {children}
+      <span>{children}</span>
     </Link>
   );
 }

@@ -6,13 +6,14 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { ASK_API_ROUTES } from "@/modules/asks/contract";
 import { introsManifest } from "@/modules/intros/manifest";
+import { SOURCE_CODE_URL } from "@/components/source-code-link";
 import { API_ROUTES, ROUTES } from "@/platform/http/routes";
 
 import { buildShellNavigation } from "./navigation";
 import { readSettingsLinks } from "./settings-links";
 import { FounderViewStrip, MenuTabOutlines, SidebarNavigation, TabBar } from "./navigation-links";
 import { endPress, PressEnd, PRESSED_TIMEOUT_MS } from "./pressed-tab";
-import { PhoneAccountButton } from "./user-menu";
+import { PhoneAccountButton, SidebarMember } from "./user-menu";
 
 const location = vi.hoisted(() => ({ pathname: "/" }));
 
@@ -111,6 +112,45 @@ describe("the phone tab bar", () => {
     expect(people.getAttribute("aria-current")).toBeNull();
     expect(within(bar).getByRole("link", { name: /Today/ }).getAttribute("aria-current")).toBe("page");
     expect(bar.getAttribute("data-pressing")).toBe("true");
+  });
+
+  it("puts the bar's one indicator on the current tab and moves it to a pressed tab until the press ends", () => {
+    location.pathname = ROUTES.today;
+    renderShellPart(TabBar);
+    const bar = screen.getByRole("navigation", { name: "Sections" });
+    const indicator = bar.querySelector<HTMLElement>('[data-slot="tab-indicator"]');
+
+    expect(bar.querySelectorAll('[data-slot="tab-indicator"]')).toHaveLength(1);
+    expect(bar.style.getPropertyValue("--tab-n")).toBe("5");
+    expect(indicator?.style.getPropertyValue("--tab-i")).toBe("1");
+    expect(indicator?.hasAttribute("data-off")).toBe(false);
+
+    fireEvent.pointerDown(within(bar).getByRole("link", { name: /People/ }), { button: 0 });
+    expect(bar.style.getPropertyValue("--tab-press-i")).toBe("3");
+
+    act(() => endPress());
+    expect(bar.style.getPropertyValue("--tab-press-i")).toBe("");
+  });
+
+  it("hides the indicator where no tab is current", () => {
+    location.pathname = ROUTES.editCard;
+    renderShellPart(TabBar);
+
+    expect(screen.getByRole("navigation", { name: "Sections" }).querySelector('[data-slot="tab-indicator"]')?.hasAttribute("data-off")).toBe(true);
+  });
+
+  it("takes the shown tab back to the top instead of loading it again", () => {
+    location.pathname = ROUTES.today;
+    window.history.replaceState(null, "", ROUTES.today);
+    const scrollTo = vi.fn();
+    vi.stubGlobal("scrollTo", scrollTo);
+    renderShellPart(TabBar);
+    const today = within(screen.getByRole("navigation", { name: "Sections" })).getByRole("link", { name: /Today/ });
+
+    const isNotPrevented = fireEvent.click(today, { button: 0 });
+
+    expect(isNotPrevented).toBe(false);
+    expect(scrollTo).toHaveBeenCalledWith({ top: 0, behavior: "smooth" });
   });
 
   it("shows the tapped tab's outline in place of the page until the new page comes, and only after a tap", () => {
@@ -296,24 +336,39 @@ describe("the Settings list", () => {
 
 describe("the avatar menu", () => {
   const MAYA = { id: "maya", name: "Maya Ortiz", email: "maya@example.com", image: null, isAdmin: true };
+  const MEMBER_VIEW_ITEMS = [
+    ...["My card", "Privacy", "Alerts", "Email", "Booking link", "Your network", "Our jobs", "Your data", "How you sign in"],
+    ...["Jobs", "Perks", "Library", "Feed", "Admin console", "Dark mode", "Sign out"],
+  ];
 
+  // From 1000 px: the dropdown under the member's name at the sidebar's foot.
   async function openMenu(pathname: string) {
     location.pathname = pathname;
     stubCounts(0);
-    renderWithClient(createElement(PhoneAccountButton, { member: MAYA, navigation: buildShellNavigation(undefined, true) }));
-    const trigger = screen.getByRole("button", { name: "Your menu" });
-    fireEvent.keyDown(trigger, { key: "ArrowDown" });
+    renderWithClient(createElement(SidebarMember, { member: MAYA, navigation: buildShellNavigation(undefined, true) }));
+    fireEvent.keyDown(screen.getByRole("button", { name: "Your menu: Maya Ortiz" }), { key: "ArrowDown" });
     return screen.findByRole("menu");
+  }
+
+  // On a phone: the sheet the top bar's avatar opens.
+  async function openSheet(pathname: string) {
+    location.pathname = pathname;
+    stubCounts(0);
+    vi.stubGlobal("matchMedia", () => ({ matches: false, addEventListener: () => {}, removeEventListener: () => {} }));
+    renderWithClient(createElement(PhoneAccountButton, { member: MAYA, navigation: buildShellNavigation(undefined, true) }));
+    fireEvent.click(screen.getByRole("button", { name: "Your menu" }));
+    return screen.findByRole("dialog", { name: "Maya Ortiz" });
+  }
+
+  function readSheetRows(sheet: HTMLElement) {
+    return Array.from(sheet.querySelectorAll(".fh-menu-row"), (row) => row.textContent?.replace(/(On|Off)$/, ""));
   }
 
   it("holds the Settings list, More, the console, Dark mode and Sign out", async () => {
     const menu = await openMenu(ROUTES.today);
     const items = Array.from(menu.querySelectorAll("[role^='menuitem']"), (item) => item).map((item) => item.textContent?.replace(/(On|Off)$/, ""));
 
-    expect(items).toEqual([
-      ...["My card", "Privacy", "Alerts", "Email", "Booking link", "Your network", "Our jobs", "Your data", "How you sign in"],
-      ...["Jobs", "Perks", "Library", "Feed", "Admin console", "Dark mode", "Sign out"],
-    ]);
+    expect(items).toEqual(MEMBER_VIEW_ITEMS);
     expect(within(menu).getByText("Settings")).toBeTruthy();
     expect(within(menu).getByText("More")).toBeTruthy();
     expect(within(menu).getByRole("menuitem", { name: "Alerts" }).getAttribute("href")).toBe(ROUTES.alerts);
@@ -326,5 +381,32 @@ describe("the avatar menu", () => {
     expect(within(menu).queryByRole("menuitem", { name: "Admin console" })).toBeNull();
     expect(within(menu).queryByRole("menuitem", { name: "Perks" })).toBeNull();
     expect(within(menu).getByRole("menuitem", { name: "Report" }).getAttribute("href")).toBe(ROUTES.adminReport);
+  });
+
+  it("is a sheet on a phone with the dropdown's items in the same order, then the source code row last", async () => {
+    const sheet = await openSheet(ROUTES.today);
+
+    expect(readSheetRows(sheet)).toEqual([...MEMBER_VIEW_ITEMS, "Source code (AGPL-3.0)"]);
+    expect(within(sheet).getByRole("heading", { name: "Settings" })).toBeTruthy();
+    expect(within(sheet).getByRole("heading", { name: "More" })).toBeTruthy();
+    expect(within(sheet).getByRole("link", { name: "Alerts" }).getAttribute("href")).toBe(ROUTES.alerts);
+    expect(within(sheet).getByRole("link", { name: /Source code/ }).getAttribute("href")).toBe(SOURCE_CODE_URL);
+    expect(within(sheet).getByRole("switch", { name: /Dark mode/ }).getAttribute("aria-checked")).toBe("false");
+  });
+
+  it("keeps the console's items in the phone sheet, with the founder view, then the source code row", async () => {
+    const sheet = await openSheet(ROUTES.adminMembers);
+    const rows = readSheetRows(sheet);
+
+    expect(rows).toContain("Report");
+    expect(rows).not.toContain("Perks");
+    expect(rows.slice(-4)).toEqual(["See it as a founder", "Dark mode", "Sign out", "Source code (AGPL-3.0)"]);
+  });
+
+  it("closes the sheet when a row is followed", async () => {
+    const sheet = await openSheet(ROUTES.today);
+    fireEvent.click(within(sheet).getByRole("link", { name: "Alerts" }));
+
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
   });
 });

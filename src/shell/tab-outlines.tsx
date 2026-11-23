@@ -223,21 +223,38 @@ function AdminIntroLogOutline() {
   );
 }
 
-// Members: the area's tabs, the filters, the search, then the table's rows.
+const MEMBER_ROWS = [0, 1, 2, 3, 4];
+
+// Members: the area's tabs (they wrap), the state filters (they scroll), the search, then the members: a face, the
+// name over the email, and the state over the joining date at the end.
 function AdminMembersOutline() {
   return (
     <PageOutline title="Members">
-      <OutlineChips widths={[96, 76, 70, 112, 56]} className="mb-5" isWrapped />
-      <OutlineChips widths={[62, 88, 86, 112]} className="" />
+      <OutlineChips widths={[84, 66, 70, 104, 56]} className="mb-5" isWrapped />
+      <OutlineChips widths={[64, 84, 80, 118]} className="" />
       <OutlineBox height={44} className="mt-3.5 mb-1.5" />
-      <OutlineRows count={5} hasEnd />
+      <div aria-hidden="true" className="fh-rows">
+        {MEMBER_ROWS.map((index) => (
+          <div key={index} className="fh-r">
+            <OutlineCircle size={36} />
+            <div className="grid gap-2 py-0.5">
+              <OutlineLine width={`${52 - (index % 3) * 8}%`} height={15} />
+              <OutlineLine width={`${76 - (index % 2) * 12}%`} height={11} />
+            </div>
+            <div className="grid justify-items-end gap-2.5">
+              <OutlineBox width={84} height={24} />
+              <OutlineLine width={66} height={11} />
+            </div>
+          </div>
+        ))}
+      </div>
     </PageOutline>
   );
 }
 
-const FIELD_CHIPS = [92, 92, 92, 108];
+const FIELD_CHIPS = [88, 92, 92, 104];
 
-// Announce: the area's tabs, then the composer (subject, message, who gets it).
+// Announce: the area's tabs, then the composer: subject, message, the name fields, who gets it, the count and Send.
 function AdminAnnounceOutline() {
   return (
     <PageOutline title="Announce">
@@ -246,20 +263,24 @@ function AdminAnnounceOutline() {
         <OutlineLine width={62} height={13} />
         <OutlineBox height={44} className="mt-2.5" />
         <OutlineLine width={72} height={13} className="mt-5" />
-        <OutlineBox height={220} className="mt-2.5" />
+        <OutlineBox height={110} className="mt-2.5" />
         <div className="mt-3 flex flex-wrap gap-2">
           {FIELD_CHIPS.map((width, index) => (
-            <OutlineBox key={index} width={width} height={34} />
+            <OutlineBox key={index} width={width} height={32} />
           ))}
         </div>
         <OutlineLine width={92} height={13} className="mt-6" />
-        <OutlineBox height={38} className="mt-2.5" />
+        <OutlineBox height={72} className="mt-2.5" />
+        <OutlineLine width="84%" height={11} className="mt-3" />
+        <OutlineBox width={204} height={40} className="mt-3" />
       </OutlineSheet>
     </PageOutline>
   );
 }
 
-// Set up: the branding form (name, logo, colour), then the save button.
+const COLOUR_SWATCHES = [0, 1, 2, 3, 4, 5, 6];
+
+// Set up: the branding form (name, logo, colour and its swatches, the preview), then the save button.
 function AdminSetupOutline() {
   return (
     <PageOutline title="Set up">
@@ -268,13 +289,25 @@ function AdminSetupOutline() {
         <OutlineLine width={136} height={13} className="mt-6" />
         <OutlineBox height={44} className="mt-2.5" />
         <OutlineLine width={70} height={13} className="mt-6" />
-        <OutlineBox width={138} height={36} className="mt-2.5" />
+        <OutlineBox width={138} height={32} className="mt-2.5" />
+        <OutlineLine width={120} height={11} className="mt-2.5" />
         <OutlineLine width={96} height={13} className="mt-6" />
         <div className="mt-2.5 flex gap-2">
           <OutlineBox width={44} height={44} />
           <OutlineBox height={44} className="flex-1" />
         </div>
-        <OutlineLine width="80%" height={28} className="mt-3" />
+        <div aria-hidden="true" className="mt-2 flex gap-2">
+          {COLOUR_SWATCHES.map((index) => (
+            <OutlineCircle key={index} size={28} />
+          ))}
+        </div>
+        <div aria-hidden="true" className="mt-7 flex items-center justify-between">
+          <OutlineLine width={60} height={13} />
+          <div className="grid justify-items-end gap-2">
+            <OutlineBox width={30} height={30} />
+            <OutlineLine width={136} height={13} />
+          </div>
+        </div>
       </OutlineSheet>
       <OutlineBox width={127} height={40} className="mt-2.5" />
     </PageOutline>

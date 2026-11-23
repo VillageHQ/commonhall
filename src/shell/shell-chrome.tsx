@@ -22,8 +22,8 @@ export function ShellFooterLine({ isAdmin, pathname }: { isAdmin: boolean; pathn
   return useShellMode(isAdmin, pathname) === SHELL_MODES.console ? <ProductCredit /> : <SourceLine />;
 }
 
-// The foot of every page on a phone (crop footer-phone.png): the footer line. Sign out and every page the five tabs
-// don't hold sit in the avatar menu (round 6), so the foot lists no links of its own.
+// The old foot of a phone page (crop footer-phone.png), kept for the parts page only: since round 8 (ui-polish Part 2)
+// phones show no footer, and the source link is the avatar menu sheet's last row.
 export function PhoneFoot({ isAdmin, pathname }: { isAdmin: boolean; pathname?: string }) {
   return (
     <div data-slot="phone-foot" className="fh-phone-foot">
