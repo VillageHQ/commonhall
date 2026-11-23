@@ -58,9 +58,10 @@
 .vr-iconbtn-round{border:1px solid var(--rule);border-radius:50%;background:var(--leaf)}
 .vr-iconbtn-round[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
 
-/* On a phone the header replaces the community's bar: it sits under the status bar, across the screen. */
+/* On a phone the header replaces the community's bar: it sits under the status bar, across the screen (the page area
+   pads 16 px on top and at the sides, frame.css). */
 @media (max-width:999.98px){
-  .vr-header{position:sticky;top:0;z-index:40;min-height:calc(52px + var(--sat));margin:-20px -16px 4px;padding:var(--sat) 6px 0 4px;background:var(--paper)}
+  .vr-header{position:sticky;top:0;z-index:40;min-height:calc(52px + var(--sat));margin:-16px -16px 4px;padding:var(--sat) 6px 0 4px;background:var(--paper)}
   .vr-header-end{margin-right:0}
 }
 
