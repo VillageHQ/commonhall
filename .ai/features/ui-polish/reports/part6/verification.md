@@ -6,7 +6,8 @@ preview. Demo people only: Sam Lee (member), Maya Ortiz (admin, host). Chromium 
 1x, viewport-sized. Scripts: `.ai/tmp/verify-p6/` (not committed).
 
 **Overall, first pass: FAIL** (three defects). **Re-check after the repairs (commit 612b2206): PASS. Re-check after
-the rebase onto Part 7's native tab bar (head 67a8e68c): PASS.** All three
+the rebase onto Part 7's native tab bar (head 67a8e68c): PASS. Re-check after Part 2 (head 982ce3e1): PASS (its one
+new minor defect, demo mode in the store app, fixed and re-checked).** All three
 defects and the smaller ones I re-tested are fixed, and nothing new broke. The parts that need a real phone or Part 3
 are still NOT RUN. The rows below are the first pass; "Re-check" at the end replaces rows 1, 8 and 10 and defects 1–5
 and 7.
@@ -119,6 +120,50 @@ Notes:
   one. I didn't re-run 360 and 300 in the app.
 - Inside each tab's page, the site's own tab bar still has `display:grid` under the native bar. The native bar covers it
   exactly (788–844), so nothing shows twice. Whether it should be hidden is Part 7's call.
+
+## Re-check after Part 2 (head 982ce3e1)
+
+Main now has Part 2: the frame, the menu sheet, no phone footer, the demo band under the top bar, and 16 px of top
+padding on the page area. `.next` was rebuilt and `mobile/dist-web` is current. I ran it in the foreground and stopped
+every server and browser. Scripts: `.ai/tmp/verify-p6/recheck3-web.mjs` and `recheck3-app.mjs`.
+
+| Item | Result | Measured | Pictures |
+|---|---|---|---|
+| Check 10, the outline | PASS (an exact match) | Rooms tapped from Today, 390, with the page held back. Outline against the page: title (16,125) 82×34 on both, the line under it (16,166) 358×26 on both, "Live now" (16,212) 358×18 on both, first card (16,238) 358×132 on both, and the rows inside the card at 255 / 281 / 313 on both. Only the button's width differs (112 against 106), with both right edges at 374. I can't reproduce Part 2's "about 34 px" note on this head. 34 px is the demo band's height on wide screens, so the note was probably taken against the old page or with the band in the way. | after-rooms-outline-390 |
+| The web room at 390 | PASS | Plain browser: the demo band is at 0–52 and the room's header at 52–104, so no gap, no overlap and no 4 px overshoot. Rooms 83×44, Leave 64×44, More 44×44. Title at y 112, the line under it at 144, bar 88 px at 756, 4 columns, no tab bar, no community bar, no footer. These are the same numbers as before. With --sat 47 / --sab 34: header 52–151 (99 px), its row at 103, bar 722–810. On a short screen, scrolled, the header stays at y 0 (row at 4 plain, at 51 with --sat 47). There is no `.fh-back` or other "Back" control on the room page, in a plain browser or in the app. | after-room-390, after-room-390-insets |
+| In the app, the room page under the sheet | PASS, except the defect below | With html[data-app] and insets 0: band 0–52, header 52–104, and no stray back button from Part 2's rules. | after-app-mini-roompage-390 |
+| Check 1, quick | PASS | 390: Start a room 106×36 on the title's row, card 358×132 with an 8 px radius, a 17 px/600 title, faces 40/28/28/28, Join 54×36, Room alerts the last row, no footer, no sideways scroll. Tapping a face joins. 1280: 2 cards in 2 columns, 464 px each. | after-rooms-390, after-rooms-1280 |
+| Checks 5 and 8, quick (web preview) | PASS | On Today the mini bar is at 732–788 and the native tab bar at 788–844, so there is no gap. The main control and Leave are 44×44. The avatar menu is now a Sheet: while it is open, html[data-sheet-open] is set and both the mini bar and the native tab bar hide. After Escape, or a tap outside, both come back. Leave from the bar removes it. | after-app-mini-today-390, after-app-mini-menu-390 |
+| Tests | PASS | `pnpm lint` (0 errors, the same old warning), `pnpm typecheck`, and the voice + shell + architecture tests (33 files, 818 tests). |
+
+**New minor defect (demo mode, store app only): a status-bar-sized gap above the room's header.**
+1. Run the store app's web preview in demo mode.
+2. Join a room and minimise it, so the room page shows under the sheet.
+3. On the page's `<html>`, set `--sat: 47px; --sab: 34px` to stand in for a phone's status bar.
+
+Result: the demo band grows to 0–99 because, for an own-header page in the app, it already pads `8px + var(--sat)`. The
+room's header then sits at 99–198 and adds `var(--sat)` again, so its row starts at y 150. That leaves a 47 px blank
+strip between the band and "‹ Rooms" (after-app-roompage-sat47-390). Expected: the header's row sits right under the
+band. It still needs the status-bar padding once it sticks at the top after the band has scrolled away.
+
+The plain browser isn't affected (no band padding there), and neither is a community outside demo mode (no band). One
+possible fix: when the band is present in the app, drop the header's `--sat` padding while it isn't stuck. Another:
+let the band stop carrying `--sat` on own-header pages and let the header carry it, with the band inside the header's
+sticky area or the header's sticky top set to the band's foot.
+
+**Re-check of that defect, with the fix** (voice.css, under 1000 px:
+`html[data-app]:has(.fh-app .fh-demo-bar) .vr-header{min-height:52px;padding-top:0}`; `.next` rebuilt): **PASS.**
+I re-ran the same steps in the web preview: room page after minimising, with --sat 47px on html.
+- 390×844: band 0–99, header 99–151, the "‹ Rooms" row at 103–147, More 44×44 at 103–147, title at 159. The strip is
+  gone. With insets 0: band 0–52, header 52–104, row at 56–100.
+- 300×570: the same, band 0–99, header 99–151, row at 103–147.
+- In the app the room page doesn't scroll at 390×844 or 300×570 (scrollHeight minus the window height is 0), so the
+  header never sticks under the status bar without its padding. In the app this page has no Leave in its header (Leave
+  is on the sheet and the mini bar), so only More is measured.
+- Plain browser at 390 (no data-app), unchanged: band 0–52, header 52–104 (padding 0), Rooms 83×44, Leave 64×44, More
+  44×44, all at 56–100, title at 112, bar at 756–844. With --sat 47: header 52–151 (99 px, padding 47), row at
+  103–147, bar at 722–810. Scrolled on a short screen, the header is stuck at 0–99 with its row at 51–95.
+- after-app-roompage-sat47-390.png was replaced and now shows the row right under the band.
 
 ## Undo after 4 s instead of 2.5 s
 4 s (about 4.5 s measured) is the right call. With a 44 px Undo target, 2.5 s is too short to read the line and reach
