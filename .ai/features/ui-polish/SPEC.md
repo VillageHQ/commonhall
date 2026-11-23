@@ -177,3 +177,16 @@ checks its verifier runs. A builder reads this page and its own part file.
 - **Pictures:** a before / reference / after picture per screen in the part's `reports/`, the after pictures taken by the
   verifier, who did not build the part. The data is the demo's seed as Sam (member) and Maya (admin), so outlines and
   pictures compare like with like.
+
+## Decisions (council pass, 23 Nov 2026 — Rams, Torvalds, Watts, 3 of 3 unless noted)
+1. **Tab switch: build the native tab bar NOW** (smooth-app SPEC Part D: a native tab bar, one web view per tab kept
+   alive, shared sign-in cookies; native slide). In the store app the site's own tab bar is hidden. On the web, keep the
+   site's tab bar (a short CSS slide is fine there). Test memory on a low-end Android in the web preview / APK notes.
+2. Inbox conversations: **flat LinkedIn-style rows**, not bubbles.
+3. Raise hand: **one tap + a confirmation line with Undo**, no confirm sheet.
+4. Mini player: **X Spaces' docked 56 px bar** above the tab bar.
+5. Button sizes 44/36 px in the **member app**; the admin console keeps its denser rows (2 of 3).
+6. Store app: ship **the site's own icon SVGs and font file** (no big icon package) so the room screen matches.
+7. Phone header: keep the community bar on every tab; pushed screens get a back button.
+8. Posting on a phone: **full-screen composer sheet** (Cancel / Post at the top).
+9. Source code link on phones: the menu's last row (Qareen's call: it stays offered to every user, as AGPL needs).
