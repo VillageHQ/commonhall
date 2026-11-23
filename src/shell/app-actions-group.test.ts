@@ -7,7 +7,7 @@ import { NATIVE_APP_READY_EVENT } from "@/platform/native-app/bridge";
 import { ROUTES } from "@/platform/http/routes";
 
 import { buildShellNavigation } from "./navigation";
-import { PhoneAccountButton } from "./user-menu";
+import { PhoneAccountButton, SidebarMember } from "./user-menu";
 
 vi.mock("next/navigation", () => ({ usePathname: () => ROUTES.today }));
 
@@ -23,10 +23,19 @@ function putAppInPage({ appActions }: { appActions: boolean }) {
   return appAction;
 }
 
+// The dropdown (from 1000 px, the sidebar's foot); the phone's sheet draws the same group.
 async function openMenu() {
-  render(createElement(PhoneAccountButton, { member: MAYA, navigation: buildShellNavigation(undefined, false) }));
-  fireEvent.keyDown(screen.getByRole("button", { name: "Your menu" }), { key: "ArrowDown" });
+  render(createElement(SidebarMember, { member: MAYA, navigation: buildShellNavigation(undefined, false) }));
+  fireEvent.keyDown(screen.getByRole("button", { name: "Your menu: Maya Ortiz" }), { key: "ArrowDown" });
   return screen.findByRole("menu");
+}
+
+// A phone's width: the Sheet reads it (jsdom has no matchMedia).
+async function openSheet() {
+  vi.stubGlobal("matchMedia", () => ({ matches: false, addEventListener: () => {}, removeEventListener: () => {} }));
+  render(createElement(PhoneAccountButton, { member: MAYA, navigation: buildShellNavigation(undefined, false) }));
+  fireEvent.click(screen.getByRole("button", { name: "Your menu" }));
+  return screen.findByRole("dialog", { name: "Maya Ortiz" });
 }
 
 function readItems(menu: HTMLElement) {
@@ -35,6 +44,7 @@ function readItems(menu: HTMLElement) {
 
 afterEach(() => {
   cleanup();
+  vi.unstubAllGlobals();
   delete (window as TestWindow).CommonhallApp;
 });
 
@@ -82,5 +92,16 @@ describe("the avatar menu's This app group", () => {
       window.dispatchEvent(new Event(NATIVE_APP_READY_EVENT));
     });
     expect(within(menu).getByRole("menuitem", { name: "Reload" })).toBeTruthy();
+  });
+
+  it("draws the same group in the phone's sheet, before Dark mode, and a row asks the app", async () => {
+    const appAction = putAppInPage({ appActions: true });
+    const sheet = await openSheet();
+    const rows = Array.from(sheet.querySelectorAll(".fh-menu-row"), (row) => row.textContent?.replace(/(On|Off)$/, ""));
+    const first = rows.indexOf("Reload");
+    expect(within(sheet).getByRole("heading", { name: "This app" })).toBeTruthy();
+    expect(rows.slice(first, first + APP_ITEMS.length + 2)).toEqual([...APP_ITEMS, "Dark mode", "Sign out"]);
+    fireEvent.click(within(sheet).getByRole("button", { name: "Reload" }));
+    expect(appAction).toHaveBeenCalledWith("reload");
   });
 });

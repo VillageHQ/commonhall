@@ -18,6 +18,39 @@ export const PRESSED_TIMEOUT_MS = 5000;
 
 const PENDING_TAB_ATTRIBUTE = "data-pending-tab";
 
+// The tab switch on a phone (ui-polish Part 2): the next page (its outline first) comes in this far from the tapped
+// tab's side while it fades in. The web and reduced motion get no slide.
+export const TAB_SLIDE = { distancePx: 40, durationMs: 220, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" } as const;
+const PHONE_QUERY = "(max-width: 999.98px)";
+const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
+// The bar's indicator follows a pressed tab through this variable (frame.css, .fh-tab-ind).
+const PRESS_INDEX_PROPERTY = "--tab-press-i";
+
+function matches(query: string) {
+  return typeof window.matchMedia === "function" && window.matchMedia(query).matches;
+}
+
+// The page area, which holds the page and the tapped tab's outline (app-shell.tsx); it stays across pages, so a slide
+// that is still running when the page lands finishes on the page.
+function readPageArea() {
+  return document.querySelector<HTMLElement>('[data-slot="page-width"]');
+}
+
+// Slides the page area in from the tapped tab's side: a tab to the right of the current one comes from the right.
+function slideIn(link: HTMLElement) {
+  const bar = link.closest<HTMLElement>('[data-slot="tab-bar"]');
+  const area = readPageArea();
+  if (!bar || !area || typeof area.animate !== "function" || !matches(PHONE_QUERY) || matches(REDUCED_MOTION_QUERY)) return;
+  const links = Array.from(bar.querySelectorAll<HTMLElement>("a[data-index]"));
+  const from = links.findIndex((item) => item.getAttribute("aria-current") === "page");
+  const side = from === -1 || links.indexOf(link) > from ? 1 : -1;
+  for (const animation of area.getAnimations()) animation.cancel();
+  area.animate([{ transform: `translateX(${side * TAB_SLIDE.distancePx}px)`, opacity: 0 }, { transform: "translateX(0)", opacity: 1 }], {
+    duration: TAB_SLIDE.durationMs,
+    easing: TAB_SLIDE.easing,
+  });
+}
+
 let pressedLink: HTMLElement | null = null;
 let timer: ReturnType<typeof setTimeout> | undefined;
 
@@ -29,9 +62,10 @@ export function endPress() {
   pressedLink = null;
   // Wherever they are: switching between the member and console views swaps the menu's links, so the pressed one may
   // be gone while its menu is still on the page.
-  for (const element of document.querySelectorAll("[data-pressed], [data-pressing]")) {
+  for (const element of document.querySelectorAll<HTMLElement>("[data-pressed], [data-pressing]")) {
     element.removeAttribute("data-pressed");
     element.removeAttribute("data-pressing");
+    element.style.removeProperty(PRESS_INDEX_PROPERTY);
   }
   document.documentElement.removeAttribute(PENDING_TAB_ATTRIBUTE);
 }
@@ -47,10 +81,13 @@ export function pressTab(link: HTMLElement, href: string, isTapped: boolean) {
   if (pressedLink !== link) endPress();
   pressedLink = link;
   link.dataset.pressed = "true";
-  link.closest("nav")?.setAttribute("data-pressing", "true");
+  const menu = link.closest<HTMLElement>("nav");
+  menu?.setAttribute("data-pressing", "true");
+  if (link.dataset.index !== undefined) menu?.style.setProperty(PRESS_INDEX_PROPERTY, link.dataset.index);
   if (isTapped && hasTabOutline(target)) {
     document.documentElement.setAttribute(PENDING_TAB_ATTRIBUTE, target);
     window.scrollTo(0, 0);
+    slideIn(link);
   }
   clearTimeout(timer);
   timer = setTimeout(endPress, PRESSED_TIMEOUT_MS);
@@ -60,6 +97,15 @@ function hasModifier(event: { metaKey: boolean; ctrlKey: boolean; shiftKey: bool
   return event.metaKey || event.ctrlKey || event.shiftKey || event.altKey;
 }
 
+// Tapping the tab already shown takes its page back to the top, smoothly, without loading it again.
+function isShown(href: string) {
+  return href === window.location.pathname + window.location.search;
+}
+
+function scrollToTop() {
+  window.scrollTo({ top: 0, behavior: matches(REDUCED_MOTION_QUERY) ? "auto" : "smooth" });
+}
+
 // The handlers a tab-bar or sidebar link spreads. A ⌘- or Ctrl-click opens a new tab and leaves this page as it is.
 export function readPressHandlers(href: string) {
   return {
@@ -67,7 +113,15 @@ export function readPressHandlers(href: string) {
       if (event.button === 0 && !hasModifier(event)) pressTab(event.currentTarget, href, false);
     },
     onPointerCancel: endPress,
-    onClick: (event: MouseEvent<HTMLAnchorElement>) => (event.button === 0 && !hasModifier(event) ? pressTab(event.currentTarget, href, true) : endPress()),
+    onClick: (event: MouseEvent<HTMLAnchorElement>) => {
+      if (event.button !== 0 || hasModifier(event)) return endPress();
+      if (isShown(href)) {
+        event.preventDefault();
+        endPress();
+        return scrollToTop();
+      }
+      pressTab(event.currentTarget, href, true);
+    },
   };
 }
 

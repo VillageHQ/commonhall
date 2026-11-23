@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Eye } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { ComponentProps } from "react";
+import type { ComponentProps, CSSProperties, ReactNode } from "react";
 
 import { askCountsQuery } from "@/modules/asks/queries";
 import { introCountsQuery } from "@/modules/intros/queries";
@@ -29,6 +29,7 @@ import {
   type ShellNavigationItem,
 } from "./navigation-rules";
 import { readPressHandlers, TabOutlines } from "./pressed-tab";
+import { toPathname } from "./tab-outlines";
 
 // A plain link where the page needs a full load (its own security headers), the app's link elsewhere.
 function NavigationLink({ isFullPageLoad, ...linkProps }: ComponentProps<typeof Link> & { href: string; isFullPageLoad?: boolean }) {
@@ -85,7 +86,8 @@ export function NavigationBadge({ count, description }: NavigationBadgeProps) {
   );
 }
 
-const LIVE_DOT_PLACES = { sidebar: "ml-auto", tab: "absolute top-[10px] left-[calc(50%+8px)]" } as const;
+// On a tab the dot takes the count's place (frame.css, .fh-tab-dot).
+const LIVE_DOT_PLACES = { sidebar: "ml-auto", tab: "fh-tab-dot" } as const;
 
 // The Rooms item's dot while a room is live: a dot in the ribbon colour (Rooms' own live dot), not a number.
 function LiveDot({ count, place }: { count: number | undefined; place: keyof typeof LIVE_DOT_PLACES }) {
@@ -156,35 +158,57 @@ function orderTabs(tabs: readonly ShellNavigationItem[], mode: ShellMode) {
   return [...tabs].sort((first, second) => CONSOLE_TAB_ORDER.indexOf(first.key) - CONSOLE_TAB_ORDER.indexOf(second.key));
 }
 
-// The phone's bottom bar (crops shell-tabbar-member-phone.png, shell-tabbar-admin-phone.png): equal columns, an icon
-// over an 11 px label; the current tab takes the fund colour and a 2 px bar on its top edge. Five at most: the
-// switch between the console and the founder view lives in the avatar menu.
+// The phone's bottom bar (ui-polish Part 2): equal columns, a 24 px icon over an 11 px label; the current tab is ink,
+// and one 3×28 px indicator on the bar's top edge sits over it and slides to a pressed tab (frame.css). Five at most for
+// a member: the switch between the console and the founder view lives in the avatar menu.
 export function TabBar({ navigation, isAdmin, badges, pathname }: ShellNavigationProps) {
   const { mode, items, currentTabKey } = useCurrentItems({ navigation, isAdmin, pathname });
   const tabs = orderTabs(items.filter((item) => item.tabLabel), mode);
   const liveBadges = useLiveBadges(tabs, badges);
+  const currentIndex = tabs.findIndex((item) => item.key === currentTabKey);
   return (
     <nav
       aria-label="Sections"
       data-slot="tab-bar"
       data-count={tabs.length}
       className="fh-tabbar"
-      style={{ gridTemplateColumns: `repeat(${tabs.length}, 1fr)` }}
+      style={{ gridTemplateColumns: `repeat(${tabs.length}, 1fr)`, "--tab-n": tabs.length } as CSSProperties}
     >
-      {tabs.map((item) => (
+      {tabs.map((item, index) => (
         <NavigationLink
           key={item.key}
           href={item.href}
           isFullPageLoad={item.isFullPageLoad}
           aria-current={item.key === currentTabKey ? "page" : undefined}
+          data-index={index}
           {...(item.isFullPageLoad ? {} : readPressHandlers(item.href))}
         >
           {item.icon}
-          <span>{item.tabLabel}</span>
+          <span className="fh-tab-label">{item.tabLabel}</span>
           <ItemBadge item={item} badges={liveBadges} place="tab" />
         </NavigationLink>
       ))}
+      <span
+        aria-hidden="true"
+        data-slot="tab-indicator"
+        className="fh-tab-ind"
+        data-off={currentIndex < 0 ? "" : undefined}
+        style={{ "--tab-i": Math.max(currentIndex, 0) } as CSSProperties}
+      />
     </nav>
+  );
+}
+
+// The shell's outer box, marked with the view (`data-mode`: member or console) and, on a member tab's own page,
+// `data-tab-root`: from 1000 px every member tab shares one content width (frame.css).
+export function ShellFrame({ navigation, isAdmin, children }: { navigation: ShellNavigation; isAdmin: boolean; children: ReactNode }) {
+  const pathname = usePathname();
+  const mode = readShellMode(pathname, isAdmin);
+  const isTabRoot = mode === SHELL_MODES.member && navigation.member.some((item) => item.tabLabel && toPathname(item.href) === pathname);
+  return (
+    <div data-slot="app-shell" data-mode={mode} data-tab-root={isTabRoot ? "" : undefined} className="fh-app">
+      {children}
+    </div>
   );
 }
 

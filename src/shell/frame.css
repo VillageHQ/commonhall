@@ -1,0 +1,376 @@
+/* The frame (ui-polish Part 2, round 8): the tab bar, the tab switch, the phone's top bar and back button, the menu
+   sheet, no footer on phones, the web's one content width, and the demo band's place. parts.css is generated, so
+   these rules override it; Part 1's variables (--tab-h, --tab-total, --sab, --sat, --topbar-h, --ease-out,
+   --dur-move) live in globals.css. Loaded by src/app/layout.tsx after globals.css and in-app.css. */
+
+/* ── The tab bar (under 1000 px): Airbnb's and Instagram's bar, Facebook's line on the top edge ── */
+@media (max-width: 999.98px) {
+  /* 56 px visible plus the home indicator's inset; with large text it grows instead of clipping. */
+  .fh-tabbar {
+    height: auto;
+    min-height: var(--tab-total);
+    align-items: stretch;
+  }
+
+  /* Under the 1 px top border: the icon 9 px down, 24 px, then 3 px, then the 13 px label line: 1 + 9 + 24 + 3 + 13 +
+     6 = 56. */
+  .fh-tabbar > a {
+    justify-content: flex-start;
+    gap: 3px;
+    min-width: 0;
+    min-height: calc(var(--tab-h) - 1px);
+    padding: 9px 2px 6px;
+    color: var(--graphite);
+    font: 500 11px/13px var(--sans);
+  }
+
+  .fh-tabbar > a svg {
+    width: 24px;
+    height: 24px;
+    stroke-width: 1.5;
+  }
+
+  .fh-tabbar .fh-tab-label {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* The current tab (or the one under the finger): ink, a 600 label, a 2 px stroke. No per-tab marker: the bar's one
+     indicator below. */
+  .fh-tabbar > a[aria-current="page"],
+  .fh-tabbar > a[data-pressed="true"] {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  .fh-tabbar > a[aria-current="page"] svg,
+  .fh-tabbar > a[data-pressed="true"] svg {
+    stroke-width: 2;
+  }
+
+  .fh-tabbar > a::before,
+  .fh-tabbar > a[aria-current="page"]::before,
+  .fh-tabbar > a[data-pressed="true"]::before {
+    content: none;
+  }
+
+  /* While another tab is pressed the current one lets go. */
+  .fh-tabbar[data-pressing] > a[aria-current="page"]:not([data-pressed="true"]) {
+    color: var(--graphite);
+    font-weight: 500;
+  }
+
+  .fh-tabbar[data-pressing] > a[aria-current="page"]:not([data-pressed="true"]) svg {
+    stroke-width: 1.5;
+  }
+
+  /* The indicator: one 3×28 px line for the whole bar, on its top edge, centred on the current tab. It slides to a
+     pressed tab (pressed-tab.tsx sets --tab-press-i on the bar). One column wide, moved by whole columns, so it works
+     for any number of tabs. */
+  .fh-tab-ind {
+    position: absolute;
+    top: -1px;
+    left: 0;
+    width: calc(100% / var(--tab-n, 5));
+    height: 3px;
+    pointer-events: none;
+    transform: translateX(calc(var(--tab-press-i, var(--tab-i, 0)) * 100%));
+    transition: transform var(--dur-move) var(--ease-out);
+  }
+
+  .fh-tab-ind::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 28px;
+    height: 3px;
+    margin-left: -14px;
+    border-radius: 0 0 2px 2px;
+    background: var(--ink);
+  }
+
+  .fh-tab-ind[data-off] {
+    opacity: 0;
+  }
+
+  .fh-tabbar[data-pressing] .fh-tab-ind {
+    opacity: 1;
+  }
+
+  /* One place for the count and the live dot: top 6 px, 7 px right of the tab's middle, a 2 px Leaf ring. */
+  .fh-tabbar .fh-badge,
+  .fh-tabbar .fh-tab-dot {
+    position: absolute;
+    top: 6px;
+    left: calc(50% + 7px);
+    box-shadow: 0 0 0 2px var(--leaf);
+  }
+
+  .fh-tabbar .fh-tab-dot {
+    width: 8px;
+    height: 8px;
+  }
+}
+
+/* In the store app the native tab bar (ui-polish Part 7, mobile/src/lib/tabs.ts) hides this bar itself with
+   `visibility` and reads its `display` to know when to hide its own, and sets --tab-h to its own height: no rule here. */
+
+@media (prefers-reduced-motion: reduce) {
+  .fh-tab-ind {
+    transition: none;
+  }
+}
+
+/* ── The phone's top bar (under 1000 px) ── */
+@media (max-width: 999.98px) {
+  /* A tab root's h1 sits 16 px under the bar. The page area clips sideways, so a tab's slide (40 px in from the side)
+     never makes the page wider than the screen, which would push the fixed tab bar off it. */
+  .fh-main {
+    padding-top: 16px;
+    overflow-x: clip;
+  }
+
+  /* The avatar is drawn at 28 px in a 44×44 tap area, still 16 px from the edge. */
+  .fh-topbar .fh-avatar-btn {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    margin-right: -8px;
+    border-radius: 9999px;
+  }
+
+  /* A pushed screen (a page that calls BackLink): its back link moves into the bar, left, as iOS's back button: a
+     44 px-tall button, a 24 px chevron and the page's label at 17 px. The community's mark goes; the page's h1 is
+     24 px. Not while a tapped tab's outline hides the page. */
+  .fh-app .fh-main .fh-back {
+    position: fixed;
+    top: calc(var(--sat) + 6px);
+    left: 4px;
+    z-index: 31;
+    max-width: calc(100vw - 80px);
+    height: 44px;
+    margin: 0;
+    padding: 0 8px 0 2px;
+    gap: 2px;
+    border-radius: var(--r-sm);
+    color: var(--ink);
+    font: 400 17px/22px var(--sans);
+  }
+
+  .fh-app .fh-main .fh-back svg {
+    width: 24px;
+    height: 24px;
+    stroke-width: 2;
+  }
+
+  .fh-app .fh-main .fh-back > span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  html:not([data-pending-tab]) .fh-app:has(.fh-main .fh-back) .fh-topbar .fh-fundmark {
+    visibility: hidden;
+  }
+
+  html:not([data-pending-tab]) .fh-app:has(.fh-main .fh-back) .fh-main .fh-h1 {
+    font-size: 24px;
+    line-height: 30px;
+  }
+
+  /* A page with its own header (a thread) draws its own back button. */
+  html:has([data-own-header]) .fh-main .fh-back {
+    display: none;
+  }
+
+  /* No footer on phones: the source link is the menu sheet's last row (council decision 9). */
+  .fh-main > .fh-phone-foot,
+  .fh-main > .fh-credit {
+    display: none;
+  }
+}
+
+/* ── The avatar's menu sheet (under 1000 px): the member at its top, today's groups as 48 px rows ── */
+.fh-menu-sheet .fh-bsheet-head {
+  gap: 12px;
+  min-height: 72px;
+  padding-top: 4px;
+  padding-bottom: 8px;
+}
+
+.fh-menu-sheet .fh-bsheet-head h2 {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font: 600 17px/22px var(--sans);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fh-menu-sheet .fh-section-label {
+  margin: 20px 0 8px;
+}
+
+.fh-menu-sheet .fh-section-label:first-child {
+  margin-top: 4px;
+}
+
+.fh-menu-group {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fh-menu-group + .fh-menu-group:not([aria-labelledby]) {
+  margin-top: 12px;
+  padding-top: 8px;
+  border-top: 1px solid var(--rule);
+}
+
+.fh-menu-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 48px;
+  margin: 0;
+  padding: 4px 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: 400 16px/22px var(--sans);
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.fh-menu-row > svg:first-child {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  color: var(--graphite);
+}
+
+.fh-menu-row > span:first-of-type {
+  flex: 1;
+  min-width: 0;
+}
+
+.fh-menu-row > .fh-menu-chev {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  color: var(--graphite);
+}
+
+.fh-menu-row > .fh-menu-state {
+  flex: none;
+  color: var(--graphite);
+  font-size: 15px;
+}
+
+@media (hover: hover) {
+  .fh-menu-row:hover {
+    background: var(--vellum);
+  }
+}
+
+.fh-menu-row:active {
+  background: var(--vellum);
+}
+
+.fh-menu-row:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: -2px;
+  border-radius: var(--r-sm);
+}
+
+/* ── The web (1000 px and up) ── */
+@media (min-width: 1000px) {
+  /* One content width and left edge for every member tab: 960 px (Today and Asks from 720). A tapped tab's outline
+     takes it too. */
+  .fh-app[data-tab-root] [data-slot="page-width"],
+  html[data-pending-tab] .fh-app[data-mode="member"] [data-slot="page-width"] {
+    max-width: 960px;
+  }
+
+  .fh-app[data-tab-root] [data-slot="page"] > :is(.td-page, .fh-narrow),
+  html[data-pending-tab] .fh-app[data-mode="member"] [data-slot="tab-outline"] > :is(.td-page, .fh-narrow) {
+    max-width: none;
+  }
+
+  /* The sidebar fits the window under the demo band, so its last row and the console's credit are never cut; a long
+     menu scrolls inside it. */
+  .fh-side {
+    height: calc(100vh - var(--demo-h, 0px));
+  }
+
+  .fh-side nav {
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  .fh-side > :is(.fh-me, .fh-credit) {
+    flex: none;
+  }
+
+  /* The dropdown never grows past the window. */
+  [data-slot="account-menu"] {
+    max-height: min(var(--radix-dropdown-menu-content-available-height, 100vh), calc(100vh - 80px));
+  }
+}
+
+/* ── The demo band: on a phone it sits under the top bar, so in the app it never sits under the status bar ── */
+html:has(body > .fh-demo-bar) {
+  --demo-h: 34px;
+}
+
+@media (min-width: 1000px) {
+  body > .fh-demo-bar {
+    height: 34px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .fh-app .fh-demo-bar {
+    display: none;
+  }
+}
+
+@media (max-width: 999.98px) {
+  body:has(.fh-app) > .fh-demo-bar {
+    display: none;
+  }
+
+  /* A page with its own header has no community bar above the band. */
+  html[data-app]:has([data-own-header]) .fh-app .fh-demo-bar {
+    padding-top: calc(8px + var(--sat));
+  }
+}
+
+/* Pages without the bar (sign-in, invites): in the app the band starts under the status bar, and the page no longer
+   adds the status bar itself. */
+html[data-app] body > .fh-demo-bar {
+  padding-top: calc(8px + var(--sat));
+}
+
+@media (min-width: 1000px) {
+  html[data-app] body > .fh-demo-bar {
+    height: calc(34px + var(--sat));
+  }
+}
+
+html[data-app] body:has(> .fh-demo-bar) .fh-pub {
+  padding-top: 40px;
+}
+
+@media (min-width: 1000px) {
+  html[data-app] body:has(> .fh-demo-bar) .fh-pub {
+    padding-top: 72px;
+  }
+}

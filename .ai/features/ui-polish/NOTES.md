@@ -138,3 +138,69 @@ The spec: [parts/7-native-tabs.md](parts/7-native-tabs.md). All of it is in `mob
 - **Memory in the web preview** (desktop Chromium, 390×844, Sam, 23 Nov 2026): one tab 11 MB JS heap, 657 DOM nodes;
   all five tabs 24 MB, 3,253 nodes. On a phone each web view also costs its renderer's memory; the real numbers on a
   low-end Android come from store build 5 (Android Studio's profiler).
+
+## Part 2, the frame (tab bar, tab switch, headers, menu sheet, no footer on phones, web width)
+
+All of the frame's look is in `src/shell/frame.css`, loaded by `src/app/layout.tsx` after `globals.css` and `in-app.css`.
+
+### The tab bar (under 1000 px)
+- 56 px visible plus `--sab`; the bar's `min-height` is `--tab-total`, so large text grows it. Inside a tab: the 1 px top
+  border, the icon 9 px under it (24 px, stroke 1.5; 2 when current), 3 px, the label 11/13 with an ellipsis
+  (`.fh-tab-label`). The current tab is ink and 600; the others `--graphite`.
+- **One indicator** per bar: `[data-slot="tab-indicator"]` (`.fh-tab-ind`), one column wide with a 28×3 px `::after`,
+  moved by `transform: translateX(n × 100%)`. React sets `--tab-i` (the current tab's index) on it and `--tab-n` on the
+  bar; a press sets `--tab-press-i` on the bar (`pressTab` in `pressed-tab.tsx`, removed by `endPress`), so it slides to
+  the pressed tab over `--dur-move` before the page comes. `data-off` hides it where no tab is current; reduced motion
+  makes it jump.
+- The count pill and the live dot (`.fh-tab-dot`) share one place: top 6 px, `left: calc(50% + 7px)`, a 2 px Leaf ring.
+- **The store app's own tab bar** (Part 7): the site has no rule for it. The app hides the member bar with `visibility`
+  (it reads the bar's `display` to know when the site would hide it) and sets `--tab-h` to its own bar's height, so a
+  `display: none` or a `--tab-h` here would break it. The native bar copies this bar's icons and computed colours.
+
+### The tab switch
+- `slideIn()` in `pressed-tab.tsx`: on a tap of a tab-bar link with an outline, under 1000 px and without reduced
+  motion, the page area (`[data-slot="page-width"]`, which stays across pages) runs a Web Animation from
+  `translateX(±40px)`, opacity 0, over 220 ms. The side follows the links' order in the bar (`data-index`). Because the
+  animation lives on the area and not on the page, the real page landing mid-slide finishes the same slide.
+- `.fh-main` clips sideways (`overflow-x: clip`) under 1000 px: without it the slide widened the page, the phone zoomed
+  out and the fixed tab bar left the screen for a moment.
+- Tapping the tab already shown (`href` equals the address with its query) prevents the navigation and scrolls to the
+  top, smoothly unless reduced motion.
+- The admin tabs' outlines (`tab-outlines.tsx`: Home, Members, Asks, the intro log, Announce, Set up) were reshaped to
+  their pages at 390 px; `TextLine` draws a bar inside a line box of the page's own height.
+
+### The top bar and the back button (under 1000 px)
+- The page's h1 is 16 px under the bar (`.fh-main` top padding). The avatar button (`.fh-avatar-btn`) is 44×44 around
+  the 28 px face, with `margin-right: -8px` so the face keeps its place.
+- `BackLink` (`page-header.tsx`) now wraps its label in a span and carries `data-slot="back-link"`. Pages keep calling
+  it. Inside the app shell on a phone, CSS fixes it over the bar's left side (`top: calc(var(--sat) + 6px)`), 44 px
+  tall, a 24 px chevron and 17 px ink text; the fund mark hides and the page's `.fh-h1` is 24 px
+  (`.fh-app:has(.fh-main .fh-back)`, not while a tab's outline shows). Pages with `data-own-header` hide it. Outside
+  the shell (`/public/board`) and from 1000 px it stays in the page.
+- The demo band: `layout.tsx` keeps its band for pages without the shell and for 1000 px and up; the shell renders a
+  second band right under the top bar, shown under 1000 px only. In the app, a band at the top of a page without the
+  bar pads by `--sat`. `--demo-h` (34 px) is set on html while a band is in the body.
+
+### The menu sheet, no footer on phones
+- `user-menu.tsx` builds the menu once (`useMenuGroups`: Settings, More, This app, then the view switch, Dark mode,
+  Sign out) and draws it twice: `AccountMenu` (the Radix dropdown, from the sidebar's foot) and `PhoneAccountButton`
+  (a `Sheet` with the member's 48 px face and name at its top, `SectionLabel`s, 48 px `.fh-menu-row`s, Dark mode as a
+  `role="switch"` row), so the two lists can't drift apart. The sheet's last row is "Source code (AGPL-3.0)"
+  (`SOURCE_CODE_URL`). `app-actions-group.tsx` now only gives the "This app" items (`useAppActionItems`).
+- `PhoneFoot` is no longer in the shell (the parts page still shows it). The sidebar keeps the source line or the
+  product credit.
+- The dropdown is at most `calc(100vh - 80px)`.
+
+### The web (1000 px and up)
+- `ShellFrame` (in `navigation-links.tsx`) is the shell's outer `.fh-app` and marks it `data-mode="member|console"` and
+  `data-tab-root` on a member tab's own address. There the page area is at most 960 px and the tab's `.td-page` or
+  `.fh-narrow` root drops its 720 px. At 1280 the column is 936 px, so all five tabs share left 304 and width 936.
+- The sidebar is `calc(100vh - var(--demo-h))` tall and its menu scrolls inside, so its foot shows under the demo band.
+
+### Left over (found while building and verifying Part 2)
+- At 1280, after scrolling past the demo band, the sidebar's foot rests 34 px above the window's bottom (it is sized for
+  the band, which has scrolled away). Cosmetic.
+- On a pushed screen the back button comes after "Your menu" in the Tab order (it is in the page, drawn over the bar).
+- Rooms' outline misses its first section by about 34 px (Part 6's); Today's and Asks' row pitches differ by 16–18 px
+  (Part 4's).
+- Opening the desktop dropdown scrolls the page a little (already so on main).

@@ -1,15 +1,17 @@
 import type { ReactNode } from "react";
 
+import { DemoBanner } from "@/components/demo-banner";
 import { FlashProvider, FlashSlot } from "@/components/flash";
 import { MAIN_CONTENT_ID } from "@/components/skip-link";
 import type { CommunityLogo } from "@/platform/branding/branding";
+import { isDemoMode } from "@/platform/demo/mode";
 
 import { ModuleOffNotice } from "./module-off-notice";
-import { FounderViewStrip, MenuTabOutlines, SidebarNavigation, TabBar } from "./navigation-links";
+import { FounderViewStrip, MenuTabOutlines, ShellFrame, SidebarNavigation, TabBar } from "./navigation-links";
 import type { NavigationBadgeCounts, ShellNavigation } from "./navigation-rules";
 import { PressEnd } from "./pressed-tab";
 import { SearchReadyNotice } from "./search-ready-notice";
-import { PhoneFoot, ShellFooterLine, ShellFundMark } from "./shell-chrome";
+import { ShellFooterLine, ShellFundMark } from "./shell-chrome";
 import { PhoneAccountButton, SidebarMember, type ShellMember } from "./user-menu";
 
 type ShellCommunity = { name: string; descriptor: string; logo: CommunityLogo | null };
@@ -23,13 +25,15 @@ type AppShellProps = {
   children: ReactNode;
 };
 
-// Commonhall's page shell (its lib/html.mjs page(), design-system.md §2): from 1000 px a 264 px sidebar (fund mark,
-// the menu, the member who opens the avatar menu, the footer line); below it a 56 px top bar with the avatar and a
-// 64 px tab bar of five. An admin on member pages sees the founder-view strip; the avatar menu switches views.
+// Commonhall's page shell (its lib/html.mjs page(), design-system.md §2, ui-polish Part 2): from 1000 px a 264 px
+// sidebar (fund mark, the menu, the member who opens the avatar menu, the footer line); below it a 56 px top bar with
+// the avatar, the demo band under it, and a 56 px tab bar (plus the home indicator's inset). Phones show no footer: the
+// source link is the menu sheet's last row. An admin on member pages sees the founder-view strip; the avatar menu
+// switches views. The frame's look: frame.css.
 export function AppShell({ community, member, navigation, badges, isNetworkOn, children }: AppShellProps) {
   return (
     <FlashProvider>
-      <div data-slot="app-shell" className="fh-app">
+      <ShellFrame navigation={navigation} isAdmin={member.isAdmin}>
         <aside data-slot="sidebar" aria-label="Navigation" className="fh-side">
           <ShellFundMark name={community.name} logo={community.logo} isAdmin={member.isAdmin} size="sidebar" />
           <SidebarNavigation navigation={navigation} isAdmin={member.isAdmin} badges={badges} />
@@ -42,6 +46,8 @@ export function AppShell({ community, member, navigation, badges, isNetworkOn, c
             <span className="fh-spacer" />
             <PhoneAccountButton member={member} navigation={navigation} />
           </header>
+          {/* On a phone the demo band sits under the bar (the page's own band, layout.tsx, shows from 1000 px). */}
+          {isDemoMode(process.env) ? <DemoBanner /> : null}
           {member.isAdmin ? <FounderViewStrip name={member.name} /> : null}
           <main id={MAIN_CONTENT_ID} tabIndex={-1} data-slot="main" className="fh-main">
             <FlashSlot />
@@ -53,13 +59,12 @@ export function AppShell({ community, member, navigation, badges, isNetworkOn, c
               <PressEnd />
               <MenuTabOutlines navigation={navigation} isAdmin={member.isAdmin} />
             </div>
-            <PhoneFoot isAdmin={member.isAdmin} />
           </main>
         </div>
         {isNetworkOn ? <SearchReadyNotice /> : null}
         <ModuleOffNotice />
         <TabBar navigation={navigation} isAdmin={member.isAdmin} badges={badges} />
-      </div>
+      </ShellFrame>
     </FlashProvider>
   );
 }

@@ -18,6 +18,7 @@ import { DARK_CLASS, parseTheme, SYSTEM_THEME_SCRIPT, THEME_COOKIE, THEMES } fro
 import { FONT_VARIABLES } from "./fonts";
 import "./globals.css";
 import "./in-app.css";
+import "@/shell/frame.css";
 
 export async function generateMetadata(): Promise<Metadata> {
   await connection();
@@ -45,6 +46,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       </head>
       <body>
         <SkipLink />
+        {/* From 1000 px and on pages without the app's bar; inside the app shell a phone shows it under the top bar. */}
         {isDemoMode(process.env) ? <DemoBanner /> : null}
         <RunsOnVillageProvider value={runsOnVillage}>{children}</RunsOnVillageProvider>
       </body>
