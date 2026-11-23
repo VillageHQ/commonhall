@@ -107,12 +107,13 @@ TestFlight internal testing and Android test APKs only: never a public release, 
   learns you left and the app learns you already told people; check in `reports/build3/`); iOS build 4 and an APK (21 Nov 2026, round 7: Rooms first, one-tap start with
   Rename and the quiet-start line, quiet times and pause, the smooth web view; check in `reports/build4/`); an APK of build 5 (23 Nov 2026, round 8: the native tab bar, the room sheet and mini player; check in
   `reports/build5/`); iOS build 5 (23 Nov 2026, the same round 8 code, built on the owner's Mac because Expo's free plan
-  had used its iOS builds for the month; recipe below). The Absi group has every build, so a processed build reaches it
-  on its own.
+  had used its iOS builds for the month; recipe below); iOS build 6 and APK 6 (23 Nov 2026, round 8 with its fix pass:
+  tab preload, the softer slide, the brand bar on a tab's first load; both built on the owner's Mac, no Expo cloud; in
+  `reports/store-builds.md`). The Absi group has every build, so a processed build reaches it on its own.
 - On Windows, `npx eas-cli` inside `mobile/` can fail with npm's "Invalid Version"; run it from another folder, or
   call the cached copy (`node <npx cache>/node_modules/eas-cli/bin/run …`) from `mobile/`, without `NODE_ENV` set.
 
-## iPhone builds on the owner's Mac (23 Nov 2026, build 5)
+## iPhone builds on the owner's Mac (23 Nov 2026, builds 5 and 6)
 Expo's free plan allows only a few cloud iOS builds a month. A local build (`eas build --local`) costs no Expo credits:
 it runs prebuild, CocoaPods and Xcode on the Mac and still reads the project from Expo, so it needs an Expo token.
 About 10 minutes from a cold cache; the upload and Apple's processing about 3 more.
@@ -124,8 +125,10 @@ About 10 minutes from a cold cache; the upload and Apple's processing about 3 mo
    `read -r EXPO_TOKEN; export EXPO_TOKEN`), never on the Mac's disk or in a command line.
 3. **The build number.** With `appVersionSource: remote` and `autoIncrement`, every started build bumps Expo's counter,
    even one that fails or is stopped: build 5's failed cloud try and a stopped local try had taken it to 6. To pick the
-   number, switch the Mac copy only to `appVersionSource: local`, `autoIncrement: false` and `ios.buildNumber: "5"`.
-   Expo's counter then stays where it is (6 now), so the next cloud build is 7; a skipped number does no harm.
+   number, switch the Mac copy only to `appVersionSource: local`, `autoIncrement: false` and `ios.buildNumber: "<n>"`
+   (5, then 6). Expo's counter then stays where it is (6), so the next cloud build is 7, just past build 6. After a
+   Mac build 7 or later, set the counter to that number first (`eas build:version:set -p ios`), or Apple refuses the
+   cloud build's number as already used.
 4. **Signing over ssh.** codesign stops with `errSecInternalComponent` when it finds the distribution certificate in a
    locked keychain first (the Mac has it in another app's build keychain at the top of the search list; ssh cannot
    unlock it). For the build, make a temporary keychain with a random password, import `dist.p12`
@@ -144,7 +147,18 @@ About 10 minutes from a cold cache; the upload and Apple's processing about 3 mo
    temp folder (`$TMPDIR`), the "Commonhall App Store" profile in `~/Library/MobileDevice/Provisioning Profiles/`, a
    keychain `eas-build-*.keychain` if a build was stopped (`security delete-keychain`), the day's Xcode archive, and
    the CocoaPods download cache it filled (about 4 GB: LiveKit's WebRTC, React Native's prebuilt core). The build
-   folder (`~/qareen-builds/commonhall`, about 0.5 GB with `node_modules` and the .ipa) is kept while under 3 GB.
+   folder (`~/qareen-builds/commonhall`, about 0.6 GB with `node_modules`, the .ipa and the .apk) is kept while under 3 GB.
+8. **The Android APK on the Mac too** (APK 6): `npx eas-cli build -p android --profile preview --local` with the same
+   token on stdin, and the Mac copy's `android.versionCode` set to the build number. The Mac has a JDK
+   (`/opt/homebrew/opt/openjdk@21`) but no Android SDK, so put one in the build folder for the run: the command-line
+   tools from `dl.google.com/android/repository/commandlinetools-mac-<n>_latest.zip` in
+   `android-sdk/cmdline-tools/latest`, `sdkmanager --licenses` and `platform-tools`; Gradle fetches the rest (platform,
+   build tools, NDK). Point `JAVA_HOME`, `ANDROID_HOME` and `GRADLE_USER_HOME` (`gradle-home`) inside the folder. It
+   took about 10 minutes and 9 GB at its peak; delete `android-sdk`, `gradle-home` and the work folders afterwards.
+   Signing uses Expo's stored keystore for the project (no file to copy), so APK 6 has APK 5's certificate
+   (`apksigner verify --print-certs`) and installs over it as an update. Cloud preview APKs were all
+   `versionCode` 1 (no `autoIncrement` on `preview`): a cloud APK after APK 6 needs a higher `versionCode`, or Android
+   refuses it as an update.
 
 ## What was proven, and what wasn't (19 Nov 2026)
 - Proven: unit tests (`npm test`, 13), `tsc`, `expo-doctor` 20/20, `expo prebuild` for Android (config plugins apply,

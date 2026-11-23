@@ -40,3 +40,17 @@ screen locked and the Android voice service still wait for the owner's phone tes
   builds from the Free plan this month, which will reset in 7 days (on Tue Dec 01 2026)." More builds need a paid Expo
   plan (the owner's call), or the build runs on 1 Dec. Nothing was submitted to TestFlight.
 - **Web-preview check:** `build5/README.md`.
+
+## Build 6 (23 Nov 2026, round 8 with its fix pass: tab preload, the softer slide; both built on the owner's Mac)
+- **iOS:** built with `eas build -p ios --profile testflight --local` on the Mac (no Expo cloud), `CFBundleVersion` 6,
+  signed "iPhone Distribution" by team `TA6D5Y2M2U` with "Commonhall App Store", `aps-environment` production,
+  `get-task-allow` false. Uploaded with `xcrun altool`: "UPLOAD SUCCEEDED", delivery
+  `bfc65db7-fa79-4a20-a719-fc8065445ce3`. Apple's API: build 6 `VALID`, `internalBuildState: IN_BETA_TESTING`,
+  `externalBuildState: READY_FOR_BETA_SUBMISSION` (not submitted: internal only); the "Absi" group (internal, all builds)
+  lists builds 6, 5, 4, 3, 2, 1.
+- **Android:** built with `eas build -p android --profile preview --local` on the Mac: `commonhall-6.apk`, 125.6 MB,
+  `versionCode` 6 (APK 5 is 1), all four CPU types, V2 signer certificate SHA-256 `1769cda1…dc5e`, the same as APK 5,
+  so it installs over it. Not uploaded anywhere: the file is on the owner's PC
+  (`C:/ai/code/.workspace/scratch/commonhall-store/commonhall-6.apk`) and in the Mac's build folder (`out/`).
+- **The code:** main at `1e6f0b1e` (PR #132). Both JavaScript bundles hold `readBrand`, new in the fix pass.
+- **Not re-checked:** no new web-preview run; the fix pass's own check is in `.ai/features/ui-polish/`.
