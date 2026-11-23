@@ -2,29 +2,36 @@ import "server-only";
 
 import { createHash } from "node:crypto";
 
-import { isVillageError, VillageError, type CallOptions, type Village, type VillageRequestEvent } from "@villagehq/sdk";
-import { createVillageApp, type VillageApp } from "@villagehq/sdk/server";
+import { isVillageError, VillageError, type CallOptions, type Payer, type Village, type VillageRequestEvent } from "@villagehq/sdk";
+import { createVillageAdmin, type VillageAdmin } from "@villagehq/sdk/server";
 import { z } from "zod";
 
 import { getDatabase } from "../database/client.ts";
+import { readPathsCredits, readSearchCredits, VILLAGE_PRICES } from "./contract.ts";
 import { noteVillageOutcome, VillageDeadlineError } from "./health.ts";
 
 export const VILLAGE_TIMEOUTS_MS = { default: 15_000, paths: 60_000, search: 120_000 } as const;
 export const NETWORK_SOURCE = "network";
 
-const MAXIMUM_VILLAGE_APPS = 10;
+const MAXIMUM_VILLAGE_ADMINS = 10;
 const BAD_REQUEST_STATUS = 400;
 const LEAVE_OPERATION = "groups.leave";
-const MINT_OPERATION = "tokens.create";
+// The calls made with this community's secret key itself, not a member's token.
+const SECRET_KEY_OPERATIONS: ReadonlySet<string> = new Set(["tokens.create", "app.get"]);
 const JSON_CONTENT_TYPE = "json";
 
-const villageApps = new Map<string, VillageApp>();
+type VillageRequestHook = (event: VillageRequestEvent) => void;
+type VillageAdminEntry = { admin: VillageAdmin; onRequest: VillageRequestHook };
+
+const villageAdmins = new Map<string, VillageAdminEntry>();
 
 // `isTrial`: keys an admin is trying before they're saved. Their answers say nothing about this community's own keys,
 // so they never record Village's health (a mistyped key must not raise "Village refused this community's keys").
 export type VillageConnection = { apiUrl: string | undefined; secretKey: string; deadlineAtMs: number; isTrial?: boolean };
 export type VillageIdentity = { externalId: string; email: string };
-export type VillageSession = { village: Village; deadlineAtMs: number };
+// `onRequest` is the hook the SDK calls after each named call. Calls through `village.api` skip it, so they report to it
+// themselves (`sendVillageApi`).
+export type VillageSession = { village: Village; deadlineAtMs: number; onRequest: VillageRequestHook };
 
 // TODO(@villagehq/sdk): a VillageError doesn't say whether Village wrote the answer or a proxy in front of it did.
 // people.paths reads a proxy's HTML 404 as an unknown person, and groups.leave reads it as "not a member".
@@ -50,10 +57,10 @@ function isLeaveOutcome({ operation, status }: VillageRequestEvent) {
   return operation === LEAVE_OPERATION && status === BAD_REQUEST_STATUS;
 }
 
-// A 401 on a member's own call is usually their token expiring: the app mints a new one and retries.
-// Only the mint, made with this community's secret key, says whether Village refused the keys.
+// A 401 on a member's own call is usually their token expiring: the SDK mints a new one and retries.
+// Only a call made with this community's secret key says whether Village refused the keys.
 function isMemberTokenRefusal({ operation, error }: VillageRequestEvent) {
-  return isVillageError(error, "unauthorized") && operation !== MINT_OPERATION;
+  return isVillageError(error, "unauthorized") && !SECRET_KEY_OPERATIONS.has(operation);
 }
 
 // Every call also updates when Village last worked, or the trouble it's in, for the admin's notice.
@@ -75,20 +82,22 @@ function logVillageFailure(event: VillageRequestEvent) {
   );
 }
 
-function readVillageApp({ apiUrl, secretKey, isTrial = false }: VillageConnection) {
+function readVillageAdmin({ apiUrl, secretKey, isTrial = false }: VillageConnection) {
   const key = createHash("sha256").update(`${apiUrl}\n${secretKey}\n${isTrial ? "trial" : "saved"}`).digest("hex");
-  const cached = villageApps.get(key);
+  const cached = villageAdmins.get(key);
   if (cached) return cached;
 
-  const oldestKey = villageApps.keys().next().value;
-  if (villageApps.size >= MAXIMUM_VILLAGE_APPS && oldestKey) villageApps.delete(oldestKey);
-  const villageApp = createVillageApp({ secretKey, apiUrl, fetch: fetchVillageJson, onRequest: isTrial ? onTrialRequest : onVillageRequest });
-  villageApps.set(key, villageApp);
-  return villageApp;
+  const oldestKey = villageAdmins.keys().next().value;
+  if (villageAdmins.size >= MAXIMUM_VILLAGE_ADMINS && oldestKey) villageAdmins.delete(oldestKey);
+  const onRequest = isTrial ? onTrialRequest : onVillageRequest;
+  const entry = { admin: createVillageAdmin({ secretKey, apiUrl, fetch: fetchVillageJson, onRequest }), onRequest };
+  villageAdmins.set(key, entry);
+  return entry;
 }
 
 export function createVillageSession(connection: VillageConnection, { externalId, email }: VillageIdentity): VillageSession {
-  return { village: readVillageApp(connection).as({ id: externalId, email }), deadlineAtMs: connection.deadlineAtMs };
+  const { admin, onRequest } = readVillageAdmin(connection);
+  return { village: admin.as({ id: externalId, email }), deadlineAtMs: connection.deadlineAtMs, onRequest };
 }
 
 export function withinDeadline({ deadlineAtMs }: Pick<VillageSession, "deadlineAtMs">, usualTimeoutMs: number = VILLAGE_TIMEOUTS_MS.default): CallOptions {
@@ -103,19 +112,25 @@ export function isVillageErrorResponse(error: unknown): error is VillageError {
 }
 
 export async function mintVillageToken(connection: VillageConnection, { externalId, email }: VillageIdentity) {
-  const { token } = await readVillageApp(connection).tokens.create({ id: externalId, email }, withinDeadline(connection));
+  const { token } = await readVillageAdmin(connection).admin.tokens.create({ id: externalId, email }, withinDeadline(connection));
   return token;
 }
 
-// The app the secret key belongs to: its title (for "Connected to <name>") and its public key. Free.
-export async function readVillageAppDetails(session: VillageSession) {
-  const { title, public_key } = await session.village.app.get(withinDeadline(session));
-  return { title, publicKey: public_key };
-}
+export const VILLAGE_PAYERS = { app: "app", user: "user" } as const satisfies Record<Payer, Payer>;
 
-export async function readVillageAppPublicKey(session: VillageSession) {
-  const { public_key } = await session.village.app.get(withinDeadline(session));
-  return public_key;
+// The app the secret key belongs to, asked with the key alone: no member token, so checking keys makes no Village user.
+// Its title (for "Connected to <name>"), its public key, and whether it can pay for this community's members:
+// `canPayForMembers` is false for an app where each user pays; `needsCard` until a card is on file. Free.
+export async function readVillageAppDetails(connection: VillageConnection) {
+  const app = await readVillageAdmin(connection).admin.app.get(withinDeadline(connection));
+  return {
+    title: app.title,
+    publicKey: app.public_key,
+    payer: app.payer,
+    canPayForMembers: app.capabilities.has_server_access,
+    needsCard: app.capabilities.needs_card,
+    isTest: app.mode === "test",
+  };
 }
 
 export function readVillageUser(session: VillageSession) {
@@ -144,8 +159,36 @@ export function leaveVillageGroup(session: VillageSession, groupId: string) {
 export const GLOBAL_SOURCE = "global";
 
 // "network" searches the member's network; "global" searches everyone Village knows.
+// The page size is sent, not left to Village's default: Village charges per result returned.
+export const SEARCH_PAGE_SIZE = 25;
+
+// What each paid call reserves before it runs, and what its answer cost (credit-ledger.ts's CreditCharge).
+// A search with no results is counted as one batch: the search's price note says it costs nothing, but Village's credits
+// page says an empty search still bills its AI work. Counting it keeps the cap on the safe side, and the member's day.
+export const SEARCH_CHARGE = {
+  mostCredits: readSearchCredits(SEARCH_PAGE_SIZE),
+  readCredits: ({ people }: { people: readonly unknown[] }) => readSearchCredits(Math.max(people.length, 1)),
+};
+
+export const PATHS_CHARGE = {
+  mostCredits: readPathsCredits(1),
+  readCredits: (villagePaths: { paths: readonly unknown[] } | null) => readPathsCredits(villagePaths && villagePaths.paths.length > 0 ? 1 : 0),
+};
+
+export function readBulkPathsCharge(linkedinSlugs: readonly string[]) {
+  return {
+    mostCredits: readPathsCredits(toBulkLinkedinIds(linkedinSlugs).length),
+    readCredits: (answered: ReadonlyMap<string, { paths: readonly unknown[] }>) => readPathsCredits([...answered.values()].filter(({ paths }) => paths.length > 0).length),
+  };
+}
+
+export const FILL_IN_CHARGE = {
+  mostCredits: VILLAGE_PRICES.perProfileFound,
+  readCredits: (profile: unknown) => (profile === null ? 0 : VILLAGE_PRICES.perProfileFound),
+};
+
 export async function searchVillageNetwork(session: VillageSession, prompt: string, scope: typeof NETWORK_SOURCE | typeof GLOBAL_SOURCE = NETWORK_SOURCE) {
-  const { results, response } = await session.village.people.search({ prompt, scope }, withinDeadline(session, VILLAGE_TIMEOUTS_MS.search));
+  const { results, response } = await session.village.people.search({ prompt, scope, limit: SEARCH_PAGE_SIZE }, withinDeadline(session, VILLAGE_TIMEOUTS_MS.search));
   return { people: results, source: response.metadata.source };
 }
 
@@ -207,23 +250,28 @@ const BULK_LINKEDIN_ID_PATTERN = /^[a-z0-9-]{3,100}$/;
 const bulkTargetSchema = z.object({ linkedin_identifier: z.string().nullish(), linkedin_url: z.string().nullish() }).passthrough();
 const bulkPathsSchema = z.array(villagePathsSchema.omit({ person: true }).extend({ target: bulkTargetSchema.nullish() }));
 
+// The ids one bulk call sends for these slugs: lowercased, once each, Village's pattern only, at most 100.
+export function toBulkLinkedinIds(linkedinSlugs: readonly string[]) {
+  const ids = [...new Set(linkedinSlugs.map((slug) => slug.toLowerCase()))].filter((slug) => BULK_LINKEDIN_ID_PATTERN.test(slug));
+  return ids.slice(0, PATHS_BULK_MAXIMUM);
+}
+
 // TODO(@villagehq/sdk): the SDK has no call for POST /v2/people/paths/bulk, so this goes through its typed client.
 // The paths for one page of search results in one call, keyed by the LinkedIn slug Village answered for.
 export async function readVillagePathsBulk(session: VillageSession, linkedinSlugs: readonly string[]) {
   const answered = new Map<string, VillagePaths>();
-  const ids = [...new Set(linkedinSlugs.map((slug) => slug.toLowerCase()))].filter((slug) => BULK_LINKEDIN_ID_PATTERN.test(slug));
+  const ids = toBulkLinkedinIds(linkedinSlugs);
   if (ids.length === 0) return answered;
-  const signal = AbortSignal.timeout(withinDeadline(session, VILLAGE_TIMEOUTS_MS.paths).timeoutMs ?? VILLAGE_TIMEOUTS_MS.paths);
-  const { data, response } = await session.village.api
-    .POST("/v2/people/paths/bulk", { body: { linkedin_ids: ids.slice(0, PATHS_BULK_MAXIMUM) }, signal })
-    .catch((cause: unknown) => {
-      if (isVillageError(cause)) throw cause;
-      const isTimeout = cause instanceof Error && cause.name === TIMEOUT_ERROR_NAME;
-      throw new VillageError({ code: isTimeout ? "timeout" : "network", message: isTimeout ? "Village took too long to answer." : "Couldn't reach Village.", cause });
-    });
-  if (response.status === NOT_FOUND_STATUS) return answered;
-  if (!response.ok || !data) throw toLookupError(response.status);
-  const parsed = bulkPathsSchema.safeParse(data.data);
+  let data: unknown;
+  try {
+    data = await sendVillageApi(session, "people.pathsBulk", VILLAGE_TIMEOUTS_MS.paths, (signal) =>
+      session.village.api.POST("/v2/people/paths/bulk", { body: { linkedin_ids: ids }, signal }),
+    );
+  } catch (error) {
+    if (isVillageError(error, "not_found")) return answered;
+    throw error;
+  }
+  const parsed = bulkPathsSchema.safeParse(data);
   if (!parsed.success) throw new VillageError({ code: "invalid_response", status: 200, message: "Village's bulk paths weren't in the expected shape." });
   for (const { target, ...paths } of parsed.data) {
     const slug = (target?.linkedin_identifier ?? target?.linkedin_url?.replace(/\/+$/, "").split("/in/")[1] ?? "").toLowerCase();
@@ -238,7 +286,8 @@ const LOOKUP_IDENTITY_ID = "community-profile-fill-in";
 const LOOKUP_MODE = "cached_first";
 
 export function createVillageLookupSession(connection: VillageConnection, email: string): VillageSession {
-  return { village: readVillageApp(connection).as({ id: LOOKUP_IDENTITY_ID, email, grant: "public" }), deadlineAtMs: connection.deadlineAtMs };
+  const { admin, onRequest } = readVillageAdmin(connection);
+  return { village: admin.as({ id: LOOKUP_IDENTITY_ID, email, grant: "public" }), deadlineAtMs: connection.deadlineAtMs, onRequest };
 }
 
 const companySchema = z.object({ name: z.string().nullish(), domain: z.string().nullish(), image_url: z.string().nullish() }).nullish();
@@ -262,6 +311,20 @@ function parseVillageProfile(profile: unknown) {
   throw new VillageError({ code: "invalid_response", status: 200, message: "Village's profile wasn't in the expected shape." });
 }
 
+// TODO(@villagehq/sdk): the SDK's own error mapping (toVillageError) isn't exported, and `village.api` calls skip both it
+// and `onRequest`. This does what the SDK does for its named calls: one VillageError per failed answer, read from
+// Village's error type first (409 network_not_synced, 402 insufficient_credits), then its status; and one report to the
+// same hook, so these calls reach the failure log and the admin's Village health too.
+const ERROR_CODE_BY_TYPE: Record<string, VillageError["code"]> = {
+  not_connected: "not_connected",
+  network_not_synced: "not_synced",
+  app_access_revoked: "app_access_revoked",
+  user_required: "user_required",
+  test_mode_unsupported: "test_mode_unsupported",
+  site_disabled: "site_disabled",
+  insufficient_credits: "out_of_credits",
+};
+
 const ERROR_CODE_BY_STATUS: Record<number, VillageError["code"]> = {
   400: "bad_request",
   401: "unauthorized",
@@ -274,28 +337,86 @@ const ERROR_CODE_BY_STATUS: Record<number, VillageError["code"]> = {
 };
 
 const SERVER_ERROR_STATUS = 500;
-const NOT_FOUND_STATUS = 404;
 const TIMEOUT_ERROR_NAME = "TimeoutError";
+const PAYER_VALUES: ReadonlySet<string> = new Set(Object.values(VILLAGE_PAYERS));
 
-function toLookupError(status: number) {
-  const code = ERROR_CODE_BY_STATUS[status] ?? (status >= SERVER_ERROR_STATUS ? "server" : "bad_request");
-  return new VillageError({ code, status, message: `Village answered the email lookup with ${status}.` });
+function readRecord(value: unknown): Record<string, unknown> | null {
+  return typeof value === "object" && value !== null ? (value as Record<string, unknown>) : null;
 }
 
-// TODO(@villagehq/sdk): the SDK has no call for POST /v2/people/enrich/by-email, so this goes through
-// its typed client. That keeps the key, the JSON guard and the failure log; Village's 404 means nobody.
+function readText(source: Record<string, unknown> | null, field: string) {
+  const value = source?.[field];
+  return typeof value === "string" ? value : null;
+}
+
+// Village's errors nest `{ type, detail, meta }` under `error`; the 402 and 429 answers are flat (`{ error, message }`).
+export function toVillageApiError(response: Response, body: unknown) {
+  const record = readRecord(body);
+  const nested = readRecord(record?.error);
+  const type = readText(nested, "type") ?? readText(record, "error");
+  const reason = readText(readRecord(nested?.meta), "reason");
+  const status = response.status;
+  const code = ERROR_CODE_BY_TYPE[reason ?? ""] ?? ERROR_CODE_BY_TYPE[type ?? ""] ?? (status >= SERVER_ERROR_STATUS ? "server" : (ERROR_CODE_BY_STATUS[status] ?? "bad_request"));
+  const payer = readText(record, "payer");
+  return new VillageError({
+    code,
+    status,
+    message: readText(nested, "detail") ?? readText(record, "message") ?? `Village answered ${status}.`,
+    requestId: response.headers.get("x-request-id") ?? readText(readRecord(record?.metadata), "request_id"),
+    traceId: readText(nested, "trace_id"),
+    topupUrl: readText(record, "topup_url"),
+    payer: payer !== null && PAYER_VALUES.has(payer) ? (payer as Payer) : null,
+  });
+}
+
+function toTransportError(cause: unknown) {
+  if (isVillageError(cause)) return cause;
+  const isTimeout = cause instanceof Error && cause.name === TIMEOUT_ERROR_NAME;
+  return new VillageError({ code: isTimeout ? "timeout" : "network", message: isTimeout ? "Village took too long to answer." : "Couldn't reach Village.", cause });
+}
+
+type VillageApiAnswer = { data?: unknown; error?: unknown; response: Response };
+
+// One `village.api` call within the session's time budget. Returns the answer's `data`; throws a VillageError otherwise.
+async function sendVillageApi(session: VillageSession, operation: string, usualTimeoutMs: number, call: (signal: AbortSignal) => Promise<VillageApiAnswer>) {
+  const signal = AbortSignal.timeout(withinDeadline(session, usualTimeoutMs).timeoutMs ?? usualTimeoutMs);
+  const startedAtMs = Date.now();
+  const report = (status: number | null, requestId: string | null, error: VillageError | null) =>
+    session.onRequest({ operation, durationMs: Date.now() - startedAtMs, status, requestId, error });
+  let answer: VillageApiAnswer;
+  try {
+    answer = await call(signal);
+  } catch (cause) {
+    const error = toTransportError(cause);
+    report(error.status, error.requestId, error);
+    throw error;
+  }
+  const { data, error: body, response } = answer;
+  const requestId = response.headers.get("x-request-id");
+  const payload = readRecord(data)?.data;
+  if (response.ok && payload !== undefined) {
+    report(response.status, requestId, null);
+    return payload;
+  }
+  const error = response.ok
+    ? new VillageError({ code: "invalid_response", status: response.status, requestId, message: "Village returned an empty response." })
+    : toVillageApiError(response, body);
+  report(response.status, requestId, error);
+  throw error;
+}
+
+// TODO(@villagehq/sdk): the SDK has no call for POST /v2/people/enrich/by-email, so this goes through its typed client.
+// Village's 404 means nobody has that email.
 export async function readVillageProfileByEmail(session: VillageSession, email: string) {
-  const signal = AbortSignal.timeout(withinDeadline(session).timeoutMs ?? VILLAGE_TIMEOUTS_MS.default);
-  const { data, response } = await session.village.api
-    .POST("/v2/people/enrich/by-email", { body: { email, mode: LOOKUP_MODE }, signal })
-    .catch((cause: unknown) => {
-      if (isVillageError(cause)) throw cause;
-      const isTimeout = cause instanceof Error && cause.name === TIMEOUT_ERROR_NAME;
-      throw new VillageError({ code: isTimeout ? "timeout" : "network", message: isTimeout ? "Village took too long to answer." : "Couldn't reach Village.", cause });
-    });
-  if (response.status === NOT_FOUND_STATUS) return null;
-  if (!response.ok || !data) throw toLookupError(response.status);
-  return parseVillageProfile(data.data);
+  try {
+    const profile = await sendVillageApi(session, "people.enrichByEmail", VILLAGE_TIMEOUTS_MS.default, (signal) =>
+      session.village.api.POST("/v2/people/enrich/by-email", { body: { email, mode: LOOKUP_MODE }, signal }),
+    );
+    return parseVillageProfile(profile);
+  } catch (error) {
+    if (isVillageError(error, "not_found")) return null;
+    throw error;
+  }
 }
 
 export async function readVillageProfile(session: VillageSession, linkedinUrl: string) {
@@ -307,22 +428,10 @@ export async function readVillageProfile(session: VillageSession, linkedinUrl: s
   }
 }
 
-// TODO(@villagehq/sdk): the SDK has no call for POST /v2/user/cancel yet, so this sends it with the member's own token.
-// Village deactivates that user and revokes every token it has. Minting the token first is safe: Village reactivates a
-// cancelled user only on a token request, and this cancel comes after it.
-const DEFAULT_VILLAGE_API_URL = "https://api.village.ai";
-const USER_CANCEL_PATH = "/v2/user/cancel";
-
+// TODO(@villagehq/sdk): the SDK has no call for POST /v2/user/cancel, so this goes through the member's typed client.
+// Village deactivates that user and revokes every token it has. A new token doesn't bring them back: only consenting
+// again in Village's connect step does, so this runs only before a real delete.
 export async function cancelVillageUser(connection: VillageConnection, identity: VillageIdentity) {
-  const token = await mintVillageToken(connection, identity);
-  const remainingMs = connection.deadlineAtMs - Date.now();
-  if (remainingMs <= 0) throw new VillageDeadlineError();
-  const apiUrl = (connection.apiUrl ?? DEFAULT_VILLAGE_API_URL).replace(/\/+$/, "");
-  const response = await fetch(`${apiUrl}${USER_CANCEL_PATH}`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
-    signal: AbortSignal.timeout(Math.min(VILLAGE_TIMEOUTS_MS.default, remainingMs)),
-  });
-  await response.body?.cancel();
-  if (!response.ok) throw new VillageError({ code: "server", message: `Village answered ${response.status} to the user cancel.` });
+  const session = createVillageSession(connection, identity);
+  await sendVillageApi(session, "user.cancel", VILLAGE_TIMEOUTS_MS.default, (signal) => session.village.api.POST("/v2/user/cancel", { signal }));
 }

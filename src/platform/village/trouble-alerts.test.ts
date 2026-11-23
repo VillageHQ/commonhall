@@ -114,4 +114,10 @@ describe("telling admins when Village stops working (NET-09)", () => {
     expect(await alerts()).toEqual([]);
     expect((await readAdminTabFacts(database, process.env)).villageOutOfCreditsAt).not.toBeNull();
   });
+
+  // SDK 0.2's codes for keys Village won't serve this way: an app where each user pays, test keys on a call test mode
+  // doesn't cover, a site Village switched off. Admins must check the keys; Village itself is up.
+  it.each(["user_required", "test_mode_unsupported", "site_disabled"] as const)("counts %s as Village refusing the keys", async (code) => {
+    await expect(recordVillageOutcome(database, new VillageError({ code, message: "refused" }))).resolves.toBe("keys_rejected");
+  });
 });

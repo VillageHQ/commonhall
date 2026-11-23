@@ -149,6 +149,49 @@ describe("the Village admin API", () => {
       expect((await readVillageHealth(database)).trouble).toBeNull();
     });
 
+    // Village's docs (Pay for your users): the app's own details come with the secret key alone.
+    it("checks the keys with the secret key alone, so no Village user is made", async () => {
+      const admin = await createSignedInMember(database, "admin");
+
+      await postKeys(jsonRequest(admin, FAKE_VILLAGE_KEYS));
+
+      expect(village.readRequests("/v2/auth/tokens")).toEqual([]);
+      expect(village.readRequests("/v2/app").map(({ headers }) => headers["secret-key"])).toEqual([FAKE_VILLAGE_KEYS.secretKey]);
+    });
+
+    it("refuses keys of a Village app where each user pays", async () => {
+      const admin = await createSignedInMember(database, "admin");
+      village.state.app.payer = "user";
+
+      const response = await postKeys(jsonRequest(admin, FAKE_VILLAGE_KEYS));
+
+      expect(response.status).toBe(422);
+      expect(await response.json()).toMatchObject({ code: NETWORK_ERROR_CODES.keysMembersPay });
+      expect(await readVillageKeys(database)).toBeNull();
+    });
+
+    it.each([
+      { name: "live keys waiting for a card", app: { needsCard: true }, notice: "waiting for a card" },
+      { name: "test keys", app: { mode: "test" as const }, notice: "test keys" },
+    ])("saves $name, and says so", async ({ app, notice }) => {
+      const admin = await createSignedInMember(database, "admin");
+      Object.assign(village.state.app, app);
+
+      const response = await postKeys(jsonRequest(admin, FAKE_VILLAGE_KEYS));
+
+      expect(response.status).toBe(200);
+      expect(((await response.json()) as { notice: string }).notice).toContain(notice);
+      expect(await readVillageKeys(database)).toEqual(FAKE_VILLAGE_KEYS);
+    });
+
+    it("answers with no notice for live keys that work", async () => {
+      const admin = await createSignedInMember(database, "admin");
+
+      const response = await postKeys(jsonRequest(admin, FAKE_VILLAGE_KEYS));
+
+      expect(await response.json()).toMatchObject({ notice: null });
+    });
+
     it("rejects a public key from another app", async () => {
       const admin = await createSignedInMember(database, "admin");
 
@@ -163,7 +206,7 @@ describe("the Village admin API", () => {
 
     it("explains a Village outage without saving", async () => {
       const admin = await createSignedInMember(database, "admin");
-      village.state.failures.set("/v2/auth/tokens", { status: 500, type: "internal_error" });
+      village.state.failures.set("/v2/app", { status: 500, type: "internal_error" });
       vi.spyOn(console, "error").mockImplementation(() => undefined);
 
       const response = await postKeys(jsonRequest(admin, FAKE_VILLAGE_KEYS));

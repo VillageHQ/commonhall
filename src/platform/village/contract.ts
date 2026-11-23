@@ -44,17 +44,32 @@ export const monthlyCapBodySchema = z.object({
 });
 
 // What this site counts for each paid call. Village's own usage page is the bill.
-// "paths_bulk" is the paths for one page of search results, part of that search (Village: 3 credits per 10 results).
+// "paths_bulk" is the paths for one page of search results, part of that search.
 export const CREDIT_CALL_KINDS = { search: "search", path: "path", pathsBulk: "paths_bulk", fillIn: "fill_in" } as const;
 
 export type CreditCallKind = (typeof CREDIT_CALL_KINDS)[keyof typeof CREDIT_CALL_KINDS];
 
-export const ESTIMATED_CREDITS: Record<CreditCallKind, number> = {
-  [CREDIT_CALL_KINDS.search]: 11,
-  [CREDIT_CALL_KINDS.path]: 5,
-  [CREDIT_CALL_KINDS.pathsBulk]: 3,
-  [CREDIT_CALL_KINDS.fillIn]: 1,
-};
+// Village's prices, from each endpoint's Cost note (https://api.village.ai/v2/docs/openapi.json, read 2026-11-22).
+// A person "opened in the last 30 days" costs Village nothing, which this site can't see: it counts them anyway, so its
+// count is never below the bill.
+export const VILLAGE_PRICES = {
+  // People search: 2 credits per 10 results returned, counted per started 10; no results, no credits.
+  searchPerTenResults: 2,
+  // Paths, one person or a page of them: 2 credits per person with paths; a person with none costs nothing.
+  perPersonWithPaths: 2,
+  // Profile fill-in: 1 credit per person found (and a real-time fetch, unpriced, when Village has nothing cached).
+  perProfileFound: 1,
+} as const;
+
+const RESULTS_PER_PRICED_BATCH = 10;
+
+export function readSearchCredits(resultCount: number) {
+  return Math.ceil(resultCount / RESULTS_PER_PRICED_BATCH) * VILLAGE_PRICES.searchPerTenResults;
+}
+
+export function readPathsCredits(peopleWithPaths: number) {
+  return peopleWithPaths * VILLAGE_PRICES.perPersonWithPaths;
+}
 
 export const USD_PER_CREDIT = 0.02;
 

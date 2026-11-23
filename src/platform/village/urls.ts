@@ -9,7 +9,8 @@ export function resolveVillageApiUrl(environment: Environment) {
   return environment.VILLAGE_API_URL;
 }
 
-// TODO(@villagehq/sdk): openSyncModal needs appUrl, and the SDK doesn't export the default it uses everywhere else.
+// Where Village's own pages are: the sync window, and the links on Connect Village. The SDK defaults to the same address
+// but doesn't export it, and the links need it.
 export function resolveVillageAppUrl(environment: Environment) {
   return environment.VILLAGE_APP_URL ?? DEFAULT_VILLAGE_APP_URL;
 }

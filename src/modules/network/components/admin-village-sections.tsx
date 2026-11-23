@@ -28,6 +28,8 @@ export const NETWORK_LINE =
 const KEY_LINES: Record<string, string> = {
   [VILLAGE_CHECK_KEYS.rejected]: "Keys rejected: Village refused the secret key.",
   [VILLAGE_CHECK_KEYS.mismatched]: "The public key does not belong to this secret key’s app.",
+  [VILLAGE_CHECK_KEYS.membersPay]: "This Village app is set so each user pays. The community pays for its members: in Village’s App Settings choose “Your app pays”.",
+  [VILLAGE_CHECK_KEYS.needsCard]: "Village is waiting for a card on this app before its live keys work. Add one under Billing in Village.",
   [VILLAGE_CHECK_KEYS.missing]: "No keys yet: add your Village keys first.",
   [VILLAGE_CHECK_KEYS.unreachable]: "Village didn’t answer, so the keys couldn’t be checked.",
 };

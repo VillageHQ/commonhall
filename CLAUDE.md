@@ -37,7 +37,7 @@ Better Auth, Vitest, pnpm. Village is optional (network search, intro paths, pro
 - How features work today: `.ai/features/chat-perks/NOTES.md`, `.ai/features/fix-intros/NOTES.md`,
   `.ai/features/fix-small/NOTES.md`, `.ai/features/hosting-data-settings/NOTES.md`, `.ai/features/partner-report/NOTES.md`, `.ai/features/small-gaps/NOTES.md`,
   `.ai/features/today-weekly/NOTES.md`, `.ai/features/two-sided-intros/NOTES.md`, `.ai/features/your-data/NOTES.md`,
-  `.ai/features/admin-home/NOTES.md`, `.ai/features/admin-firstrun/NOTES.md`, `.ai/features/faces-logos/NOTES.md`, `.ai/features/demo-jobs-perks/NOTES.md`, `.ai/features/village-check/NOTES.md`,
+  `.ai/features/admin-home/NOTES.md`, `.ai/features/admin-firstrun/NOTES.md`, `.ai/features/faces-logos/NOTES.md`, `.ai/features/demo-jobs-perks/NOTES.md`, `.ai/features/village-check/NOTES.md`, `.ai/features/village-sdk-0.2/NOTES.md` (every Village call on SDK 0.2, credits at Village's prices),
   `.ai/features/reply-by-email/NOTES.md`,
   `.ai/features/jobs-on-cards/NOTES.md`,
   `.ai/features/asks-tools/NOTES.md`, `.ai/features/search-first/NOTES.md` (superseded), `.ai/features/search-connect-only/NOTES.md` (search needs your own Village), `.ai/features/intros-no-village/NOTES.md`, `.ai/features/demo-portraits/SPEC.md` (spec: how to add a portrait),

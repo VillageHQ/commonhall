@@ -6,7 +6,7 @@ import { createSignedInMember } from "@/test/signed-in-member";
 import { FAKE_RESEND_API_KEY } from "@/test/fake-resend-server";
 import { emailOutbox } from "../email/schema";
 import { EMAIL_KINDS } from "../email/kinds";
-import { memberDailyUsage, villageMonthlyUsage } from "./schema";
+import { memberDailyUsage, villageCreditCall, villageMonthlyUsage } from "./schema";
 import { CREDIT_CALL_KINDS } from "./contract";
 import { MonthlyCapReachedError, readMonthlyCreditUsage, withCreditCall } from "./credit-ledger";
 import { saveMonthlyCreditCap } from "./settings";
@@ -29,8 +29,12 @@ describe("the monthly credit cap", () => {
     await database.delete(villageMonthlyUsage);
   });
 
+  // A fill-in costs 1 credit, a search (in these tests) 11: each call is charged its most.
+  const CREDITS_BY_KIND = { [CREDIT_CALL_KINDS.fillIn]: 1, [CREDIT_CALL_KINDS.search]: 11, [CREDIT_CALL_KINDS.path]: 2, [CREDIT_CALL_KINDS.pathsBulk]: 2 };
+
   function spend(memberId: string | null, kind: (typeof CREDIT_CALL_KINDS)[keyof typeof CREDIT_CALL_KINDS] = CREDIT_CALL_KINDS.fillIn) {
-    return withCreditCall({ database, environment: ENVIRONMENT, memberId }, kind, async () => "charged");
+    const credits = CREDITS_BY_KIND[kind];
+    return withCreditCall({ database, environment: ENVIRONMENT, memberId }, kind, async () => "charged", { mostCredits: credits, readCredits: () => credits });
   }
 
   it("lets exactly the cap through when calls arrive at once", async () => {
@@ -60,9 +64,47 @@ describe("the monthly credit cap", () => {
   it("gives the credits back when Village says nothing was charged", async () => {
     await saveMonthlyCreditCap(database, 20);
 
-    await withCreditCall({ database, environment: ENVIRONMENT, memberId: null }, CREDIT_CALL_KINDS.fillIn, async () => null, (result) => result !== null);
+    await withCreditCall({ database, environment: ENVIRONMENT, memberId: null }, CREDIT_CALL_KINDS.fillIn, async () => null, { mostCredits: 1, readCredits: (result) => (result === null ? 0 : 1) });
 
     expect((await readMonthlyCreditUsage(database)).credits).toBe(0);
+  });
+
+  // Village charges per result and per person with paths: the month keeps what the answer cost, not the most it could.
+  it("keeps only what the answer cost, and records that on the call's line", async () => {
+    const member = await createSignedInMember(database);
+    await saveMonthlyCreditCap(database, 100);
+    const peopleWithPaths = ["first", "second"];
+
+    await withCreditCall({ database, environment: ENVIRONMENT, memberId: member.userId }, CREDIT_CALL_KINDS.pathsBulk, async () => peopleWithPaths, {
+      mostCredits: 50,
+      readCredits: (people) => people.length * 2,
+    });
+
+    expect((await readMonthlyCreditUsage(database)).credits).toBe(4);
+    const calls = await database.select().from(villageCreditCall).where(eq(villageCreditCall.userId, member.userId));
+    expect(calls.map(({ kind, credits }) => ({ kind, credits }))).toEqual([{ kind: CREDIT_CALL_KINDS.pathsBulk, credits: 4 }]);
+  });
+
+  it("refuses a call whose most doesn't fit under the cap, before Village is asked", async () => {
+    await saveMonthlyCreditCap(database, 20);
+    let isAsked = false;
+
+    const call = withCreditCall({ database, environment: ENVIRONMENT, memberId: null }, CREDIT_CALL_KINDS.pathsBulk, async () => (isAsked = true), {
+      mostCredits: 50,
+      readCredits: () => 2,
+    });
+
+    await expect(call).rejects.toBeInstanceOf(MonthlyCapReachedError);
+    expect(isAsked).toBe(false);
+    expect((await readMonthlyCreditUsage(database)).credits).toBe(0);
+  });
+
+  it("never keeps more than it reserved", async () => {
+    await saveMonthlyCreditCap(database, 100);
+
+    await withCreditCall({ database, environment: ENVIRONMENT, memberId: null }, CREDIT_CALL_KINDS.fillIn, async () => "found", { mostCredits: 1, readCredits: () => 5 });
+
+    expect((await readMonthlyCreditUsage(database)).credits).toBe(1);
   });
 
   it("emails each admin once at 80% and once at 100%, even with parallel calls", async () => {

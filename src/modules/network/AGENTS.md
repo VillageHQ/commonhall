@@ -5,22 +5,24 @@ Village search, sync, the community group and intro paths. Toggleable; the only 
 - `service.ts`: joining, search (one bulk paths call, kept 10 minutes), paths, keys, group, leaving, link approval. Search and paths need the member's own joined network; before that, search finds member profiles.
 - `service-path-sharing.ts`: drops any path naming a member who isn't sharing.
 - `service-departure.ts`: removes a departed member from the group. Never throws.
-- `service-settings.ts`, `contract-village-settings.ts`: group, daily limit, search scope, who can introduce, service email (fill-in and the Village check).
+- `service-settings.ts`, `contract-village-settings.ts`: group, daily limit, search scope, who can introduce, service email (fill-in).
 - `reads-*.ts`: progress, reachable members, credit usage, search's member rows.
 - `contract*.ts`: schemas, constants. `queries.ts`: client requests. `components/`: the UI (`search-*`: the "Search their networks" step on People and Find candidates; `my-network-screen`: /me/network; `village-connect`: Connect Village).
 - `service-fill-in.ts`, `rules-fill-in.ts`, `integration.ts`: the profile fill-in: email first, then LinkedIn every 30 days; nightly (02:00–05:59 UTC) or on request. Lookups run as the app's public identity, never as a member.
 - `service-nudge.ts`: the connect meter and the admin's reminder to unconnected members, once per 30 days.
 - `components/village-disclosure.tsx`: "What Village receives", on the member's card page. Update it when a call sends Village something new.
-- `*-village-check.ts`: the admin's Village check and the member's My network line. Free calls only, once a minute.
+- `*-village-check.ts`: the admin's Village check and the member's My network line. Free calls only, once a minute. The keys are asked about with the secret key alone (`app.get`): who pays, and whether live keys wait for a card.
+- `components/village-sync.ts`: the sync step. A browser Village client (`createVillage({ token })`) whose token comes from `/api/network/sync-token`, then `connect()`.
 - `slots.tsx`: `ConnectorAskSlot` and `ConnectorPromiseSlot`. Intros fills them, so network never imports intros.
 
-The Village client, credentials, credit ledger, error mapping and trouble emails live in `src/platform/village`. `health.ts` there records Village's last answer and trouble (never for tried keys, `isTrial`); admins see it, members see "Search is unavailable right now".
+The Village client (`@villagehq/sdk` 0.2: `createVillageAdmin`, `as()` per member), credentials, credit ledger, error mapping and trouble emails live in `src/platform/village`. Calls the SDK has no method for (bulk paths, email lookup, user cancel) go through `sendVillageApi` in `client.ts`, which reports to the same hook and maps errors as the SDK does. `health.ts` there records Village's last answer and trouble (never for tried keys, `isTrial`); admins see it, members see "Search is unavailable right now".
 
 Rules:
 
 - The secret key stays on the server. A member token leaves it only through `/api/network/sync-token`, for the signed-in member at the sync step.
 - Never search or share a member's own network before they agree and sync.
 - Never name a path through a member who hasn't agreed to share. With "chosen members" on, paths through other members are dropped before anything reads them, and only the chosen can offer intros.
-- Every paid call goes through `withCreditCall`. It reserves the estimate against the monthly cap (and the member's day, except fill-in) first, and emails admins once at 80% and 100%.
+- Every paid call goes through `withCreditCall` with its charge from `platform/village/client.ts` (`SEARCH_CHARGE`, `PATHS_CHARGE`, `readBulkPathsCharge`, `FILL_IN_CHARGE`). It reserves the most the call can cost against the monthly cap (and a lookup against the member's day, except fill-in) first, keeps what the answer cost by Village's prices (`VILLAGE_PRICES`), and emails admins once at 80% and 100%.
+- Keys belong to an app that pays for its users: saving refuses an app where each user pays.
 - Departure always runs: a removed member's network must stop being shared.
 - `service-erasure.ts`: before a real delete, leave the group and cancel the Village user (`POST /v2/user/cancel`).

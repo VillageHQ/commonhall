@@ -114,6 +114,30 @@ describe("the Village check", () => {
     vi.restoreAllMocks();
   });
 
+  it.each([
+    { name: "an app where each user pays", app: { payer: "user" as const }, keys: VILLAGE_CHECK_KEYS.membersPay },
+    { name: "live keys waiting for a card", app: { needsCard: true }, keys: VILLAGE_CHECK_KEYS.needsCard },
+  ])("says so for $name, and asks Village about nobody", async ({ app, keys }) => {
+    const { admin, connected } = await setUpCommunity();
+    Object.assign(village.state.app, app);
+
+    expect((await postCheck(checkRequest(admin))).status).toBe(200);
+
+    const { check, members } = await readVillageCheck(database);
+    expect(check).toMatchObject({ keys });
+    expect(members.find(({ userId }) => userId === connected.userId)).toMatchObject({ outcome: MEMBER_CHECK_OUTCOMES.unreachable });
+    expect(village.readRequests("/v2/auth/tokens")).toEqual([]);
+  });
+
+  it("checks the keys with the secret key alone, sending Village no one's email", async () => {
+    const { admin } = await setUpCommunity();
+    await postCheck(checkRequest(admin));
+
+    const [appRequest] = village.readRequests("/v2/app");
+    expect(appRequest?.headers["secret-key"]).toBe(FAKE_VILLAGE_KEYS.secretKey);
+    expect(appRequest?.headers.authorization).toBeUndefined();
+  });
+
   it("runs at most once a minute", async () => {
     const { admin } = await setUpCommunity();
 

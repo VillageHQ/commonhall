@@ -39,6 +39,8 @@ export function VillageConnect({ appUrl, connectedAppName, onConnected }: Villag
   const router = useRouter();
   const links = villageConnectLinks(appUrl);
   const [connectedName, setConnectedName] = useState(connectedAppName);
+  // What Village said about the keys just saved (test keys, or no card yet). Admin › Village's check says it later.
+  const [notice, setNotice] = useState<string | null>(null);
   const [isReplacing, setIsReplacing] = useState(false);
   const [keys, setKeys] = useState<Keys>({ secretKey: "", publicKey: "" });
   const [result, setResult] = useState<Result>(null);
@@ -53,10 +55,11 @@ export function VillageConnect({ appUrl, connectedAppName, onConnected }: Villag
     isChecking.current = true;
     setResult({ kind: "checking" });
     try {
-      const { appName } = await postRequest(API_ROUTES.villageKeys, pair, villageKeysResponseSchema);
+      const { appName, notice: savedNotice } = await postRequest(API_ROUTES.villageKeys, pair, villageKeysResponseSchema);
       // These keys are saved now, even if a box changed meanwhile: the screen says so, and a waiting pair is still
       // checked with the boxes left open (a failure then shows beside "Keep the saved keys").
       setConnectedName(appName);
+      setNotice(savedNotice);
       onConnected?.(appName);
       router.refresh();
       if (nextKeys.current) {
@@ -91,6 +94,7 @@ export function VillageConnect({ appUrl, connectedAppName, onConnected }: Villag
   const isFolded = connectedName !== null && !isReplacing;
   if (isFolded) {
     return (
+      <>
       <p className="fh-small mt-3 flex flex-wrap items-center gap-x-1.5" data-village-connect="connected">
         <CircleCheck aria-hidden="true" className="fh-i fh-s" strokeWidth={1.5} />
         <span role="status">
@@ -101,6 +105,12 @@ export function VillageConnect({ appUrl, connectedAppName, onConnected }: Villag
           Replace the keys
         </Button>
       </p>
+      {notice ? (
+        <Note kind="needs" className="mt-2" data-village-keys-notice="">
+          {notice}
+        </Note>
+      ) : null}
+      </>
     );
   }
 

@@ -8,14 +8,7 @@ import type { Database } from "../../platform/database/client.ts";
 import { isActiveMember } from "../../platform/auth/member-status.ts";
 import { RequestError } from "../../platform/http/request-error.ts";
 import type { RequestContext } from "../../platform/http/request-context.ts";
-import {
-  createVillageLookupSession,
-  createVillageSession,
-  listVillageGroupIds,
-  readVillageAppPublicKey,
-  readVillageUser,
-  type VillageConnection,
-} from "../../platform/village/client.ts";
+import { createVillageSession, listVillageGroupIds, readVillageAppDetails, readVillageUser, type VillageConnection } from "../../platform/village/client.ts";
 import { readVillageKeys } from "../../platform/village/settings.ts";
 import { resolveVillageApiUrl } from "../../platform/village/urls.ts";
 import { memberNetwork } from "../members/schema.ts";
@@ -29,7 +22,7 @@ import {
   type VillageCheckKeys,
 } from "./contract-village-check.ts";
 import { villageCheck, villageMemberCheck } from "./schema.ts";
-import { readVillageGroup, readVillageSearchSettings } from "./service-settings.ts";
+import { readVillageGroup } from "./service-settings.ts";
 
 const CHECK_ROW_ID = "latest";
 const TOO_MANY_REQUESTS_STATUS = 429;
@@ -78,10 +71,13 @@ async function readMembersToCheck(database: Database): Promise<CheckedMember[]> 
   }));
 }
 
-async function checkKeys(connection: VillageConnection, publicKey: string, lookupEmail: string): Promise<VillageCheckKeys> {
+// Asked with the secret key alone, so checking the keys sends Village no one's email.
+async function checkKeys(connection: VillageConnection, publicKey: string): Promise<VillageCheckKeys> {
   try {
-    const session = createVillageLookupSession(connection, lookupEmail);
-    return (await readVillageAppPublicKey(session)) === publicKey ? VILLAGE_CHECK_KEYS.ok : VILLAGE_CHECK_KEYS.mismatched;
+    const app = await readVillageAppDetails(connection);
+    if (app.publicKey !== publicKey) return VILLAGE_CHECK_KEYS.mismatched;
+    if (!app.canPayForMembers) return VILLAGE_CHECK_KEYS.membersPay;
+    return app.needsCard ? VILLAGE_CHECK_KEYS.needsCard : VILLAGE_CHECK_KEYS.ok;
   } catch (error) {
     return isVillageError(error, "unauthorized") || isVillageError(error, "forbidden") ? VILLAGE_CHECK_KEYS.rejected : VILLAGE_CHECK_KEYS.unreachable;
   }
@@ -148,20 +144,20 @@ async function saveCheck(database: Database, keys: VillageCheckKeys, group: Vill
   });
 }
 
-// Only free calls: a token per member, the app (for the keys), each member's status and group list.
+// Only free calls: the app (with the secret key), then a token per member, each member's status and group list.
 // Never search, paths or enrich.
 export async function runVillageCheck({ database, environment, member, deadlineAtMs }: RequestContext) {
   const now = new Date();
   await claimCheck(database, member.id, now);
 
-  const [keys, group, settings] = await Promise.all([readVillageKeys(database, environment), readVillageGroup(database), readVillageSearchSettings(database)]);
+  const [keys, group] = await Promise.all([readVillageKeys(database, environment), readVillageGroup(database)]);
   const members = await readMembersToCheck(database);
   if (!keys) return saveCheck(database, VILLAGE_CHECK_KEYS.missing, null, skipMembers(members), now);
 
   const connection = { apiUrl: resolveVillageApiUrl(environment), secretKey: keys.secretKey };
   const keyDeadlineAtMs = Math.min(deadlineAtMs, Date.now() + MEMBER_BUDGET_MS);
-  const keysState = await checkKeys({ ...connection, deadlineAtMs: keyDeadlineAtMs }, keys.publicKey, settings.serviceEmail ?? member.email);
-  // With keys Village refuses, every member call would be refused too.
+  const keysState = await checkKeys({ ...connection, deadlineAtMs: keyDeadlineAtMs }, keys.publicKey);
+  // With keys Village refuses (or will refuse for members), every member call would be refused too.
   if (keysState !== VILLAGE_CHECK_KEYS.ok) return saveCheck(database, keysState, null, skipMembers(members), new Date());
 
   const groupId = group?.id ?? null;

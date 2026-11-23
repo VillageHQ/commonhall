@@ -141,7 +141,8 @@ export async function runSetup({ url, loaded, secrets, demo, fetchImpl = fetch, 
     } else {
       const { response, body } = await session.call(ROUTES.villageKeys, { json: { publicKey: setup.village.publicKey, secretKey: secrets.villageSecretKey } });
       const appName = typeof body.appName === "string" && body.appName ? body.appName : "your Village app";
-      if (response.ok) record({ step: "Village", outcome: "done", detail: `Connected to ${appName}: Village accepted both keys and they are saved.` });
+      const notice = typeof body.notice === "string" && body.notice ? ` ${body.notice}` : "";
+      if (response.ok) record({ step: "Village", outcome: "done", detail: `Connected to ${appName}: Village accepted both keys and they are saved.${notice}` });
       else if (response.status === NOT_FOUND_STATUS) record({ step: "Village", outcome: "skipped", detail: "The Network module is off, so there is nothing to connect." });
       else record({ step: "Village", outcome: "failed", detail: `Not connected: ${reasonOf(response, body)} Keys saved before stay as they were.` });
     }

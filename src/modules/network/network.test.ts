@@ -2,12 +2,13 @@ import { and, eq } from "drizzle-orm";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { forgetSavedSearches } from "@/modules/network/service";
 
-import { memberDailyUsage } from "@/platform/village/schema";
+import { memberDailyUsage, villageCreditCall } from "@/platform/village/schema";
 import { readVillageHealth, VILLAGE_TROUBLES } from "@/platform/village/health";
 import { readAdminTabFacts } from "@/shell/admin-badges";
 import { memberNetwork, memberPrivacy } from "@/modules/members/schema";
 import { memberPathResult } from "@/modules/network/schema";
-import { DAILY_LOOKUP_LIMITS } from "@/platform/village/contract";
+import { CREDIT_CALL_KINDS, DAILY_LOOKUP_LIMITS } from "@/platform/village/contract";
+import { SEARCH_PAGE_SIZE } from "@/platform/village/client";
 import {
   NETWORK_ERROR_CODES,
   NETWORK_STAGES,
@@ -182,14 +183,14 @@ describe("the member network API", () => {
           expect((await readStatus(member)).stage).toBe(NETWORK_STAGES.needsConsent);
         });
 
-        it("sends an unlinked member to sync, with only the sync window's address", async () => {
+        it("sends an unlinked member to sync, with only Village's addresses (never a key)", async () => {
           const member = await createMemberWithLinkedin("member-a");
           await postConsent(jsonRequest(member, { acknowledged: true }));
 
           const status = await readStatus(member);
 
           expect(status.stage).toBe(NETWORK_STAGES.needsSync);
-          expect(status.sync).toEqual({ appUrl: "https://app.village.test" });
+          expect(status.sync).toEqual({ appUrl: "https://app.village.test", apiUrl: village.url });
         });
 
         it("keeps a linked member with nothing connected on the sync step", async () => {
@@ -467,6 +468,10 @@ describe("the member network API", () => {
       return networkSearchResultSchema.parse(await (await search()).json());
     }
 
+    function readCreditCalls() {
+      return database.select({ kind: villageCreditCall.kind, credits: villageCreditCall.credits }).from(villageCreditCall).where(eq(villageCreditCall.userId, member.userId));
+    }
+
     async function readPaths(slug = TARGET_SLUG, reader = member) {
       const response = await postPaths(jsonRequest(reader, { linkedinSlug: slug }));
       return networkPathsSchema.parse(await response.json());
@@ -485,7 +490,7 @@ describe("the member network API", () => {
 
         const result = await readSearch();
 
-        expect(village.readRequests(SEARCH_PATH).map(({ body }) => body)).toEqual([{ prompt: "founders", scope: "global" }]);
+        expect(village.readRequests(SEARCH_PATH).map(({ body }) => body)).toEqual([{ prompt: "founders", scope: "global", limit: SEARCH_PAGE_SIZE }]);
         expect(result.people.map(({ fullName, isMember }) => [fullName, isMember])).toEqual([["Global Person", false]]);
         expect(result.discardedOffNetworkResults).toBe(false);
       });
@@ -549,8 +554,37 @@ describe("the member network API", () => {
         await search("climate investors");
 
         expect(village.readRequests(SEARCH_PATH).map(({ body }) => body)).toEqual([
-          { prompt: "climate investors", scope: "network" },
+          { prompt: "climate investors", scope: "network", limit: SEARCH_PAGE_SIZE },
         ]);
+      });
+
+      // Bug: the page's paths were counted as 3 credits for the whole call. Village charges 2 per person with paths,
+      // and search 2 per started 10 results: the month and the call lines keep those.
+      it("counts Village's price for a search and its page's paths", async () => {
+        const otherUrl = "https://www.linkedin.com/in/other-person";
+        village.state.searchPeople = [
+          { full_name: "Tom Becker", linkedin_url: TARGET_URL },
+          { full_name: "Ana Other", linkedin_url: otherUrl },
+          { full_name: "No Paths", linkedin_url: "https://www.linkedin.com/in/no-paths" },
+        ];
+        const introducer = { first_name: "Dana", last_name: "Outside", linkedin_url: "https://www.linkedin.com/in/dana-outside" };
+        village.state.pathsByUrl.set(TARGET_URL, { summary: "s", paths: [{ degree: 2, description: "via Dana", introducer }] });
+        village.state.pathsByUrl.set(otherUrl, { summary: "s", paths: [{ degree: 2, description: "via Dana", introducer }] });
+
+        await readSearch();
+
+        const calls = await readCreditCalls();
+        expect(calls.toSorted((first, second) => first.kind.localeCompare(second.kind))).toEqual([
+          { kind: CREDIT_CALL_KINDS.pathsBulk, credits: 4 },
+          { kind: CREDIT_CALL_KINDS.search, credits: 2 },
+        ]);
+      });
+
+      // Village's pages disagree on what an empty search costs (0, or its AI work): it counts as the smallest search.
+      it("counts a search with no results as the smallest search", async () => {
+        await readSearch();
+
+        expect(await readCreditCalls()).toEqual([{ kind: CREDIT_CALL_KINDS.search, credits: 2 }]);
       });
 
       it("discards results when Village falls through to global", async () => {

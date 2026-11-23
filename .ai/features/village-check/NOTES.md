@@ -3,8 +3,9 @@
 - Run: `network/service-village-check.ts` `runVillageCheck`, from `POST /api/admin/village/check` (admins, 55 s
   budget). It first claims the `village_check` row (`id = 'latest'`) with a conditional upsert on `started_at`, so a
   second run inside a minute gets 429.
-- Keys: `app.get` through the app's lookup identity (the service email, or the checking admin's email), compared with
-  the saved public key. A 401/403 is "rejected"; other failures "unreachable". With keys not OK no member is asked.
+- Keys: `app.get` with the secret key alone (SDK 0.2's `createVillageAdmin().app.get()`; no email is sent), compared
+  with the saved public key. Then `members_pay` (an app where each user pays) and `needs_card` (live keys waiting for
+  a card). A 401/403 is "rejected"; other failures "unreachable". With keys not OK no member is asked.
 - Members: every active member. Only those with a `member_network` row that agreed to share, linked, or joined are
   asked; the rest are `not_started`, so the check never sends Village a new email. For each asked member: `user.get`
   (`/v2/user/status`; an email means a Village user exists) and, if provisioned, `groups.list` to see the community

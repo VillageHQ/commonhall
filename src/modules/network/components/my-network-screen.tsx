@@ -1,7 +1,6 @@
 "use client";
 
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
-import { openSyncModal } from "@villagehq/sdk";
 import { Clock, KeyRound, Link2, ShieldAlert } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -21,12 +20,13 @@ import { acknowledgedResponseSchema } from "@/platform/http/contract";
 import { postRequest } from "@/platform/http/post-request";
 import { API_ROUTES, ROUTES } from "@/platform/http/routes";
 import { ME_PAGES } from "@/modules/members/contract-me-pages";
-import { NETWORK_STAGES, syncTokenSchema, type NetworkStatus } from "@/modules/network/contract";
+import { NETWORK_STAGES, type NetworkStatus } from "@/modules/network/contract";
 import { networkStatusQuery } from "@/modules/network/queries";
 import { toMembersOf } from "@/modules/network/rules-search-words";
 
 import { LinkedinForm } from "./linkedin-step";
 import { NetworkFailure } from "./network-failure";
+import { openVillageSync } from "./village-sync";
 
 const CONSENT_FIELD = "pooling";
 const NETWORK_LOADING_MESSAGE = "Checking your network…";
@@ -47,11 +47,6 @@ export type MyNetworkScreenProps = {
   isSharing?: boolean;
 };
 
-async function openVillageSync(appUrl: string) {
-  const { token } = await postRequest(API_ROUTES.networkSyncToken, {}, syncTokenSchema);
-  await openSyncModal({ token, appUrl });
-}
-
 function recordConsent() {
   return postRequest(API_ROUTES.networkConsent, { acknowledged: true }, acknowledgedResponseSchema);
 }
@@ -64,7 +59,7 @@ function ConnectStart({ status, communityName, processedLine }: { status: Networ
     mutationFn: async () => {
       await recordConsent();
       const fresh = await queryClient.fetchQuery({ ...networkStatusQuery, staleTime: 0 });
-      if (fresh.sync && fresh.stage === NETWORK_STAGES.needsSync) await openVillageSync(fresh.sync.appUrl);
+      if (fresh.sync && fresh.stage === NETWORK_STAGES.needsSync) await openVillageSync(fresh.sync);
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: networkStatusQuery.queryKey }),
   });
@@ -173,7 +168,7 @@ function SyncSheet({ status, connectedAtLabel }: { status: NetworkStatus } & Pic
         <>
           <FormError message={syncMutation.error?.message ?? null} />
           <div className="fh-btn-row" style={{ marginTop: 14 }}>
-            <Button type="button" disabled={syncMutation.isPending} onClick={() => status.sync && syncMutation.mutate(status.sync.appUrl)}>
+            <Button type="button" disabled={syncMutation.isPending} onClick={() => status.sync && syncMutation.mutate(status.sync)}>
               <Link2 aria-hidden="true" />
               Sync network
             </Button>

@@ -21,10 +21,10 @@ import { readVillageSearchSettings } from "./service-settings.ts";
 import { readSettings } from "../../platform/settings/store.ts";
 import {
   createVillageLookupSession,
+  FILL_IN_CHARGE,
   isVillageErrorResponse,
   readVillageProfile,
   readVillageProfileByEmail,
-  type VillageProfile,
 } from "../../platform/village/client.ts";
 import { CREDIT_CALL_KINDS } from "../../platform/village/contract.ts";
 import { MonthlyCapReachedError, withCreditCall } from "../../platform/village/credit-ledger.ts";
@@ -85,10 +85,6 @@ async function prepareLookups(database: Database, environment: Environment): Pro
   return { database, environment, session: createVillageLookupSession(connection, email) };
 }
 
-function isFound(profile: VillageProfile | null) {
-  return profile !== null;
-}
-
 // One member. Their email first; later, a refresh by LinkedIn. Nothing is sent to Village unless the
 // gate allows it, and the gate is checked again before anything is saved.
 async function fillInOne(setup: LookupSetup, due: DueLookup, payingMemberId: string | null): Promise<FillInOutcome> {
@@ -100,7 +96,7 @@ async function fillInOne(setup: LookupSetup, due: DueLookup, payingMemberId: str
     { database, environment, memberId: payingMemberId },
     CREDIT_CALL_KINDS.fillIn,
     () => (due.linkedinUrl ? readVillageProfile(session, due.linkedinUrl) : readVillageProfileByEmail(session, due.email)),
-    isFound,
+    FILL_IN_CHARGE,
   );
   if (!profile) {
     await recordLookupMiss(database, due.memberId, LOOKUP_STATUSES.notFound);

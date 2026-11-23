@@ -125,7 +125,7 @@ export function VillageLimitsForm({ values, sharingMembers, defaultServiceEmail,
       <Field
         htmlFor="v-email"
         label="Service email"
-        hint="The address Village sees for this community’s own lookups, like filling in cards and the Village check. Default: the first admin’s address, so change it only if Village asked for another."
+        hint="The address Village sees for this community’s own lookups, like filling in cards. Default: the first admin’s address, so change it only if Village asked for another."
         className="fh-field"
       >
         {/* Filled in with the address in use, as Commonhall shows its default: the saved one, else the first admin's. */}
