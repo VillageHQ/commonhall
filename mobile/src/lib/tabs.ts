@@ -18,6 +18,9 @@ export const HOME_TAB_PATH = "/today";
 export const TAB_BAR_HEIGHT = 56;
 // A low-memory Android phone keeps fewer tabs alive; a dropped tab loads again when it is next opened.
 export const LOW_MEMORY_BYTES = 3 * 1024 ** 3;
+// Once the open tab has loaded and this long has passed, the next tab loads behind it (one at a time), so a first tap
+// on it is instant. Not on a low-memory Android phone, which keeps fewer tabs alive.
+export const PRELOAD_DELAY_MS = 1200;
 export const MAXIMUM_LIVE_TABS = 5;
 export const LOW_MEMORY_LIVE_TABS = 3;
 
@@ -33,9 +36,13 @@ export type PageTab = { href: string; label: string; icon: string; count: number
 export const COLOR_KEYS = ["bar", "rule", "active", "inactive", "badge", "badgeText", "live"] as const;
 export type PageColors = Partial<Record<(typeof COLOR_KEYS)[number], string>>;
 
+// The community's name (and its small line) in the page's top bar: a tab that is loading for the first time shows the
+// bar with them, instead of bare paper.
+export type PageBrand = { name: string; sub: string };
+
 // `isOverlayOpen`: a sheet, a menu or a dialog of the page is open (it covers the page down to its bottom edge, so the
 // bar steps aside). `isDark`: the site's own dark mode (its `dark` class), which every tab follows.
-export type TabsState = { type: "tabs.state"; isFirst: boolean; isShown: boolean; isOverlayOpen: boolean; isDark: boolean; path: string; tabs: PageTab[]; colors: PageColors };
+export type TabsState = { type: "tabs.state"; isFirst: boolean; isShown: boolean; isOverlayOpen: boolean; isDark: boolean; path: string; tabs: PageTab[]; colors: PageColors; brand: PageBrand | null };
 export type TabsOpen = { type: "tabs.open"; path: string };
 export type TabsMessage = TabsState | TabsOpen;
 
@@ -85,6 +92,13 @@ function readTab(value: unknown): PageTab | null {
   return { href, label: readText(tab.label, MAXIMUM_LABEL_LENGTH), icon: readIcon(tab.icon), count, isLive: tab.isLive === true, badgeLabel: readText(tab.badgeLabel, 80) };
 }
 
+function readBrand(value: unknown): PageBrand | null {
+  if (!value || typeof value !== "object") return null;
+  const brand = value as Record<string, unknown>;
+  const name = readText(brand.name, MAXIMUM_LABEL_LENGTH * 2);
+  return name ? { name, sub: readText(brand.sub, MAXIMUM_LABEL_LENGTH * 2) } : null;
+}
+
 export function parseTabsMessage(raw: string): TabsMessage | null {
   let parsed: unknown;
   try {
@@ -108,7 +122,7 @@ export function parseTabsMessage(raw: string): TabsMessage | null {
     const color = readColor(sent[key]);
     if (color) colors[key] = color;
   }
-  return { type: "tabs.state", isFirst: message.isFirst === true, isShown: message.isShown === true && tabs.length > 0, isOverlayOpen: message.isOverlayOpen === true, isDark: message.isDark === true, path, tabs, colors };
+  return { type: "tabs.state", isFirst: message.isFirst === true, isShown: message.isShown === true && tabs.length > 0, isOverlayOpen: message.isOverlayOpen === true, isDark: message.isDark === true, path, tabs, colors, brand: readBrand(message.brand) };
 }
 
 function readPathname(path: string) {
@@ -137,6 +151,11 @@ export function pickTabsToDrop(recent: readonly number[], activeId: number, limi
   return overflow > 0 ? others.slice(0, overflow) : [];
 }
 
+// The next tab to load behind the open one: the first of the bar's tabs that isn't alive and wasn't tried already.
+export function pickTabToPreload(hrefs: readonly string[], aliveHomes: readonly string[], tried: ReadonlySet<string>): string | null {
+  return hrefs.find((href) => !aliveHomes.includes(href) && !tried.has(href)) ?? null;
+}
+
 // The direction a tab slides in from: from the right when it sits to the right of the one that was open.
 export function readSlideDirection(fromHref: string | null, toHref: string, hrefs: readonly string[]): -1 | 0 | 1 {
   const from = fromHref ? hrefs.indexOf(fromHref) : -1;
@@ -152,6 +171,8 @@ const MEMBER_BAR = '[data-slot="tab-bar"]:not(:has(a[href^="/admin"]))';
 // web's width) still tell the app when to hide its bar.
 // What covers the page while open: the round's Sheet (html[data-sheet-open]) and Radix's menus and dialogs.
 const OVERLAYS = ["menu", "dialog", "alertdialog", "listbox"].map((role) => `[role="${role}"][data-state="open"]`).join(",");
+// The community's mark in the phone's top bar (its name in <b>, its small line in <small>).
+const TOP_BAR_MARK = '[data-slot="phone-top-bar"] .fh-fundmark';
 const HIDE_SITE_BAR_CSS = `html[data-native-tabs] ${MEMBER_BAR}{visibility:hidden!important;opacity:0!important;pointer-events:none!important}`;
 
 // Runs in every page of the portal before its own scripts, and again when it has loaded (guarded: a second run only
@@ -163,6 +184,7 @@ export function buildTabsScript(home: string) {
   if (window.__commonhallTabs) { window.__commonhallTabs.home(${JSON.stringify(home)}); window.__commonhallTabs.report(true); return true; }
   var MEMBER_BAR = ${JSON.stringify(MEMBER_BAR)};
   var OVERLAYS = ${JSON.stringify(OVERLAYS)};
+  var TOP_BAR_MARK = ${JSON.stringify(TOP_BAR_MARK)};
   var CSS = ${JSON.stringify(HIDE_SITE_BAR_CSS)};
   var home = ${JSON.stringify(home)};
   var last = "";
@@ -207,7 +229,11 @@ export function buildTabsScript(home: string) {
       colors = { bar: style.backgroundColor, rule: style.borderTopColor, active: colorOf(current, "color"), inactive: colorOf(other, "color"), badge: colorOf(count, "backgroundColor"), badgeText: colorOf(count, "color"), live: colorOf(dot, "backgroundColor") };
     }
     var isOverlayOpen = root.hasAttribute("data-sheet-open") || Boolean(document.querySelector(OVERLAYS));
-    return { type: "tabs.state", isShown: isShown, isOverlayOpen: isOverlayOpen, isDark: root.classList.contains("dark"), path: location.pathname + location.search, tabs: tabs, colors: colors };
+    var mark = document.querySelector(TOP_BAR_MARK);
+    var markName = mark ? mark.querySelector("b") : null;
+    var markSub = mark ? mark.querySelector("small") : null;
+    var brand = markName ? { name: markName.textContent || "", sub: markSub ? markSub.textContent || "" : "" } : null;
+    return { type: "tabs.state", isShown: isShown, isOverlayOpen: isOverlayOpen, isDark: root.classList.contains("dark"), path: location.pathname + location.search, tabs: tabs, colors: colors, brand: brand };
   }
   function report(force) {
     var state = read();

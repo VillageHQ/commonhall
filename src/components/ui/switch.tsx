@@ -11,7 +11,7 @@ export function Switch({ size: _size = "default", ...props }: SwitchProps) {
   return (
     <SwitchPrimitive.Root
       data-slot="switch"
-      className="relative block h-[26px] w-11 shrink-0 rounded-[13px] bg-[#b5b4ad] transition-colors duration-200 disabled:opacity-45 aria-checked:bg-fund"
+      className="relative block h-[26px] w-11 shrink-0 rounded-[13px] bg-(--fh-switch-off) transition-colors duration-200 disabled:opacity-45 aria-checked:bg-fund"
       {...props}
     >
       <SwitchPrimitive.Thumb className="block size-5 translate-x-[3px] rounded-full bg-[#ffffff] shadow-[0_1px_2px_rgba(0,0,0,.2)] transition-transform duration-200 data-[state=checked]:translate-x-[21px]" />

@@ -353,3 +353,35 @@ All of the frame's look is in `src/shell/frame.css`, loaded by `src/app/layout.t
   the chevron, the dimmed strip above it, or a drag of 120 px on its head minimises it. The mini bar's main control and
   Leave act through its ref (`RoomControls`); it reports `RoomState` up. No chat in the app.
 - The page side (`src/platform/native-app/bridge.ts`) is unchanged: Part 7's frame script does the page's part.
+
+## Part 8, the fix pass (how the fixes work)
+- **Card buttons:** every action inside a card or row is the small 36 px button (`size="sm"`, `fh-btn-sm`); the profile
+  fill-in card (`lookup-question-card.tsx`) was the last at 44 px. Today's waiting rows, the yes-or-no intro row
+  (`TargetMemberAsk`) included, are one `.td-rows` list, so every face sits at x 16.
+- **A sheet over a sheet** ("Discard this ask?" over the composer): each sheet's scrim and panel are the body's own
+  children in the order they opened, so `globals.css` lifts a later pair (`.fh-bsheet ~ .fh-scrim`: 72,
+  `.fh-bsheet ~ .fh-scrim ~ .fh-bsheet`: 73) and the sheet underneath is dimmed.
+- **The back button's keyboard order:** `BackLink` (`src/components/back-link.tsx`) renders in the page and, once the
+  page runs, a copy in the top bar's first slot (`[data-slot="bar-back"]`, `app-shell.tsx`). On a phone the page's copy
+  hides (`frame.css`), so the back button comes before "Your menu"; from 1000 px the bar is hidden and the page's link
+  shows. The server's HTML has only the page's copy, which shows in the bar's place until the page runs.
+- **The sidebar's foot under the demo band (1280):** a scroll-driven animation (`fh-side-fill`, the band's 34 px of
+  scroll) grows `.fh-side` from `100vh − 34px` to `100vh`; browsers without scroll timelines keep the shorter height.
+- **A header under the demo band in the store app** (a thread's `.ib-thead`, a room's `.vr-header`): on a page with its
+  own header, `frame.css` pads `.fh-app` by `--sat`, covers the status bar with a fixed paper strip (`body::before`),
+  and the header sticks at `top: var(--sat)` without its own status-bar padding. No second gap at rest, and the header
+  stays clear of the status bar after the band scrolls away.
+- **The profile's More sheet:** the mute switch's answer ("Their rooms won't alert you.") shows under its row in the
+  sheet (`role=status`), not as a page flash under the backdrop. A switch's off track is the token `--fh-switch-off`
+  (light `#b5b4ad`, dark `#8f8d85`).
+- **Outlines inside text:** `Skeleton` takes `as="span"` (and `OutlineTitle`, `OutlineLine as="span"` use it), so a grey
+  bar inside a heading or a paragraph is valid HTML; the admin Home outline's lede was the `/admin/*` hydration warning.
+- **Rooms:** "Never recorded" is in the line under every room's title (`NEVER_RECORDED`, web and store app). More shows
+  only when it holds something (Rename and Leave for the host, Back to listening on the stage), so a listener has none.
+- **The store app (store build 6):** `PortalTabs` loads the bar's other tabs behind the open one, one at a time, once
+  every live tab has said hello and `PRELOAD_DELAY_MS` (1.2 s) has passed; never on an Android phone under 3 GB
+  (`IS_LOW_MEMORY`), and once per sign-in. The slide starts at 30% opacity. A tab's first load draws the page's top bar
+  (`TopBarPlaceholder`: the community's name and small line, which the tab script reports as `brand`) over the paper.
+  An alert or a link for a tab that is alive runs `buildMoveScript`: it sends `commonhall-navigate` and the shell's
+  `NativeNavigate` (`src/shell/native-navigate.tsx`) moves the page with the router (no reload, the list keeps its
+  place); a page that doesn't answer loads the path.

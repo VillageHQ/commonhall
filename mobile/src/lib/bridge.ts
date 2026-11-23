@@ -11,6 +11,8 @@ import { isSameOrigin } from "./links.ts";
 export const BRIDGE_VERSION = 1;
 export const NATIVE_APP_READY_EVENT = "commonhall-app-ready";
 export const ROOM_CLOSED_EVENT = "commonhall-room-closed";
+// The app asks a live page to move itself to a path (src/shell/native-navigate.tsx), detail { path }.
+export const NAVIGATE_EVENT = "commonhall-navigate";
 
 // Why the room screen closed, as the page reads it (src/platform/native-app/bridge.ts, ROOM_CLOSED_REASONS).
 export type RoomClosedReason = "left" | "ended" | "elsewhere" | "failed";
@@ -122,6 +124,12 @@ export function buildRoomClosedScript(roomId: string, reason: RoomClosedReason) 
 
 export function buildNavigateScript(path: string) {
   return `window.location.assign(${JSON.stringify(path)}); true;`;
+}
+
+// Moves a page that is already alive to `path` without loading it again: the site moves itself on NAVIGATE_EVENT (its
+// shell's listener calls preventDefault); a page without the listener (signed out, an older site) loads `path`.
+export function buildMoveScript(path: string) {
+  return `(function () { var event = new CustomEvent(${JSON.stringify(NAVIGATE_EVENT)}, { detail: { path: ${JSON.stringify(path)} }, cancelable: true }); if (window.dispatchEvent(event)) window.location.assign(${JSON.stringify(path)}); })(); true;`;
 }
 
 export function toApiAnswer(status: number, body: string): ApiAnswer {

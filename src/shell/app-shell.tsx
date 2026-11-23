@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import { BAR_BACK_SLOT } from "@/components/back-link";
 import { DemoBanner } from "@/components/demo-banner";
 import { FlashProvider, FlashSlot } from "@/components/flash";
 import { MAIN_CONTENT_ID } from "@/components/skip-link";
@@ -7,6 +8,7 @@ import type { CommunityLogo } from "@/platform/branding/branding";
 import { isDemoMode } from "@/platform/demo/mode";
 
 import { ModuleOffNotice } from "./module-off-notice";
+import { NativeNavigate } from "./native-navigate";
 import { FounderViewStrip, MenuTabOutlines, ShellFrame, SidebarNavigation, TabBar } from "./navigation-links";
 import type { NavigationBadgeCounts, ShellNavigation } from "./navigation-rules";
 import { PressEnd } from "./pressed-tab";
@@ -42,6 +44,8 @@ export function AppShell({ community, member, navigation, badges, isNetworkOn, c
         </aside>
         <div data-slot="shell-column" className="fh-col min-w-0">
           <header data-slot="phone-top-bar" className="fh-topbar">
+            {/* A pushed screen's back button, first in the bar and in the keyboard order (back-link.tsx). */}
+            <span data-slot={BAR_BACK_SLOT} className="contents" />
             <ShellFundMark name={community.name} logo={community.logo} isAdmin={member.isAdmin} size="default" />
             <span className="fh-spacer" />
             <PhoneAccountButton member={member} navigation={navigation} />
@@ -63,6 +67,7 @@ export function AppShell({ community, member, navigation, badges, isNetworkOn, c
         </div>
         {isNetworkOn ? <SearchReadyNotice /> : null}
         <ModuleOffNotice />
+        <NativeNavigate />
         <TabBar navigation={navigation} isAdmin={member.isAdmin} badges={badges} />
       </ShellFrame>
     </FlashProvider>

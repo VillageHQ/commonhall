@@ -19,7 +19,7 @@ import { readNativeApp, ROOM_CLOSED_REASONS, subscribeToNativeApp, subscribeToRo
 
 import { isModerator, isOnStage, ROLE_ACTIONS, ROOM_ROLES, VOICE_ATTRIBUTES, VOICE_DATA_TOPICS, VOICE_LIMITS, VOICE_PAGE, VOICE_REACTIONS, type RoleAction, type RoomRole } from "../contract";
 import { voiceRequests } from "../queries";
-import { RoomHeader, RoomTitle, type RoomMoreItem } from "./room-header";
+import { NEVER_RECORDED, RoomHeader, RoomTitle, type RoomMoreItem } from "./room-header";
 import { keepLeftMark, readLeftBeforeReload } from "./room-left-mark";
 
 // Every face's role line in the grid (X Spaces): nobody is left without one.
@@ -212,7 +212,7 @@ function AppRoomHandoff({ roomId, title, hostName, isHost, notice, children }: L
   const head = (
     <>
       <RoomHeader rename={isHost && closedReason !== ROOM_CLOSED_REASONS.ended ? { roomId, title } : null} />
-      <RoomTitle title={title} line={hostName} />
+      <RoomTitle title={title} line={`${hostName} · ${NEVER_RECORDED}`} />
       {children}
     </>
   );
@@ -484,7 +484,7 @@ function BrowserRoom({ roomId, title, hostName, children }: LiveRoomProps) {
   const head = (
     <>
       <RoomHeader end={headerEnd} rename={isHostNow && !isClosed ? { roomId, title } : null} more={more} />
-      <RoomTitle title={title} line={phase === PHASES.live ? `${hostWords} · ${peopleWords}` : phase === PHASES.connecting ? `Joining ${title}…` : hostWords} />
+      <RoomTitle title={title} line={phase === PHASES.live ? `${hostWords} · ${peopleWords} · ${NEVER_RECORDED}` : phase === PHASES.connecting ? `Joining ${title}…` : hostWords} />
       {children}
     </>
   );

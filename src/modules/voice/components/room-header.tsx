@@ -16,7 +16,8 @@ import { VOICE_LIMITS, VOICE_PAGE } from "../contract";
 import { voiceRequests } from "../queries";
 
 // One item of the room's "More" sheet: what today's page offers there (Rename for the host, Leave when End room
-// takes its place in the header, stepping down from the stage).
+// takes its place in the header, stepping down from the stage). With none, the header has no More: "Never recorded"
+// sits in the line under the title (NEVER_RECORDED), so a listener's More would hold nothing.
 export type RoomMoreItem = { label: string; onSelect: () => void; isDisabled?: boolean; testId?: string };
 
 type RoomHeaderProps = {
@@ -31,6 +32,7 @@ type RoomHeaderProps = {
 // it replaces the community's bar (the page carries data-own-header) and sits under the status bar; from 1000 px the
 // same row tops the room's column.
 export function RoomHeader({ end, rename, more = [] }: RoomHeaderProps) {
+  const hasMore = Boolean(rename) || more.length > 0;
   const [isMoreOpen, setIsMoreOpen] = useState(false);
   const [isRenaming, setIsRenaming] = useState(false);
   function close() {
@@ -45,47 +47,48 @@ export function RoomHeader({ end, rename, more = [] }: RoomHeaderProps) {
       </Link>
       <div className="vr-header-end">
         {end}
-        <Sheet
-          isOpen={isMoreOpen}
-          onOpen={() => setIsMoreOpen(true)}
-          onClose={close}
-          title={isRenaming ? "Rename the room" : "More"}
-          isTitleHidden={!isRenaming}
-          desktop="popover"
-          trigger={
-            <button type="button" className="vr-iconbtn" aria-label="More" data-testid="room-more">
-              <Ellipsis aria-hidden="true" strokeWidth={1.5} />
-            </button>
-          }
-        >
-          {isRenaming && rename ? (
-            <RenameForm roomId={rename.roomId} title={rename.title} onDone={close} onCancel={() => setIsRenaming(false)} />
-          ) : (
-            <div className="vr-more" data-testid="room-more-sheet">
-              {rename ? (
-                <button type="button" className="vr-more-item" onClick={() => setIsRenaming(true)} data-testid="rename-room">
-                  Rename
-                </button>
-              ) : null}
-              {more.map((item) => (
-                <button
-                  key={item.label}
-                  type="button"
-                  className="vr-more-item"
-                  disabled={item.isDisabled}
-                  data-testid={item.testId}
-                  onClick={() => {
-                    close();
-                    item.onSelect();
-                  }}
-                >
-                  {item.label}
-                </button>
-              ))}
-              <p className="vr-more-note">Never recorded.</p>
-            </div>
-          )}
-        </Sheet>
+        {hasMore ? (
+          <Sheet
+            isOpen={isMoreOpen}
+            onOpen={() => setIsMoreOpen(true)}
+            onClose={close}
+            title={isRenaming ? "Rename the room" : "More"}
+            isTitleHidden={!isRenaming}
+            desktop="popover"
+            trigger={
+              <button type="button" className="vr-iconbtn" aria-label="More" data-testid="room-more">
+                <Ellipsis aria-hidden="true" strokeWidth={1.5} />
+              </button>
+            }
+          >
+            {isRenaming && rename ? (
+              <RenameForm roomId={rename.roomId} title={rename.title} onDone={close} onCancel={() => setIsRenaming(false)} />
+            ) : (
+              <div className="vr-more" data-testid="room-more-sheet">
+                {rename ? (
+                  <button type="button" className="vr-more-item" onClick={() => setIsRenaming(true)} data-testid="rename-room">
+                    Rename
+                  </button>
+                ) : null}
+                {more.map((item) => (
+                  <button
+                    key={item.label}
+                    type="button"
+                    className="vr-more-item"
+                    disabled={item.isDisabled}
+                    data-testid={item.testId}
+                    onClick={() => {
+                      close();
+                      item.onSelect();
+                    }}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </Sheet>
+        ) : null}
       </div>
     </div>
   );
@@ -125,6 +128,9 @@ function RenameForm({ roomId, title, onDone, onCancel }: { roomId: string; title
     </form>
   );
 }
+
+// Said under every room's title (a live room's "Maya Ortiz · 3 in the room · Never recorded").
+export const NEVER_RECORDED = "Never recorded";
 
 // The room's title (22 px Newsreader, at most 3 lines) and its one quiet line under it.
 export function RoomTitle({ title, line }: { title: string; line: ReactNode }) {

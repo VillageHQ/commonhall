@@ -218,7 +218,7 @@ function TextLine({ width, height = 12, lineHeight = 22, className }: { width: s
 // numbers, the partner report card, then what needs the admin.
 function AdminHomeOutline() {
   return (
-    <PageOutline title={<OutlineTitle label="Home" width="46%" />} description={<OutlineLine width="64%" height={13} className="inline-block align-middle" />}>
+    <PageOutline title={<OutlineTitle label="Home" width="46%" />} description={<OutlineLine as="span" width="64%" height={13} className="inline-block align-middle" />}>
       <div aria-hidden="true">
         <div className="mb-4 grid grid-cols-2 overflow-hidden rounded-[var(--r)] border border-[var(--rule)] bg-[var(--leaf)]">
           {STAT_CELLS.map((index) => (
