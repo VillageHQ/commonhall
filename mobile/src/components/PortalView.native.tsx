@@ -1,11 +1,12 @@
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, type ComponentType, type Ref } from "react";
-import { BackHandler, Linking, Platform } from "react-native";
+import { Linking, Platform } from "react-native";
 import { WebView, type WebViewMessageEvent, type WebViewProps } from "react-native-webview";
 import type { ShouldStartLoadRequest } from "react-native-webview/lib/WebViewTypes";
 
 import { buildBootstrapScript, buildCallScript, buildNavigateScript, buildPushTokenScript, buildRoomClosedScript, isAllowedCall, isRoomId, readPortalMessage, toApiAnswer, type ApiAnswer } from "../lib/bridge";
 import { isSameOrigin, opensInPortal, toSafePath } from "../lib/links";
-import type { PortalHandle, PortalViewProps } from "./portal-types";
+import { buildTabsScript, parseTabsMessage } from "../lib/tabs";
+import type { PortalViewHandle, PortalViewProps } from "./portal-types";
 
 const CALL_TIMEOUT_MS = 15_000;
 const USER_AGENT_SUFFIX = "CommonhallApp/1";
@@ -16,16 +17,17 @@ const PortalWebView = WebView as unknown as ComponentType<WebViewProps & { ref?:
 
 type Pending = { resolve: (answer: ApiAnswer) => void; timer: ReturnType<typeof setTimeout> };
 
-// The whole portal, in a web view: the member's session lives in its cookie store, so it stays signed in between
-// launches. Other sites open in the phone's browser.
-export const PortalView = forwardRef<PortalHandle, PortalViewProps>(function PortalView({ origin, startUrl, pushToken, onOpenRoom, onAppAction, onPageLoaded, onFailed }, ref) {
+// One tab of the portal, in a web view: the member's session lives in the app's shared cookie store, so every tab is
+// signed in at once and stays signed in between launches. Other sites open in the phone's browser.
+export const PortalView = forwardRef<PortalViewHandle, PortalViewProps>(function PortalView({ origin, startUrl, pushToken, home, onOpenRoom, onAppAction, onPageLoaded, onFailed, onTabsMessage }, ref) {
   const webView = useRef<WebViewHandle | null>(null);
   const pending = useRef(new Map<number, Pending>());
   const nextId = useRef(1);
   const canGoBack = useRef(false);
   const currentUrl = useRef(startUrl);
-  // Runs before every page of the portal; a token that arrives mid-page is also set at once with setPushToken.
-  const bootstrap = useMemo(() => buildBootstrapScript({ platform: Platform.OS, pushToken }), [pushToken]);
+  // Runs before every page of the portal; a token that arrives mid-page is also set at once with setPushToken. The
+  // tab script (lib/tabs.ts) runs with it: the page hides the site's bar and tells the app about it.
+  const bootstrap = useMemo(() => buildBootstrapScript({ platform: Platform.OS, pushToken }) + buildTabsScript(home), [pushToken, home]);
 
   useImperativeHandle(
     ref,
@@ -53,19 +55,14 @@ export const PortalView = forwardRef<PortalHandle, PortalViewProps>(function Por
       roomClosed: (roomId, reason) => {
         if (isRoomId(roomId) && isSameOrigin(currentUrl.current, origin)) webView.current?.injectJavaScript(buildRoomClosedScript(roomId, reason));
       },
+      runInPage: (script) => {
+        if (isSameOrigin(currentUrl.current, origin)) webView.current?.injectJavaScript(script);
+      },
+      canGoBack: () => canGoBack.current,
+      goBack: () => webView.current?.goBack(),
     }),
     [origin],
   );
-
-  // Android's back button goes back in the portal first.
-  useEffect(() => {
-    const subscription = BackHandler.addEventListener("hardwareBackPress", () => {
-      if (!canGoBack.current) return false;
-      webView.current?.goBack();
-      return true;
-    });
-    return () => subscription.remove();
-  }, []);
 
   useEffect(
     () => () => {
@@ -81,6 +78,12 @@ export const PortalView = forwardRef<PortalHandle, PortalViewProps>(function Por
   const onMessage = useCallback(
     (event: WebViewMessageEvent) => {
       // Only the community's own pages speak to the app.
+      if (!isSameOrigin(event.nativeEvent.url, origin)) return;
+      const tabsMessage = parseTabsMessage(event.nativeEvent.data);
+      if (tabsMessage) {
+        onTabsMessage(tabsMessage);
+        return;
+      }
       const message = readPortalMessage(event.nativeEvent.data, event.nativeEvent.url, origin);
       if (!message) return;
       if (message.type === "voice.open") {
@@ -97,7 +100,7 @@ export const PortalView = forwardRef<PortalHandle, PortalViewProps>(function Por
       clearTimeout(waiting.timer);
       waiting.resolve(toApiAnswer(message.status, message.body));
     },
-    [origin, onOpenRoom, onAppAction],
+    [origin, onOpenRoom, onAppAction, onTabsMessage],
   );
 
   const onShouldStartLoad = useCallback(

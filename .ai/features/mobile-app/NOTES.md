@@ -129,3 +129,7 @@ TestFlight internal testing and Android test APKs only: never a public release, 
 The room screen has no Tell people (its routes are gone). The room page always sends `hasNotified: true`, which hides
 Tell people in TestFlight 3 and the Android test APK; this build reads the flag and ignores it. Starting a room is one
 tap on the portal's Rooms page: [room-start-instant NOTES](../room-start-instant/NOTES.md).
+
+## Since round 8 (23 Nov 2026)
+- The tab bar is native, with one web view per tab kept alive (ui-polish Part 7): how it works is in
+  [../ui-polish/NOTES.md](../ui-polish/NOTES.md) ("Part 7"). It needs store build 5.

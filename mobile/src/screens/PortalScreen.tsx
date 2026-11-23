@@ -3,17 +3,13 @@ import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import type { PortalHandle } from "../components/portal-types";
-import { PortalView } from "../components/PortalView";
+import { PortalTabs } from "../components/PortalTabs";
 import type { AppAction, RoomClosedReason } from "../lib/bridge";
 import type { Community } from "../lib/community";
-import { toPortalUrl } from "../lib/links";
+import { isSignedOutPath, toPortalUrl } from "../lib/links";
 import { setUpPush } from "../push/push";
 import { SANS, SERIF, useColors, type Colors } from "../theme";
 import { RoomScreen } from "../voice/RoomScreen";
-
-// Pages a signed-out visitor sees: no alerts to register there, and arriving on one means whoever signs in next
-// gets this phone's alerts registered again.
-const SIGNED_OUT_PATHS = /^\/(signin|auth|sign-up|invite|i\/|setup|forgot-password|reset-password|recover-admin|confirm-email)/;
 
 type PortalScreenProps = {
   community: Community;
@@ -60,7 +56,8 @@ export function PortalScreen({ community, startPath, openRequest, onSwitchCommun
   const onPageLoaded = useCallback(
     (path: string) => {
       setFailure(null);
-      if (SIGNED_OUT_PATHS.test(path)) {
+      // Arriving on a signed-out page means whoever signs in next gets this phone's alerts registered again.
+      if (isSignedOutPath(path)) {
         isRegistered.current = false;
         return;
       }
@@ -134,13 +131,25 @@ export function PortalScreen({ community, startPath, openRequest, onSwitchCommun
     [portal],
   );
 
+  // The room's mini bar docks in the tabs' slot, right above the tab bar (above the home indicator where it hides).
+  const miniBar =
+    room && !isRoomShown ? (
+      <Pressable accessibilityRole="button" testID="room-mini-bar" accessibilityLabel={`Back to ${room.title}`} onPress={() => setIsRoomShown(true)} style={styles.miniBar}>
+        <View style={[styles.liveDot, roomStatus.isLive ? null : styles.closedDot]} />
+        <Text style={styles.miniTitle} numberOfLines={1}>
+          {room.title}
+        </Text>
+        <Text style={styles.miniStatus}>{roomStatus.text}</Text>
+      </Pressable>
+    ) : null;
+
   return (
     <View style={styles.screen}>
-      {/* No native bar: the web view reaches the top edge and the site pads its own bar under the status bar
-          (smooth-app; the viewport is viewport-fit=cover for the app). Reload, Open in the browser and Switch community
-          are the avatar menu's "This app" group, arriving through onAppAction. */}
+      {/* No native top bar: the web views reach the top edge and the site pads its own bar under the status bar
+          (smooth-app; the viewport is viewport-fit=cover for the app). The tab bar is native (PortalTabs). Reload, Open
+          in the browser and Switch community are the avatar menu's "This app" group, arriving through onAppAction. */}
       <View style={styles.portal}>
-        <PortalView key={attempt} ref={portalRef} origin={community.origin} startUrl={startUrl} pushToken={pushToken} onOpenRoom={onOpenRoom} onAppAction={onAppAction} onPageLoaded={onPageLoaded} onFailed={setFailure} />
+        <PortalTabs key={attempt} ref={portalRef} origin={community.origin} startUrl={startUrl} pushToken={pushToken} onOpenRoom={onOpenRoom} onAppAction={onAppAction} onPageLoaded={onPageLoaded} onFailed={setFailure} bottomSlot={miniBar} />
         {failure ? (
           <View style={[styles.failure, { paddingTop: insets.top + 24 }]} testID="portal-failure">
             <Text style={styles.failureTitle}>We couldn&apos;t open {community.name}</Text>
@@ -162,15 +171,6 @@ export function PortalScreen({ community, startPath, openRequest, onSwitchCommun
         ) : null}
       </View>
 
-      {room && !isRoomShown ? (
-        <Pressable accessibilityRole="button" testID="room-mini-bar" accessibilityLabel={`Back to ${room.title}`} onPress={() => setIsRoomShown(true)} style={[styles.miniBar, { paddingBottom: insets.bottom + 10 }]}>
-          <View style={[styles.liveDot, roomStatus.isLive ? null : styles.closedDot]} />
-          <Text style={styles.miniTitle} numberOfLines={1}>
-            {room.title}
-          </Text>
-          <Text style={styles.miniStatus}>{roomStatus.text}</Text>
-        </Pressable>
-      ) : null}
       {room ? (
         <RoomScreen
           key={room.roomId}
@@ -201,7 +201,7 @@ function makeStyles(colors: Colors) {
     buttonText: { color: colors.paper, fontFamily: SANS, fontSize: 15, fontWeight: "600" },
     linkButton: { paddingVertical: 14, alignItems: "center" },
     linkText: { color: colors.ink, fontFamily: SANS, fontSize: 15, textDecorationLine: "underline" },
-    miniBar: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 16, paddingTop: 12, backgroundColor: colors.ink },
+    miniBar: { flexDirection: "row", alignItems: "center", gap: 10, minHeight: 56, paddingHorizontal: 16, paddingVertical: 10, backgroundColor: colors.ink },
     liveDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.live },
     closedDot: { backgroundColor: colors.muted },
     miniTitle: { flex: 1, color: colors.paper, fontFamily: SANS, fontSize: 15, fontWeight: "600" },
