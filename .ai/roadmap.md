@@ -161,6 +161,8 @@ once and tell everyone, and the app should ask for fewer decisions. The evidence
 - [ ] A one-tap room's alert waits for the name (about 20 s, or until Rename is saved)
 - [ ] A room that can't connect: plain words, Try again, and End room for the host
 - [ ] In the store app, Back to a room page you left opens the room again (only a reload keeps "You left the room."); found by room-polish's check
+- [ ] In the store app, the Rooms tab reads again right after you leave a room from the mini bar (today it waits for its 15 s poll and says "1 in" until then); found by empty-room's check
+- [ ] An empty room ends by itself after a minute; Leave stops counting the leaver at once — empty-room — [spec](features/empty-room/SPEC.md) (pull request open)
 - [ ] Network search: leave members out of "in reach", and put the offer under the search box on a phone
 - [ ] The avatar menu: fewer items (Library easier to reach, Jobs and Our jobs not side by side)
 - [ ] A hiring request shows its job, and closes when the job is removed

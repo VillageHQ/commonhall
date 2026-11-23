@@ -351,6 +351,13 @@
       "when": 1795228953304,
       "tag": "0050_ask_answers_seen",
       "breakpoints": true
+    },
+    {
+      "idx": 51,
+      "version": "7",
+      "when": 1795443652210,
+      "tag": "0051_voice_room_empty_since",
+      "breakpoints": true
     }
   ]
 }

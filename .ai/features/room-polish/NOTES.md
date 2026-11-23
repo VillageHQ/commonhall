@@ -17,9 +17,9 @@ both fixes from the server.
 
 ## Who the room cards count
 - `readLiveRooms` (`src/modules/voice/reads-live.ts`), used by the Rooms page's cards and Today's Live now: someone
-  counts while LiveKit lists them. In demo mode, seats taken before the demo was last seeded (`joinedAt` at or before
-  the `demo_seeded_at` setting, `readDemoSeededAt` in `service.ts`) count as in too, since the made-up people never
-  connect. Before, demo mode counted everyone who ever joined, so a visitor who left stayed on the card.
+  counts while LiveKit lists them (a member who taps Leave is removed from LiveKit at once, since 23 Nov 2026). In
+  demo mode, seats taken before the demo was last seeded (`joinedAt` at or before the `demo_seeded_at` setting,
+  `readDemoSeededAt` in `service.ts`) count as in too, since the made-up people never connect. Before, demo mode counted everyone who ever joined, so a visitor who left stayed on the card.
 - While LiveKit can't be reached, everyone who joined still counts (unchanged; nobody can hear a room then).
 
 ## Tests

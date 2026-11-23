@@ -286,6 +286,66 @@ describe("voice rooms", () => {
     expect((await call(postJoin, listener.cookie, { roomId })).status).toBe(409);
   });
 
+  async function readStatus(roomId: string) {
+    const [room] = await database.select({ status: voiceRoom.status }).from(voiceRoom).where(eq(voiceRoom.id, roomId));
+    return room?.status;
+  }
+
+  // The host taps Leave instead of End room. Both the web room and the store app call leave before they disconnect, so
+  // LiveKit still lists the host when the leave arrives.
+  it("stops counting a member the moment they leave, and ends a room a minute after nobody is connected", async () => {
+    const [host, viewer] = await Promise.all([createSignedInMember(database), createSignedInMember(database)]);
+    const roomId = await openRoom(host);
+    const roomName = toLiveKitRoomName(roomId);
+    await join(host, roomId);
+    livekit.connect(roomName, host.userId);
+    expect((await readRooms(viewer)).live.find(({ id }) => id === roomId)?.count).toBe(1);
+
+    const left = Date.now();
+    expect((await call(postLeave, host.cookie, { roomId })).status).toBe(200);
+    expect((await readRooms(viewer)).live.find(({ id }) => id === roomId)?.count).toBe(0);
+    expect((await readRooms(host)).live.find(({ id }) => id === roomId)?.count).toBe(0);
+
+    await checkRoom(database, process.env, roomId, new Date(left + VOICE_LIMITS.emptyRoomMs / 2));
+    expect(await readStatus(roomId)).toBe("live");
+    await checkRoom(database, process.env, roomId, new Date(left + VOICE_LIMITS.emptyRoomMs + 1_000));
+    expect(await readStatus(roomId)).toBe("ended");
+    expect(livekit.calls.some(({ method, body }) => method === "DeleteRoom" && body.room === roomName)).toBe(true);
+  });
+
+  // The minute job runs every 60 s, so the check after the one that first saw a room empty can land a few ms short.
+  it("ends an empty room on the next minute check, even one that lands a moment early", async () => {
+    const host = await createSignedInMember(database);
+    const roomId = await openRoom(host);
+    const start = Date.now() + 60_000;
+
+    await checkRoom(database, process.env, roomId, new Date(start));
+    await checkRoom(database, process.env, roomId, new Date(start + VOICE_LIMITS.emptyRoomMs - 5));
+    expect(await readStatus(roomId)).toBe("ended");
+  });
+
+  it("keeps an empty room going when someone comes back within the minute, and never ends one while LiveKit is unreachable", async () => {
+    const [host, listener] = await Promise.all([createSignedInMember(database), createSignedInMember(database)]);
+    const roomId = await openRoom(host);
+    const roomName = toLiveKitRoomName(roomId);
+    const start = Date.now();
+
+    await checkRoom(database, process.env, roomId, new Date(start));
+    livekit.setDown(true);
+    await checkRoom(database, process.env, roomId, new Date(start + VOICE_LIMITS.emptyRoomMs + 1_000));
+    livekit.setDown(false);
+    expect(await readStatus(roomId)).toBe("live");
+
+    // Back with seconds to spare: the minute starts again the next time the room is seen empty.
+    livekit.connect(roomName, listener.userId);
+    await checkRoom(database, process.env, roomId, new Date(start + VOICE_LIMITS.emptyRoomMs - 10_000));
+    livekit.disconnect(roomName, listener.userId);
+    await checkRoom(database, process.env, roomId, new Date(start + VOICE_LIMITS.emptyRoomMs + 1_000));
+    expect(await readStatus(roomId)).toBe("live");
+    await checkRoom(database, process.env, roomId, new Date(start + 2 * VOICE_LIMITS.emptyRoomMs + 2_000));
+    expect(await readStatus(roomId)).toBe("ended");
+  });
+
   it("alerts on 3 starts a day; a 4th starts quietly and says so", async () => {
     const member = await createSignedInMember(database);
     for (let room = 0; room < VOICE_LIMITS.broadcastsPerDay; room += 1) {
