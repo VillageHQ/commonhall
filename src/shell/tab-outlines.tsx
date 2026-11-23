@@ -149,33 +149,45 @@ function InboxOutline() {
 }
 
 const STAT_CELLS = [0, 1, 2, 3];
-const NEEDS_ROWS = [0, 1, 2, 3];
+const NEEDS_ROWS = [0, 1, 2];
 
-// The console's Home: the heading (This week, or the launch checklist's welcome), the week's numbers, the partner
-// report, what needs the admin.
+// A line of text in a line box of the page's own height (a 22 px line for 15 px text), so the blocks below land where
+// the page's do.
+function TextLine({ width, height = 12, lineHeight = 22, className }: { width: string | number; height?: number; lineHeight?: number; className?: string }) {
+  return (
+    <div aria-hidden="true" className={`flex items-center ${className ?? ""}`} style={{ height: lineHeight }}>
+      <OutlineLine width={width} height={height} />
+    </div>
+  );
+}
+
+// The console's Home: the heading (This week, or the launch checklist's welcome) and its line, the week's four
+// numbers, the partner report card, then what needs the admin.
 function AdminHomeOutline() {
   return (
-    <PageOutline title={<OutlineTitle label="Home" width="46%" />} description={<OutlineLine width="64%" height={13} className="mt-1" />}>
+    <PageOutline title={<OutlineTitle label="Home" width="46%" />} description={<OutlineLine width="64%" height={13} className="inline-block align-middle" />}>
       <div aria-hidden="true">
         <div className="mb-4 grid grid-cols-2 overflow-hidden rounded-[var(--r)] border border-[var(--rule)] bg-[var(--leaf)]">
           {STAT_CELLS.map((index) => (
-            <div key={index} className={`grid gap-2.5 p-4 ${index % 2 === 0 ? "border-r border-[var(--rule)]" : ""} ${index < 2 ? "border-b border-[var(--rule)]" : ""}`}>
+            <div key={index} className={`grid gap-2 p-4 ${index % 2 === 0 ? "border-r border-[var(--rule)]" : ""} ${index < 2 ? "border-b border-[var(--rule)]" : ""}`}>
               <OutlineLine width={22} height={22} />
               <OutlineLine width="78%" height={11} />
             </div>
           ))}
         </div>
         <OutlineSheet className="mb-4">
-          <OutlineLine width={110} height={15} />
-          <OutlineLine width="80%" height={11} className="mt-2.5" />
+          <TextLine width={110} height={15} />
+          <TextLine width="80%" height={11} />
+          <TextLine width="52%" height={11} />
         </OutlineSheet>
         <OutlineSheet>
-          <OutlineLine width={92} height={15} className="mb-4" />
+          <TextLine width={92} height={15} className="mb-2" />
           {NEEDS_ROWS.map((index) => (
-            <div key={index} className="border-t border-[var(--rule)] py-4">
-              <OutlineLine width={`${70 - index * 9}%`} height={13} />
+            <div key={index} className="border-t border-[var(--rule)] py-3">
+              <TextLine width={`${62 - index * 8}%`} height={13} />
             </div>
           ))}
+          <div className="border-t border-[var(--rule)]" />
         </OutlineSheet>
       </div>
     </PageOutline>
@@ -184,13 +196,14 @@ function AdminHomeOutline() {
 
 const ADMIN_ASK_ROWS = [0, 1, 2];
 
-// The console's Asks & intros: the area's tabs, then the asks with no help yet.
+// The console's Asks & intros: the area's tabs, then the asks with no help yet (each: three lines of the ask, who and
+// when, the row of actions).
 function AdminAsksOutline() {
   return (
     <PageOutline title="Asks & intros">
       <OutlineChips widths={[58, 82]} className="mb-5" isWrapped />
       <OutlineSheet>
-        <div className="mb-3 flex justify-between">
+        <div aria-hidden="true" className="mb-3.5 flex h-[22px] items-center justify-between">
           <OutlineLine width={96} height={15} />
           <OutlineLine width={96} height={13} />
         </div>

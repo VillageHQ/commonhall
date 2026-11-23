@@ -133,9 +133,11 @@ html[data-app][data-native-tabs] .fh-tabbar {
 
 /* ── The phone's top bar (under 1000 px) ── */
 @media (max-width: 999.98px) {
-  /* A tab root's h1 sits 16 px under the bar. */
+  /* A tab root's h1 sits 16 px under the bar. The page area clips sideways, so a tab's slide (40 px in from the side)
+     never makes the page wider than the screen, which would push the fixed tab bar off it. */
   .fh-main {
     padding-top: 16px;
+    overflow-x: clip;
   }
 
   /* The avatar is drawn at 28 px in a 44×44 tap area, still 16 px from the edge. */
