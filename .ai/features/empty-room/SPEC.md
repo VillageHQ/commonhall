@@ -1,3 +1,10 @@
+---
+id: empty-room
+status: built
+waits-on: []
+size: under an hour
+touches: ["src/modules/voice/service.ts", "src/modules/voice/contract.ts", "src/modules/voice/schema.ts", "drizzle/0051_voice_room_empty_since.sql"]
+---
 # An empty room ends by itself
 
 From the [charter](CHARTER.md) (23 Nov 2026). Server side only; the store app needs no change.
