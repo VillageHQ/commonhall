@@ -3,7 +3,7 @@ import { describe, it } from "node:test";
 import { runInNewContext } from "node:vm";
 
 import { isSignedOutPath } from "./links.ts";
-import { buildFrameScript, buildGoScript, buildTabsScript, findTabFor, findTabRoot, parseTabsMessage, pickTabsToDrop, readColor, readIcon, readSlideDirection, withStroke } from "./tabs.ts";
+import { buildDarkScript, buildFrameScript, buildGoScript, buildTabsScript, findTabFor, findTabRoot, parseTabsMessage, pickTabsToDrop, readColor, readIcon, readSlideDirection, withStroke } from "./tabs.ts";
 
 const HREFS = ["/rooms", "/today", "/asks", "/people", "/inbox"];
 const ICON = '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2 10v3"></path></svg>';
@@ -13,7 +13,8 @@ function state(overrides: Record<string, unknown> = {}) {
     type: "tabs.state",
     isFirst: true,
     isShown: true,
-    isSheetOpen: false,
+    isOverlayOpen: false,
+    isDark: true,
     path: "/today",
     tabs: HREFS.map((href) => ({ href, label: href.slice(1), icon: ICON, count: href === "/inbox" ? 3 : 0, isLive: href === "/rooms", badgeLabel: "" })),
     colors: { bar: "rgb(255, 255, 255)", rule: "rgba(0, 0, 0, 0)", active: "oklch(0.2 0 0)", inactive: "#5f5d57" },
@@ -32,6 +33,8 @@ describe("the page's tab messages", () => {
     assert.equal(message.tabs[4]?.count, 3);
     assert.equal(message.tabs[0]?.isLive, true);
     assert.equal(message.isShown, true);
+    assert.equal(message.isDark, true);
+    assert.equal(message.isOverlayOpen, false);
     // A transparent colour and one React Native can't parse fall back to the app's theme.
     assert.deepEqual(message.colors, { bar: "rgb(255, 255, 255)", inactive: "#5f5d57" });
   });
@@ -108,6 +111,7 @@ describe("the tab script in the page", () => {
       setAttribute: (name: string, value: string) => attributes.set(name, value),
       removeAttribute: (name: string) => attributes.delete(name),
       hasAttribute: (name: string) => attributes.has(name),
+      classList: { names: new Set<string>(), contains(name: string) { return this.names.has(name); }, toggle(name: string, on: boolean) { if (on) this.names.add(name); else this.names.delete(name); } },
       style: { values: new Map<string, string>(), setProperty(name: string, value: string) { this.values.set(name, value); }, removeProperty(name: string) { this.values.delete(name); } },
     };
     const window: Record<string, unknown> = {
@@ -149,6 +153,20 @@ describe("the tab script in the page", () => {
     runInNewContext(buildFrameScript({ tab: 0, mini: 0, bottomInset: 24 }), page.context);
     assert.equal(page.attributes.has("data-mini-player"), false);
     assert.equal(page.root.style.values.get("--sab"), "24px");
+  });
+
+  it("can take the app's answer to its first report, and follows dark mode switched in another tab", () => {
+    const page = fakePage();
+    let wasReady = false;
+    page.window.__commonhallTabsSend = () => {
+      wasReady = Boolean(page.window.__commonhallTabs);
+    };
+    runInNewContext(buildTabsScript("/today"), page.context);
+    assert.equal(wasReady, true);
+    runInNewContext(buildDarkScript(true), page.context);
+    assert.equal(page.root.classList.contains("dark"), true);
+    runInNewContext(buildDarkScript(false), page.context);
+    assert.equal(page.root.classList.contains("dark"), false);
   });
 
   it("goes to a page with a plain load where the site's bar has no link to it", () => {

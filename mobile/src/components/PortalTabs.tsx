@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { buildNavigateScript } from "../lib/bridge";
 import { isSignedOutPath, toSafePath } from "../lib/links";
 import {
+  buildDarkScript,
   buildFrameScript,
   buildGoScript,
   buildHomeScript,
@@ -91,7 +92,7 @@ export const PortalTabs = forwardRef<PortalHandle, PortalTabsProps>(function Por
   const [activeId, setActiveId] = useState(1);
   const [tabs, setTabs] = useState<PageTab[]>([]);
   const [pageColors, setPageColors] = useState<PageColors>({});
-  const [bar, setBar] = useState({ isShown: false, isSheetOpen: false });
+  const [bar, setBar] = useState({ isShown: false, isOverlayOpen: false });
   const [barHeight, setBarHeight] = useState(TAB_BAR_HEIGHT);
   const [slotHeight, setSlotHeight] = useState(0);
   // The open tab slides in from `from` px (0: no slide); `at` starts each slide once the tab is drawn.
@@ -109,6 +110,8 @@ export const PortalTabs = forwardRef<PortalHandle, PortalTabsProps>(function Por
   const handles = useRef(new Map<number, PortalViewHandle>());
   const states = useRef(new Map<number, TabsState>());
   const recent = useRef<number[]>([1]);
+  // The site's dark mode once a member has switched it in a tab (null until then: every page loads it from the cookie).
+  const isDarkRef = useRef<boolean | null>(null);
   const nextId = useRef(2);
 
   const tabHrefs = useCallback(() => (tabsRef.current.length ? tabsRef.current.map((tab) => tab.href) : [...DEFAULT_TAB_PATHS]), []);
@@ -119,7 +122,7 @@ export const PortalTabs = forwardRef<PortalHandle, PortalTabsProps>(function Por
     if (!state) return;
     if (state.tabs.length) setTabs(state.tabs);
     setPageColors(state.colors);
-    setBar({ isShown: state.isShown, isSheetOpen: state.isSheetOpen });
+    setBar({ isShown: state.isShown, isOverlayOpen: state.isOverlayOpen });
   }, []);
 
   const activate = useCallback(
@@ -131,7 +134,9 @@ export const PortalTabs = forwardRef<PortalHandle, PortalTabsProps>(function Por
       activeIdRef.current = id;
       setActiveId(id);
       recent.current = [...recent.current.filter((other) => other !== id), id];
-      showBarOf(states.current.get(id));
+      const state = states.current.get(id);
+      showBarOf(state);
+      if (state && isDarkRef.current !== null && state.isDark !== isDarkRef.current) handles.current.get(id)?.runInPage(buildDarkScript(isDarkRef.current));
       handles.current.get(id)?.runInPage(buildReportScript());
       // A tab's first visit doesn't slide: there is nothing on it yet to slide.
       const isLoaded = states.current.has(id);
@@ -209,7 +214,13 @@ export const PortalTabs = forwardRef<PortalHandle, PortalTabsProps>(function Por
 
   const onState = useCallback(
     (id: number, state: TabsState) => {
+      const before = states.current.get(id);
       states.current.set(id, state);
+      // Dark mode switched in this tab: every other live tab follows now (a page loaded later reads the cookie).
+      if (before && !state.isFirst && before.isDark !== state.isDark) {
+        isDarkRef.current = state.isDark;
+        for (const [otherId, handle] of handles.current) if (otherId !== id) handle.runInPage(buildDarkScript(state.isDark));
+      }
       if (isSignedOutPath(state.path)) keepOnly(id);
       // A page moved itself to another tab's own page (after posting, after signing in): if that tab isn't open
       // anywhere yet, this web view becomes it, so the bar shows where the member is.
@@ -226,8 +237,8 @@ export const PortalTabs = forwardRef<PortalHandle, PortalTabsProps>(function Por
     [keepOnly, tabHrefs, showBarOf],
   );
 
-  const isBarShown = bar.isShown && !bar.isSheetOpen && !isKeyboardShown && tabs.length > 0;
-  const isSlotShown = !bar.isSheetOpen && !isKeyboardShown;
+  const isBarShown = bar.isShown && !bar.isOverlayOpen && !isKeyboardShown && tabs.length > 0;
+  const isSlotShown = !bar.isOverlayOpen && !isKeyboardShown;
   const frame = useMemo(
     () => ({ tab: isKeyboardShown ? 0 : barHeight, mini: bottomSlot && isSlotShown ? slotHeight : 0, ...(Platform.OS === "android" ? { bottomInset: insets.bottom } : {}) }),
     [isKeyboardShown, barHeight, bottomSlot, isSlotShown, slotHeight, insets.bottom],

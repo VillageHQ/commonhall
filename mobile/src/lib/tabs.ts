@@ -33,7 +33,9 @@ export type PageTab = { href: string; label: string; icon: string; count: number
 export const COLOR_KEYS = ["bar", "rule", "active", "inactive", "badge", "badgeText", "live"] as const;
 export type PageColors = Partial<Record<(typeof COLOR_KEYS)[number], string>>;
 
-export type TabsState = { type: "tabs.state"; isFirst: boolean; isShown: boolean; isSheetOpen: boolean; path: string; tabs: PageTab[]; colors: PageColors };
+// `isOverlayOpen`: a sheet, a menu or a dialog of the page is open (it covers the page down to its bottom edge, so the
+// bar steps aside). `isDark`: the site's own dark mode (its `dark` class), which every tab follows.
+export type TabsState = { type: "tabs.state"; isFirst: boolean; isShown: boolean; isOverlayOpen: boolean; isDark: boolean; path: string; tabs: PageTab[]; colors: PageColors };
 export type TabsOpen = { type: "tabs.open"; path: string };
 export type TabsMessage = TabsState | TabsOpen;
 
@@ -106,7 +108,7 @@ export function parseTabsMessage(raw: string): TabsMessage | null {
     const color = readColor(sent[key]);
     if (color) colors[key] = color;
   }
-  return { type: "tabs.state", isFirst: message.isFirst === true, isShown: message.isShown === true && tabs.length > 0, isSheetOpen: message.isSheetOpen === true, path, tabs, colors };
+  return { type: "tabs.state", isFirst: message.isFirst === true, isShown: message.isShown === true && tabs.length > 0, isOverlayOpen: message.isOverlayOpen === true, isDark: message.isDark === true, path, tabs, colors };
 }
 
 function readPathname(path: string) {
@@ -148,6 +150,8 @@ const MEMBER_BAR = '[data-slot="tab-bar"]:not(:has(a[href^="/admin"]))';
 // The app draws the bar, so the page keeps the site's bar for its layout and its badges but never shows it. It stays
 // in the layout (visibility, not display), so the site's own rules that remove it (a pushed screen, a takeover, the
 // web's width) still tell the app when to hide its bar.
+// What covers the page while open: the round's Sheet (html[data-sheet-open]) and Radix's menus and dialogs.
+const OVERLAYS = ["menu", "dialog", "alertdialog", "listbox"].map((role) => `[role="${role}"][data-state="open"]`).join(",");
 const HIDE_SITE_BAR_CSS = `html[data-native-tabs] ${MEMBER_BAR}{visibility:hidden!important;opacity:0!important;pointer-events:none!important}`;
 
 // Runs in every page of the portal before its own scripts, and again when it has loaded (guarded: a second run only
@@ -158,6 +162,7 @@ export function buildTabsScript(home: string) {
   root.setAttribute("data-native-tabs", "");
   if (window.__commonhallTabs) { window.__commonhallTabs.home(${JSON.stringify(home)}); window.__commonhallTabs.report(true); return true; }
   var MEMBER_BAR = ${JSON.stringify(MEMBER_BAR)};
+  var OVERLAYS = ${JSON.stringify(OVERLAYS)};
   var CSS = ${JSON.stringify(HIDE_SITE_BAR_CSS)};
   var home = ${JSON.stringify(home)};
   var last = "";
@@ -201,7 +206,8 @@ export function buildTabsScript(home: string) {
       var dot = bar.querySelector('[data-slot="live-dot"]');
       colors = { bar: style.backgroundColor, rule: style.borderTopColor, active: colorOf(current, "color"), inactive: colorOf(other, "color"), badge: colorOf(count, "backgroundColor"), badgeText: colorOf(count, "color"), live: colorOf(dot, "backgroundColor") };
     }
-    return { type: "tabs.state", isShown: isShown, isSheetOpen: root.hasAttribute("data-sheet-open"), path: location.pathname + location.search, tabs: tabs, colors: colors };
+    var isOverlayOpen = root.hasAttribute("data-sheet-open") || Boolean(document.querySelector(OVERLAYS));
+    return { type: "tabs.state", isShown: isShown, isOverlayOpen: isOverlayOpen, isDark: root.classList.contains("dark"), path: location.pathname + location.search, tabs: tabs, colors: colors };
   }
   function report(force) {
     var state = read();
@@ -218,10 +224,9 @@ export function buildTabsScript(home: string) {
     setTimeout(function () { isQueued = false; report(false); }, 40);
   }
   function start() {
-    new MutationObserver(schedule).observe(root, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ["aria-current", "data-sheet-open", "class", "hidden"] });
+    new MutationObserver(schedule).observe(root, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ["aria-current", "data-sheet-open", "data-state", "class", "hidden"] });
     report(true);
   }
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start); else start();
   window.addEventListener("resize", schedule);
   window.addEventListener("popstate", schedule);
   window.addEventListener("click", function (event) {
@@ -251,6 +256,8 @@ export function buildTabsScript(home: string) {
       var isReduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       window.scrollTo({ top: 0, behavior: isReduced ? "auto" : "smooth" });
     },
+    // Dark mode turned on or off in another tab: the site's own hook follows its class (the cookie is shared already).
+    dark: function (isDark) { root.classList.toggle("dark", Boolean(isDark)); },
     go: function (path) {
       var link = tabLinks(memberBar()).filter(function (tab) { return tab.getAttribute("href") === path; })[0];
       if (!link) { location.assign(path); return; }
@@ -258,6 +265,8 @@ export function buildTabsScript(home: string) {
       try { link.click(); } finally { isGoing = false; }
     }
   };
+  // The first report goes out only once the app can answer it (the frame comes back at once in the web preview).
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start); else start();
   return true;
 })();`;
 }
@@ -276,6 +285,10 @@ export function buildHomeScript(home: string) {
 
 export function buildReportScript() {
   return callTabs("window.__commonhallTabs.report(true)");
+}
+
+export function buildDarkScript(isDark: boolean) {
+  return callTabs(`window.__commonhallTabs.dark(${isDark ? "true" : "false"})`);
 }
 
 export function buildScrollTopScript() {

@@ -20,7 +20,10 @@ screen alive natively). The plan it builds: [smooth-app SPEC, Part D](../../smoo
   `commonhall://` link opens the tab its page belongs to (`/inbox/…` in Inbox, `/rooms/…` in Rooms); a page of no tab
   (settings) opens in the tab that is open. Android's back button steps back in the open tab, then goes to Today.
 - **The bar hides** where the site's own bar would: a pushed screen (`data-pushed-screen`), a takeover, a signed-out page,
-  the admin's console (which keeps its own tabs in the page), and also while a sheet is open or the keyboard is up.
+  the admin's console (which keeps its own tabs in the page), and also while a sheet, a menu or a dialog of the page is
+  open (the avatar menu reaches the bottom edge) or the keyboard is up.
+- **Dark mode follows across tabs:** switching it in one tab switches every tab that is alive (the cookie is shared, so a
+  tab loaded later reads it).
 - **The slot above the bar** holds the room's mini bar (Part 6 owns what is in it). It sits right on the bar's top edge,
   or on the home indicator where the bar is hidden.
 
@@ -31,7 +34,10 @@ The app runs a script in every page beside the bridge's bootstrap (`mobile/src/l
   (`display: none`) still tell the app when to hide the native bar. `html[data-app]` alone never hides it: store build 4
   sets it too and has no native bar.
 - **page → app** `tabs.state`: the site's bar as it would show now (its links' `href`, label, inline SVG icon, badge count
-  or live dot, and their computed colours), the path, and `html[data-sheet-open]`. Sent when it changes.
+  or live dot, and their computed colours), the path, whether a sheet, menu or dialog is open (`html[data-sheet-open]`,
+  or Radix's `[role=menu|dialog|alertdialog|listbox][data-state=open]`) and the site's dark mode. Sent when it changes.
+- **app → page** `__commonhallTabs.dark(isDark)`: the other tabs follow a dark-mode switch (the site's hook watches the
+  `dark` class).
 - **page → app** `tabs.open`: a tap on a link to another tab's own page, caught before the page moves.
 - **app → page** `window.__commonhallTabs.frame({ tab, mini, bottomInset? })`: sets `--tab-h` (the native bar's measured
   height; 0 while the keyboard is up), `--mini` and `html[data-mini-player]` (the slot's height), and on Android `--sab`.
