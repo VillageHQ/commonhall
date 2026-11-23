@@ -443,7 +443,7 @@
     position: sticky;
     top: 0;
     z-index: 20;
-    margin: -20px -16px 0;
+    margin: 0 -16px;
     padding: var(--sat) 4px 0;
     min-height: calc(52px + var(--sat));
     border-bottom: 1px solid var(--rule);
@@ -467,14 +467,10 @@
     background: var(--paper);
   }
 
-  /* A thread is a pushed screen: no page foot under it (Part 2 takes the phone's foot away everywhere). */
-  [data-slot="app-shell"]:has(.ib-thread) [data-slot="phone-foot"] {
-    display: none;
-  }
-
-  /* The thread reserves the bar's room itself, so the page adds only the strip under the bar: the newest message
-     ends 16 px above the bar. */
+  /* The header starts at the page's top (no top padding over it), and the thread reserves the bar's room itself, so
+     the page adds only the strip under the bar: the newest message ends 16 px above the bar. */
   .fh-main:has(.ib-thread) {
+    padding-top: 0;
     padding-bottom: var(--bottom-stack);
   }
 }

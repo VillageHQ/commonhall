@@ -145,6 +145,8 @@ Styles: `src/modules/messages/components/inbox.css` (classes `ib-*`), loaded by 
   apart from the real first row at 390.
 
 ### The thread
+- On a phone `.fh-main` has no top padding over a thread (its header starts at the page's top) and only the strip under
+  the bar at its foot.
 - `thread.tsx` sets `data-pushed-screen` and `data-own-header` (Part 1's contract): no tab bar or community bar on a
   phone; in the store app the native tab bar (Part 7) hides on it too. `ThreadHeader`: Back "Inbox" (hidden in the web
   pane), the 32 px face and name as one link to the profile, and More (a `Sheet`, a popover on the web) with
@@ -163,12 +165,12 @@ Styles: `src/modules/messages/components/inbox.css` (classes `ib-*`), loaded by 
   so it stays put whether or not the browser already anchored it. The page scrolls on a phone; the pane on the web.
 - `/messages/new` (`new-thread.tsx`) is the same header, intro and bar; `readNewMessageTarget` now returns the person
   as a full `ConversationPeer` (title, company, face).
-- On a phone the page foot (`[data-slot=phone-foot]`) is hidden under a thread.
 
 ### Left for others
 - Part 4: Today places `TargetMemberAsk` outside `.td-rows`, so that row sits 16 px in from the other rows; wrapping
   it in `.td-rows` (today-list.tsx) lines it up.
-- Part 2: the page foot under the Inbox list on phones; the demo banner makes every page scroll by its height.
+- Part 2: in the store app on a demo, a thread's header adds the status bar's inset under the demo band (the band
+  already pads by it) until the page scrolls; outside the demo there is no band.
 
 ## Part 7, the store app's own tab bar (smooth-app Part D)
 

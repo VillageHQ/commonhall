@@ -29,7 +29,7 @@ was written by the builder from their reports, because a checker can't save file
 ## Checks every part's verifier also runs
 | Check | Result | Measured |
 |---|---|---|
-| Sizes at 390 (plain, in-app) and 1280 | PASS after repair | No sideways scroll and no cut or wrapped labels; long names end in an ellipsis. The first pass found messages under the bar's inset strip; the repair fixed it (check 8). The phone page foot under a thread is now hidden there (it is Part 2's to remove everywhere). |
+| Sizes at 390 (plain, in-app) and 1280 | PASS after repair | No sideways scroll and no cut or wrapped labels; long names end in an ellipsis. The first pass found messages under the bar's inset strip; the repair fixed it (check 8). The phone page foot is gone since Part 2 merged. |
 | 360×740, 300×570 | PASS | No sideways scroll, clipping or wrapped labels. |
 | Dark | PASS | Unread line and dot are light on the dark background; Send, box and day pill are readable. dark-390, dark-thread-390. |
 | Accent #FFD400 | PASS | `--fund` became `#836d00`, and the selected row's bar follows it. Restored to `#111110`. accent-390, accent-1280. |
@@ -40,7 +40,7 @@ was written by the builder from their reports, because a checker can't save file
 | Tests | PASS (with 2 known) | lint 0 errors, typecheck clean. pnpm test 3706/3708 at the re-check. The 2 known failures: `deploy-setups` (the Windows CRLF check) and `site-tour`, which the builder fixed after with `pnpm tour:build` (see the pull request). |
 
 ## Other things seen (not this part's files)
-- Part 2: the "Source code (AGPL-3.0)" page foot still shows under the Inbox list on phones. Part 2 removes it.
+- Part 2: the "Source code (AGPL-3.0)" page foot showed under the Inbox list on phones; Part 2 (merged since) removed it.
 - Demo only: `.fh-app` has `min-height: 100vh` under the demo banner, so every page scrolls by the banner's height (34 px at 1280).
 - Part 4: Today's "intro to make" row uses a filled Answer, while the Inbox uses an outlined one.
 - Notes:
@@ -61,3 +61,14 @@ From the round's scratch folder `ui-benchmark/mobbin/`:
 - Android at font scale 1.3 (300×570 stood in).
 
 Data left in the throwaway database: a Sam↔Maya thread and a Sam↔Noah conversation.
+
+## After rebasing on Part 2 (the builder's own measurement)
+Part 2 set the phone page's top padding to 16 px and moved the demo band under the top bar. The thread's header now
+takes no offset from the page's padding. At 390 with the insets:
+- the header spans 0–390 under the band, sticky
+- the bar is 34 px above the edge, or 90 with the mini player
+- the box and Send share a bottom edge
+- the last message ends 16 px above the bar
+- there is no sideways scroll
+- the rows are unchanged: 48 px faces at x 16, text at x 76
+At 1280 the card and panes are unchanged.
