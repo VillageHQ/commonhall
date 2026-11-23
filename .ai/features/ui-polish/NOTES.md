@@ -261,3 +261,52 @@ All of the frame's look is in `src/shell/frame.css`, loaded by `src/app/layout.t
 - Rooms' outline misses its first section by about 34 px (Part 6's); Today's and Asks' row pitches differ by 16–18 px
   (Part 4's).
 - Opening the desktop dropdown scrolls the page a little (already so on main).
+
+## Part 5, People and profiles (search, results, the profile header)
+
+### People (`/people`)
+- `member-directory.tsx` renders inside `.fh-people-page`; every rule is in `src/modules/members/components/people.css`,
+  scoped under `.fh-people-page` or `.fh-profile-page` (the plain `.fh-people` and `.fh-person` names are already
+  taken in the generated `parts.css`). The file is imported by `member-directory.tsx` and `profile-actions.tsx`, and by
+  the landing page's tour through `tour/src/tour.css`.
+- The search row: `SearchBox` and `FilterButton`, both 44 px. Under 1000 px Filter is a 44×44 icon and its word is
+  screen-reader only, so its name stays "Filter"; the count pill (`.fh-people-filter-count`) counts the panel's filters,
+  not the view (the view has chips).
+- The view chips (`DirectoryViewChips`) replace the old "Mentors and experts" link and the panel's Everyone / Experts
+  switch. "Mentors and experts" keeps `data-slot="people-view-link"` (the tour taps it).
+- The filter panel (`FilterPanel`) opens as Part 1's `Sheet` under 1000 px and in place from 1000 px, and also in place
+  inside a shadow root (the tour), where a sheet's portal would land outside. The place is read when Filter is tapped.
+  Filters still apply as they change (`replaceState`, the same addresses), so "Show N people" only closes the panel;
+  "Clear all" clears every counted filter and keeps the words and the view. On close the focus goes back to Filter
+  (`useFocusBackOnClose`), since the sheet is opened without a trigger.
+- Rows are Part 1's `ListRow` (`MemberRow`, `ExpertRow`) with a 48 px face. Under 1000 px the list runs edge to edge
+  (`margin-inline: -16px`) so the face is at x 16 and the text at x 76. Line 2's company mark is the logo or a 16 px
+  letter square (`.fh-people-co-letter`, `overflow: hidden` so it sits on the same baseline as a picture). At most two
+  tags, then "+N". The expert row's Book a call sits in the slot on a phone; from 1000 px the slot is `position: static`
+  so the button is placed on the row (right 16 px, centred) above the stretched link.
+- "Search their networks for …" and "Connect your network …" are one 56 px row (`.fh-people-netrow`, in
+  `src/shell/people-screen.tsx`), under the list or under the empty state.
+- The tab outline (`PeopleOutline` in `src/shell/tab-outlines.tsx`) uses only the outline parts already imported there
+  (the file's imports are Part 2's) and Tailwind classes; it matches the page within 2 px at 390 and 1280.
+
+### A profile (`/people/<id>`)
+- `PersonHead` (in `profile-head.tsx`; the older `ProfileHead` stays for `/me`): the 96 px photo, the 24 px serif name,
+  the headline ("Title, Company") and the place on their own lines.
+- `ProfileActions` (`profile-actions.tsx`): the action row. The page picks the buttons: the primary is "Ask for an
+  intro", or Message when no ask can be made; the outlined second is Book a call where it shows, else Message; Message
+  with no place moves into "More". "<first name> has paused intro asks" is a note under the row. The row measures the
+  two labels (a `Range` over each button) and sets `data-stacked` when two equal buttons and "More" can't fit, so a
+  label never wraps; from 1000 px the buttons are sized to their words.
+- `ProfileMore`: Part 1's `Sheet` with `desktop="popover"` and the More button as its trigger. It holds `RoomMuteButton`
+  (now a `role="switch"` row with fixed words and a drawn switch) and `BlockMemberButton` (a row that asks first, in
+  place). The Block text button at the page's end is gone.
+- Cards: `.fh-profile-page .fh-prof` is a grid with 16 px gaps, cards pad 16 px, card titles are 19 px Newsreader. The
+  job tiles' Apply (`apply-link.tsx`, not this part's file) is restyled from `people.css` through the card's
+  `.fh-company-jobs` class: 36 px, outlined, radius 6, full width.
+
+### Left for the other parts and follow-ups
+- Part 2: People's column is capped at 720 px on the web in `people.css`; move it to Part 2's content width when that
+  lands. Pages still end with the footer (Part 2).
+- The mute confirmation (a flash) shows under the More sheet's dimmed backdrop while the sheet is open.
+- The drawn switch's off colour is `#b5b4ad`, as the app's `Switch` part; neither is a token yet.
+- The "own words" card's first label starts lower than other cards' (FieldBlock's own top margin; already so on main).
