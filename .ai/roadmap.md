@@ -169,6 +169,12 @@ once and tell everyone, and the app should ask for fewer decisions. The evidence
 - [ ] The weekly email's time zone starts from the browser's and offers a list
 - [ ] Guided start disappears once its steps are done, and its consent default is the recommended answer
 
+## Round 8 (23 Nov 2026): the app on a par with the apps people use
+From the owner's test of store build 4: the Inbox, the tab bar and switching tabs, posting an ask, People search, Today
+and Rooms, on the phone and the web, measured against 75 reference screens. The evidence:
+[benchmark](features/ui-polish/BENCHMARK.md). Forks go to the council before the build.
+- [ ] One look across the app: a foundation part, then the frame, Inbox, Asks and Today, People and profiles, and Rooms side by side; then store build 5 — ui-polish — size about a day — [spec](features/ui-polish/SPEC.md) (benchmark and spec, pull request open)
+
 ## Later (someday / deferred)
 - [ ] Admin console: member-view switch, mail page lists, Village test connection, the mail setup step (the home and the asks page are built) — parity — [spec](features/admin-console/SPEC.md)
 - [ ] Search and Village fallbacks: member-profile search, search cache, city filter, Village cancel on disconnect — parity — [spec](features/search-without-village/SPEC.md)
