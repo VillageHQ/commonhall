@@ -78,6 +78,8 @@ export const VOICE_LIMITS = {
   tokenTtlSeconds: 10 * 60,
   // A room with nobody on stage for this long ends.
   emptyStageMs: 2 * 60_000,
+  // A room with nobody connected at all for this long ends (the host tapped Leave, not End room).
+  emptyRoomMs: 60_000,
   // A scheduled room may be set this far ahead at most.
   scheduleAheadDays: 60,
   chatLength: 500,

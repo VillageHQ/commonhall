@@ -34,6 +34,8 @@ export const voiceRoom = pgTable(
     endedAt: voiceTimestamp("ended_at"),
     // Set when the room's last person on stage was seen gone; the room ends 2 minutes later.
     emptyStageSince: voiceTimestamp("empty_stage_since"),
+    // Set when the room was first seen with nobody connected at all; the room ends a minute later.
+    emptySince: voiceTimestamp("empty_since"),
     remindersSentAt: voiceTimestamp("reminders_sent_at"),
     createdAt: voiceTimestamp("created_at").notNull().defaultNow(),
   },

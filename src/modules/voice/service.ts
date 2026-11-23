@@ -13,7 +13,7 @@ import { readSettings } from "@/platform/settings/store";
 import { INSTANCE_SETTING_KEYS } from "@/platform/settings/schema";
 import { shownFaceColumns, toShownFaceUrl } from "@/modules/members/reads-pictures";
 
-import { closeLiveRoom, createRoomToken, pushParticipantFacts, readConnectedIdentities, type VoiceConfig } from "./client";
+import { closeLiveRoom, createRoomToken, pushParticipantFacts, readConnectedIdentities, removeFromRoom, type VoiceConfig } from "./client";
 import {
   isModerator,
   isOnStage,
@@ -276,7 +276,12 @@ export async function joinRoom({ database, environment, member }: RequestContext
       .insert(voiceRoomMember)
       .values({ roomId, memberId: member.id, role: seatRole, joinedAt: now })
       .onConflictDoUpdate({ target: [voiceRoomMember.roomId, voiceRoomMember.memberId], set: { joinedAt: now } });
-    if (isOnStage(seatRole) && room.emptyStageSince) await transaction.update(voiceRoom).set({ emptyStageSince: null }).where(eq(voiceRoom.id, roomId));
+    if (room.emptySince || (isOnStage(seatRole) && room.emptyStageSince)) {
+      await transaction
+        .update(voiceRoom)
+        .set({ emptySince: null, ...(isOnStage(seatRole) ? { emptyStageSince: null } : {}) })
+        .where(eq(voiceRoom.id, roomId));
+    }
     return seatRole;
   });
   const [face, seat] = await Promise.all([readFace(database, member.id), readSeat(database, roomId, member.id)]);
@@ -360,10 +365,13 @@ async function handOver(transaction: Transaction, roomId: string, oldHostId: str
 }
 
 // Leaving quietly. A speaker steps off the stage; a host hands the room to a co-host when one is there, else the room
-// waits (the host may come back) and ends after 2 minutes with nobody on stage.
+// waits (the host may come back): it ends a minute after nobody is connected, or 2 minutes after nobody is on stage.
+// The web room and the store app ask to leave before they disconnect, so LiveKit lets the member go here first: the
+// room's check below, and every card read after it, no longer count them.
 export async function leaveRoom(context: RequestContext, roomId: string, now = new Date()) {
   const { database, environment, member } = context;
   const config = await readVoiceConfig(database, environment);
+  if (config) await removeFromRoom(config, toLiveKitRoomName(roomId), member.id);
   const connected = config ? await readConnectedIdentities(config, toLiveKitRoomName(roomId)) : null;
   const changed = await database.transaction(async (transaction) => {
     const room = await lockRoom(transaction, roomId);
@@ -410,8 +418,9 @@ export async function setReminder({ database, member }: RequestContext, { roomId
   else await database.delete(voiceRoomReminder).where(and(eq(voiceRoomReminder.roomId, roomId), eq(voiceRoomReminder.memberId, member.id)));
 }
 
-// One live room's upkeep: a co-host takes over from a host who is gone, and a room with nobody on stage for 2 minutes
-// ends. Skipped while LiveKit can't be reached, so an outage never ends a room.
+// One live room's upkeep: a co-host takes over from a host who is gone; a room with nobody connected for a minute ends,
+// and so does one with nobody on stage for 2 minutes. Skipped while LiveKit can't be reached, so an outage never ends
+// a room.
 export async function checkRoom(database: Database, environment: Environment, roomId: string, now = new Date()) {
   const config = await readVoiceConfig(database, environment);
   if (!config) return;
@@ -434,16 +443,17 @@ export async function checkRoom(database: Database, environment: Environment, ro
       .select({ memberId: voiceRoomMember.memberId })
       .from(voiceRoomMember)
       .where(and(eq(voiceRoomMember.roomId, roomId), inArray(voiceRoomMember.role, [...STAGE_ROLES])));
-    const isStageEmpty = !stage.some(({ memberId }) => connected.includes(memberId));
-    if (!isStageEmpty || !startedLongAgo) {
-      if (room.emptyStageSince) await transaction.update(voiceRoom).set({ emptyStageSince: null }).where(eq(voiceRoom.id, roomId));
-      return { changed, isEnding: false };
+    // Nobody connected needs no grace: a host still connecting has just been given a token, and joining clears it.
+    const emptySince = connected.length === 0 ? (room.emptySince ?? now) : null;
+    const isStageEmpty = startedLongAgo && !stage.some(({ memberId }) => connected.includes(memberId));
+    const emptyStageSince = isStageEmpty ? (room.emptyStageSince ?? now) : null;
+    if (emptySince !== room.emptySince || emptyStageSince !== room.emptyStageSince) {
+      await transaction.update(voiceRoom).set({ emptySince, emptyStageSince }).where(eq(voiceRoom.id, roomId));
     }
-    if (!room.emptyStageSince) {
-      await transaction.update(voiceRoom).set({ emptyStageSince: now }).where(eq(voiceRoom.id, roomId));
-      return { changed, isEnding: false };
-    }
-    return { changed, isEnding: now.getTime() - room.emptyStageSince.getTime() >= VOICE_LIMITS.emptyStageMs };
+    const isEnding =
+      (emptySince !== null && now.getTime() - emptySince.getTime() >= VOICE_LIMITS.emptyRoomMs) ||
+      (emptyStageSince !== null && now.getTime() - emptyStageSince.getTime() >= VOICE_LIMITS.emptyStageMs);
+    return { changed, isEnding };
   });
   for (const memberId of outcome.changed) await pushSeat(database, environment, roomId, memberId);
   if (outcome.isEnding) await closeRoom(database, config, roomId, now);

@@ -23,9 +23,12 @@ Set up › Features. Rooms are **never recorded**: there is no egress service, n
 - **Rules:** only the host changes co-hosts; nobody changes the host; anyone on stage may step down; the host or an
   admin ends a room. A member sends at most 3 notifies in the last 24 hours (the 4th answers 429 with a plain message).
 - **Upkeep** (module job `voice-rooms`, every minute; also run right after someone leaves): a host gone for 30 s
-  hands the room to the first co-host still connected; a room with nobody connected on stage for 2 minutes ends
-  (LiveKit `deleteRoom`, so every browser shows "This room has ended"). Skipped while LiveKit can't be reached,
-  so an outage never ends a room. Scheduled rooms nobody started end a day after their time.
+  hands the room to the first co-host still connected; a room with nobody connected at all for 1 minute ends
+  (`empty_since`, since 23 Nov 2026: [empty-room](../empty-room/SPEC.md)), and so does one with nobody connected on
+  stage for 2 minutes (LiveKit `deleteRoom`, so every browser shows "This room has ended"). Skipped while LiveKit
+  can't be reached, so an outage never ends a room. Scheduled rooms nobody started end a day after their time.
+- **Leave** (`leaveRoom`) first removes the member from LiveKit (`removeParticipant`): both clients ask to leave
+  before they disconnect, so without it the check on leave, and the room cards, still counted them.
 - **Alerts** (`src/shell/voice-alerts.ts`, through `notify()`; built 19 Nov 2026, part voice-broadcast):
   - A room notify ("Notify others", "Tell people I'm here") → kind `voice_broadcast`: see
     `.ai/features/room-join-notify/NOTES.md`.
@@ -79,7 +82,8 @@ permissions; a moved-down member's microphone is unpublished by LiveKit.
 ## Tests
 - `src/modules/voice/voice.test.ts` (real routes, real Postgres, fake LiveKit `src/test/fake-livekit-server.ts`):
   token grants by role, signed-out and invite-only refusals, the chat button only while Rooms is on with Rooms' count, the stage controls pushed to LiveKit, end, hand-over to
-  a co-host, the 2-minute rule (and no end while LiveKit is down), the 4th broadcast, and the alerts (fake Expo
+  a co-host, the 2-minute rule (and no end while LiveKit is down), the 1-minute empty rule (a leaver stops counting at
+  once; someone back within the minute keeps the room), the 4th broadcast, and the alerts (fake Expo
   push server `src/test/fake-push-server.ts`): who a broadcast reaches and who it skips, one alert per double tap,
   reminders on Start now and from the minute job, never twice.
 - `deploy/vps/test-installer.sh`: keys at install and on upgrade, the firewall ports.

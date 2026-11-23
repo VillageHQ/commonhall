@@ -1,0 +1,1 @@
+ALTER TABLE "voice_room" ADD COLUMN "empty_since" timestamp (3) with time zone;
