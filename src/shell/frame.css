@@ -115,15 +115,8 @@
   }
 }
 
-/* The store app draws its own tab bar (ui-polish Part 7) and marks the page html[data-native-tabs]: the site's bar
-   goes, and nothing waits for room under it. An app without its own bar keeps the site's. */
-html[data-app][data-native-tabs] {
-  --tab-h: 0px;
-}
-
-html[data-app][data-native-tabs] .fh-tabbar {
-  display: none;
-}
+/* In the store app the native tab bar (ui-polish Part 7, mobile/src/lib/tabs.ts) hides this bar itself with
+   `visibility` and reads its `display` to know when to hide its own, and sets --tab-h to its own height: no rule here. */
 
 @media (prefers-reduced-motion: reduce) {
   .fh-tab-ind {

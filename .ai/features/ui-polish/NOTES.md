@@ -153,9 +153,9 @@ All of the frame's look is in `src/shell/frame.css`, loaded by `src/app/layout.t
   the pressed tab over `--dur-move` before the page comes. `data-off` hides it where no tab is current; reduced motion
   makes it jump.
 - The count pill and the live dot (`.fh-tab-dot`) share one place: top 6 px, `left: calc(50% + 7px)`, a 2 px Leaf ring.
-- **The store app's own tab bar** (Part 7): the site's bar hides only under `html[data-app][data-native-tabs]`, and
-  `--tab-h` becomes 0 there. Today's store build sets only `data-app`, so it keeps the site's bar. Part 7's app must set
-  `document.documentElement.dataset.nativeTabs` in its bootstrap.
+- **The store app's own tab bar** (Part 7): the site has no rule for it. The app hides the member bar with `visibility`
+  (it reads the bar's `display` to know when the site would hide it) and sets `--tab-h` to its own bar's height, so a
+  `display: none` or a `--tab-h` here would break it. The native bar copies this bar's icons and computed colours.
 
 ### The tab switch
 - `slideIn()` in `pressed-tab.tsx`: on a tap of a tab-bar link with an outline, under 1000 px and without reduced
