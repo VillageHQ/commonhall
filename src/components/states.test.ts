@@ -1,3 +1,4 @@
+import { Inbox } from "lucide-react";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
@@ -14,10 +15,17 @@ describe("the empty state", () => {
     expect(markup).toContain("Check back.");
   });
 
-  it("draws no picture, like Commonhall's dashed empty state", () => {
+  it("draws no picture unless it is given an icon", () => {
     const markup = renderToStaticMarkup(createElement(EmptyState, { title: "Nothing yet", description: "Check back." }));
 
     expect(markup).not.toContain("<svg");
+  });
+
+  it("draws its icon over the headline, hidden from screen readers", () => {
+    const markup = renderToStaticMarkup(createElement(EmptyState, { icon: Inbox, title: "No messages yet", description: "Check back." }));
+
+    expect(markup).toMatch(/<svg[^>]*aria-hidden="true"/);
+    expect(markup.indexOf("<svg")).toBeLessThan(markup.indexOf("No messages yet"));
   });
 });
 

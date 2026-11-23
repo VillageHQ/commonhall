@@ -133,7 +133,25 @@
   --r-sm: 6px;
   --shadow: 0 1px 2px rgba(17, 17, 16, 0.06), 0 6px 18px -8px rgba(17, 17, 16, 0.18);
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
-  --tab-h: 64px;
+
+  /* The bottom of the screen (ui-polish SPEC, "Shared contracts"). Nothing else reads env(): a verifier simulates a
+     phone by setting --sab and --sat on html. Every override of these sits on html too, so the sums below follow. */
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --tab-h: 56px;
+  --tab-total: calc(var(--tab-h) + var(--sab));
+  /* The mini player's height while it shows (Part 6 sets it on html[data-mini-player]). */
+  --mini: 0px;
+  --bottom-stack: calc(var(--tab-total) + var(--mini));
+  /* What sticks under the phone's top bar (the founder-view strip, the report's actions). */
+  --topbar-h: 56px;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --dur-move: 220ms;
+
+  /* Control heights (ui-polish SPEC, "Shared rules"): minimums, so large text grows them. */
+  --ctl-h: 44px;
+  --ctl-sm-h: 36px;
+  --chip-h: 32px;
 
   /* Cards are flat Leaf with a rule line; nothing floats. */
   --elevation-panel: 0 0 0 1px var(--rule);
@@ -681,4 +699,605 @@
     --elevation-panel: 0 0 0 1px var(--rule);
     --elevation-sheet: 0 -1px 0 var(--rule);
   }
+}
+
+/* ── Round 8's foundation (ui-polish Part 1). parts.css is generated, so its sizes are overridden here. ── */
+
+/* In the store app the top bar grows by the status bar (in-app.css). */
+html[data-app] {
+  --topbar-h: calc(56px + var(--sat));
+}
+
+/* A pushed screen (a thread, a room) has no tab bar on a phone; a screen with its own header has no community bar.
+   The variables change on html, so everything that sums them follows. */
+@media (max-width: 999.98px) {
+  html:has([data-pushed-screen]) {
+    --tab-total: var(--sab);
+  }
+
+  html:has([data-pushed-screen]) .fh-tabbar {
+    display: none;
+  }
+
+  html:has([data-own-header]) {
+    --topbar-h: 0px;
+  }
+
+  html:has([data-own-header]) .fh-topbar {
+    display: none;
+  }
+
+  :is(.fh-preview-strip, .fh-report-actions) {
+    top: var(--topbar-h);
+  }
+}
+
+/* The tab bar adds the home indicator's inset under its 56 px instead of taking it out of them (Part 2 restyles it). */
+.fh-tabbar {
+  height: var(--tab-total);
+  padding-bottom: var(--sab);
+}
+
+/* Everything pinned at the bottom sits on the tab bar and the mini player. */
+@media (max-width: 999.98px) {
+  .fh-main {
+    padding-bottom: calc(var(--bottom-stack) + 32px);
+  }
+
+  .fh-toast {
+    bottom: calc(var(--bottom-stack) + 16px);
+  }
+
+  :is(.fh-reply, .fh-sticky-send) {
+    bottom: calc(var(--bottom-stack) + 8px);
+  }
+
+  /* The room's control bar (voice.css loads later, hence html). */
+  html .vr-bar {
+    bottom: calc(var(--bottom-stack) + 8px);
+  }
+}
+
+/* Buttons: 44 px, small 36 px, icon 44×44, radius 6 (the Button part and the plain classes alike). Heights are
+   minimums, so a label in large text grows the button instead of being cut. */
+.fh-btn {
+  height: auto;
+  min-height: var(--ctl-h);
+  padding-top: 6px;
+  padding-bottom: 6px;
+  border-radius: var(--r-sm);
+  font-size: 15px;
+  line-height: 20px;
+}
+
+.fh-btn-sm {
+  min-height: var(--ctl-sm-h);
+  padding-top: 4px;
+  padding-bottom: 4px;
+  font-size: 14px;
+}
+
+.fh-btn.fh-btn-icon,
+.fh-iconbtn {
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+  border-radius: var(--r-sm);
+}
+
+/* The admin's console keeps its denser buttons, 40 px and 32 px (council decision 5, 23 Nov 2026). Its tab bar is
+   the one whose tabs go to /admin; the bar is in the page at every width. */
+.fh-app:has(> [data-slot="tab-bar"] a[href^="/admin"]) {
+  --ctl-h: 40px;
+  --ctl-sm-h: 32px;
+}
+
+/* Fields: 44 px, 16 px text (below 16 px iOS zooms in on focus), no shadow. */
+:is(.fh-input, .fh-textarea, .fh-select, [data-slot="input"], [data-slot="textarea"], [data-slot="select"]) {
+  font-size: 16px;
+  line-height: 22px;
+  box-shadow: none;
+}
+
+.fh-select,
+[data-slot="select"] {
+  min-height: 44px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+/* Text boxes start at 96 px, have no grip and grow with their text up to 240 px, then scroll
+   (src/components/ui/textarea.tsx sizes them where field-sizing is missing). */
+.fh-textarea,
+[data-slot="textarea"] {
+  min-height: 96px;
+  max-height: 240px;
+  resize: none;
+  field-sizing: content;
+  overflow-y: auto;
+}
+
+/* The Asks box is one of these too (Part 4 rebuilds the composer). */
+.fh-composer .fh-askbox {
+  min-height: 96px;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+/* The search box: a field's 44 px and 6 px, no shadow, a 20 px icon 12 px in, the text from 40 px, and the app's own
+   clear button instead of the browser's. */
+.fh-search .fh-input {
+  height: 44px;
+  min-height: 44px;
+  padding-left: 40px;
+  border-radius: var(--r-sm);
+  box-shadow: none;
+}
+
+.fh-search:has(.fh-search-clear) .fh-input {
+  padding-right: 44px;
+}
+
+.fh-search > svg {
+  left: 12px;
+  top: 50%;
+  width: 20px;
+  height: 20px;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.fh-search input::-webkit-search-cancel-button,
+.fh-search input::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* A 28 px grey circle with a 14 px ✕, 8 px from the right, inside a 44 px tap area. */
+.fh-search-clear {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--ink);
+  transform: translateY(-50%);
+}
+
+.fh-search-clear::before {
+  content: "";
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 9999px;
+  background: var(--spine-tint);
+}
+
+.fh-search-clear svg {
+  position: relative;
+  width: 14px;
+  height: 14px;
+  /* Centred on the circle, which sits 8 px from the right of the 44 px area. */
+  margin-left: 8px;
+}
+
+@media (hover: hover) {
+  .fh-search-clear:hover::before {
+    background: var(--rule);
+  }
+}
+
+/* Chips: 32 px, 14/500, radius 6; a row scrolls sideways and never wraps a chip's text. */
+.fh-chip {
+  height: auto;
+  min-height: var(--chip-h);
+  border-radius: var(--r-sm);
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* The shared Sheet (src/components/ui/sheet.tsx): a bottom sheet under 1000 px, a centred dialog from it. */
+.fh-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  background: rgb(10 12 10 / 0.48);
+}
+
+.fh-scrim[data-state="open"] {
+  animation: fh-fade-in var(--dur-move) var(--ease-out);
+}
+
+.fh-bsheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 71;
+  display: flex;
+  flex-direction: column;
+  max-height: 85dvh;
+  background: var(--leaf);
+  color: var(--ink);
+  border-radius: 16px 16px 0 0;
+  box-shadow: 0 -1px 0 var(--rule), 0 -10px 30px -12px rgb(0 0 0 / 0.28);
+  outline: none;
+}
+
+.fh-bsheet[data-state="open"] {
+  animation: fh-sheet-up 250ms var(--ease-out);
+}
+
+.fh-bsheet[data-size="full"] {
+  top: var(--sat);
+  max-height: none;
+}
+
+.fh-bsheet-grab {
+  flex: none;
+  display: grid;
+  place-items: center;
+  height: 20px;
+  cursor: grab;
+  touch-action: none;
+}
+
+.fh-bsheet-grab::before {
+  content: "";
+  width: 36px;
+  height: 5px;
+  border-radius: 9999px;
+  background: var(--rule);
+}
+
+.fh-bsheet-head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 4px 0 16px;
+  touch-action: none;
+}
+
+.fh-bsheet[data-size="full"] .fh-bsheet-head {
+  min-height: 52px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.fh-bsheet-head h2 {
+  flex: 1;
+  min-width: 0;
+  font: 600 17px/22px var(--sans);
+  overflow-wrap: anywhere;
+}
+
+.fh-bsheet-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 4px 16px 16px;
+}
+
+.fh-bsheet-body:last-child {
+  padding-bottom: calc(16px + var(--sab));
+}
+
+.fh-bsheet-foot {
+  flex: none;
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px calc(12px + var(--sab));
+  border-top: 1px solid var(--rule);
+  background: var(--leaf);
+}
+
+.fh-bsheet-foot > * {
+  flex: 1 1 0;
+}
+
+@media (min-width: 1000px) {
+  .fh-bsheet,
+  .fh-bsheet[data-size="full"] {
+    top: 50%;
+    left: 50%;
+    right: auto;
+    bottom: auto;
+    width: min(560px, calc(100vw - 48px));
+    max-height: min(85dvh, 720px);
+    border-radius: var(--r);
+    box-shadow: 0 0 0 1px var(--rule), var(--shadow);
+    transform: translate(-50%, -50%);
+  }
+
+  .fh-bsheet[data-state="open"] {
+    animation: fh-fade-in var(--dur-move) var(--ease-out);
+  }
+
+  .fh-bsheet-grab {
+    display: none;
+  }
+
+  .fh-bsheet-head,
+  .fh-bsheet[data-size="full"] .fh-bsheet-head {
+    min-height: 56px;
+    padding: 6px 12px 0 24px;
+    border-bottom: 0;
+  }
+
+  .fh-bsheet-body {
+    padding: 4px 24px 24px;
+  }
+
+  .fh-bsheet-body:last-child {
+    padding-bottom: 24px;
+  }
+
+  .fh-bsheet-foot {
+    justify-content: flex-end;
+    padding: 12px 24px;
+  }
+
+  .fh-bsheet-foot > * {
+    flex: 0 0 auto;
+  }
+}
+
+/* The popover form (from 1000 px, where its caller asks): under its trigger, a menu's width. */
+.fh-bpop {
+  z-index: 71;
+  width: 300px;
+  max-height: min(70dvh, 560px);
+  overflow-y: auto;
+  padding: 8px 0;
+  background: var(--leaf);
+  color: var(--ink);
+  border-radius: var(--r);
+  box-shadow: 0 0 0 1px var(--rule), var(--shadow);
+  outline: none;
+}
+
+.fh-bpop[data-state="open"] {
+  animation: fh-fade-in var(--dur-move) var(--ease-out);
+}
+
+.fh-bpop .fh-bsheet-head {
+  min-height: 36px;
+}
+
+.fh-bpop .fh-bsheet-body,
+.fh-bpop .fh-bsheet-body:last-child {
+  padding: 0 0 4px;
+}
+
+@keyframes fh-sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes fh-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ListRow (src/components/ui/list-row.tsx): at least 72 px, a 48 px face at x 16, the text at x 76, a hairline from
+   x 76. Inbox, People and Today's waiting rows use it. */
+.fh-lr {
+  position: relative;
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  column-gap: 12px;
+  align-items: start;
+  min-height: 72px;
+  padding: 12px 16px;
+  color: var(--ink);
+}
+
+.fh-lr::after {
+  content: "";
+  position: absolute;
+  left: 76px;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: var(--rule);
+  pointer-events: none;
+}
+
+.fh-lr:last-child::after {
+  content: none;
+}
+
+.fh-lr-face {
+  display: grid;
+  width: 48px;
+  height: 48px;
+}
+
+.fh-lr-face > * {
+  width: 48px;
+  height: 48px;
+}
+
+.fh-lr-text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  padding-top: 1px;
+}
+
+.fh-lr-l1,
+.fh-lr-l2 {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.fh-lr-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font: 600 16px/22px var(--sans);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* A stretched link: the whole row opens it, and nothing in the slot is nested inside it. */
+.fh-lr-title a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.fh-lr-title a::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.fh-lr-title a:focus-visible {
+  outline: none;
+}
+
+.fh-lr:has(.fh-lr-title a:focus-visible) {
+  outline: 2px solid var(--ring);
+  outline-offset: -2px;
+}
+
+.fh-lr-meta {
+  flex: none;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--graphite);
+  white-space: nowrap;
+}
+
+.fh-lr-line {
+  flex: 1;
+  min-width: 0;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  font-size: 15px;
+  line-height: 20px;
+  color: var(--graphite);
+  overflow-wrap: anywhere;
+}
+
+.fh-lr[data-lines="2"] .fh-lr-line {
+  -webkit-line-clamp: 2;
+}
+
+.fh-lr[data-unread] .fh-lr-line {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.fh-lr-dot {
+  flex: none;
+  align-self: center;
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background: var(--fund);
+}
+
+.fh-lr-count {
+  flex: none;
+  align-self: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 9999px;
+  background: var(--fund);
+  color: var(--primary-foreground);
+  font: 600 12px/20px var(--sans);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.fh-lr-slot {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+@media (hover: hover) {
+  .fh-lr:has(.fh-lr-title a):hover {
+    background: var(--vellum);
+  }
+}
+
+/* SectionLabel: 13/600 Graphite, 20 px above and 8 px below; no capitals and no rule. */
+.fh-section-label {
+  margin: 20px 0 8px;
+  font: 600 13px/18px var(--sans);
+  color: var(--graphite);
+}
+
+/* EmptyState (src/components/empty-state.tsx): a 48 px icon, a 17/600 headline, a 15 px line at most 300 px wide,
+   at most one 36 px button, centred a little above the middle of the free space. */
+.fh-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 280px;
+  padding: 32px 16px 64px;
+  text-align: center;
+}
+
+.fh-empty-state > svg {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 16px;
+  color: var(--graphite);
+}
+
+.fh-empty-state :is(h1, h2, h3) {
+  font: 600 17px/24px var(--sans);
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+.fh-empty-state p {
+  max-width: 300px;
+  margin-top: 6px;
+  font-size: 15px;
+  line-height: 22px;
+  color: var(--graphite);
+  overflow-wrap: anywhere;
+}
+
+.fh-empty-state .fh-btn-row {
+  justify-content: center;
+  margin-top: 16px;
+}
+
+.fh-empty-state .fh-btn {
+  min-height: var(--ctl-sm-h);
+  font-size: 14px;
 }

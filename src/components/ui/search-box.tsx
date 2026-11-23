@@ -1,14 +1,66 @@
-import { cn } from "cn";
-import { Search } from "lucide-react";
-import type { ComponentProps } from "react";
+"use client";
 
-// Commonhall's search box (crop search-box.png): a 52 px field, 16 px text, radius 10, the one shadow, the search
-// icon inset at 14 px.
-export function SearchBox({ className, ...inputProps }: Omit<ComponentProps<"input">, "type">) {
+import { cn } from "cn";
+import { Search, X } from "lucide-react";
+import { useCallback, useRef, useState, type ComponentProps } from "react";
+
+type SearchBoxProps = Omit<ComponentProps<"input">, "type">;
+
+// Sets the field's value the way typing does, so a controlled field's onChange runs as well: React tracks the value
+// through the element's own setter, so it is called from the prototype, then an input event is sent.
+function clearLikeTyping(field: HTMLInputElement) {
+  const setValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
+  setValue?.call(field, "");
+  field.dispatchEvent(new Event("input", { bubbles: true }));
+}
+
+// Commonhall's search box (round 8, ui-polish SPEC): a field's 44 px and 6 px radius, no shadow, a 20 px search icon
+// 12 px in, and, while it holds text, the app's own clear button (a grey circle with an ✕) in place of the browser's.
+// Clearing empties the field as typing would and keeps the focus there.
+export function SearchBox({ className, ref, onChange, ...inputProps }: SearchBoxProps) {
+  const fieldRef = useRef<HTMLInputElement | null>(null);
+  const isControlled = inputProps.value !== undefined;
+  const [hasTypedText, setHasTypedText] = useState(() => String(inputProps.defaultValue ?? "") !== "");
+  const hasText = isControlled ? String(inputProps.value ?? "") !== "" : hasTypedText;
+  const setRefs = useCallback(
+    (field: HTMLInputElement | null) => {
+      fieldRef.current = field;
+      if (typeof ref === "function") ref(field);
+      else if (ref) ref.current = field;
+    },
+    [ref],
+  );
+
   return (
     <div data-slot="search-box" className={cn("fh-search", className)}>
       <Search aria-hidden="true" className="fh-i" strokeWidth={1.5} />
-      <input type="search" className="fh-input" {...inputProps} />
+      <input
+        ref={setRefs}
+        type="search"
+        className="fh-input"
+        onChange={(event) => {
+          setHasTypedText(event.target.value !== "");
+          onChange?.(event);
+        }}
+        {...inputProps}
+      />
+      {hasText && !inputProps.disabled && !inputProps.readOnly ? (
+        <button
+          type="button"
+          aria-label="Clear search"
+          className="fh-search-clear"
+          // Keeps the focus in the field: a press on the button never takes it.
+          onPointerDown={(event) => event.preventDefault()}
+          onClick={() => {
+            const field = fieldRef.current;
+            if (!field) return;
+            clearLikeTyping(field);
+            field.focus();
+          }}
+        >
+          <X aria-hidden="true" strokeWidth={2} />
+        </button>
+      ) : null}
     </div>
   );
 }

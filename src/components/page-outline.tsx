@@ -52,8 +52,8 @@ export function OutlineLine({ width = "60%", height = 12, className }: BarProps)
   return <Skeleton className={`max-w-full ${className ?? ""}`} style={{ width, height, borderRadius: PILL }} />;
 }
 
-// A field, a button or a box: the parts' small radius.
-export function OutlineBox({ width = "100%", height = 40, radius = SMALL_RADIUS, className }: BarProps & { radius?: CSSProperties["borderRadius"] }) {
+// A field, a button or a box: the parts' small radius, a control's 44 px by default.
+export function OutlineBox({ width = "100%", height = 44, radius = SMALL_RADIUS, className }: BarProps & { radius?: CSSProperties["borderRadius"] }) {
   return <Skeleton className={`max-w-full ${className ?? ""}`} style={{ width, height, borderRadius: radius }} />;
 }
 
@@ -61,12 +61,12 @@ export function OutlineCircle({ size = 40 }: { size?: number }) {
   return <Skeleton className="shrink-0" style={{ width: size, height: size, borderRadius: PILL }} />;
 }
 
-// A row of chips (filters, a console area's tabs).
+// A row of chips (filters, a console area's tabs): 32 px, as the chips.
 export function OutlineChips({ widths, className = "mb-4", isWrapped = false }: { widths: readonly number[]; className?: string; isWrapped?: boolean }) {
   return (
     <div aria-hidden="true" className={`fh-chips ${isWrapped ? "fh-chips-wrap" : ""} ${className}`}>
       {widths.map((width, index) => (
-        <OutlineBox key={index} width={width} height={34} className="flex-none" />
+        <OutlineBox key={index} width={width} height={32} className="flex-none" />
       ))}
     </div>
   );
@@ -91,7 +91,7 @@ export function OutlineCard({ lines = 2, hasAvatar = false, hasButton = false, c
           <OutlineLine key={index} width={index === 0 ? "88%" : index === lines - 1 ? "45%" : "75%"} height={index === 0 ? 15 : 12} />
         ))}
       </div>
-      {hasButton ? <OutlineBox width={72} height={32} className="flex-none" /> : null}
+      {hasButton ? <OutlineBox width={72} height={36} className="flex-none" /> : null}
     </div>
   );
 }
@@ -117,6 +117,24 @@ export function OutlineRows({ count, hasAvatar = true, hasEnd = false }: { count
             <OutlineLine width={`${80 - (index % 2) * 14}%`} height={11} />
           </div>
           {hasEnd ? <OutlineBox width={76} height={22} /> : <span />}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ListRow's outline (src/components/ui/list-row.tsx): rows of `pitch` px (72 by default), a face of `avatar` px at
+// x 16, two lines at x 76 and the hairline from x 76, so the real rows land where these stood.
+export function OutlineListRows({ count, avatar = 48, pitch = 72 }: { count: number; avatar?: number; pitch?: number }) {
+  return (
+    <div aria-hidden="true">
+      {Array.from({ length: count }, (_, index) => (
+        <div key={index} className="fh-lr" style={{ minHeight: pitch, height: pitch, gridTemplateColumns: `${avatar}px minmax(0,1fr)` }}>
+          <OutlineCircle size={avatar} />
+          <div className="grid gap-2.5 pt-1.5">
+            <OutlineLine width={`${58 - (index % 3) * 8}%`} height={14} />
+            <OutlineLine width={`${80 - (index % 2) * 14}%`} height={12} />
+          </div>
         </div>
       ))}
     </div>
