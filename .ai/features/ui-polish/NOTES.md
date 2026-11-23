@@ -115,6 +115,61 @@ On `:root` in `globals.css`: `--sat`, `--sab` (the only readers of `env(safe-are
 - The install card's ✕ is 16×24 (only its buttons were Part 4's).
 - The web card has no Cancel: Escape folds only an empty box (as the part file says).
 
+## Part 3, the Inbox (the list, the thread, the web's two panes)
+
+The spec: [parts/3-inbox.md](parts/3-inbox.md), with the council's decision 2 (the thread is flat rows, not bubbles).
+Styles: `src/modules/messages/components/inbox.css` (classes `ib-*`), loaded by `inbox-panes.tsx`.
+
+### The frame: one layout, two panes
+- `src/app/(app)/inbox/layout.tsx` (owner: members, as the page) reads the intros and the first page of conversations
+  and renders `InboxPanes` (`inbox-panes.tsx`) with the list views; its child is the right pane: `/inbox` is
+  "Pick a conversation", `/inbox/<id>` the thread. A layout keeps its place across navigation, so on the web the list
+  stays beside the thread, and opening a row only changes the address (Back works). Each page still guards itself.
+- `InboxPanes` picks All or Intros from `?show=intros` (a layout gets no search params) and reads the open thread with
+  `useSelectedLayoutSegment()`. Under 1000 px, `data-open="list"|"thread"` shows one pane; from 1000 px both show in
+  one card (360 px list), and `useFillHeight` sets the card's height to the window under it (24 px left at its foot).
+- The selected row: `ConversationRow` reads `useParams().conversationId` and sets `data-selected` and `aria-current`.
+
+### The list
+- Every row is Part 1's `ListRow`. A conversation passes its own `Link` as the title (the stretched link still covers
+  the row), the time (`inbox-time.ts`: "14:05" today, "Tue" this week, "21 Nov" before, in the reader's time zone), the
+  last line with "You: " when it is theirs, and the unread dot or count.
+- Intro rows (`intros-list.tsx`) are `ListRow`s too: "Asks you for an intro to …" with an outlined 36 px "Answer" (a
+  second link to the intro, hidden from the keyboard because the row's link goes there), and on the Intros chip the
+  status word at the right of line 2 (`LineWithStatus`).
+- `TargetMemberAsk` (Today and Inbox) is a `ListRow` whose "Answer" opens the intro's words and Yes / No thanks in the
+  row (focus moves to Yes). It uses only shared classes and utilities, because `inbox.css` isn't loaded on Today.
+- Empty: `EmptyState` (Inbox icon, "No messages yet", "Find someone"). The rows reach the screen's (or pane's) edges with
+  `margin-inline: -16px`.
+- The outline (`tab-outlines.tsx`, Inbox's function) uses inline offsets, since `inbox.css` loads with the page: 0 px
+  apart from the real first row at 390.
+
+### The thread
+- `thread.tsx` sets `data-pushed-screen` and `data-own-header` (Part 1's contract): no tab bar or community bar on a
+  phone; in the store app the native tab bar (Part 7) hides on it too. `ThreadHeader`: Back "Inbox" (hidden in the web
+  pane), the 32 px face and name as one link to the profile, and More (a `Sheet`, a popover on the web) with
+  "Block <name>" and its confirmation. `ThreadIntro`: the 64 px face, the name, their title and company, View profile,
+  and the email-replies line; it shows once the oldest message is loaded.
+- Messages (`message-row.tsx`) are flat rows: a run (one sender, one day, gaps under 10 minutes) starts with a 36 px
+  face and "name · time"; the rest of the run is the words alone. Each message holds a visually hidden button
+  ("<sender>, <day>, <time>", `aria-expanded`) for the keyboard; a tap on the words (not on a link, not while text is
+  selected) toggles the same line: the moment and Delete (yours) or Report (theirs), which open the old confirmations.
+- The reply bar (`message-composer.tsx`): a 40 px round box that grows to 120 px (set by hand from `scrollHeight`) and a
+  40 px round Send, disabled until there are words; Enter sends only with a fine pointer. On a phone the bar is fixed at
+  `bottom: var(--bottom-stack)` with paper under it to the screen's edge (`::after`), and the thread keeps the bar's
+  height as its bottom padding (`--ib-compose-h`, from a ResizeObserver). On the web it is the pane's foot.
+- Scrolling: the thread opens at its newest message (again one frame later); a message you send, or one that arrives
+  while you're near the newest, scrolls into view. "Show older messages" measures the oldest message before and after,
+  so it stays put whether or not the browser already anchored it. The page scrolls on a phone; the pane on the web.
+- `/messages/new` (`new-thread.tsx`) is the same header, intro and bar; `readNewMessageTarget` now returns the person
+  as a full `ConversationPeer` (title, company, face).
+- On a phone the page foot (`[data-slot=phone-foot]`) is hidden under a thread.
+
+### Left for others
+- Part 4: Today places `TargetMemberAsk` outside `.td-rows`, so that row sits 16 px in from the other rows; wrapping
+  it in `.td-rows` (today-list.tsx) lines it up.
+- Part 2: the page foot under the Inbox list on phones; the demo banner makes every page scroll by its height.
+
 ## Part 7, the store app's own tab bar (smooth-app Part D)
 
 The spec: [parts/7-native-tabs.md](parts/7-native-tabs.md). All of it is in `mobile/`; the site is unchanged.
