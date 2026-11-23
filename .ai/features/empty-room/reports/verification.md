@@ -97,3 +97,50 @@ my containers with `docker rm -f empty-room-verify-pg empty-room-verify-livekit`
 other containers (commonhall-team-pg, community-demo-pg, community-preview-pg, empty-room-test-pg) were not touched.
 Gitignored build output (`.next/`, `mobile/dist-web/`, `mobile/node_modules/`) is left in the worktree. No tracked
 file changed. This report and its pictures are new and uncommitted.
+
+## Re-check after the repair (a3365b20)
+
+Verifier: a second separate agent, not the builder. Branch `absi-agent/empty-room` at a3365b20 (PR #133), which adds
+5 s of slack (`CHECK_SLACK_MS`) to both empty rules in `checkRoom`. Checked on 23 Nov 2026, 15:24–15:40 UTC. Only
+defect 1 and the checks around it were re-run.
+
+**Overall: PASS.** No room took about 3 minutes. Every room ended on the first minute check that came at least about a
+minute (or 2 minutes, for the stage rule) after it was first seen empty.
+
+### How it ran
+- The same recipe as the first pass, minus the store app preview. Containers `empty-room-recheck-pg` (Postgres 17,
+  127.0.0.1:9612, databases `community` and `community_test`) and `empty-room-recheck-livekit`
+  (`livekit/livekit-server:v1.13 --dev --bind 0.0.0.0 --node-ip 127.0.0.1`, 7880, 7881, 7882/udp on 127.0.0.1).
+- `pnpm build`, then `next start -p 9725` with a throwaway gitignored `.env` (`DEMO_MODE=true`, `JOBS_SELF_TICK=true`,
+  local LiveKit dev keys, `ROOMS_ON_BY_DEFAULT=true`). The browser went straight to http://localhost:9725. The
+  `voice-rooms` job ran every minute at about hh:mm:49.4.
+- Playwright and Chromium at 390×844, with made-up demo people only (Sam Lee, Maya Ortiz). Maya first ended the seeded
+  demo room. The scripts are `r-*.mjs` in `.ai/tmp/verify-empty-room/`, and their logs are `r-*.log`. Times come from
+  `voice_room` (`empty_since`, `empty_stage_since`, `ended_at`, all written by the app's clock) and from the script's
+  clock on the same machine.
+
+### Results
+
+| # | Check | Result | Measured |
+|---|---|---|---|
+| R1 | Empty by a closed tab, 3 runs | PASS | Sam started a room and was connected ("1 in the room"). Then his whole browser context was closed, with no Leave. In every run the voice server noticed about 21–23 s later, when Maya's card turned to "Nobody in yet". **Run 1:** closed 15:26:34.09. The 15:26:49 check still saw Sam connected, and the 15:27:49.416 check first saw the room empty. Ended 15:28:49.420: **60.0 s after first seen empty, 135.3 s after the close.** **Run 2:** closed 15:29:26.58, first seen empty 15:29:49.436, ended 15:30:49.440: **60.0 s / 82.9 s.** **Run 3:** closed 15:31:05.01, first seen empty 15:31:49.463, ended 15:32:50.130: **60.7 s / 105.1 s.** After each end, Maya's Rooms had no card and no dot. None took about 3 minutes. Run 1 went 5 s past the brief's "about 2 min 10 s after the close". The room itself ended on the next check, one minute after it was first seen empty. The extra time came from the voice server: it noticed the closed tab about 22 s after the close, a few seconds after the 15:26:49 check had already run. A closed tab can therefore end up to about 2 min 20 s after the close (about 20 s to notice, plus up to a minute until the next check, plus the minute). |
+| R1+ | A check that lands early (added probe) | PASS | None of the natural checks above came early: the gaps were 60 004, 60 004 and 60 667 ms. So I made one come early. A room left by a closed tab was first seen empty at 15:33:49.477. I called `POST /api/jobs/tick` myself, with the app's own local tick secret, **57.16 s** later. The room ended at once, with `ended_at` 15:34:46.700, **57.2 s after it was first seen empty.** Before the repair, that check could not end the room (57 s < 60 s), and the 1-minute schedule would have held it a whole extra minute. |
+| R2 | Host leaves, the listener stays (check 3) | PASS | Maya hosted and Sam listened ("2 in the room"). Maya tapped More › Leave at 15:35:11.71. 0.86 s later the card said "Maya's room · 1 in". `empty_since` **stayed empty the whole time** (no 1-minute end while Sam was connected). Sam's room said "1 in the room · Nobody on stage yet" (r-03, at +70 s). The 15:35:49.487 check marked the stage empty, and the room ended 15:37:49.504: **120.0 s after the stage was first seen empty, 157.8 s after the leave** (the first pass: 245 s). Sam's page then said "This room has ended." (r-04). |
+| R3 | Host leaves alone (check 1) | PASS | Sam tapped More › Leave at 15:38:13.030. `empty_since` was set at 15:38:13.029, the moment of the leave. Maya's Rooms said "Sam's room · Nobody in yet" at +0.84 s. It was never "1 in". The 15:39:49.519 check ended it, **96.5 s after the leave.** Then Maya's Rooms had no card and no dot. Sam's own Rooms page was read too early (+32 ms, before its cards drew), so it is not evidence either way. The first pass checked it ("Nobody in yet"). |
+| R4 | `pnpm vitest run src/modules/voice` | PASS | `NODE_ENV` unset, `TEST_DATABASE_URL` = the throwaway `community_test`. **3 files, 36 tests passed** (the first pass had 35; the new one is "ends an empty room on the next minute check, even one that lands a moment early"). The tests wrote to `community_test`, and the app's `community` database was untouched (checked). |
+
+Pictures: r-01 (Sam in his room, just before the close, run 3), r-02 (Maya's Rooms after the closed-tab room ended,
+run 3: no card, no dot), r-03 (Sam listening 70 s after the host left: "1 in the room · Nobody on stage yet"),
+r-04 (Sam's page when the stage rule ended the room).
+
+### Not run
+- A natural early check during a real 2-minute stage-rule end. The one stage-rule run had a 120 017 ms gap, so the
+  slack wasn't needed there. The same slack was shown on the 1-minute rule (R1+), and the unit tests cover both.
+- The store app preview and a real phone (not needed for this re-check).
+
+### Cleanup
+I stopped the app (`next start` on 9725) and closed every browser. I removed both of my containers with
+`docker rm -f empty-room-recheck-pg empty-room-recheck-livekit`. I deleted the throwaway `.env`. The other containers
+(commonhall-team-pg, community-demo-pg, community-preview-pg, empty-room-test-pg) were not touched. No tracked file
+changed except this section. The four `r-*.png` pictures are new and uncommitted. The gitignored build output
+(`.next/`) is left.
