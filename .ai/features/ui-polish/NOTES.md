@@ -310,3 +310,46 @@ All of the frame's look is in `src/shell/frame.css`, loaded by `src/app/layout.t
 - The mute confirmation (a flash) shows under the More sheet's dimmed backdrop while the sheet is open.
 - The drawn switch's off colour is `#b5b4ad`, as the app's `Switch` part; neither is a token yet.
 - The "own words" card's first label starts lower than other cards' (FieldBlock's own top margin; already so on main).
+## Part 6, Rooms (the list, the live room, the store app's room and its mini bar)
+
+### The web (`src/modules/voice/components/`, `voice.css`)
+- **The list** (`rooms-board.tsx`, `room-start.tsx`'s `RoomsHead`, `room-alerts-switch.tsx`): the board draws its own
+  head, so the page has no `PageHeader`: "Rooms" with a 36 px primary "Start a room" on its row, and today's line with
+  "Schedule for later" under it. Then `SectionLabel`s "Live now" and "Coming up" over the room cards, the `EmptyState`
+  (`AudioLines`) when there is neither, and the Room alerts row (bell, label, Quiet times, the switch) last. A card is
+  joined anywhere: the title's link stretches over it (`.vr-stretch::after`), Join and Remind me sit above it
+  (`.vr-over`), and the faces and their words let taps through (`pointer-events: none`). Two columns from 760 px, rows
+  of one height.
+- **The room page** (`rooms/[roomId]/page.tsx`) carries `data-pushed-screen data-own-header`. `room-header.tsx` holds
+  `RoomHeader` ("‹ Rooms", Leave or End room, and a 44 px "More" `Sheet` with Rename for the host, Leave when End room
+  took its place, "Back to listening" on stage, and "Never recorded.") and `RoomTitle` (22 px Newsreader, one line
+  under it). Rename lives in that sheet (`rename-room.tsx` is gone). On a phone the header is sticky under the status
+  bar; from 1000 px it tops a 640 px column.
+- **The live room** (`live-room.tsx`): one grid of 64 px faces (columns at least 84 px; 6 from 1000 px) under "On
+  stage" and "Listening", each with a role line or "Hand up". A face a moderator can act on opens its actions in a
+  `Sheet`. The bar (`.vr-dock` > `.vr-bar`, 88 px) is fixed on `--bottom-stack` under 1000 px and sticky at the
+  column's foot from 1000 px; the raised-hands chip sits above it. React and Chat open sheets on a phone and panels
+  from 1000 px (brought into view above the bar). Raise hand shows "Hand raised. The host sees it." with Undo for 4 s
+  (council: one tap plus Undo; 4 s so Undo can be reached). A member whose role goes from listener to the stage while in
+  the room sees the banner for 6 s ("<host> brought you on stage. Your mic is off.", Unmute, Back to listening); that
+  is watched in `refresh`, from the first time the room names the member, so joining as the host doesn't count.
+- `.vr-bar` no longer reads `--tab-h`; Part 1's `html .vr-bar { bottom: … }` override in `globals.css` now does nothing
+  (the bar sits inside `.vr-dock`) and can go.
+
+### The store app (`mobile/`)
+- `src/theme.ts`: the site's token values (live colour = the site's `--ribbon`, #9c4e22 / dark #e7a57e) and `FONTS`,
+  one family per weight (Android can't pick a weight from one file, so never set `fontWeight` with them).
+  `src/fonts.ts` (`useAppFonts`, called by `PortalScreen`) loads `assets/fonts/` with expo-font: IBM's own static Plex
+  Sans cuts (unwrapped from WOFF2, unchanged: "Plex" is a Reserved Font Name) and a SemiBold cut of the site's
+  Newsreader file. Licence: `assets/fonts/OFL.txt`.
+- `src/voice/icons.tsx`: the site's Lucide icons as paths on `react-native-svg` (no icon package).
+- `src/voice/RoomDock.tsx`, `useRoomDock({ portal, origin, onRenamed })`: the open room, its sheet (`RoomScreen`, drawn
+  over everything and kept while minimised so the room plays on) and its mini bar (`MiniPlayer`). `PortalScreen` hands
+  `dock.openRoom` to `PortalTabs` as `onOpenRoom` and `dock.miniBar` as its `bottomSlot`; Part 7's `PortalTabs` places
+  the slot right above the native tab bar (above the home indicator on a pushed screen), hides it while a page sheet,
+  menu or the keyboard is up, and sends every tab's page the slot's height in its frame (`--mini`,
+  `html[data-mini-player]`), so `--bottom-stack` lifts what the page pins at the bottom.
+- `RoomScreen` is a sheet (top at `insets.top + 8`, 16 px radius, slides up over 250 ms, none under reduced motion);
+  the chevron, the dimmed strip above it, or a drag of 120 px on its head minimises it. The mini bar's main control and
+  Leave act through its ref (`RoomControls`); it reports `RoomState` up. No chat in the app.
+- The page side (`src/platform/native-app/bridge.ts`) is unchanged: Part 7's frame script does the page's part.

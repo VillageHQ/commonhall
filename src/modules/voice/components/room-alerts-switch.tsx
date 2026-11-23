@@ -1,6 +1,7 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
+import { Bell } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -15,8 +16,9 @@ export type RoomAlertsState = { isOn: boolean; isAllOff: boolean; heldWords: str
 
 const ALERTS_HREF = `${ROUTES.alerts}?from=rooms`;
 
-// Rooms' own "Room alerts" switch: one tap, no page change (the same switch as on Alerts). Beside it, a quiet link to
-// Alerts for quiet times, which names a pause or quiet time holding alerts now.
+// Rooms' own "Room alerts" switch, the page's last row (56 px): a bell, "Room alerts" and the switch at the right;
+// under the label a quiet link to Alerts for quiet times, which names a pause or quiet time holding alerts now. One
+// tap, no page change (the same switch as on Alerts).
 export function RoomAlertsSwitch({ state }: { state: RoomAlertsState }) {
   const [isOn, setIsOn] = useState(state.isOn);
   const save = useMutation({
@@ -24,25 +26,29 @@ export function RoomAlertsSwitch({ state }: { state: RoomAlertsState }) {
     onMutate: (next) => setIsOn(next),
     onError: (_error, next) => setIsOn(!next),
   });
-  if (state.isAllOff) {
-    return (
-      <p className="vr-alerts fh-small fh-muted" data-testid="room-alerts">
-        All your alerts are off.{" "}
-        <Link href={ALERTS_HREF} className="fh-linkbtn">
-          Alerts
-        </Link>
-      </p>
-    );
-  }
   return (
     <div className="vr-alerts" data-testid="room-alerts">
-      <label htmlFor="room-alerts" className="vr-alerts-label">
-        <Switch id="room-alerts" checked={isOn} disabled={save.isPending} onCheckedChange={(next) => save.mutate(next)} />
-        {isOn ? "Room alerts on" : "Room alerts off"}
-      </label>
-      <Link href={ALERTS_HREF} className="fh-linkbtn" data-testid="quiet-times-link">
-        {state.heldWords ?? "Quiet times"}
-      </Link>
+      <Bell aria-hidden="true" className="vr-alerts-icon" strokeWidth={1.5} />
+      <div className="vr-alerts-text">
+        {state.isAllOff ? (
+          <>
+            <span className="vr-alerts-label">All your alerts are off</span>
+            <Link href={ALERTS_HREF} className="fh-linkbtn vr-alerts-link">
+              Alerts
+            </Link>
+          </>
+        ) : (
+          <>
+            <label htmlFor="room-alerts" className="vr-alerts-label">
+              Room alerts
+            </label>
+            <Link href={ALERTS_HREF} className="fh-linkbtn vr-alerts-link" data-testid="quiet-times-link">
+              {state.heldWords ?? "Quiet times"}
+            </Link>
+          </>
+        )}
+      </div>
+      {state.isAllOff ? null : <Switch id="room-alerts" checked={isOn} disabled={save.isPending} onCheckedChange={(next) => save.mutate(next)} />}
       {save.error ? (
         <p className="fh-hint fh-err w-full" role="alert">
           {save.error.message}

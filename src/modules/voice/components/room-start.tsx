@@ -12,9 +12,10 @@ import { Input } from "@/components/ui/input";
 import { toStartedRoomHref, VOICE_LIMITS } from "../contract";
 import { VOICE_QUERY_KEYS, voiceRequests } from "../queries";
 
-// Start a room: one tap starts it now as "<first name>'s room" and alerts everyone (the host renames it inside). A
-// quiet "Schedule for later" opens the one form with choices left: a title and a time.
-export function StartRoom({ isConfigured }: { isConfigured: boolean }) {
+// The Rooms page's head: the title with "Start a room" at the right of its row (one tap starts it now as "<first
+// name>'s room" and alerts everyone; the host renames it inside), and under it the quiet "Schedule for later", which
+// opens the one form with choices left: a title and a time.
+export function RoomsHead({ isConfigured }: { isConfigured: boolean }) {
   const router = useRouter();
   const [isScheduling, setIsScheduling] = useState(false);
   // A quick second tap lands before the button greys out: only the first one starts.
@@ -32,11 +33,14 @@ export function StartRoom({ isConfigured }: { isConfigured: boolean }) {
     start.mutate();
   }
   return (
-    <div className="vr-start">
-      <Button variant="ink" className="vr-start-button" onClick={startNow} disabled={!isConfigured || start.isPending} data-testid="start-room">
-        Start a room
-      </Button>
-      <p className="fh-small fh-muted vr-start-note">
+    <header data-slot="page-header" className="fh-pagehead vr-head">
+      <div className="vr-head-row">
+        <h1 className="fh-h1">Rooms</h1>
+        <Button size="sm" onClick={startNow} disabled={!isConfigured || start.isPending} data-testid="start-room">
+          Start a room
+        </Button>
+      </div>
+      <p className="vr-start-note">
         Starts now and alerts everyone.{" "}
         <button type="button" className="fh-linkbtn" aria-expanded={isScheduling} onClick={() => setIsScheduling((value) => !value)} disabled={!isConfigured} data-testid="schedule-room">
           Schedule for later
@@ -48,7 +52,7 @@ export function StartRoom({ isConfigured }: { isConfigured: boolean }) {
         </p>
       ) : null}
       {isScheduling ? <ScheduleRoom onClose={() => setIsScheduling(false)} /> : null}
-    </div>
+    </header>
   );
 }
 

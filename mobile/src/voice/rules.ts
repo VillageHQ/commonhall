@@ -4,7 +4,7 @@
 export type RoomRole = "host" | "cohost" | "speaker" | "listener";
 export type RoleAction = "invite_up" | "move_down" | "make_cohost" | "remove_cohost";
 
-export const ROLE_WORDS: Record<RoomRole, string> = { host: "Host", cohost: "Co-host", speaker: "Speaker", listener: "" };
+export const ROLE_WORDS: Record<RoomRole, string> = { host: "Host", cohost: "Co-host", speaker: "Speaker", listener: "Listener" };
 export const ROLE_ORDER: Record<RoomRole, number> = { host: 0, cohost: 1, speaker: 2, listener: 3 };
 export const REACTIONS = ["👏", "😂", "❤️", "🔥", "💯", "🙏"] as const;
 

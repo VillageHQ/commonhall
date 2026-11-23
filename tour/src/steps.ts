@@ -182,11 +182,7 @@ export const TOUR_STEPS: readonly TourStep[] = [
       await hands.wait(1000);
       await hands.point("[data-testid='stage'] [data-role='host']");
       await hands.wait(1600);
-      // A reaction stays on the page (the tour's LiveKit sends nothing).
-      await hands.click("[data-testid='react']");
-      await hands.wait(300);
-      await hands.click("button[aria-label='React 👏']");
-      await hands.wait(1000);
+      // Raise hand, the room's main control. (React opens a sheet on a phone, which would cover the whole landing page.)
       await hands.tap("[data-testid='hand']");
       await hands.wait(1800);
     },

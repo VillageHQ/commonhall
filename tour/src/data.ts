@@ -433,6 +433,9 @@ export const ROOM_PEOPLE: readonly TourRoomPerson[] = [
   ),
 ];
 
+// The room's host, as its page reads it.
+export const ROOM_HOST_NAME = ROOM_PEOPLE[0]!.name;
+
 // The pictures the live room shows: it fills in after it "connects", so the build's server render never sees them.
 export const ROOM_PICTURES = ROOM_PEOPLE.map(({ faceUrl: url }) => url).filter((url): url is string => Boolean(url));
 

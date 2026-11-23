@@ -11,7 +11,7 @@ web app's lint, typecheck, tests and build. How it works today: `.ai/features/mo
   bridge; `PortalView.tsx` is the web preview's iframe.
 - `src/lib/`: pure logic with unit tests (`community.ts`, `links.ts`, `bridge.ts`, `tabs.ts`: the page's tab script);
   `storage.ts` (AsyncStorage).
-- `src/voice/`: `RoomScreen` (LiveKit on native WebRTC), `rules.ts` (roles, as the web contract), `audio*.ts`.
+- `src/voice/`: `RoomDock` (the sheet `RoomScreen`, LiveKit on native WebRTC; `MiniPlayer`), `rules.ts`, `audio*.ts`.
 - `src/push/`: Expo push (`push.native.ts`); the web preview's stand-in (`push.ts`).
 - `modules/voice-service/`: a local Expo module, Android only: the foreground service that keeps a room playing
   with the screen locked, with Mute and Leave on the lock screen.
