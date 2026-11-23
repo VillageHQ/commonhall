@@ -1,0 +1,556 @@
+/* The Inbox (round 8, ui-polish Part 3): the list, the thread, and the web's two panes. Sizes from
+   .ai/features/ui-polish/parts/3-inbox.md; the row is Part 1's ListRow (.fh-lr), the bottom of the screen Part 1's
+   variables (--sat, --sab, --bottom-stack). */
+
+/* ── The list ── */
+.ib-list-pane .fh-pagehead {
+  margin-bottom: 12px;
+}
+
+.ib-chips {
+  margin-bottom: 4px;
+}
+
+/* Rows run edge to edge: the face at x 16 and the text at x 76 of the screen (or of the web's list pane). */
+.ib-list-pane .fh-lr {
+  margin-inline: -16px;
+}
+
+.ib-search {
+  margin-bottom: 12px;
+}
+
+/* The open conversation on the web: a Vellum fill and the community's 3 px bar on its left. */
+.ib-row[data-selected] {
+  background: var(--vellum);
+  box-shadow: inset 3px 0 0 var(--fund);
+}
+
+.ib-pick {
+  display: none;
+}
+
+/* ── The thread ── */
+.ib-thread {
+  position: relative;
+}
+
+.ib-thead {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 52px;
+  background: var(--paper);
+}
+
+.ib-back {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 2px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 6px 0 2px;
+  border-radius: var(--r-sm);
+  color: var(--ink);
+  font: 500 16px/20px var(--sans);
+  text-decoration: none;
+}
+
+.ib-back svg {
+  width: 24px;
+  height: 24px;
+}
+
+.ib-who {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 4px;
+  border-radius: var(--r-sm);
+  color: inherit;
+  text-decoration: none;
+}
+
+.ib-who-text {
+  display: grid;
+  min-width: 0;
+}
+
+.ib-who-name {
+  margin: 0;
+  overflow: hidden;
+  font: 600 16px/20px var(--sans);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  outline: none;
+}
+
+.ib-who-line {
+  overflow: hidden;
+  font-size: 13px;
+  line-height: 17px;
+  color: var(--graphite);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ib-more {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 9999px;
+  background: none;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.ib-more svg {
+  width: 24px;
+  height: 24px;
+}
+
+.ib-thead-end {
+  flex: none;
+  width: 44px;
+}
+
+@media (hover: hover) {
+  :is(.ib-back, .ib-who[href], .ib-more):hover {
+    background: var(--vellum);
+  }
+}
+
+/* The sheet's row: "Block <name>". */
+.ib-sheet-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 48px;
+  padding: 0 4px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: none;
+  color: var(--ink);
+  font: 500 16px/20px var(--sans);
+  text-align: left;
+  cursor: pointer;
+}
+
+.ib-sheet-row svg {
+  width: 22px;
+  height: 22px;
+  color: var(--graphite);
+}
+
+/* The top of a conversation (Instagram's), scrolling away with the messages. */
+.ib-intro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 0 8px;
+  text-align: center;
+}
+
+.ib-intro-name {
+  margin: 10px 0 0;
+  font: 600 20px/26px var(--serif);
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+.ib-intro-line {
+  margin-top: 2px;
+  font-size: 15px;
+  line-height: 20px;
+  color: var(--graphite);
+}
+
+.ib-intro .fh-btn {
+  margin-top: 12px;
+}
+
+.ib-intro-note {
+  max-width: 320px;
+  margin-top: 12px;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--graphite);
+}
+
+.ib-older {
+  display: flex;
+  margin: 8px auto;
+}
+
+/* Messages as flat rows (the council's decision 2): a 36 px face and the name · time on a run's first message, the
+   words under the name, the rest of the run under the same name. */
+.ib-msgs {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 0 16px;
+}
+
+.ib-msg {
+  position: relative;
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  column-gap: 10px;
+  margin-inline: -8px;
+  padding: 3px 8px;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+}
+
+.ib-msg[data-group-start] {
+  margin-top: 12px;
+}
+
+.ib-msgs > .contents:first-child .ib-msg,
+.ib-msgs > .ib-day:first-child {
+  margin-top: 0;
+}
+
+.ib-msg[data-open] {
+  background: var(--vellum);
+}
+
+.ib-msg:has(.ib-msg-hit:focus-visible) {
+  outline: 2px solid var(--ring);
+  outline-offset: 0;
+}
+
+.ib-msg-face {
+  grid-row: 1 / span 2;
+  grid-column: 1;
+  width: 36px;
+  height: 36px;
+}
+
+.ib-msg-head {
+  grid-column: 2;
+  margin: 0;
+  overflow: hidden;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--graphite);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ib-msg-head b {
+  font: 600 15px/20px var(--sans);
+  color: var(--ink);
+}
+
+.ib-msg-body,
+.ib-msg-tags,
+.ib-msg-meta {
+  grid-column: 2;
+}
+
+.ib-msg-body {
+  max-width: 640px;
+  font-size: 16px;
+  line-height: 22px;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+.ib-msg-body :is(p, div) {
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.ib-msg-deleted {
+  font-style: italic;
+  color: var(--graphite);
+}
+
+/* The keyboard's way to a message: a button with the sender and the time, out of sight until it has the focus. */
+.ib-msg-hit {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.ib-msg-tags {
+  display: flex;
+  gap: 8px;
+  margin: 2px 0 0;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--graphite);
+}
+
+.ib-msg-tags [data-status="Not sent"] {
+  color: var(--ribbon);
+}
+
+.ib-msg-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--graphite);
+}
+
+.ib-msg-panel {
+  margin: 6px 0 4px 46px;
+}
+
+/* A day's divider: a small Vellum pill between hairlines. */
+.ib-day {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0 4px;
+  font: 600 12px/16px var(--sans);
+  color: var(--graphite);
+}
+
+.ib-day::before,
+.ib-day::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--rule);
+}
+
+.ib-day span {
+  padding: 3px 10px;
+  border-radius: 9999px;
+  background: var(--vellum);
+}
+
+.ib-empty-line {
+  padding: 8px 0;
+  font-size: 15px;
+  line-height: 22px;
+  color: var(--graphite);
+  text-align: center;
+}
+
+/* The reply bar: a round box (20 px radius, Vellum, no border) and a 40 px round Send, their bottoms on one line. */
+.ib-compose {
+  z-index: 30;
+  padding: 8px 16px;
+  background: var(--paper);
+  border-top: 1px solid var(--rule);
+}
+
+.ib-composer {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.ib-box {
+  flex: 1;
+  min-width: 0;
+  height: 40px;
+  min-height: 40px;
+  max-height: 120px;
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 20px;
+  background: var(--vellum);
+  color: var(--ink);
+  font: 400 16px/20px var(--sans);
+  resize: none;
+  overflow-y: auto;
+}
+
+.ib-box::placeholder {
+  color: var(--graphite);
+}
+
+.ib-box:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 0;
+}
+
+.ib-send {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 9999px;
+  background: var(--ink);
+  color: var(--paper);
+  cursor: pointer;
+}
+
+.ib-send svg {
+  width: 20px;
+  height: 20px;
+}
+
+.ib-send:disabled {
+  background: var(--rule);
+  color: var(--graphite);
+  cursor: default;
+}
+
+.ib-send:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.ib-counter {
+  margin-top: 4px;
+  text-align: right;
+}
+
+.ib-replaced {
+  padding: 6px 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--graphite);
+}
+
+/* ── A phone (under 1000 px): the list, or the thread pushed over it ── */
+@media (max-width: 999.98px) {
+  .ib-panes[data-open="thread"] .ib-list-pane,
+  .ib-panes[data-open="list"] .ib-thread-pane {
+    display: none;
+  }
+
+  /* The page scrolls; the header sticks under the status bar, and the reply bar sits on the home indicator's inset
+     (and the mini player while it shows). */
+  .ib-thread {
+    padding-bottom: var(--ib-compose-h, 57px);
+  }
+
+  .ib-thead {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    margin: -20px -16px 0;
+    padding: var(--sat) 4px 0;
+    min-height: calc(52px + var(--sat));
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .ib-compose {
+    position: fixed;
+    right: 0;
+    bottom: var(--bottom-stack);
+    left: 0;
+  }
+
+  /* The page's own padding under the thread is the composer's, so a short thread ends right above the bar. */
+  .fh-main:has(.ib-thread) {
+    padding-bottom: calc(var(--bottom-stack) + 8px);
+  }
+}
+
+/* ── The web (1000 px and up): two panes in one card ── */
+@media (min-width: 1000px) {
+  .ib-panes,
+  .ib-solo {
+    display: grid;
+    overflow: hidden;
+    border: 1px solid var(--rule);
+    border-radius: var(--r);
+    background: var(--leaf);
+  }
+
+  .ib-panes {
+    grid-template-columns: 360px minmax(0, 1fr);
+  }
+
+  .ib-solo {
+    max-width: 760px;
+  }
+
+  .fh-main:has(:is(.ib-panes, .ib-solo)) {
+    padding-bottom: 24px;
+  }
+
+  .ib-list-pane {
+    min-height: 0;
+    overflow-y: auto;
+    padding: 20px 16px 16px;
+    border-right: 1px solid var(--rule);
+  }
+
+  .ib-list-pane .fh-h1 {
+    font-size: 28px;
+    line-height: 34px;
+  }
+
+  .ib-thread-pane {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+  }
+
+  .ib-pick {
+    display: grid;
+    flex: 1;
+    place-items: center;
+    padding: 24px;
+    font-size: 15px;
+    line-height: 22px;
+    color: var(--graphite);
+  }
+
+  .ib-thread {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .ib-thead {
+    flex: none;
+    min-height: 64px;
+    padding: 0 8px 0 12px;
+    background: var(--leaf);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  /* Beside the list, the thread needs no way back. */
+  .ib-panes .ib-back {
+    display: none;
+  }
+
+  .ib-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 0 24px;
+  }
+
+  .ib-compose {
+    flex: none;
+    padding: 12px 16px;
+    background: var(--leaf);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ib-msg,
+  .ib-row {
+    transition: none;
+  }
+}

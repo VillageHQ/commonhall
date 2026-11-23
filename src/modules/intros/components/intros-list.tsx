@@ -1,9 +1,10 @@
+import { Handshake } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { EmptyState } from "@/components/empty-state";
 import { Avatar } from "@/components/ui/avatar";
-import { Pill } from "@/components/ui/pill";
-import { Row, Rows } from "@/components/ui/rows";
+import { ListRow, SectionLabel } from "@/components/ui/list-row";
 import { ROUTES } from "@/platform/http/routes";
 import { formatDayMonth } from "@/platform/text/format-date";
 
@@ -11,13 +12,12 @@ import { STATES_WAITING_ON_INTRODUCER, type Intro, type IntroBoard, type IntroFo
 import { TargetMemberAsk } from "./target-member-ask";
 import { readPartOfPill, readStatusPill, readTargetCompany } from "./intro-words";
 
+// A section of the Inbox (round 8, ui-polish Part 3): a SectionLabel over ListRows.
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <section className="fh-section">
-      <div className="fh-section-head">
-        <h2 className="fh-h3">{title}</h2>
-      </div>
-      {children}
+    <section className="fh-intro-sec" aria-label={title}>
+      <SectionLabel>{title}</SectionLabel>
+      <div data-slot="intro-rows">{children}</div>
     </section>
   );
 }
@@ -26,14 +26,34 @@ const href = (intro: Intro) => `${ROUTES.intros}/${intro.id}`;
 
 const isWaitingOnYou = (intro: Intro) => (STATES_WAITING_ON_INTRODUCER as readonly string[]).includes(intro.state);
 
+// Line 2 with today's status word at its right, 13 px Graphite.
+function LineWithStatus({ text, status }: { text: string; status: string }) {
+  return (
+    <span className="flex min-w-0 items-baseline gap-2">
+      <span className="min-w-0 flex-1 truncate">{text}</span>
+      <span className="max-w-[50%] flex-none truncate text-[13px] font-normal text-graphite">{status}</span>
+    </span>
+  );
+}
+
+// An intro you're asked to make: the row opens it, and "Answer" (36 px, outlined) sits under the text.
 function WaitingRow({ intro }: { intro: Intro }) {
   return (
-    <Row
-      href={href(intro)}
-      start={<Avatar stableId={intro.requester.id} name={intro.requester.name} imageUrl={intro.requester.avatarUrl} />}
-      title={`${intro.requester.name} asks you for an intro to ${intro.target.name}`}
-      detail={formatDayMonth(intro.createdAt)}
-      end={<Pill tone="needs">Answer</Pill>}
+    <ListRow
+      face={<Avatar stableId={intro.requester.id} name={intro.requester.name} imageUrl={intro.requester.avatarUrl} sizePx={48} />}
+      title={
+        <Link href={href(intro)}>
+          {intro.requester.name}{" "}
+          <span className="sr-only">{`asks you for an intro to ${intro.target.name}`}</span>
+        </Link>
+      }
+      meta={formatDayMonth(intro.createdAt)}
+      line={`Asks you for an intro to ${intro.target.name}`}
+      below={
+        <Link className="fh-btn fh-btn-secondary fh-btn-sm" href={href(intro)} tabIndex={-1} aria-hidden="true">
+          Answer
+        </Link>
+      }
     />
   );
 }
@@ -42,12 +62,11 @@ function YourAskRow({ intro }: { intro: Intro }) {
   const pill = readStatusPill(intro);
   const company = readTargetCompany(intro);
   return (
-    <Row
-      href={href(intro)}
-      start={<Avatar stableId={intro.id} name={intro.target.name} />}
-      title={`${intro.target.name} via ${intro.introducer.name}`}
-      detail={[company, `asked ${formatDayMonth(intro.createdAt)}`].filter(Boolean).join(" · ")}
-      end={<Pill tone={pill.tone}>{pill.label}</Pill>}
+    <ListRow
+      face={<Avatar stableId={intro.id} name={intro.target.name} sizePx={48} />}
+      title={<Link href={href(intro)}>{`${intro.target.name} via ${intro.introducer.name}`}</Link>}
+      meta={formatDayMonth(intro.createdAt)}
+      line={<LineWithStatus text={company || `Asked ${formatDayMonth(intro.createdAt)}`} status={pill.label} />}
     />
   );
 }
@@ -55,12 +74,11 @@ function YourAskRow({ intro }: { intro: Intro }) {
 function PartOfRow({ intro }: { intro: Intro }) {
   const pill = readPartOfPill(intro);
   return (
-    <Row
-      href={href(intro)}
-      start={<Avatar stableId={intro.requester.id} name={intro.requester.name} imageUrl={intro.requester.avatarUrl} />}
-      title={`${intro.requester.name} → ${intro.target.name}`}
-      detail={`asked ${formatDayMonth(intro.createdAt)}`}
-      end={<Pill tone={pill.tone}>{pill.label}</Pill>}
+    <ListRow
+      face={<Avatar stableId={intro.requester.id} name={intro.requester.name} imageUrl={intro.requester.avatarUrl} sizePx={48} />}
+      title={<Link href={href(intro)}>{intro.requester.name}</Link>}
+      meta={formatDayMonth(intro.createdAt)}
+      line={<LineWithStatus text={`Asked you for an intro to ${intro.target.name}`} status={pill.label} />}
     />
   );
 }
@@ -84,13 +102,9 @@ export function IntrosWaitingForYes({ board, forYou = [], now = new Date() }: Wa
       {forYou.map((intro) => (
         <TargetMemberAsk key={intro.id} intro={intro} ago={describeAskedAgo(intro.createdAt, now)} />
       ))}
-      {toAnswer.length > 0 ? (
-        <Rows>
-          {toAnswer.map((intro) => (
-            <WaitingRow key={intro.id} intro={intro} />
-          ))}
-        </Rows>
-      ) : null}
+      {toAnswer.map((intro) => (
+        <WaitingRow key={intro.id} intro={intro} />
+      ))}
     </Section>
   );
 }
@@ -102,29 +116,20 @@ export function YourIntros({ board }: { board: IntroBoard }) {
     <>
       <Section title="You asked">
         {board.yourAsks.length > 0 ? (
-          <Rows>
-            {board.yourAsks.map((intro) => (
-              <YourAskRow key={intro.id} intro={intro} />
-            ))}
-          </Rows>
+          board.yourAsks.map((intro) => <YourAskRow key={intro.id} intro={intro} />)
         ) : (
-          <div data-slot="empty-state" className="fh-empty">
-            <p>No intro asks yet.</p>
-            <div className="fh-btn-row mt-3.5">
-              <Link className="fh-btn fh-btn-secondary" href={ROUTES.people}>
-                Find someone
-              </Link>
-            </div>
-          </div>
+          <EmptyState icon={Handshake} headingLevel="h3" title="No intro asks yet." description="Ask for an intro from someone’s profile, or from People.">
+            <Link className="fh-btn fh-btn-secondary fh-btn-sm" href={ROUTES.people}>
+              Find someone
+            </Link>
+          </EmptyState>
         )}
       </Section>
       {partOf.length > 0 ? (
         <Section title="You were part of">
-          <Rows>
-            {partOf.map((intro) => (
-              <PartOfRow key={intro.id} intro={intro} />
-            ))}
-          </Rows>
+          {partOf.map((intro) => (
+            <PartOfRow key={intro.id} intro={intro} />
+          ))}
         </Section>
       ) : null}
     </>

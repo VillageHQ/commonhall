@@ -5,6 +5,7 @@ import { notFound, redirect } from "next/navigation";
 import { PageHeader } from "@/components/page-header";
 import { Button, ButtonRow } from "@/components/ui/button";
 import { memberIdSchema } from "@/modules/members/contract-blocks";
+import { readAvatarUrl } from "@/modules/members/service-profile";
 import { MESSAGE_DRAFT_PARAM, readMessageDraft } from "@/modules/messages/contract";
 import { NewThread } from "@/modules/messages/components/new-thread";
 import { messagesManifest } from "@/modules/messages/manifest";
@@ -64,5 +65,6 @@ export default modulePage(messagesManifest, async function NewMessagePage({ sear
     );
   }
 
-  return <NewThread member={member} communityName={community.name} draft={draft} />;
+  const avatarUrl = await readAvatarUrl(getDatabase(), member.id);
+  return <NewThread member={{ ...member, avatarUrl }} communityName={community.name} draft={draft} />;
 });

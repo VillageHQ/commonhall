@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import { OutlineBox, OutlineCard, OutlineChips, OutlineCircle, OutlineLine, OutlineRows, OutlineSectionHead, OutlineSheet, OutlineTitle, PageOutline } from "@/components/page-outline";
+import { OutlineBox, OutlineCard, OutlineChips, OutlineCircle, OutlineLine, OutlineListRows, OutlineRows, OutlineSectionHead, OutlineSheet, OutlineTitle, PageOutline } from "@/components/page-outline";
 
 // Each tab's outline (smooth-app Part A): the page's own head and grey blocks shaped like its first screen at 390 px,
 // drawn the moment its tab is tapped (pressed-tab.tsx) and replaced when the page arrives. Keyed by the tab's
@@ -131,20 +131,31 @@ function PeopleOutline() {
 
 // The All · Intros filter, then what waits on the member and their conversations.
 function InboxOutline() {
+  // Round 8 (ui-polish Part 3): the chips 12 px under the title, then each section's label over full-width ListRows,
+  // where the real list lands (inbox.css isn't loaded yet when this shows, so the offsets are inline).
   return (
     <PageOutline title="Inbox">
-      <div aria-hidden="true">
-        <OutlineChips widths={[42, 64]} />
-        <section className="fh-section">
-          <OutlineSectionHead width={120} />
-          <OutlineRows count={1} hasEnd />
-        </section>
-        <section className="fh-section">
-          <OutlineSectionHead width={96} />
-          <OutlineRows count={3} />
-        </section>
+      <div aria-hidden="true" style={{ marginTop: -8 }}>
+        <OutlineChips widths={[42, 64]} className="mb-1" />
+        <OutlineSectionLabel width={104} />
+        <div style={{ marginInline: -16 }}>
+          <OutlineListRows count={1} pitch={116} />
+        </div>
+        <OutlineSectionLabel width={72} />
+        <div style={{ marginInline: -16 }}>
+          <OutlineListRows count={3} />
+        </div>
       </div>
     </PageOutline>
+  );
+}
+
+// A SectionLabel's line (13/600, 20 px above and 8 px below).
+function OutlineSectionLabel({ width }: { width: number }) {
+  return (
+    <div className="flex h-[18px] items-center" style={{ margin: "20px 0 8px" }}>
+      <OutlineLine width={width} height={12} />
+    </div>
   );
 }
 

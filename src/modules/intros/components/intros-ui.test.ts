@@ -90,8 +90,21 @@ describe("the intro screens (Commonhall's)", () => {
       expect(screen.getByRole("link", { name: /Marcus Webb asks you for an intro to Rachel Kim/ }).getAttribute("href")).toBe(`/intros/${waiting.id}`);
       expect(screen.getByText("Answer")).toBeTruthy();
       expect(screen.getByText("Alex Kim via Priya Shah")).toBeTruthy();
-      expect(screen.getByText("Halcyon Health · asked 11 Nov")).toBeTruthy();
+      expect(screen.getByText("Halcyon Health")).toBeTruthy();
       expect(screen.getByText("Introduced")).toBeTruthy();
+    });
+
+    it("answers an intro for your yes in the row: Answer, then Yes", async () => {
+      const forYou = { id: "33333333-3333-4333-8333-333333333333", requester: { id: "amara", name: "Amara Osei", headline: null, avatarUrl: null }, introducerName: "Jonas Lindqvist", note: NOTE, createdAt: "2026-11-11T10:00:00.000Z", closesAt: "2026-11-18T10:00:00.000Z" };
+      renderInApp(createElement(IntrosList, { board: makeBoard(), forYou: [forYou] }));
+
+      const row = screen.getByRole("group", { name: "Jonas Lindqvist would like to introduce you to Amara Osei" });
+      expect(screen.queryByRole("button", { name: "Yes, introduce us" })).toBeNull();
+      fireEvent.click(screen.getByRole("button", { name: "Answer" }));
+      expect(row.textContent).toContain(NOTE);
+      fireEvent.click(screen.getByRole("button", { name: "Yes, introduce us" }));
+
+      await waitFor(() => expect(posts).toContainEqual({ path: API_ROUTES.introTargetAnswer, body: { introId: forYou.id, answer: "yes" } }));
     });
 
     it("offers People when there's nothing yet", () => {
