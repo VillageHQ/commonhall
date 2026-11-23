@@ -8,7 +8,7 @@ import { SearchBox } from "@/components/ui/search-box";
 import { ASK_PAGE_TABS, ASK_TABS, ASKS_PAGE, type AskAllowance, type AskTab } from "../contract";
 import type { AskTabCounts, BoardPost } from "../reads-board";
 import type { AskDraftParts } from "../rules-board-url";
-import { AsksComposer } from "./asks-composer";
+import { AsksComposer, type ComposerMember } from "./asks-composer";
 import { AskConsent, PostCard } from "./post-parts";
 
 // An empty state is one line (the box above is its button).
@@ -20,6 +20,7 @@ const EMPTY_TABS: Record<AskTab, string> = {
 };
 
 type AsksBoardProps = {
+  member: ComposerMember;
   tab: AskTab;
   search: string | null;
   posts: BoardPost[];
@@ -27,7 +28,7 @@ type AsksBoardProps = {
   allowance: AskAllowance;
   flash: string | null;
   draft: AskDraftParts | null;
-  // `?compose=1` (Today's "Post an ask"): the box takes the focus.
+  // `?compose=1` (an old "Post an ask" link): the composer opens on arrival.
   isComposing?: boolean;
 };
 
@@ -35,14 +36,14 @@ function toTabHref(tab: AskTab) {
   return tab === ASK_PAGE_TABS.open ? ASKS_PAGE : `${ASKS_PAGE}?tab=${tab}`;
 }
 
-// The Asks page (round 6): "What do you need?" first, then the archive search, the Open · For you · Yours filters and
-// the posts, in one column. "How asks work" stays folded at the foot.
-export function AsksBoard({ tab, search, posts, counts, allowance, flash, draft, isComposing = false }: AsksBoardProps) {
+// The Asks page (round 8): the title, the prompt row that opens the composer, the archive search 12 px under it, the
+// Open · For you · Yours chips 12 px under that, then the posts, in one column. "How asks work" stays folded at the foot.
+export function AsksBoard({ member, tab, search, posts, counts, allowance, flash, draft, isComposing = false }: AsksBoardProps) {
   return (
-    <div className="fh-narrow">
+    <div className="fh-narrow ak-board">
       {flash ? <FlashNote>{flash}</FlashNote> : null}
       <PageHeader title="Asks" />
-      <AsksComposer allowance={allowance} draft={draft} isComposing={isComposing} />
+      <AsksComposer member={member} allowance={allowance} draft={draft} isComposing={isComposing} />
       <form method="get" action={ASKS_PAGE} role="search" className="fh-archive">
         <SearchBox name="q" defaultValue={search ?? ""} placeholder="Search every ask and its answers" aria-label="Search asks" />
       </form>

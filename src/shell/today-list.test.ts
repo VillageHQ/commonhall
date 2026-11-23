@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: () => undefined, refresh: () => undefined }) }));
 
-import { TODAY_COMPOSE_PAGE, TodayPage, describeRoomPeople } from "./today-list";
+import { TodayPage, describeRoomPeople } from "./today-list";
 import type { TodayItems } from "./today";
 
 const NOTHING: TodayItems = {
@@ -92,9 +92,9 @@ describe("Today (round 6)", () => {
     expect(renderToday({ today, showFacts: false })).not.toContain("Is this right?");
   });
 
-  it("opens the Asks box from Post an ask, and hides the button while Asks is off", () => {
-    expect(renderToday()).toContain(`href="${TODAY_COMPOSE_PAGE.replace("&", "&amp;")}"`);
-    expect(renderToday({ isAsksOn: false })).not.toContain("Post an ask");
+  it("opens the composer from its prompt row (round 8), and hides the row while Asks is off", () => {
+    expect(renderToday()).toContain("Ask the community…");
+    expect(renderToday({ isAsksOn: false })).not.toContain("Ask the community…");
   });
 
   it("names the first face and how many more are in", () => {

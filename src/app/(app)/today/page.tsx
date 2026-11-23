@@ -13,7 +13,7 @@ import { ONBOARDING_STEPS } from "@/modules/members/contract-profile";
 import { LookupQuestionCard } from "@/modules/members/components/lookup-question-card";
 import { membersManifest } from "@/modules/members/manifest";
 import { readLookupState } from "@/modules/members/service-fill-in";
-import { isCardFilledIn, readMemberProfile } from "@/modules/members/service-profile";
+import { isCardFilledIn, readAvatarUrl, readMemberProfile } from "@/modules/members/service-profile";
 import { networkManifest } from "@/modules/network/manifest";
 import { readNetworkProgress } from "@/modules/network/reads-progress";
 import { PERKS_PAGE } from "@/modules/perks/contract";
@@ -30,6 +30,7 @@ import { ROUTES } from "@/platform/http/routes";
 import { modulePage } from "@/platform/modules/module-page";
 import { WEEKDAYS } from "@/platform/weekly-email/schedule";
 import { readWeeklySchedule } from "@/platform/weekly-email/schedule-store";
+import { readAskAllowance } from "@/shell/ask-helpers";
 import { readEnabledIds } from "@/shell/enabled-modules";
 import { selectNextSteps } from "@/shell/next-steps";
 import { resolveOnboardingStep } from "@/shell/onboarding";
@@ -55,7 +56,8 @@ export default modulePage(membersManifest, async function TodayRoute({ searchPar
   const now = new Date();
   const enabledIds = await readEnabledIds(database);
   const isNetworkOn = enabledIds.has(networkManifest.id);
-  const [community, networkProgress, profile, today, lookupState, perksUrl, schedule, query, liveRooms] = await Promise.all([
+  const isAsksOn = enabledIds.has(asksManifest.id);
+  const [community, networkProgress, profile, today, lookupState, perksUrl, schedule, query, liveRooms, allowance, avatarUrl] = await Promise.all([
     readBrandingForPage(),
     isNetworkOn ? readNetworkProgress(database, member) : null,
     readMemberProfile(database, member.id),
@@ -65,6 +67,10 @@ export default modulePage(membersManifest, async function TodayRoute({ searchPar
     readWeeklySchedule(database),
     searchParams,
     readLiveRooms(database, member.id, LIVE_ROOMS_SHOWN),
+    // The composer's "4 of 5 asks left this week".
+    isAsksOn ? readAskAllowance(database, member.id, now) : null,
+    // The member's face on the prompt row and their own waiting rows, as the top bar shows it.
+    readAvatarUrl(database, member.id),
   ]);
 
   const isCardFilled = profile !== null && isCardFilledIn(profile);
@@ -78,20 +84,22 @@ export default modulePage(membersManifest, async function TodayRoute({ searchPar
   const flashKey = Array.isArray(query.m) ? query.m[0] : query.m;
   const isPerksShown = enabledIds.has(perksManifest.id) && (Boolean(perksUrl) || isDemoMode(process.env));
   const moreLinks = [
-    enabledIds.has(jobBoardManifest.id) ? { label: "Jobs", href: JOB_BOARD_PAGES.board } : null,
-    isPerksShown ? { label: "Perks", href: PERKS_PAGE, isFullLoad: true } : null,
-    enabledIds.has(libraryManifest.id) ? { label: "Library", href: LIBRARY_PAGE } : null,
+    enabledIds.has(jobBoardManifest.id) ? { label: "Jobs", href: JOB_BOARD_PAGES.board, icon: jobBoardManifest.icon } : null,
+    isPerksShown ? { label: "Perks", href: PERKS_PAGE, icon: perksManifest.icon, isFullLoad: true } : null,
+    enabledIds.has(libraryManifest.id) ? { label: "Library", href: LIBRARY_PAGE, icon: libraryManifest.icon } : null,
   ].filter((link) => link !== null);
 
   return (
     <TodayPage
       today={today}
+      member={{ id: member.id, name: member.name, image: avatarUrl }}
       memberName={member.name}
+      allowance={allowance}
       dateLabel={now.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "short" })}
       liveRoom={liveRooms[0] ?? null}
       replyDay={isReplyByEmailOn(process.env) ? (WEEKDAYS[schedule.weekday] ?? "Thursday") : null}
       showFacts={now.getTime() - new Date(member.createdAt).getTime() < FACTS_WINDOW_MS}
-      isAsksOn={enabledIds.has(asksManifest.id)}
+      isAsksOn={isAsksOn}
       nextSteps={nextSteps}
       installCard={<InstallCard communityName={community.name} alertsHref={ROUTES.alerts} />}
       // Filling in from public profiles is offered only while the member's card is still empty (round 7).

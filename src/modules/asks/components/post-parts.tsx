@@ -1,11 +1,12 @@
-import { Hand, MessageSquare, Pin, Search, ShieldCheck } from "lucide-react";
+import { Archive, CircleCheck, Hand, MessageCircle, Pin, Search, ShieldCheck, Trophy } from "lucide-react";
 import Link from "next/link";
 
 import { Avatar, AvatarStack } from "@/components/ui/avatar";
 import { Pill } from "@/components/ui/pill";
 
-import { ASK_CONSENT, ASK_KINDS, ASK_STATES, describeAnswerCount, describeCanHelp, toAskPage, type AskMember } from "../contract";
+import { ASK_CONSENT, ASK_KINDS, ASK_STATES, describeAgo, describeAnswerCount, describeCanHelp, toAskPage, type AskMember } from "../contract";
 import type { BoardPost } from "../reads-board";
+import { ClampedBody } from "./clamped-body";
 import { SkipAskButton } from "./skip-ask-button";
 
 // Commonhall's ask parts (`.post`, the helpers strip, the status pill), shared by the board, the ask's page and Today.
@@ -46,62 +47,70 @@ export function TargetLine({ who }: { who: string }) {
   );
 }
 
-// One ask in a list (round 6): who and their company, the ask, and one line: "You could help" when it was routed to
-// you, the answers, and on your own asks who can help. The reason, the target and the date are on the ask's page.
-// On For you, an ask you could help with also offers "Not for me".
-export function PostCard({ post, isYoursTab = false, isForYouTab = false }: { post: BoardPost; isYoursTab?: boolean; isForYouTab?: boolean }) {
+// One ask in a list (round 8, ui-polish Part 4): a 36 px face, the name and the company line, the age at the right
+// with "Pinned", "Update", "Answered" or "Closed" as quiet words; the ask cut at 4 lines with "more"; then one line:
+// the answers (a line icon, no emoji), "You could help" when it was routed to you, and on your own asks who can help
+// and "Mark answered". On For you, an ask you could help with also offers "Not for me".
+export function PostCard({ post, isYoursTab = false, isForYouTab = false, now = new Date() }: { post: BoardPost; isYoursTab?: boolean; isForYouTab?: boolean; now?: Date }) {
   const page = toAskPage(post.id);
   const isAsk = post.kind === ASK_KINDS.ask;
   const isOpen = post.state === ASK_STATES.open;
   const viewerCanHelp = post.viewerWhyYou !== null && isOpen && !post.viewerHasHelped;
   const showsHelpers = isYoursTab && isAsk && isOpen && post.helperCount > 0;
+  const company = post.author.company ?? "";
   return (
-    <article className="fh-post" id={`post-${post.id}`}>
-      <div className="fh-ph">
-        <MemberAvatar member={post.author} />
-        <div>
-          <b>{post.author.name}</b>
-          <span>
-            <CompanyMark url={post.author.companyLogoUrl} />
-            {post.author.company ?? ""}
-          </span>
+    <article className="ak-post-item" id={`post-${post.id}`}>
+      <div className="ak-ph">
+        <MemberAvatar member={post.author} sizePx={36} />
+        <div className="min-w-0">
+          <div className="ak-ph-l1">
+            <b>{post.author.name}</b>
+            <span className="ak-ph-end">
+              {post.isPinned ? (
+                <span className="ak-mark">
+                  <Pin aria-hidden="true" strokeWidth={1.75} />
+                  Pinned
+                </span>
+              ) : null}
+              <PostStatusMark kind={post.kind} state={post.state} />
+              <time dateTime={post.createdAt}>{describeAgo(post.createdAt, now)}</time>
+            </span>
+          </div>
+          {company ? (
+            <div className="ak-ph-l2">
+              <CompanyMark url={post.author.companyLogoUrl} />
+              <span>{company}</span>
+            </div>
+          ) : null}
         </div>
-        {post.isPinned ? (
-          <span className="fh-pinmark">
-            <Pin {...ICON} />
-            Pinned
-          </span>
-        ) : null}
-        {isAsk && isOpen ? null : <PostStatusPill kind={post.kind} state={post.state} />}
       </div>
-      <p className="fh-body">
-        <Link href={page}>{post.body}</Link>
-      </p>
-      {viewerCanHelp ? (
-        <Link className="fh-helpers" href={`${page}#help`}>
-          <Hand {...ICON} />
-          <b>You could help</b>
-        </Link>
-      ) : null}
-      {showsHelpers ? (
-        <div className="fh-helpers">
-          <span className="fh-stack">
-            <AvatarStack people={post.helperFaces.map(({ id, name, avatarUrl }) => ({ id, name, imageUrl: avatarUrl }))} />
-          </span>
-          <b>{describeCanHelp(post.helperCount)}</b>
-        </div>
-      ) : null}
-      {post.answerCount > 0 || (isYoursTab && isAsk && isOpen) || (isForYouTab && viewerCanHelp) ? (
-        <div className="fh-acts">
+      <ClampedBody href={page} text={post.body} />
+      {post.answerCount > 0 || viewerCanHelp || showsHelpers || (isYoursTab && isAsk && isOpen) ? (
+        <div className="ak-meta">
           {post.answerCount > 0 ? (
-            <Link className="fh-react" href={`${page}#answers`}>
-              <MessageSquare {...ICON} />
-              <span className="underline">{describeAnswerCount(post.answerCount)}</span>
+            <Link className="ak-meta-item" href={`${page}#answers`}>
+              <MessageCircle aria-hidden="true" strokeWidth={1.75} />
+              {describeAnswerCount(post.answerCount)}
             </Link>
           ) : null}
+          {viewerCanHelp ? (
+            <Link className="ak-meta-item ak-could" href={`${page}#help`}>
+              <Hand aria-hidden="true" strokeWidth={1.75} />
+              You could help
+            </Link>
+          ) : null}
+          {showsHelpers ? (
+            <span className="ak-meta-item">
+              <span className="fh-stack">
+                <AvatarStack people={post.helperFaces.map(({ id, name, avatarUrl }) => ({ id, name, imageUrl: avatarUrl }))} />
+              </span>
+              {describeCanHelp(post.helperCount)}
+            </span>
+          ) : null}
           {isYoursTab && isAsk && isOpen ? (
-            <Link className="fh-react" href={page}>
-              <span className="underline">Mark answered</span>
+            <Link className="ak-meta-item" href={page}>
+              <CircleCheck aria-hidden="true" strokeWidth={1.75} />
+              Mark answered
             </Link>
           ) : null}
           {isForYouTab && viewerCanHelp ? <SkipAskButton askId={post.id} /> : null}
@@ -109,6 +118,32 @@ export function PostCard({ post, isYoursTab = false, isForYouTab = false }: { po
       ) : null}
     </article>
   );
+}
+
+// The list's quiet status words (an open ask has none).
+function PostStatusMark({ kind, state }: { kind: string; state: BoardPost["state"] }) {
+  if (kind === ASK_KINDS.update)
+    return (
+      <span className="ak-mark">
+        <Trophy aria-hidden="true" strokeWidth={1.75} />
+        Update
+      </span>
+    );
+  if (state === ASK_STATES.closed)
+    return (
+      <span className="ak-mark">
+        <CircleCheck aria-hidden="true" strokeWidth={1.75} />
+        Answered
+      </span>
+    );
+  if (state === ASK_STATES.expired)
+    return (
+      <span className="ak-mark">
+        <Archive aria-hidden="true" strokeWidth={1.75} />
+        Closed
+      </span>
+    );
+  return null;
 }
 
 // Commonhall's consent line as asks draw it: small, 12 px under what comes before.
