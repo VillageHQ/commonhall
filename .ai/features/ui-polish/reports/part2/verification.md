@@ -8,6 +8,27 @@ preview used Part 1's `mobile/dist-web` build, because nothing under `mobile/` h
 simulated with `--sab: 34px; --sat: 47px` on html. My scripts are in `.ai/tmp/verify-p2/` (c12, c35, c4, c678, c9, pub,
 preview, modes, overflow, barjump, menuscroll, set). All numbers are CSS px.
 
+## Re-check inside the store app's native tab bar (49dbabfa)
+Part 7 (the store app's native tab bar) merged into main, and Part 2 was rebased on it. The builder removed Part 2's own
+`html[data-app][data-native-tabs]` rules, because Part 7's app hides the site's member bar with `visibility: hidden` and
+reads the bar's `display` to know when to hide the native bar.
+
+I rebuilt the store app's web preview from this branch's `mobile/`: a copy in `.ai/tmp/verify-p2/mobile`, `npm ci`, then
+`expo export --platform web` with `MSYS_NO_PATHCONV=1`. It ran at 390×844 (touch), with the portal on 3792 and the preview
+on 3793, against a fresh demo database. The script is `.ai/tmp/verify-p2/native.mjs`.
+
+| Item | Result | Measured | Pictures |
+|---|---|---|---|
+| (a) Which bar shows | PASS | **Sam, and Maya in the founder view:** the native bar is at 788–844 (56 tall). In the tab's page, html has `data-native-tabs`, `--tab-h` is 56px and main's padding-bottom 88. The site's member bar is `visibility: hidden` but still `display: grid`, so it stays in the layout. **Maya's console (/admin):** the site's bar (Home, Asks, Members, Announce, Set up) is visible (`display: grid`, `visibility: visible`, 788–844), and the native bar is not rendered. | after-native-sam-start-390, after-native-maya-console-390 |
+| (b) The native bar copies the new look | PASS | **Active tab (Today):** label `rgb(17,17,16)` at 600, icon stroke 2. **Others:** `rgb(74,74,70)` at 500, stroke 1.5. These are the same computed colours as the hidden site bar (active `rgb(17,17,16)`, inactive `rgb(74,74,70)`). **Icons and line:** 24×24 icons, 9 under the 1 px top border. The indicator is 28×3, ink, on the top edge, centred on Today (117). **Badges:** Inbox carries the count "1" on ink ("Inbox, 1 new in your inbox"), and Rooms the live dot ("Rooms, A room is live", the orange dot in the picture). The white bar and the 1 px `rgb(214,213,207)` top border match the site's bar. | after-native-sam-start-390 |
+| (c) Switching tabs | PASS | Native taps Today → People → Inbox → Today. Each selects the tab (`aria-selected`) and shows its page. **No slide from Part 2:** right after each tap and 900 ms later, `getAnimations()` on the tab page's `[data-slot=page-width]` is empty. A native tap doesn't go through the site's link handlers, so the site's slide never runs on top of the app's. **The app's own motion:** on a first visit, People and Inbox appear without a slide. Coming back to Today, the app's container slides in from the left (x −40 → −7.9 → −1.3 → 0, opacity 0 → 1, about 200 ms). **A link to another tab:** Today's "All asks" selects the native Asks tab, Today stays on /today, and no site slide runs on the Asks page. | — |
+| (d) A pushed screen (a profile) | PASS for the back button; the native bar stays (not Part 2's to change) | **Back button:** on a profile from the People tab, "People" sits in the top bar (fixed, 6–50, left 4), the community mark is hidden, and the back button returns to /people. **Native bar:** it does not hide on a profile. Neither the profile nor a thread carries `data-pushed-screen` in this build. Only the thread (Part 3) and the room page (Part 6) are specified to set it, `BackLink` doesn't, and the site's own bar also stays on a profile in a phone browser. **The mechanism works:** adding `data-pushed-screen` to the profile by hand sets the site bar to `display: none` and main's padding to 32, and the native bar goes away. Removing it brings the native bar back. If profiles should hide the bar, that is a spec decision. The simplest place would be `BackLink` marking the page. | after-native-sam-profile-390 |
+| (e) The avatar menu sheet | PASS | From Today, "Your menu" opens the sheet from 127 down to 844, and `data-sheet-open` is set. The native bar is not rendered while it is open, so the sheet covers everything. The groups are Settings, More and This app, and the last row is "Source code (AGPL-3.0)" at 780–828, linking to the source. After Escape the native bar is back. In Maya's console the sheet's last row is the same. | after-native-sam-menu-sheet-390 |
+| (f) The page's last item over the native bar | PASS | On Today scrolled to the end, the last item's bottom is at 756 and the native bar's top at 788: a 32 px gap, with nothing under the bar. | — |
+
+So inside the native tab bar, Part 2's frame works as the Part 7 contract expects. The only open point is (d)'s hiding on a
+profile, which no part is asked to do yet.
+
 ## Re-check after repairs (e9b1b02f)
 The builder changed two things:
 - `src/shell/frame.css`: `.fh-main` has `overflow-x: clip` under 1000 px.
@@ -49,6 +70,9 @@ after scrolling at 1280, and the tab order of the back button). None of them blo
 and main's padding-bottom is 122 (= 90 + 32). With `data-app` + `data-native-tabs` the bar is `display: none`,
 `--tab-total` becomes `calc(0px + 34px)`, and main's padding-bottom drops to 66 (= 34 + 32), for both Sam and Maya.
 Pictures: after-app-sam-native-tabs-bottom-390, after-app-maya-native-tabs-bottom-390.
+*Superseded:* after Part 7 landed, the builder removed this `html[data-app][data-native-tabs]` rule from `frame.css` (in
+49dbabfa). The app now hides the site's member bar itself with `visibility: hidden`. See "Re-check inside the store app's
+native tab bar (49dbabfa)" above.
 
 **Other tab behaviour I drove.**
 - **Tapping the shown tab:** on /today scrolled to 503, tapping Today scrolls smoothly back to 0 (503 → 432 → 153 → 57 → 18 → 0 over about 400 ms). There are no document or RSC requests, and a window marker survives, so the page didn't reload.
