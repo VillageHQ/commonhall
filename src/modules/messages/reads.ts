@@ -350,10 +350,12 @@ export async function readNewMessageTarget(database: Database, viewerId: string,
     .from(user)
     .where(and(eq(user.id, memberId), isActiveMember()));
   if (!member) return null;
+  // The new thread's header shows who they are, as an open thread does.
+  const [peer] = await readPeers(database, [member.id]);
   const pair = toConversationPair(viewerId, memberId);
   const [existing] = await database
     .select({ id: conversation.id })
     .from(conversation)
     .where(and(eq(conversation.memberLowId, pair.memberLowId), eq(conversation.memberHighId, pair.memberHighId)));
-  return { member, conversationId: existing?.id ?? null };
+  return { member: peer ? toPeer(peer) : { ...member, title: null, company: null, avatarUrl: null, isAvailable: true }, conversationId: existing?.id ?? null };
 }

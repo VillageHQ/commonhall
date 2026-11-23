@@ -272,9 +272,24 @@ function ThreadView({ conversationId, communityName, draft, me = YOU }: ThreadPr
   const isNewestMine = newestEntry?.isMine ?? false;
   const hasOpened = useRef(false);
   useLayoutEffect(() => {
-    if (!hasOpened.current || isNewestMine || isNearNewest(scrollRef.current)) scrollToNewest(scrollRef.current);
+    if (!hasOpened.current || isNewestMine || isNearNewest(scrollRef.current)) {
+      scrollToNewest(scrollRef.current);
+      // Again once the bar's height and the faces have landed.
+      requestAnimationFrame(() => scrollToNewest(scrollRef.current));
+    }
     hasOpened.current = true;
   }, [newestKey, isNewestMine]);
+
+  // Older messages load above the one being read, and it stays where it was.
+  const showOlder = async () => {
+    if (thread.isFetchingNextPage) return;
+    const scroller = readScroller(scrollRef.current);
+    const heightBefore = scroller?.scrollHeight ?? 0;
+    await thread.fetchNextPage();
+    requestAnimationFrame(() => {
+      if (scroller) scroller.scrollTop += scroller.scrollHeight - heightBefore;
+    });
+  };
 
   useEffect(() => {
     if (isVisible && newestPeerSequence > lastReadSequence) markRead(newestPeerSequence);
@@ -310,9 +325,7 @@ function ThreadView({ conversationId, communityName, draft, me = YOU }: ThreadPr
             size="sm"
             className="ib-older"
             aria-busy={thread.isFetchingNextPage}
-            onClick={() => {
-              if (!thread.isFetchingNextPage) void thread.fetchNextPage();
-            }}
+            onClick={() => void showOlder()}
           >
             {thread.isFetchingNextPage ? "Finding older messages…" : "Show older messages"}
           </Button>

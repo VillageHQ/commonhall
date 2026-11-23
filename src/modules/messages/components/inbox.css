@@ -456,9 +456,21 @@
     left: 0;
   }
 
-  /* The page's own padding under the thread is the composer's, so a short thread ends right above the bar. */
+  /* Paper under the bar down to the screen's edge, so messages never show through the home indicator's strip. */
+  .ib-compose::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    right: 0;
+    left: 0;
+    height: var(--bottom-stack);
+    background: var(--paper);
+  }
+
+  /* The thread reserves the bar's room itself, so the page adds only the strip under the bar: the newest message
+     ends 16 px above the bar. */
   .fh-main:has(.ib-thread) {
-    padding-bottom: calc(var(--bottom-stack) + 8px);
+    padding-bottom: var(--bottom-stack);
   }
 }
 

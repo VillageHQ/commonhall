@@ -14,7 +14,7 @@ import { useFillHeight } from "./inbox-panes";
 import { MessageComposer } from "./message-composer";
 import { ThreadHeader, ThreadIntro, useComposerHeight } from "./thread";
 
-type NewThreadProps = { member: { id: string; name: string; avatarUrl: string | null }; communityName: string; draft?: string };
+type NewThreadProps = { member: ConversationPeer; communityName: string; draft?: string };
 
 // Commonhall's first message (`/messages/new?to=`): the thread with no messages yet, in the thread's own look. The first
 // Send starts the conversation and opens it in the Inbox, so nobody gets an empty conversation from a click on Message.
@@ -24,7 +24,7 @@ export function NewThread({ member, communityName, draft }: NewThreadProps) {
   const barRef = useRef<HTMLDivElement>(null);
   const cardRef = useFillHeight<HTMLDivElement>();
   useComposerHeight(barRef, sectionRef);
-  const peer: ConversationPeer = { ...member, title: null, company: null, isAvailable: true };
+  const peer = member;
   const send = useMutation({
     mutationFn: async (body: string) => {
       const { conversationId } = await startConversationRequest(member.id);
