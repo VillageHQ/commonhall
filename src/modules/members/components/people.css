@@ -55,8 +55,9 @@
   margin-top: 12px;
 }
 
+/* 12 px under the chips: their row already pads 2 px below. */
 .fh-people-page .fh-people-count {
-  margin: 12px 0 4px;
+  margin: 10px 0 4px;
   font-size: 13px;
   line-height: 18px;
   color: var(--graphite);
@@ -262,8 +263,14 @@
     padding-right: 152px;
   }
 
+  /* The slot lets go of its own frame, so the button is placed on the row, centred, 16 px from its right edge. */
+  .fh-people-page [data-testid="expert-card"] .fh-lr-slot {
+    position: static;
+  }
+
   .fh-people-page [data-testid="expert-card"] [data-testid="book-call"] {
     position: absolute;
+    z-index: 1;
     top: 50%;
     right: 16px;
     transform: translateY(-50%);
@@ -333,6 +340,11 @@
 
 .fh-profile-page .fh-person-actions[data-count="1"] {
   grid-template-columns: minmax(0, 1fr) var(--ctl-sm-h);
+}
+
+/* Your own profile: no "More", so its one button takes the row. */
+.fh-profile-page .fh-person-actions[data-count="1"]:not([data-more]) {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .fh-profile-page .fh-person-actions[data-count="0"] {

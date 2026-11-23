@@ -4,7 +4,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { cn } from "cn";
 import { useSearchParams } from "next/navigation";
 import { Search, SlidersHorizontal } from "lucide-react";
-import { useDeferredValue, useRef, useState, type ReactNode, type RefObject } from "react";
+import { useDeferredValue, useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
 
 import { EmptyState } from "@/components/empty-state";
 import { QueryBoundary } from "@/components/query-boundary";
@@ -460,6 +460,23 @@ function FilterButton({ count, isOpen, buttonRef, onToggle }: FilterButtonProps)
   );
 }
 
+// When the filter panel closes (Show N people, Escape, the backdrop, Filter again), the focus goes back to Filter, as a
+// sheet opened from its own trigger does; the panel's own buttons are gone by then. After the sheet's own return of the
+// focus, which runs once it has unmounted.
+function useFocusBackOnClose(isOpen: boolean, buttonRef: RefObject<HTMLButtonElement | null>) {
+  const wasOpen = useRef(false);
+  useEffect(() => {
+    if (isOpen) {
+      wasOpen.current = true;
+      return;
+    }
+    if (!wasOpen.current) return;
+    wasOpen.current = false;
+    const timer = setTimeout(() => buttonRef.current?.focus({ preventScroll: true }), 0);
+    return () => clearTimeout(timer);
+  }, [isOpen, buttonRef]);
+}
+
 export function MemberDirectory({ between, elsewhere, placeholder = "Name, company or skill", isEmptyQuiet = false }: MemberDirectoryProps) {
   const searchParams = useSearchParams();
   const queryString = searchParams.toString();
@@ -469,6 +486,7 @@ export function MemberDirectory({ between, elsewhere, placeholder = "Name, compa
   const [searchDraft, setSearchDraft] = useState(filters.search);
   const [filterPlace, setFilterPlace] = useState<FilterPanelPlace | null>(null);
   const filterButtonRef = useRef<HTMLButtonElement>(null);
+  useFocusBackOnClose(filterPlace !== null, filterButtonRef);
 
   return (
     <div className="fh-people-page">
