@@ -32,3 +32,11 @@ screen locked and the Android voice service still wait for the owner's phone tes
 - **Android:** EAS build `7a097160-4a7a-4430-b3a6-e1a007ba0471` (profile `preview`): FINISHED, an APK:
   https://expo.dev/artifacts/eas/9G08Vr2xdQyetVwcG3AF1NVUgTKRwdFUmf_k_S0_xdU.apk
 - **Web-preview check:** `build4/README.md`.
+
+## Build 5 (23 Nov 2026, round 8: the app's own tab bar, the room sheet and mini player, the redesign)
+- **Android:** EAS build `f616659d-3225-4253-9dae-0c57ba66bef2` (profile `preview`): FINISHED, an APK:
+  https://expo.dev/artifacts/eas/tuqlmgxxHd7DoE4685hvbCMa74CHEu6c812PRvfRB0o.apk
+- **iOS: not built.** `eas build -p ios --profile testflight` stopped before queueing: "This account has used its iOS
+  builds from the Free plan this month, which will reset in 7 days (on Tue Dec 01 2026)." More builds need a paid Expo
+  plan (the owner's call), or the build runs on 1 Dec. Nothing was submitted to TestFlight.
+- **Web-preview check:** `build5/README.md`.
