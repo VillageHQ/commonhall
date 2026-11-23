@@ -124,7 +124,7 @@ function PeopleOutline() {
             <OutlineBox />
           </span>
         </div>
-        <OutlineChips widths={[86, 168]} className="mt-3" />
+        <OutlineChips widths={[84, 156]} className="mt-3" />
         <div className="mt-2.5 mb-1 flex h-[18px] items-center">
           <OutlineLine width={84} height={12} />
         </div>
