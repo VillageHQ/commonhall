@@ -429,8 +429,10 @@ a.ak-meta-item:hover {
   color: var(--fund-deep);
 }
 
+/* The faces overlap by 6 px; the last one keeps the line's gap before the words. */
 .ak-meta-item .fh-stack {
   display: flex;
+  margin-right: 6px;
 }
 
 .ak-meta-item .fh-stack .fh-avatar {
