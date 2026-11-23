@@ -51,7 +51,7 @@ Better Auth, Vitest, pnpm. Village is optional (network search, intro paths, pro
   `.ai/features/fh-console/NOTES.md` (the admin console screens),
   `.ai/features/less-choice/NOTES.md` (round 7: defaults instead of choices; the admin's setup checklist), `.ai/features/round7-final/NOTES.md` (its last fixes),
   `.ai/features/fh-directory-profile/NOTES.md` (Directory, profiles, My profile, Your data),
-  `.ai/features/ui-polish/NOTES.md` (round 8: shared sizes, Sheet, ListRow; People and profiles),
+  `.ai/features/ui-polish/NOTES.md` (round 8: shared sizes, Sheet, ListRow; Asks and Today; People and profiles),
   `.ai/features/fh-final-pass/NOTES.md` (round 4: 404, 410, intro email, print),
   `.ai/features/fh-followup/NOTES.md` (emailed invite link confirms, job board on by default, "copied" words),
   `.ai/features/fix-accounts-privacy/NOTES.md`, `.ai/features/fix-feed-digest-site/NOTES.md`,

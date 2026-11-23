@@ -43,7 +43,7 @@ is lost when the filter panel closes. The rest passes.
 | `pnpm test` | not run | The brief said not to. The builder reports 3698 passed and 2 known failures. | |
 
 ## Reference pictures (Mobbin, not copied into the repo)
-In `C:/Users/absi/.autobuild/worktrees/community__ui-benchmark/.ai/tmp/ui-benchmark/mobbin/`:
+In `the round's scratch folder (the benchmark's `.ai/tmp/ui-benchmark/mobbin/`, never committed)`:
 - `search-linkedin-results.png` and `search-linkedin-web-people.png`: rows and the web's one column.
 - `search-airbnb-filters.png`: the sheet's foot.
 - `search-instagram-typeahead.png`: the search field.
