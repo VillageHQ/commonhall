@@ -106,10 +106,45 @@ TestFlight internal testing and Android test APKs only: never a public release, 
   the five tabs, Notify others, quiet times); iOS build 3 and an APK (20 Nov 2026: the room hand-off, so the room page
   learns you left and the app learns you already told people; check in `reports/build3/`); iOS build 4 and an APK (21 Nov 2026, round 7: Rooms first, one-tap start with
   Rename and the quiet-start line, quiet times and pause, the smooth web view; check in `reports/build4/`); an APK of build 5 (23 Nov 2026, round 8: the native tab bar, the room sheet and mini player; check in
-  `reports/build5/`). iOS build 5 waits: Expo's free plan allows a few iOS builds a month (it ran out on 23 Nov, back on
-  1 Dec); more need a paid Expo plan. The Absi group has every build, so a processed build reaches it on its own.
+  `reports/build5/`); iOS build 5 (23 Nov 2026, the same round 8 code, built on the owner's Mac because Expo's free plan
+  had used its iOS builds for the month; recipe below). The Absi group has every build, so a processed build reaches it
+  on its own.
 - On Windows, `npx eas-cli` inside `mobile/` can fail with npm's "Invalid Version"; run it from another folder, or
   call the cached copy (`node <npx cache>/node_modules/eas-cli/bin/run …`) from `mobile/`, without `NODE_ENV` set.
+
+## iPhone builds on the owner's Mac (23 Nov 2026, build 5)
+Expo's free plan allows only a few cloud iOS builds a month. A local build (`eas build --local`) costs no Expo credits:
+it runs prebuild, CocoaPods and Xcode on the Mac and still reads the project from Expo, so it needs an Expo token.
+About 10 minutes from a cold cache; the upload and Apple's processing about 3 more.
+1. **Copy over ssh only.** `git archive HEAD mobile | ssh mac 'cd ~/qareen-builds/commonhall && tar -xf -'`, then the
+   git-ignored `credentials.json` and `ios-certs/` the same way (`tar -cf - … | ssh mac …`, `umask 077`). On the Mac,
+   use Node 22 (`~/.nvm/versions/node/v22.*/bin` first on `PATH`; a non-login ssh shell has no `node`) and `npm ci`.
+   `eas build --local` on iOS needs fastlane (`brew install fastlane`; installed 23 Nov 2026) and CocoaPods.
+2. **The Expo token** goes over ssh on stdin (`printf '%s\n' "$T" | ssh mac 'bash build.sh'`, the script starts with
+   `read -r EXPO_TOKEN; export EXPO_TOKEN`), never on the Mac's disk or in a command line.
+3. **The build number.** With `appVersionSource: remote` and `autoIncrement`, every started build bumps Expo's counter,
+   even one that fails or is stopped: build 5's failed cloud try and a stopped local try had taken it to 6. To pick the
+   number, switch the Mac copy only to `appVersionSource: local`, `autoIncrement: false` and `ios.buildNumber: "5"`.
+   Expo's counter then stays where it is (6 now), so the next cloud build is 7; a skipped number does no harm.
+4. **Signing over ssh.** codesign stops with `errSecInternalComponent` when it finds the distribution certificate in a
+   locked keychain first (the Mac has it in another app's build keychain at the top of the search list; ssh cannot
+   unlock it). For the build, make a temporary keychain with a random password, import `dist.p12`
+   (`-T /usr/bin/codesign`), `set-key-partition-list -S apple-tool:,apple:,codesign:`, unlock it, put it first with
+   `security list-keychains -d user -s <it> <the saved list>`, and restore the saved list and delete it in an `EXIT`
+   trap. Then run `EAS_NO_VCS=1 EAS_LOCAL_BUILD_WORKINGDIR=… npx eas-cli build -p ios --profile testflight --local
+   --non-interactive --output out/commonhall-<n>.ipa` (Mac folders have no git, so `EAS_NO_VCS=1`).
+5. **Check the .ipa:** `CFBundleVersion` is the number, signed "iPhone Distribution" by team `TA6D5Y2M2U`, profile
+   "Commonhall App Store", `aps-environment` production, `get-task-allow` false.
+6. **Upload without Expo:** `xcrun altool --upload-app -f <ipa> -t ios --apiKey <key id> --apiIssuer <issuer id>
+   --p8-file-path ios-certs/asc-key.p8` (the key ids as in "Submitting" above, never committed). Apple's API then
+   shows the build `VALID` with internal state `IN_BETA_TESTING`, and the "Absi" group lists it (it has every build).
+   The external state stays "ready for beta submission": nothing is ever sent to external testing or review.
+7. **Clean up right after the upload:** delete the copied `credentials.json` and `ios-certs/`, and also what
+   `eas build --local` leaves behind: a copy of the certificate (`<uuid>.p12`, one per started build) in the Mac's
+   temp folder (`$TMPDIR`), the "Commonhall App Store" profile in `~/Library/MobileDevice/Provisioning Profiles/`, a
+   keychain `eas-build-*.keychain` if a build was stopped (`security delete-keychain`), the day's Xcode archive, and
+   the CocoaPods download cache it filled (about 4 GB: LiveKit's WebRTC, React Native's prebuilt core). The build
+   folder (`~/qareen-builds/commonhall`, about 0.5 GB with `node_modules` and the .ipa) is kept while under 3 GB.
 
 ## What was proven, and what wasn't (19 Nov 2026)
 - Proven: unit tests (`npm test`, 13), `tsc`, `expo-doctor` 20/20, `expo prebuild` for Android (config plugins apply,
