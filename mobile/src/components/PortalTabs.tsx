@@ -52,6 +52,8 @@ type TabView = { id: number; home: string; startUrl: string };
 type PortalTabsProps = PortalProps & {
   // Docks right above the tab bar (above the home indicator where the bar is hidden): Part 6's mini player.
   bottomSlot?: ReactNode;
+  // The community's name as the app joined it: the first tab's top bar while it loads, before any page has said it.
+  communityName?: string;
 };
 
 function readStartPath(startUrl: string) {
@@ -93,7 +95,7 @@ function useIsKeyboardShown() {
 // the first time it shows the community's top bar over the paper. Links to another tab's page, alerts and
 // commonhall:// links open in the tab they belong to (moving inside it when it is alive). All web views share the
 // app's cookie store, so one sign-in signs in every tab.
-export const PortalTabs = forwardRef<PortalHandle, PortalTabsProps>(function PortalTabs({ origin, startUrl, pushToken, onOpenRoom, onAppAction, onPageLoaded, onFailed, bottomSlot }, ref) {
+export const PortalTabs = forwardRef<PortalHandle, PortalTabsProps>(function PortalTabs({ origin, startUrl, pushToken, onOpenRoom, onAppAction, onPageLoaded, onFailed, bottomSlot, communityName }, ref) {
   const theme = useColors();
   const insets = useSafeAreaInsets();
   const isReducedMotion = useIsReducedMotion();
@@ -110,7 +112,7 @@ export const PortalTabs = forwardRef<PortalHandle, PortalTabsProps>(function Por
   const slide = useRef(new Animated.Value(1)).current;
   // Tabs whose page has said hello: until then a tab shows a spinner on the paper.
   const [readyIds, setReadyIds] = useState<ReadonlySet<number>>(() => new Set());
-  const [brand, setBrand] = useState<PageBrand | null>(null);
+  const [brand, setBrand] = useState<PageBrand | null>(() => (communityName ? { name: communityName, sub: "" } : null));
   // Tabs already loaded behind the open one (or tried): each is preloaded once per sign-in.
   const preloaded = useRef(new Set<string>());
 

@@ -93,7 +93,7 @@ export function PortalScreen({ community, startPath, openRequest, onSwitchCommun
           (smooth-app; the viewport is viewport-fit=cover for the app). The tab bar is native (PortalTabs). Reload, Open
           in the browser and Switch community are the avatar menu's "This app" group, arriving through onAppAction. */}
       <View style={styles.portal}>
-        <PortalTabs key={attempt} ref={portalRef} origin={community.origin} startUrl={startUrl} pushToken={pushToken} onOpenRoom={dock.openRoom} onAppAction={onAppAction} onPageLoaded={onPageLoaded} onFailed={setFailure} bottomSlot={dock.miniBar} />
+        <PortalTabs key={attempt} ref={portalRef} origin={community.origin} startUrl={startUrl} pushToken={pushToken} onOpenRoom={dock.openRoom} onAppAction={onAppAction} onPageLoaded={onPageLoaded} onFailed={setFailure} bottomSlot={dock.miniBar} communityName={community.name} />
         {failure ? (
           <View style={[styles.failure, { paddingTop: insets.top + 24 }]} testID="portal-failure">
             <Text style={styles.failureTitle}>We couldn&apos;t open {community.name}</Text>

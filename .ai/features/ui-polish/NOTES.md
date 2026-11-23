@@ -381,7 +381,8 @@ All of the frame's look is in `src/shell/frame.css`, loaded by `src/app/layout.t
 - **The store app (store build 6):** `PortalTabs` loads the bar's other tabs behind the open one, one at a time, once
   every live tab has said hello and `PRELOAD_DELAY_MS` (1.2 s) has passed; never on an Android phone under 3 GB
   (`IS_LOW_MEMORY`), and once per sign-in. The slide starts at 30% opacity. A tab's first load draws the page's top bar
-  (`TopBarPlaceholder`: the community's name and small line, which the tab script reports as `brand`) over the paper.
+  (`TopBarPlaceholder`: the community's name and small line, which the tab script reports as `brand`; before any page
+  has, the name the app joined with) over the paper.
   An alert or a link for a tab that is alive runs `buildMoveScript`: it sends `commonhall-navigate` and the shell's
   `NativeNavigate` (`src/shell/native-navigate.tsx`) moves the page with the router (no reload, the list keeps its
   place); a page that doesn't answer loads the path.
