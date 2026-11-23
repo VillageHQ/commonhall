@@ -86,7 +86,7 @@ plus the insets in a plain browser, and "phone" means the insets only):
 On the web, the "before" sidebar cut off its source line at 800. In the "after" it shows, and Today is 936 wide instead of 720.
 
 ## Reference (Mobbin, not ours; compared, not copied)
-- `C:/Users/absi/.autobuild/worktrees/community__ui-benchmark/.ai/tmp/ui-benchmark/mobbin/tabbar-facebook.png` (the line on the bar's top edge)
+- The round's scratch folder (the benchmark worktree's `.ai/tmp/ui-benchmark/`): `mobbin/tabbar-facebook.png` (the line on the bar's top edge)
 - `.../mobbin/tabbar-instagram.png`, `.../mobbin/tabbar-airbnb.png`, `.../mobbin/tabbar-whatsapp.png` (icon over label, active ink)
 - `.../mobbin/profile-airbnb-tab.png`, `.../mobbin/profile-instagram-me.png` (the profile and menu list)
 - `.../mobbin/rooms-x-space-sheet.png` (a bottom sheet with a grabber)
