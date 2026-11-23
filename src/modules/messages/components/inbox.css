@@ -467,6 +467,11 @@
     background: var(--paper);
   }
 
+  /* A thread is a pushed screen: no page foot under it (Part 2 takes the phone's foot away everywhere). */
+  [data-slot="app-shell"]:has(.ib-thread) [data-slot="phone-foot"] {
+    display: none;
+  }
+
   /* The thread reserves the bar's room itself, so the page adds only the strip under the bar: the newest message
      ends 16 px above the bar. */
   .fh-main:has(.ib-thread) {

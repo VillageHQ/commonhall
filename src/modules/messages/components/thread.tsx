@@ -280,14 +280,16 @@ function ThreadView({ conversationId, communityName, draft, me = YOU }: ThreadPr
     hasOpened.current = true;
   }, [newestKey, isNewestMine]);
 
-  // Older messages load above the one being read, and it stays where it was.
+  // Older messages load above the one being read, and it stays where it was. The browser may already hold it in
+  // place (scroll anchoring), so only what it still moved is undone.
   const showOlder = async () => {
     if (thread.isFetchingNextPage) return;
     const scroller = readScroller(scrollRef.current);
-    const heightBefore = scroller?.scrollHeight ?? 0;
+    const anchor = scrollRef.current?.querySelector<HTMLElement>("[data-slot=message] .ib-msg-body");
+    const topBefore = anchor?.getBoundingClientRect().top ?? 0;
     await thread.fetchNextPage();
     requestAnimationFrame(() => {
-      if (scroller) scroller.scrollTop += scroller.scrollHeight - heightBefore;
+      if (scroller && anchor?.isConnected) scroller.scrollTop += anchor.getBoundingClientRect().top - topBefore;
     });
   };
 
