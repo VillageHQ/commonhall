@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import { OutlineBox, OutlineChips, OutlineCircle, OutlineLine, OutlineListRows, OutlineRows, OutlineSectionHead, OutlineSheet, OutlineTitle, PageOutline } from "@/components/page-outline";
+import { OutlineBox, OutlineChips, OutlineCircle, OutlineLine, OutlineListRows, OutlineRows, OutlineSheet, OutlineTitle, PageOutline } from "@/components/page-outline";
 
 // Each tab's outline (smooth-app Part A): the page's own head and grey blocks shaped like its first screen at 390 px,
 // drawn the moment its tab is tapped (pressed-tab.tsx) and replaced when the page arrives. Keyed by the tab's
