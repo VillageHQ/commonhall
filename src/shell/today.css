@@ -16,6 +16,7 @@
 
 /* Waiting rows (ListRow): the 48 px face at the screen's 16 px, so the rows reach the column's edges. */
 .td-rows{margin:0 -16px}
+@media (min-width:1000px){.td-rows .fh-lr::after{right:16px}}
 .td-sec > .fh-titem + .td-rows{margin-top:8px}
 
 /* The live room: the room card (ui-polish SPEC "The room card"). */
