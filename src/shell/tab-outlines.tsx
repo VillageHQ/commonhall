@@ -8,22 +8,50 @@ import { OutlineBox, OutlineCard, OutlineChips, OutlineCircle, OutlineLine, Outl
 
 function TodayOutline() {
   const dateLabel = new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "short" });
+  // Today's head (the date, the 24 px greeting), the prompt row, "Waiting on you" and two waiting rows (ListRow), drawn
+  // with the global classes and inline sizes, so the outline sits where the page lands before today.css is loaded.
   return (
-    <PageOutline className="td-page" eyebrow={dateLabel} title={<OutlineTitle label="Today" />} action={<OutlineBox width={124} height={32} />}>
+    <div data-slot="page-outline" aria-busy="true" className="td-page">
+      <p role="status" className="fh-sr">
+        Loading…
+      </p>
+      <header style={{ marginBottom: 0 }}>
+        <p style={{ font: "400 13px/18px var(--sans)", color: "var(--graphite)" }}>{dateLabel}</p>
+        <h1 style={{ marginTop: 4, font: "600 24px/30px var(--serif)" }}>
+          <OutlineTitle label="Today" />
+        </h1>
+      </header>
       <div aria-hidden="true">
-        <section className="fh-tsec">
-          <OutlineSectionHead width={150} />
-          <div className="grid gap-2.5">
-            <OutlineCard lines={2} hasAvatar hasButton />
-            <OutlineCard lines={3} hasButton />
-          </div>
-        </section>
-        <section className="fh-tsec">
-          <OutlineSectionHead width={130} />
-          <OutlineCard lines={3} />
-        </section>
+        <OutlinePromptRow />
+        <div className="fh-section-label flex items-center" style={{ height: 18 }}>
+          <OutlineLine width={110} height={12} />
+        </div>
+        <div style={{ margin: "0 -16px" }}>
+          {TODAY_ROWS.map((index) => (
+            <div key={index} className="fh-lr" style={{ minHeight: 112 }}>
+              <OutlineCircle size={48} />
+              <div className="grid gap-2.5 pt-1">
+                <OutlineLine width={`${52 - index * 10}%`} height={14} />
+                <OutlineLine width={`${86 - index * 12}%`} height={12} />
+                <OutlineBox width={84} height={36} className="mt-1" />
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
-    </PageOutline>
+    </div>
+  );
+}
+
+const TODAY_ROWS = [0, 1];
+
+// The prompt row (Today and Asks): a 32 px face and a 44 px field-look button in a 64 px row.
+function OutlinePromptRow({ marginTop = 16 }: { marginTop?: number }) {
+  return (
+    <div className="flex items-center gap-3" style={{ minHeight: 64, padding: "10px 0", marginTop }}>
+      <OutlineCircle size={32} />
+      <OutlineBox height={44} className="flex-1" />
+    </div>
   );
 }
 
@@ -53,32 +81,32 @@ function RoomsOutline() {
 
 const ASK_ITEMS = [0, 1];
 
-// The one-box composer, the search, the tabs, then asks.
+// The prompt row, the search 12 px under it, the chips 12 px under that, then asks (a 36 px face, the name and the
+// company line, two lines of the ask). The head keeps 4 px under the title, as asks.css sets it.
 function AsksOutline() {
   return (
     <PageOutline title="Asks" className="fh-narrow">
-      <OutlineSheet>
-        <div className="flex items-start gap-2">
-          <OutlineBox height={72} className="flex-1" />
-          <OutlineBox width={56} height={36} />
+      <div aria-hidden="true" style={{ marginTop: -16 }}>
+        <OutlinePromptRow marginTop={0} />
+        <OutlineBox height={44} className="mt-3" />
+        <div style={{ marginTop: 10 }}>
+          <OutlineChips widths={[60, 88, 72]} className="" />
         </div>
-      </OutlineSheet>
-      <OutlineBox height={52} radius={10} className="mt-4" />
-      <OutlineChips widths={[60, 88, 72]} className="mt-4 mb-4" />
-      <div aria-hidden="true" className="grid">
-        {ASK_ITEMS.map((index) => (
-          <div key={index} className="grid gap-2.5 border-b border-[var(--rule)] py-4">
-            <div className="flex items-center gap-3">
-              <OutlineCircle size={32} />
-              <div className="grid flex-1 gap-2">
-                <OutlineLine width="38%" height={14} />
-                <OutlineLine width="26%" height={11} />
+        <div className="grid" style={{ marginTop: 4 }}>
+          {ASK_ITEMS.map((index) => (
+            <div key={index} className="grid gap-3 border-b border-[var(--rule)] py-4">
+              <div className="flex items-center gap-2.5">
+                <OutlineCircle size={36} />
+                <div className="grid flex-1 gap-2">
+                  <OutlineLine width="38%" height={14} />
+                  <OutlineLine width="26%" height={11} />
+                </div>
               </div>
+              <OutlineLine width="94%" height={14} />
+              <OutlineLine width="70%" height={14} />
             </div>
-            <OutlineLine width="94%" />
-            <OutlineLine width="70%" />
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </PageOutline>
   );

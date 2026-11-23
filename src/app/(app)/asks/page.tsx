@@ -6,6 +6,7 @@ import { ASK_PAGE_TABS, ASKS_PAGE, ASKS_PAGE_TITLE, ASK_LIMITS, readAskFlash, ty
 import { asksManifest } from "@/modules/asks/manifest";
 import { isHiringRequestFree } from "@/modules/asks/reads";
 import { readAsksPage } from "@/modules/asks/reads-board";
+import { readAvatarUrl } from "@/modules/members/service-profile";
 import { parseAskDraftParts } from "@/modules/asks/rules-board-url";
 import { requireMember } from "@/platform/auth/session";
 import { getDatabase, type Database } from "@/platform/database/client";
@@ -49,10 +50,12 @@ export default modulePage(asksManifest, async function AsksPage({ searchParams }
   const tab = readTab(readFirst(params.tab));
   const parsedDraft = parseAskDraftParts(params);
   const now = new Date();
-  const [allowance, { posts, counts }, isFreeHiring] = await Promise.all([
+  const [allowance, { posts, counts }, isFreeHiring, avatarUrl] = await Promise.all([
     readAskAllowance(database, member.id, now),
     readAsksPage(database, { viewerId: member.id, tab, search }, now),
     readFreeHiringJob(database, member, parsedDraft?.hiringJobId ?? null, now),
+    // The member's face on the prompt row and the composer, as the top bar shows it.
+    readAvatarUrl(database, member.id),
   ]);
   // An old or hand-made link (Back, a bookmark, a job since removed or not the member's) drafts an ordinary hiring ask,
   // so the composer never says "free" when the post would spend an ask or be refused.
@@ -60,6 +63,7 @@ export default modulePage(asksManifest, async function AsksPage({ searchParams }
 
   return (
     <AsksBoard
+      member={{ id: member.id, name: member.name, image: avatarUrl }}
       tab={tab}
       search={search}
       posts={posts}

@@ -77,13 +77,16 @@ export const TOUR_STEPS: readonly TourStep[] = [
     start: "/asks",
     still: "/asks",
     async settle(hands) {
+      await hands.click(".ak-prompt-btn");
       await hands.fill("#p-body", ASK_BODY);
     },
     async play(hands) {
       await hands.wait(400);
+      await hands.click(".ak-prompt-btn");
+      await hands.wait(300);
       await hands.type("#p-body", ASK_BODY);
       await hands.wait(400);
-      await hands.tap("#compose .fh-oneline button");
+      await hands.tap("#compose .ak-post");
       await hands.wait(600);
       await hands.point(".fh-posts article, .fh-posts > *");
       await hands.wait(1800);

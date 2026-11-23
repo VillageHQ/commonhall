@@ -57,3 +57,60 @@ On `:root` in `globals.css`: `--sat`, `--sab` (the only readers of `env(safe-are
 - Part 6: `src/modules/voice/components/voice.css` still reads `--tab-h` for `.vr-bar` (`globals.css` overrides it for now).
 - Not owned by any part: `confirm-dialog.tsx` (admin) and the feed's `composer.tsx` still read `env(safe-area-inset-bottom)`
   in their classes; they could move to `Sheet` or `var(--sab)`.
+
+## Part 4, Asks and Today (the prompt row, the composer, the ask list, Today)
+
+### The composer (`src/modules/asks/components/asks-composer.tsx`, styles in `asks.css`)
+- One client part, `AsksComposer({ member, allowance, draft, isComposing })`, on Asks and on Today. Closed, it is the
+  prompt row (`.ak-prompt`: a 32 px face and the 44 px field-look button `.ak-prompt-btn`, "Ask the community…"; a button,
+  so the page never raises the keyboard). The face comes from `readAvatarUrl`, as the top bar's.
+- Under 1000 px it opens Part 1's `Sheet` at `size="full"` (`.ak-sheet`): Cancel (`.ak-cancel`) · the title · Post
+  (`.ak-post`, small, 40% while under 2 letters) in the 52 px head; the author line with the week's allowance; the
+  borderless 17/24 box (`.ak-box`, `#p-body`, it grows and the sheet scrolls); the toolbar (`.ak-tools`, two 32 px chips
+  that scroll and never wrap) as the sheet's footer.
+- From 1000 px it turns into the card `.ak-card` in place, with the chips and Post (44 px) in its foot. Escape with an
+  empty box folds it back. The width comes from `use-is-wide.ts` (its own file so the landing tour can shim it to
+  "always in place": `tour/src/shims/use-is-wide.ts`, listed in `tour/build.mjs`).
+- The state (text, kind, target, company) is the composer's own, so it survives a resize between the two forms.
+- "Who to reach" opens the two target fields under the text (the chip turns ink, `aria-expanded`). "Post a win" switches
+  the kind to an update: the title "New win", the win placeholder, no allowance line (wins don't count), no target
+  chip, and the chip reads "Post an ask".
+- Cancel with text opens a small `Sheet` ("Discard this ask?": Keep editing · Discard); Keep editing puts the focus back
+  in the box. Escape in the full sheet runs the same Cancel.
+- Enter (no Shift) still posts: an ask is one line and the server joins lines. A post goes to `/asks?m=posted|posted0|updated`
+  (Asks › Open with the page's confirmation), from Asks and from Today. Pinned asks stay above it.
+- Opening on arrival: `?compose=1`, a drafted ask (Find candidates' `?ask=…`) or `#compose`.
+- On a phone whose keyboard doesn't resize the page (iOS), `visualViewport` sets `--kb` and `html[data-keyboard]`
+  while the sheet is open, and the sheet stops at the keyboard's top, so the toolbar sits right above it.
+
+### The ask list (`post-parts.tsx` › `PostCard`, `clamped-body.tsx`)
+- `.ak-post-item`: a 36 px face, the name (15/600) with the age and the quiet words "Pinned", "Update", "Answered",
+  "Closed" at the right (12 px with a 14 px icon; the pill stays on the ask's own page), the company line (13 px, its
+  16 px logo). The body is 16/24, cut at 4 lines by `ClampedBody`, which shows "more" only when something was cut.
+- Under it one line (`.ak-meta`): "N answers" (`MessageCircle`), "You could help", the helpers on Yours, "Mark
+  answered", and For you's "Not for me". Their tap areas reach 44 px through `::after`.
+- The page: the title (4 px under it), the prompt row, the search 12 px under it, the chips 12 px under that.
+
+### Today (`src/shell/today-list.tsx`, `today.css`, `today-actions.tsx`)
+- The head is Today's own (`.td-head`: the 13 px date, the 24 px Newsreader greeting), then the prompt row 16 px under it.
+  `/today` reads the allowance and the face for it.
+- "Waiting on you" keeps round 7's place (first, above the live card; `today-list.test.ts` guards it). Intro asks for
+  the member's yes are Part 3's `TargetMemberAsk`, unchanged; the others are `ListRow`s (48 px face, 2 lines, a 36 px
+  Answer or Read in the slot) in `.td-rows`, which reaches the column's edges (`margin: 0 -16px`).
+- The live card is the room card (`.td-live`): the dot, "Live" and the host; a 17/600 title; faces 40 then 28 px; a 36 px
+  Join. The title's link stretches over the card, under Join.
+- "You could help" cards (`.fh-titem.td-card`): a 32 px face and name, the ask cut at 4 lines, and `.td-pair`: two equal
+  36 px buttons that stack where the card is under 240 px inside (a container query).
+- "Is this right?" → "Fix it": the field and Save are stacked, so a 44 px field and a 36 px button never share a row.
+- "More for you": 48 px rows with the module's own icon (from its manifest) and a chevron.
+- Every button on Today is 36 px.
+
+### The outlines (`src/shell/tab-outlines.tsx`, Today's and Asks' functions)
+- Drawn with global classes and inline sizes (not `today.css` / `asks.css`, which load with the pages), so they land
+  where the page does: 0 px apart at 390 and 1280 (the verifier's check 11).
+
+### Left for others
+- Part 3: the intro-ask card on Today is still a card with medium buttons.
+- Members: `LookupQuestionCard` on Today has medium buttons.
+- The install card's ✕ is 16×24 (only its buttons were Part 4's).
+- The web card has no Cancel: Escape folds only an empty box (as the part file says).

@@ -37,6 +37,7 @@ const FILE_SHIMS = {
   "src/components/use-is-in-browser": "use-is-in-browser.ts",
   "src/modules/voice/queries": "voice-queries.ts",
   "src/components/alerts/push-client": "push-client.ts",
+  "src/modules/asks/components/use-is-wide": "use-is-wide.ts",
 };
 
 function shimPlugin() {
@@ -45,7 +46,7 @@ function shimPlugin() {
     name: "tour-shims",
     setup(builder) {
       builder.onResolve({ filter: /^(next\/link|next\/navigation|next\/image|server-only|livekit-client)$/ }, (args) => ({ path: path.join(SHIMS, PACKAGE_SHIMS[args.path]) }));
-      builder.onResolve({ filter: /(post-request|sign-out|registry|use-is-in-browser|queries|push-client)(\.tsx?)?$/ }, (args) => {
+      builder.onResolve({ filter: /(post-request|sign-out|registry|use-is-in-browser|queries|push-client|use-is-wide)(\.tsx?)?$/ }, (args) => {
         const bare = args.path.replace(/\.tsx?$/, "");
         const absolute = bare.startsWith("@/") ? path.join(ROOT, "src", bare.slice(2)) : path.resolve(args.resolveDir, bare);
         const shim = byFile.get(absolute);

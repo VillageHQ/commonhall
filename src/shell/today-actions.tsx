@@ -46,7 +46,8 @@ function ErrorLine({ error }: { error: string | null }) {
   ) : null;
 }
 
-// "I can help" and "Not for me" under an ask on Today (round 7). I can help commits on the first tap, with the
+// "I can help" and "Not for me" under an ask on Today (round 7), two equal 36 px buttons side by side (round 8; they
+// stack at full width where both can't fit on one line). I can help commits on the first tap, with the
 // fixed public line and no note (a note is for the ask's own page). Not for me hides the ask from Today, For you and
 // the weekly email for this member; its author isn't told.
 export function HelpAskButtons({ askId, knownPerson, whyYou }: { askId: string; knownPerson: string | null; whyYou: string }) {
@@ -54,15 +55,16 @@ export function HelpAskButtons({ askId, knownPerson, whyYou }: { askId: string; 
   const kind = knownPerson ? ASK_HELP_KINDS.knowSomeone : ASK_HELP_KINDS.doneMyself;
   return (
     <>
-      <div className="fh-btn-row">
+      <div className="td-pair">
         <Button
+          size="sm"
           disabled={isPending}
           title={whyYou}
           onClick={() => void run(() => postRequest(ASK_API_ROUTES.help, { askId, kind, person: knownPerson ?? "", note: "" }, helpedAskSchema), kind === ASK_HELP_KINDS.knowSomeone ? "knows" : "helped")}
         >
           I can help
         </Button>
-        <Button variant="secondary" disabled={isPending} onClick={() => void run(() => postRequest(ASK_SKIP_ROUTE, { askId }, skippedAskSchema), "skipped")}>
+        <Button size="sm" variant="secondary" disabled={isPending} onClick={() => void run(() => postRequest(ASK_SKIP_ROUTE, { askId }, skippedAskSchema), "skipped")}>
           Not for me
         </Button>
       </div>
@@ -94,8 +96,9 @@ export function FactButtons({ field, label, value }: { field: CheckedField; labe
       </div>
       <details className="fh-fix">
         <summary className="fh-small">Fix it</summary>
-        <form className="fh-btn-row" style={{ marginTop: 8 }} onSubmit={fix}>
-          <Input name="value" maxLength={FACT_FIX_LENGTH} defaultValue={value} aria-label={label} style={{ flex: "1 1 200px" }} />
+        {/* The field on its own line and Save under it: a 44 px field and a 36 px button never share a row. */}
+        <form className="td-fix" onSubmit={fix}>
+          <Input name="value" maxLength={FACT_FIX_LENGTH} defaultValue={value} aria-label={label} />
           <Button size="sm" type="submit" disabled={isPending}>
             Save
           </Button>

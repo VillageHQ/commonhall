@@ -208,8 +208,11 @@ function SearchAskPage() {
   );
 }
 
+// Sam Lee writes the ask.
+const ASKS_MEMBER = { id: FOUNDER_VIEWER.id, name: FOUNDER_VIEWER.name, image: FOUNDER_VIEWER.imageUrl };
+
 function AsksPage() {
-  return <AsksBoard tab="open" search={null} posts={ASK_POSTS} counts={ASK_COUNTS} allowance={ASK_ALLOWANCE} flash={null} draft={null} />;
+  return <AsksBoard member={ASKS_MEMBER} tab="open" search={null} posts={ASK_POSTS} counts={ASK_COUNTS} allowance={ASK_ALLOWANCE} flash={null} draft={null} />;
 }
 
 // src/app/(app)/jobs/page.tsx: Sam Lee sees "Find candidates" on Tallyhealth's jobs.
