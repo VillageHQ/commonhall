@@ -89,7 +89,7 @@ function AsksOutline() {
       <div aria-hidden="true" style={{ marginTop: -16 }}>
         <OutlinePromptRow marginTop={0} />
         <OutlineBox height={44} className="mt-3" />
-        <div style={{ marginTop: 12 }}>
+        <div style={{ marginTop: 10 }}>
           <OutlineChips widths={[60, 88, 72]} className="" />
         </div>
         <div className="grid" style={{ marginTop: 4 }}>

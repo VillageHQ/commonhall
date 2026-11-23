@@ -149,6 +149,12 @@ export function AsksComposer({ member, allowance, draft = null, isComposing = fa
     reset();
   }
 
+  // Back to the text, with the focus (and a phone's keyboard) in the box once the small sheet has let go of it.
+  function keepEditing() {
+    setIsDiscardOpen(false);
+    window.setTimeout(() => boxRef.current?.focus({ preventScroll: true }), 0);
+  }
+
   // Cancel: an empty box just closes; with text it asks first.
   function cancel() {
     if (body.trim()) setIsDiscardOpen(true);
@@ -289,13 +295,13 @@ export function AsksComposer({ member, allowance, draft = null, isComposing = fa
   const discard = (
     <Sheet
       isOpen={isDiscardOpen}
-      onClose={() => setIsDiscardOpen(false)}
+      onClose={keepEditing}
       title={isAsk ? "Discard this ask?" : "Discard this win?"}
       headEnd={null}
       className="ak-discard"
       footer={
         <>
-          <Button type="button" variant="secondary" onClick={() => setIsDiscardOpen(false)}>
+          <Button type="button" variant="secondary" onClick={keepEditing}>
             Keep editing
           </Button>
           <Button type="button" variant="destructive" onClick={close}>

@@ -250,8 +250,9 @@ html[data-keyboard] .ak-sheet .fh-bsheet-foot {
   margin-top: 12px;
 }
 
+/* The chip row pads 2 px above its chips, so the chips sit 12 px under the search. */
 .ak-board .fh-chips.fh-tabs {
-  margin-top: 12px;
+  margin-top: 10px;
 }
 
 /* One ask: a 36 px face, the name 15/600, the company line 13 px, the age at the right; the body 16/24 cut at 4
@@ -356,6 +357,26 @@ html[data-keyboard] .ak-sheet .fh-bsheet-foot {
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 4;
   overflow: hidden;
+}
+
+/* "more" and the line under an ask are short to look at; their tap areas reach 44 px. */
+.ak-more,
+.ak-meta-item,
+.ak-meta .fh-react {
+  position: relative;
+}
+
+.ak-more::after {
+  content: "";
+  position: absolute;
+  inset: -11px -8px;
+}
+
+.ak-meta-item::after,
+.ak-meta .fh-react::after {
+  content: "";
+  position: absolute;
+  inset: -6px -4px;
 }
 
 .ak-more {
