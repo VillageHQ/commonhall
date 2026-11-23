@@ -118,6 +118,10 @@ export const VOICE_MESSAGES = {
 } as const;
 
 // The one line a host sees, once, after a start past the day's alerting starts.
+// Said in the line under every room's title (a live room's "Maya Ortiz · 3 in the room · Never recorded"), on the
+// server's pages and the client's alike; the store app's room sheet says it the same way.
+export const NEVER_RECORDED = "Never recorded";
+
 export const QUIET_START_LINE = `People weren't alerted this time: ${VOICE_LIMITS.broadcastsPerDay} rooms a day alert everyone.`;
 // The room page's address after a quiet start carries this, so the line shows once.
 export const QUIET_START_PARAM = "quiet";

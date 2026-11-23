@@ -31,9 +31,9 @@ const MAXIMUM_PATH_LENGTH = 2000;
 
 export type PageTab = { href: string; label: string; icon: string; count: number; isLive: boolean; badgeLabel: string };
 
-// The site's bar colours as the page computes them (light, dark, the community's colour); missing ones fall back to
-// the app's theme.
-export const COLOR_KEYS = ["bar", "rule", "active", "inactive", "badge", "badgeText", "live"] as const;
+// The site's bar colours as the page computes them (light, dark, the community's colour), and the page's own paper
+// (a tab's first load is drawn on it); missing ones fall back to the app's theme.
+export const COLOR_KEYS = ["bar", "rule", "active", "inactive", "badge", "badgeText", "live", "paper"] as const;
 export type PageColors = Partial<Record<(typeof COLOR_KEYS)[number], string>>;
 
 // The community's name (and its small line) in the page's top bar: a tab that is loading for the first time shows the
@@ -226,7 +226,7 @@ export function buildTabsScript(home: string) {
       var other = links.filter(function (link) { return link !== current; })[0];
       var count = bar.querySelector(".fh-badge");
       var dot = bar.querySelector('[data-slot="live-dot"]');
-      colors = { bar: style.backgroundColor, rule: style.borderTopColor, active: colorOf(current, "color"), inactive: colorOf(other, "color"), badge: colorOf(count, "backgroundColor"), badgeText: colorOf(count, "color"), live: colorOf(dot, "backgroundColor") };
+      colors = { bar: style.backgroundColor, rule: style.borderTopColor, active: colorOf(current, "color"), inactive: colorOf(other, "color"), badge: colorOf(count, "backgroundColor"), badgeText: colorOf(count, "color"), live: colorOf(dot, "backgroundColor"), paper: colorOf(document.body, "backgroundColor") };
     }
     var isOverlayOpen = root.hasAttribute("data-sheet-open") || Boolean(document.querySelector(OVERLAYS));
     var mark = document.querySelector(TOP_BAR_MARK);

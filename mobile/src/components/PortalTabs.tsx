@@ -403,7 +403,7 @@ export const PortalTabs = forwardRef<PortalHandle, PortalTabsProps>(function Por
               onTabsMessage={(message) => onTabsMessage(view.id, message)}
             />
             {readyIds.has(view.id) ? null : (
-              <View pointerEvents="none" style={[styles.loading, { backgroundColor: pageColors.bar ?? theme.paper }]} testID="portal-tab-loading">
+              <View pointerEvents="none" style={[styles.loading, { backgroundColor: pageColors.paper ?? theme.paper }]} testID="portal-tab-loading">
                 {brand ? <TopBarPlaceholder brand={brand} topInset={insets.top} colors={pageColors} theme={theme} /> : null}
                 <View style={styles.loadingBody}>
                   <ActivityIndicator color={pageColors.inactive ?? theme.muted} />

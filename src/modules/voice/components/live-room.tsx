@@ -17,9 +17,9 @@ import { SectionLabel } from "@/components/ui/list-row";
 import { Sheet } from "@/components/ui/sheet";
 import { readNativeApp, ROOM_CLOSED_REASONS, subscribeToNativeApp, subscribeToRoomClosed, type RoomClosedReason } from "@/platform/native-app/bridge";
 
-import { isModerator, isOnStage, ROLE_ACTIONS, ROOM_ROLES, VOICE_ATTRIBUTES, VOICE_DATA_TOPICS, VOICE_LIMITS, VOICE_PAGE, VOICE_REACTIONS, type RoleAction, type RoomRole } from "../contract";
+import { isModerator, isOnStage, NEVER_RECORDED, ROLE_ACTIONS, ROOM_ROLES, VOICE_ATTRIBUTES, VOICE_DATA_TOPICS, VOICE_LIMITS, VOICE_PAGE, VOICE_REACTIONS, type RoleAction, type RoomRole } from "../contract";
 import { voiceRequests } from "../queries";
-import { NEVER_RECORDED, RoomHeader, RoomTitle, type RoomMoreItem } from "./room-header";
+import { RoomHeader, RoomTitle, type RoomMoreItem } from "./room-header";
 import { keepLeftMark, readLeftBeforeReload } from "./room-left-mark";
 
 // Every face's role line in the grid (X Spaces): nobody is left without one.
@@ -484,7 +484,7 @@ function BrowserRoom({ roomId, title, hostName, children }: LiveRoomProps) {
   const head = (
     <>
       <RoomHeader end={headerEnd} rename={isHostNow && !isClosed ? { roomId, title } : null} more={more} />
-      <RoomTitle title={title} line={phase === PHASES.live ? `${hostWords} · ${peopleWords} · ${NEVER_RECORDED}` : phase === PHASES.connecting ? `Joining ${title}…` : hostWords} />
+      <RoomTitle title={title} line={phase === PHASES.live ? `${hostWords} · ${peopleWords} · ${NEVER_RECORDED}` : phase === PHASES.connecting ? `Joining ${title}…` : `${hostWords} · ${NEVER_RECORDED}`} />
       {children}
     </>
   );

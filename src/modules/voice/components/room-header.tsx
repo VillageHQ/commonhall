@@ -17,7 +17,7 @@ import { voiceRequests } from "../queries";
 
 // One item of the room's "More" sheet: what today's page offers there (Rename for the host, Leave when End room
 // takes its place in the header, stepping down from the stage). With none, the header has no More: "Never recorded"
-// sits in the line under the title (NEVER_RECORDED), so a listener's More would hold nothing.
+// sits in the line under the title (NEVER_RECORDED, contract.ts), so a listener's More would hold nothing.
 export type RoomMoreItem = { label: string; onSelect: () => void; isDisabled?: boolean; testId?: string };
 
 type RoomHeaderProps = {
@@ -128,9 +128,6 @@ function RenameForm({ roomId, title, onDone, onCancel }: { roomId: string; title
     </form>
   );
 }
-
-// Said under every room's title (a live room's "Maya Ortiz · 3 in the room · Never recorded").
-export const NEVER_RECORDED = "Never recorded";
 
 // The room's title (22 px Newsreader, at most 3 lines) and its one quiet line under it.
 export function RoomTitle({ title, line }: { title: string; line: ReactNode }) {

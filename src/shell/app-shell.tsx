@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import { BAR_BACK_SLOT } from "@/components/back-link";
+import { BAR_BACK_SLOT } from "@/components/bar-back-slot";
 import { DemoBanner } from "@/components/demo-banner";
 import { FlashProvider, FlashSlot } from "@/components/flash";
 import { MAIN_CONTENT_ID } from "@/components/skip-link";
