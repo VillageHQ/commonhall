@@ -372,7 +372,7 @@ html[data-keyboard] .ak-sheet .fh-bsheet-foot {
   inset: -11px -8px;
 }
 
-.ak-meta-item::after,
+a.ak-meta-item::after,
 .ak-meta .fh-react::after {
   content: "";
   position: absolute;
@@ -392,8 +392,14 @@ html[data-keyboard] .ak-sheet .fh-bsheet-foot {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 4px 16px;
+  /* 12 px between wrapped lines, so each 32 px line keeps its own 44 px tap area. */
+  gap: 12px 16px;
   margin-top: 8px;
+}
+
+/* Under "more" (whose tap area reaches 11 px below it), the line starts lower so the two areas don't overlap. */
+.ak-more + .ak-meta {
+  margin-top: 17px;
 }
 
 .ak-meta-item {
