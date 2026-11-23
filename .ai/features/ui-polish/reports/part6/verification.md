@@ -5,7 +5,8 @@ built app (`next start`, demo mode, a throwaway database) and the store app's we
 preview. Demo people only: Sam Lee (member), Maya Ortiz (admin, host). Chromium with a fake microphone. Pictures are
 1x, viewport-sized. Scripts: `.ai/tmp/verify-p6/` (not committed).
 
-**Overall, first pass: FAIL** (three defects). **Re-check after the repairs (commit 612b2206): PASS.** All three
+**Overall, first pass: FAIL** (three defects). **Re-check after the repairs (commit 612b2206): PASS. Re-check after
+the rebase onto Part 7's native tab bar (head 67a8e68c): PASS.** All three
 defects and the smaller ones I re-tested are fixed, and nothing new broke. The parts that need a real phone or Part 3
 are still NOT RUN. The rows below are the first pass; "Re-check" at the end replaces rows 1, 8 and 10 and defects 1–5
 and 7.
@@ -24,7 +25,7 @@ and 7.
 | 8 | Sheets hide the mini bar | **FAIL** (the menu) at first; **PASS on re-check** | Real Sheets work. The room page's More sheet set html[data-sheet-open] and the bar hid; it came back when the sheet closed. The /parts sample sheet on a tab page did the same. **The avatar menu (the menu the check names) is a dropdown (role=menu), not a Sheet**: it never sets data-sheet-open, and the mini bar stays over it and covers the menu's lower rows (defect 3). | after-app-mini-sheet-open-390, after-app-mini-menu-390 |
 | 9 | Reduced motion | PASS (the app's speaking ring: code read, not seen) | App room sheet, normal: its top moves 852 → 313 → 99 → 36 → 14 → 8 over about 300 ms. Reduced: hidden, then at 8 in the next frame, with no slide. Web, reduced: no element on the page animates. The live dot's animation is "none", against "vr-pulse" normally. A speaking ring, forced on, shows "none" with a solid 2 px ink ring, against "vr-ring" normally. The fake microphone never triggered LiveKit's speaking detector, so I did not see a real speaking ring in either app. The app's SpeakingRing takes `isSteady` from reduced motion (code). | — |
 | 10 | Outline | PASS (at the limit); **re-check: exact match** | The Rooms tab, tapped from Today with the page's response held back 4 s, showed the outline. Outline against the real page: title (16,129) on both. Button 112×36 at x 262 against 106×36 at x 268; both right edges at 374. First card top 234 against 242 (**8 px**, the limit), with each row inside it 8 px higher too. The outline's section label is 8 px shorter than the real "Live now" label. | after-rooms-outline-390 |
-| S1 | Sizes at 390 in the app with --sab 34 / --sat 47 | PASS with a caveat | The site's side is right: the tab bar grows to 90 px and the page reports 56 px visible. The preview's native insets are 0, so the bar sits at 56 px from the foot and covers the tab bar's icons in this simulation only. On a phone the app adds the real 34 px. That is checked in code, but the real phone is NOT RUN. | after-app-mini-rooms-insets-390 |
+| S1 | Sizes at 390 in the app with --sab 34 / --sat 47 | PASS with a caveat | The site's side is right: the tab bar grows to 90 px and the page reports 56 px visible. The preview's native insets are 0, so the bar sits at 56 px from the foot and covers the tab bar's icons in this simulation only. On a phone the app adds the real 34 px. That is checked in code, but the real phone is NOT RUN. Since the rebase, Part 7's native tab bar places the bar, so this row no longer applies; I removed its picture. | — |
 | S2 | 360×740 and 300×570 | PASS | No sideways scroll (scrollWidth = width) on the list, the web room or the app room. No button label wraps. At 300, "Schedule for later" moves to its own line under the note, which is fine. The app room's buttons stay at 44 px. | after-rooms-360, after-rooms-300, after-room-360, after-room-300, after-app-room-300 |
 | S3 | Light / dark | PASS | Dark: "Live" and Leave are #e7a57e, and Start a room is light on ink. The app sheet is #0e0e0d with a #e7a57e dot. | after-rooms-390-dark, after-room-390-dark, after-app-room-390-dark |
 | S4 | Bright accent #FFD400 | PASS | Set up made the primary colour #836D00 with white text (its contrast fix). Start a room, Join and the switch use it and read well. The live dot stays the live colour, and the room's main button stays ink. The accent was put back to #111110 (checked in the database). | after-rooms-390-accent |
@@ -93,6 +94,31 @@ server and browser. Scripts: `.ai/tmp/verify-p6/recheck-web.mjs` and `recheck-ap
 
 Still open from the first pass (not asked to change): defect 6 (a listener's near-empty More sheet), the Part 2 and
 Part 3 items, and everything marked NOT RUN.
+
+## Re-check after the rebase onto Part 7 (head 67a8e68c)
+
+The store app now has Part 7's native tab bar, with one web view per tab. Its bottom slot docks the mini bar and
+sends each tab's page `--mini`. Both apps were rebuilt and the containers were unchanged. I ran it in the foreground
+and stopped every server and browser. Scripts: `.ai/tmp/verify-p6/recheck2-app.mjs` and `recheck2-web.mjs`. The web
+preview is 390×844 with insets of 0.
+
+| Item | Result | Measured | Pictures |
+|---|---|---|---|
+| Check 4, the app room | PASS | Title Newsreader-SemiBold 22 px, live dot rgb(156,78,34) = #9c4e22, sheet top at y 8. Buttons: Minimise, More, Raise hand and React draw SVGs (44×44; the main button is 64×76). "Leave" is a word. No emoji. The native tab bar is hidden while the sheet is up. | after-app-room-390 |
+| Check 5, the mini bar | PASS (store build 5: NOT RUN) | On a tab page the bar is at y 732–788 and the native tab bar at 788–844, so there is no gap. It is the same on Rooms, Today, People, Inbox and Asks. The main control is 44×44 at (292,738), named "Raise hand"/"Lower hand"; Leave is 44×44 at (340,738), named "Leave". The hand button raised the hand (Maya saw "Hand up" and the chip) and lowered it again. Tapping the title reopened the sheet (top 8, bar gone). Leave on the room page showed "You left the room." with Join again: the bar went, --mini went to 0px, and Maya's room went down to 1 person. Back on Today afterwards: no bar, and --bottom-stack is the tab bar only. | after-app-mini-today-390, after-app-mini-hand-390, after-app-left-390 |
+| Check 6, Today's end | PASS | The last item ("Source code") ends at y 700 and the bar starts at y 732. Main's bottom padding is 144 px. | after-app-mini-today-end-390 |
+| Check 7, a pushed screen | PASS | On the room page the native tab bar is hidden and the bar sits at the bottom inset, y 788–844. The page has --mini 56px and --bottom-stack `calc(0px + 56px)`. The thread half is still waiting on Part 3. | after-app-mini-roompage-390 |
+| Check 8, menus and sheets | PASS | With the avatar menu open, the mini bar and the native tab bar both hide. After Escape both are back. The /parts sample Sheet behaves the same. | after-app-mini-menu-390, after-app-mini-sheet-open-390 |
+| Check 9, app reduced motion | PASS | Sheet top over time, normal: 702 → 212 → 71 → 26 → 11 → 8 over about 300 ms. Reduced: at 8 in the first frame, with no slide. | — |
+| Switching tabs with the bar showing | PASS | Today → People → Inbox → Asks → Rooms → Today: the bar stays docked at 732–788 on every tab. Each tab's page has html[data-mini-player], --mini 56px and --bottom-stack `calc(calc(56px + 0px) + 56px)`. | — |
+| Web, unchanged | PASS | Rooms list at 390: the title, Start a room 106×36, card 358×132 at y 242, faces 40/28/28/28, Join 54×36 and Room alerts at y 576 are the same as before. Tapping a face joins. Web room at 390: header 52 px (Rooms 83×44, Leave 64×44, More 44×44), title 22 px Newsreader, 4 columns, 64 px faces, bar 88 px at 756, 56 px main button, React and Chat 44 px. No tab bar or community bar. At 1280: cards 464 px wide in 2 columns, no sideways scroll. | (pictures from the first pass still hold) |
+| Tests | PASS | `pnpm lint` (0 errors, the same old warning), `pnpm typecheck`, and the voice + shell + architecture tests (33 files, 811 tests). In `mobile/`, typecheck passes and 29/29 tests pass. |
+
+Notes:
+- `after-app-mini-rooms-360.png` and `-300.png` are from the first pass and show the site's own tab bar, not the native
+  one. I didn't re-run 360 and 300 in the app.
+- Inside each tab's page, the site's own tab bar still has `display:grid` under the native bar. The native bar covers it
+  exactly (788–844), so nothing shows twice. Whether it should be hidden is Part 7's call.
 
 ## Undo after 4 s instead of 2.5 s
 4 s (about 4.5 s measured) is the right call. With a 44 px Undo target, 2.5 s is too short to read the line and reach
