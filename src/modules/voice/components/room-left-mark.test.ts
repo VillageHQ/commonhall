@@ -29,6 +29,8 @@ describe("the store app's room page after leaving", () => {
   beforeEach(() => {
     openRoom.mockReset();
     window.sessionStorage.clear();
+    // jsdom has no matchMedia; the room's header (its More sheet) asks it for the phone or the wide layout.
+    window.matchMedia = ((query: string) => ({ matches: false, media: query, addEventListener: () => {}, removeEventListener: () => {} })) as unknown as typeof window.matchMedia;
     (window as unknown as { CommonhallApp: unknown }).CommonhallApp = { version: 4, platform: "ios", openRoom };
   });
 

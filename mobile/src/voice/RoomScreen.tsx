@@ -166,8 +166,14 @@ export const RoomScreen = forwardRef<RoomControls, RoomScreenProps>(function Roo
     if (!mine) return;
     const before = lastRole.current;
     lastRole.current = mine.role;
-    if (before === "listener" && isOnStage(mine.role)) setIsBroughtUp(true);
+    if (before === "listener" && isOnStage(mine.role)) {
+      setIsBroughtUp(true);
+      // On stage now: the hand's line (and its Undo) no longer applies.
+      setIsHandToast(false);
+    }
     if (!isOnStage(mine.role)) setIsBroughtUp(false);
+    // The raised-hands panel closes once nobody's hand is up, so a later hand doesn't open it by itself.
+    if (!next.some((person) => !isOnStage(person.role) && person.isHandRaised)) setPanel((current) => (current === "hands" ? null : current));
   }, [origin]);
 
   const showReaction = useCallback((identity: string, emoji: string) => {
@@ -541,7 +547,7 @@ export const RoomScreen = forwardRef<RoomControls, RoomScreenProps>(function Roo
             ))}
           </View>
         ) : null}
-        {isHandToast ? (
+        {isHandToast && !isOnStage(myRole) ? (
           <View style={styles.toast} accessibilityLiveRegion="polite" testID="hand-toast">
             <Text style={styles.toastText}>Hand raised. The host sees it.</Text>
             <Pressable accessibilityRole="button" disabled={isBusy} onPress={() => void setHand(false)} style={styles.toastUndo}>

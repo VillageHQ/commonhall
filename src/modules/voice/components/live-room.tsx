@@ -265,13 +265,16 @@ function BrowserRoom({ roomId, title, hostName, children }: LiveRoomProps) {
   const [hasAudio, setHasAudio] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isHandsOpen, setIsHandsOpen] = useState(false);
+  const [isHandToast, setIsHandToast] = useState(false);
   const [reactions, setReactions] = useState<Record<string, string>>({});
   const [isReacting, setIsReacting] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chat, setChat] = useState<ChatLine[]>([]);
   const [draft, setDraft] = useState("");
-  const [isHandToast, setIsHandToast] = useState(false);
   const chatId = useRef(0);
+  // From 1000 px the chat and reactions open as panels at the end of the room: brought into view above the pinned bar.
+  const chatPanelRef = useRef<HTMLDivElement>(null);
+  const reactPanelRef = useRef<HTMLDivElement>(null);
 
   const [isBroughtUp, setIsBroughtUp] = useState(false);
   // The member's own role the last time the room named it: a host's Invite to speak puts a listener on stage at once
@@ -287,8 +290,14 @@ function BrowserRoom({ roomId, title, hostName, children }: LiveRoomProps) {
     if (!mine) return;
     const before = lastRole.current;
     lastRole.current = mine.role;
-    if (before === ROOM_ROLES.listener && isOnStage(mine.role)) setIsBroughtUp(true);
+    if (before === ROOM_ROLES.listener && isOnStage(mine.role)) {
+      setIsBroughtUp(true);
+      // On stage now: the hand's line (and its Undo) no longer applies.
+      setIsHandToast(false);
+    }
     if (!isOnStage(mine.role)) setIsBroughtUp(false);
+    // The raised-hands sheet closes once nobody's hand is up, so a later hand doesn't open it by itself.
+    if (!next.some((person) => !isOnStage(person.role) && person.isHandRaised)) setIsHandsOpen(false);
   }, []);
 
   const showReaction = useCallback((identity: string, emoji: string) => {
@@ -395,6 +404,13 @@ function BrowserRoom({ roomId, title, hostName, children }: LiveRoomProps) {
     const timer = setTimeout(() => setIsHandToast(false), HAND_TOAST_MS);
     return () => clearTimeout(timer);
   }, [isHandToast]);
+
+  useEffect(() => {
+    if (isWide && isChatOpen) chatPanelRef.current?.scrollIntoView({ block: "nearest" });
+  }, [isWide, isChatOpen]);
+  useEffect(() => {
+    if (isWide && isReacting) reactPanelRef.current?.scrollIntoView({ block: "nearest" });
+  }, [isWide, isReacting]);
 
   const role = useMutation({ mutationFn: voiceRequests.role, onSuccess: () => setSelectedId(null) });
   const hand = useMutation({
@@ -570,12 +586,16 @@ function BrowserRoom({ roomId, title, hostName, children }: LiveRoomProps) {
       </div>
 
       {isWide && isChatOpen ? (
-        <div className="vr-panel">
+        <div className="vr-panel" ref={chatPanelRef}>
           <p className="fh-small font-semibold">Room chat</p>
           {chatBody}
         </div>
       ) : null}
-      {isWide && isReacting ? <div className="vr-panel vr-panel-reactions">{reactionButtons}</div> : null}
+      {isWide && isReacting ? (
+        <div className="vr-panel vr-panel-reactions" ref={reactPanelRef}>
+          {reactionButtons}
+        </div>
+      ) : null}
 
       <Sheet isOpen={Boolean(selected && selectedActions.length > 0)} onClose={() => setSelectedId(null)} title={selected?.name ?? ""}>
         <div className="vr-more" data-testid="person-actions">
@@ -636,7 +656,7 @@ function BrowserRoom({ roomId, title, hostName, children }: LiveRoomProps) {
         </div>
       ) : null}
 
-      {isHandToast ? (
+      {isHandToast && !isOnStage(myRole) ? (
         <div className="vr-toast" role="status" data-testid="hand-toast">
           <span>Hand raised. The host sees it.</span>
           <button

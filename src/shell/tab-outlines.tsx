@@ -76,7 +76,8 @@ function RoomCardOutline() {
   );
 }
 
-// The title with "Start a room" (36 px) at the right of its row, the 13 px line under it, then Live now and its cards.
+// The title with "Start a room" (36 px) at the right of its row, the line under it (26 px: its link is a button), then
+// Live now and its cards.
 function RoomsOutline() {
   return (
     <div data-slot="page-outline" aria-busy="true">
@@ -85,7 +86,7 @@ function RoomsOutline() {
           <h1 className="fh-h1 m-0">Rooms</h1>
           <OutlineBox width={112} height={36} className="flex-none" />
         </div>
-        <div aria-hidden="true" className="mt-1.5 flex h-[18px] items-center">
+        <div aria-hidden="true" className="mt-1.5 flex h-[26px] items-center">
           <OutlineLine width="72%" height={11} />
         </div>
       </header>

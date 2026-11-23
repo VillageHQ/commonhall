@@ -31,7 +31,7 @@
 .vr-stretch:focus-visible::after{outline:2px solid var(--ink);outline-offset:2px;border-radius:var(--r)}
 .vr-over{position:relative;z-index:1}
 .vr-card-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:auto}
-.vr-card-people{display:flex;align-items:center;gap:8px;min-width:0;font-size:14px;line-height:20px;color:var(--graphite)}
+.vr-card-people{pointer-events:none;display:flex;align-items:center;gap:8px;min-width:0;font-size:14px;line-height:20px;color:var(--graphite)}
 .vr-card-people > span:last-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .vr-faces{display:flex;align-items:center;flex:none}
 .vr-faces > *{box-shadow:0 0 0 2px var(--leaf);border-radius:50%}
@@ -110,7 +110,7 @@
 .vr-chat-list b{font-weight:600}
 .vr-chat form{display:flex;gap:8px}
 .vr-chat form > :first-child{flex:1;min-width:0}
-.vr-panel{margin-top:16px;padding:14px 16px;border:1px solid var(--rule);border-radius:var(--r);background:var(--leaf)}
+.vr-panel{scroll-margin-bottom:140px;margin-top:16px;padding:14px 16px;border:1px solid var(--rule);border-radius:var(--r);background:var(--leaf)}
 .vr-panel .vr-chat,.vr-panel .vr-reactions{padding:8px 0 0}
 .vr-panel-reactions .vr-reactions{justify-content:flex-start}
 
@@ -132,7 +132,7 @@
   .vr-dock{position:fixed;right:0;bottom:var(--bottom-stack);left:0}
 }
 @media (min-width:1000px){
-  .vr-dock{position:sticky;bottom:0;margin-top:32px}
+  .vr-dock{position:sticky;bottom:0;margin-top:48px}
   .vr-bar{padding:0}
 }
 
