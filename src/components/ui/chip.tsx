@@ -1,7 +1,7 @@
 import { cn } from "cn";
 import type { ComponentProps, ReactNode } from "react";
 
-// Commonhall's chip (crops chips-tabs-asks.png, chips-filter-members.png): 34 px, radius 6, Vellum, 500 14;
+// Commonhall's chip (round 8, ui-polish SPEC): at least 32 px, radius 6, Vellum, 500 14, its text on one line;
 // selected = Ink with Paper text. Used as page tabs and filters; a link chip marks the current page the same way.
 const CHIP_CLASSES =
   "fh-chip no-underline aria-[current=page]:bg-ink aria-[current=page]:text-paper";
@@ -15,7 +15,7 @@ export function ChipCount({ children }: { children: ReactNode }) {
   return <span className="fh-n">{children}</span>;
 }
 
-// A row of chips: wraps on desktop, scrolls sideways on a phone.
+// A row of chips: wraps on desktop, scrolls sideways on a phone; a chip's own text never wraps.
 export function ChipRow({ className, ...props }: ComponentProps<"div">) {
   return <div data-slot="chip-row" className={cn("fh-chips", className)} {...props} />;
 }

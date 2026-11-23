@@ -30,6 +30,8 @@ import type { ShellNavigation } from "@/shell/navigation-rules";
 import { PhoneFoot, ShellFooterLine, ShellFundMark } from "@/shell/shell-chrome";
 import { SidebarMember } from "@/shell/user-menu";
 
+import { Round8Controls, Round8Empty, Round8Rows, Round8Sheet } from "./round8-parts";
+
 const COMMUNITY = "Northwind Founders";
 const SAM = { id: "member-sam", name: "Sam Lee", email: "sam.lee@example.com", isAdmin: false };
 const MAYA = { id: "member-maya", name: "Maya Ortiz", email: "maya.ortiz@example.com", isAdmin: true };
@@ -85,7 +87,7 @@ const GALLERY_STYLES = `
 .parts-me .fh-me{margin-top:0;padding:12px 6px 6px}
 .parts-me .fh-me-actions{display:none!important}
 .parts-me{background:var(--side);padding:0 8px 0 8px}
-.parts-row{display:grid;gap:16px;padding:28px 0;border-top:1px solid var(--rule)}
+.parts-row{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;padding:28px 0;border-top:1px solid var(--rule)}
 .parts-pane > p{margin-bottom:8px;font:600 12px/16px var(--sans);color:var(--graphite)}
 .parts-crop{display:block;max-width:100%;height:auto}
 .parts-frame{overflow-x:auto}
@@ -143,6 +145,15 @@ export function PartsGallery({ crops, navigation }: { crops: Record<string, Crop
         title="Parts"
         description="Every shared part, beside Commonhall's crop of it (fh-reference/crops). The parts live in src/components and src/components/ui; Commonhall's styles are in src/app/parts.css."
       />
+
+      <h2 className="fh-h2 mt-7">Round 8: shared sizes and parts</h2>
+      {part("round8-controls", "A field and a button, a search box, chips, buttons, a text box", <Round8Controls />, {
+        width: 560,
+        note: "44 px controls (36 px small), 32 px chips, radius 6, 16 px field text, the app's own clear button. No crop: ui-polish SPEC.",
+      })}
+      {part("round8-rows", "ListRow, read and unread, with SectionLabels", <Round8Rows />, { width: 560, note: "72 px rows, a 48 px face, the text at x 76." })}
+      {part("round8-sheet", "Sheet", <Round8Sheet />, { width: 560, note: "A bottom sheet under 1000 px, a centred dialog from it." })}
+      {part("round8-empty", "Empty state", <Round8Empty />, { width: 560 })}
 
       <h2 className="fh-h2 mt-7">The shell</h2>
       {part(

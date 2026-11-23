@@ -3,8 +3,9 @@ import { cn } from "cn";
 import { Slot } from "radix-ui";
 import type { ComponentProps } from "react";
 
-// Commonhall's buttons (design-system.md §3.2, crops buttons-*.png): 40 px, radius 6, sans 600 15/20, press 1 px.
-// A label too long for a phone wraps instead of running off the screen; one line keeps the 40 px exactly.
+// Commonhall's buttons (round 8, ui-polish SPEC "Shared rules"): at least 44 px (small 36 px, icon 44×44), radius 6,
+// sans 600 15/20 (14 for small), press 1 px. The sizes live on the plain classes in globals.css, so a page that
+// writes `fh-btn` itself gets the same button; the admin's console keeps 40 and 32 px there.
 export const buttonVariants = cva(
   "fh-btn h-auto text-center whitespace-normal disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-icon-small",
   {
@@ -23,13 +24,13 @@ export const buttonVariants = cva(
         link: "fh-linkbtn h-auto min-h-0 p-0 font-semibold text-fund underline hover:text-fund-deep hover:no-underline",
       },
       size: {
-        default: "min-h-10 py-[9px]",
-        sm: "fh-btn-sm min-h-8 py-[5px]",
+        default: "",
+        sm: "fh-btn-sm",
         // Commonhall has one size of large button: the default.
-        lg: "min-h-10 py-[9px]",
-        hero: "min-h-10 py-[9px]",
-        icon: "size-10 rounded-[8px] p-0 [&_svg:not([class*='size-'])]:size-icon",
-        "icon-lg": "size-10 rounded-[8px] p-0 [&_svg:not([class*='size-'])]:size-icon",
+        lg: "",
+        hero: "",
+        icon: "fh-btn-icon [&_svg:not([class*='size-'])]:size-icon",
+        "icon-lg": "fh-btn-icon [&_svg:not([class*='size-'])]:size-icon",
       },
       width: {
         auto: "",
