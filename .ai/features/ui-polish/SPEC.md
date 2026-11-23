@@ -126,6 +126,7 @@ X Spaces' and Clubhouse's card, in the Commonhall look.
 | 4 | Asks and Today: the composer, the ask list, Today | [parts/4-asks-today.md](parts/4-asks-today.md) | wave 2 | ~3 h |
 | 5 | People and profiles: search, results, the profile header | [parts/5-people-profile.md](parts/5-people-profile.md) | wave 2 | ~2 h |
 | 6 | Rooms: the list, the live room (web and the store app), the mini player | [parts/6-rooms.md](parts/6-rooms.md) | wave 2 | ~4 h |
+| 8 | The fix pass: what the parts' verifiers found (sizes, sheets, the frame, Rooms' More, the store app's tabs) | [parts/8-fixpass.md](parts/8-fixpass.md) | after the merges | ~3 h |
 
 Each part file holds the target design with sizes, what differs on the phone and on the web, the files it owns, and the
 checks its verifier runs. A builder reads this page and its own part file.

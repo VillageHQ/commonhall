@@ -156,6 +156,9 @@
   /* Cards are flat Leaf with a rule line; nothing floats. */
   --elevation-panel: 0 0 0 1px var(--rule);
   --elevation-sheet: 0 -1px 0 var(--rule);
+
+  /* A switch's track while off (dark mode's is in .dark). */
+  --fh-switch-off: #b5b4ad;
 }
 
 :root,
@@ -751,11 +754,6 @@ html[data-app] {
   :is(.fh-reply, .fh-sticky-send) {
     bottom: calc(var(--bottom-stack) + 8px);
   }
-
-  /* The room's control bar (voice.css loads later, hence html). */
-  html .vr-bar {
-    bottom: calc(var(--bottom-stack) + 8px);
-  }
 }
 
 /* Buttons: 44 px, small 36 px, icon 44×44, radius 6 (the Button part and the plain classes alike). Heights are
@@ -936,6 +934,16 @@ html[data-app] {
 
 .fh-bsheet[data-state="open"] {
   animation: fh-sheet-up 250ms var(--ease-out);
+}
+
+/* A sheet opened over another ("Discard this ask?" over the composer): its scrim dims the sheet under it. Each sheet's
+   scrim and panel are the body's own children, in the order they opened. */
+.fh-bsheet ~ .fh-scrim {
+  z-index: 72;
+}
+
+.fh-bsheet ~ .fh-scrim ~ .fh-bsheet {
+  z-index: 73;
 }
 
 .fh-bsheet[data-size="full"] {

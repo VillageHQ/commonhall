@@ -36,25 +36,26 @@ export function OutlineTitle({ label, width = "72%" }: { label: string; width?: 
   return (
     <>
       <span className="fh-sr">{label}</span>
-      <Skeleton aria-hidden="true" className="inline-block h-[0.82em] max-w-full align-[-0.05em]" style={{ width, borderRadius: PILL }} />
+      <Skeleton as="span" aria-hidden="true" className="inline-block h-[0.82em] max-w-full align-[-0.05em]" style={{ width, borderRadius: PILL }} />
     </>
   );
 }
 
-type BarProps = { width?: CSSProperties["width"]; height?: number; className?: string };
+// `as="span"` for a bar inside text (a page head's line).
+type BarProps = { width?: CSSProperties["width"]; height?: number; className?: string; as?: "div" | "span" };
 
 // The radius goes inline: the Skeleton part's own small radius would win over a class.
 const PILL = 9999;
 const SMALL_RADIUS = "var(--r-sm)";
 
 // A line of text.
-export function OutlineLine({ width = "60%", height = 12, className }: BarProps) {
-  return <Skeleton className={`max-w-full ${className ?? ""}`} style={{ width, height, borderRadius: PILL }} />;
+export function OutlineLine({ width = "60%", height = 12, className, as }: BarProps) {
+  return <Skeleton as={as} className={`max-w-full ${className ?? ""}`} style={{ width, height, borderRadius: PILL }} />;
 }
 
 // A field, a button or a box: the parts' small radius, a control's 44 px by default.
-export function OutlineBox({ width = "100%", height = 44, radius = SMALL_RADIUS, className }: BarProps & { radius?: CSSProperties["borderRadius"] }) {
-  return <Skeleton className={`max-w-full ${className ?? ""}`} style={{ width, height, borderRadius: radius }} />;
+export function OutlineBox({ width = "100%", height = 44, radius = SMALL_RADIUS, className, as }: BarProps & { radius?: CSSProperties["borderRadius"] }) {
+  return <Skeleton as={as} className={`max-w-full ${className ?? ""}`} style={{ width, height, borderRadius: radius }} />;
 }
 
 export function OutlineCircle({ size = 40 }: { size?: number }) {

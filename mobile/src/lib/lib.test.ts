@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { runInNewContext } from "node:vm";
 
-import { buildBootstrapScript, buildCallScript, buildRoomClosedScript, isAllowedCall, parseBridgeMessage, readErrorCode, readFailureMessage, readPortalMessage, ROOM_CLOSED_EVENT, toApiAnswer } from "./bridge.ts";
+import { buildBootstrapScript, buildCallScript, buildMoveScript, buildRoomClosedScript, isAllowedCall, NAVIGATE_EVENT, parseBridgeMessage, readErrorCode, readFailureMessage, readPortalMessage, ROOM_CLOSED_EVENT, toApiAnswer } from "./bridge.ts";
 import { checkCommunity, readAddress, type FetchLike } from "./community.ts";
 import { opensInPortal, readAlertPath, readJoinLink, toPortalUrl } from "./links.ts";
 
@@ -99,6 +99,35 @@ describe("links inside the app", () => {
 });
 
 describe("the bridge between the app and the portal page", () => {
+  it("moves a live page itself when it answers, and loads the path when nothing does", () => {
+    function run(isAnswered: boolean) {
+      const assigned: string[] = [];
+      const listeners: ((event: { detail: unknown; preventDefault: () => void }) => void)[] = [];
+      const window = {
+        location: { assign: (path: string) => assigned.push(path) },
+        addEventListener: (_type: string, listener: (typeof listeners)[number]) => listeners.push(listener),
+        dispatchEvent: (event: { type: string; detail: unknown }) => {
+          let isPrevented = false;
+          if (event.type === NAVIGATE_EVENT) for (const listener of listeners) listener({ detail: event.detail, preventDefault: () => (isPrevented = true) });
+          return !isPrevented;
+        },
+      };
+      class CustomEvent {
+        type: string;
+        detail: unknown;
+        constructor(type: string, init: { detail: unknown }) {
+          this.type = type;
+          this.detail = init.detail;
+        }
+      }
+      if (isAnswered) window.addEventListener(NAVIGATE_EVENT, (event) => event.preventDefault());
+      runInNewContext(buildMoveScript("/inbox/abc"), { window, CustomEvent });
+      return assigned;
+    }
+    assert.deepEqual(run(true), []);
+    assert.deepEqual(run(false), ["/inbox/abc"]);
+  });
+
   it("calls only the voice API and its own alert registration", () => {
     assert.equal(isAllowedCall("POST", "/api/voice/join"), true);
     assert.equal(isAllowedCall("POST", "/api/notifications/devices"), true);

@@ -1,9 +1,9 @@
 import * as Device from "expo-device";
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { AccessibilityInfo, ActivityIndicator, Animated, BackHandler, Easing, Keyboard, Platform, StyleSheet, View, type LayoutChangeEvent } from "react-native";
+import { AccessibilityInfo, ActivityIndicator, Animated, BackHandler, Easing, Keyboard, Platform, StyleSheet, Text, View, type LayoutChangeEvent } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { buildNavigateScript } from "../lib/bridge";
+import { buildMoveScript } from "../lib/bridge";
 import { isSignedOutPath, toSafePath } from "../lib/links";
 import {
   buildDarkScript,
@@ -20,23 +20,31 @@ import {
   LOW_MEMORY_LIVE_TABS,
   MAXIMUM_LIVE_TABS,
   pickTabsToDrop,
+  pickTabToPreload,
+  PRELOAD_DELAY_MS,
   readSlideDirection,
   TAB_BAR_HEIGHT,
+  type PageBrand,
   type PageColors,
   type PageTab,
   type TabsMessage,
   type TabsState,
 } from "../lib/tabs";
-import { useColors } from "../theme";
+import { FONTS, useColors } from "../theme";
 import { NativeTabBar } from "./NativeTabBar";
 import type { PortalHandle, PortalProps, PortalViewHandle } from "./portal-types";
 import { PortalView } from "./PortalView";
 
 const SLIDE_PX = 40;
 const SLIDE_MS = 220;
+// The tab coming in starts a little visible, so a quick switch never flashes bare paper (the old tab goes at once).
+const SLIDE_START_OPACITY = 0.3;
+// The page's top bar: 56 px under the status bar (src/app/in-app.css), its mark a 30 px tile.
+const TOP_BAR_HEIGHT = 56;
 const EASE_OUT = Easing.bezier(0.2, 0.8, 0.2, 1);
 const useNativeDriver = Platform.OS !== "web";
-const LIVE_TAB_LIMIT = Platform.OS === "android" && (Device.totalMemory ?? Infinity) < LOW_MEMORY_BYTES ? LOW_MEMORY_LIVE_TABS : MAXIMUM_LIVE_TABS;
+const IS_LOW_MEMORY = Platform.OS === "android" && (Device.totalMemory ?? Infinity) < LOW_MEMORY_BYTES;
+const LIVE_TAB_LIMIT = IS_LOW_MEMORY ? LOW_MEMORY_LIVE_TABS : MAXIMUM_LIVE_TABS;
 
 // One web view: the tab it shows (`home`, which can change, see onState) and the page it first opened.
 type TabView = { id: number; home: string; startUrl: string };
@@ -44,6 +52,8 @@ type TabView = { id: number; home: string; startUrl: string };
 type PortalTabsProps = PortalProps & {
   // Docks right above the tab bar (above the home indicator where the bar is hidden): Part 6's mini player.
   bottomSlot?: ReactNode;
+  // The community's name as the app joined it: the first tab's top bar while it loads, before any page has said it.
+  communityName?: string;
 };
 
 function readStartPath(startUrl: string) {
@@ -79,11 +89,13 @@ function useIsKeyboardShown() {
   return isShown;
 }
 
-// The store app's tabs (ui-polish Part 7): a native tab bar over one web view per tab. A tab loads on its first visit
-// and then stays alive (its scroll, its typed text), so coming back to it is instant; the new tab slides in 40 px from
-// its side. Links to another tab's page, alerts and commonhall:// links open in the tab they belong to. All web views
-// share the app's cookie store, so one sign-in signs in every tab.
-export const PortalTabs = forwardRef<PortalHandle, PortalTabsProps>(function PortalTabs({ origin, startUrl, pushToken, onOpenRoom, onAppAction, onPageLoaded, onFailed, bottomSlot }, ref) {
+// The store app's tabs (ui-polish Part 7): a native tab bar over one web view per tab. A tab loads on its first visit,
+// or behind the open one once that has loaded (not on a low-memory Android phone), and then stays alive (its scroll,
+// its typed text), so coming back to it is instant; the new tab slides in 40 px from its side. While a tab loads for
+// the first time it shows the community's top bar over the paper. Links to another tab's page, alerts and
+// commonhall:// links open in the tab they belong to (moving inside it when it is alive). All web views share the
+// app's cookie store, so one sign-in signs in every tab.
+export const PortalTabs = forwardRef<PortalHandle, PortalTabsProps>(function PortalTabs({ origin, startUrl, pushToken, onOpenRoom, onAppAction, onPageLoaded, onFailed, bottomSlot, communityName }, ref) {
   const theme = useColors();
   const insets = useSafeAreaInsets();
   const isReducedMotion = useIsReducedMotion();
@@ -100,6 +112,9 @@ export const PortalTabs = forwardRef<PortalHandle, PortalTabsProps>(function Por
   const slide = useRef(new Animated.Value(1)).current;
   // Tabs whose page has said hello: until then a tab shows a spinner on the paper.
   const [readyIds, setReadyIds] = useState<ReadonlySet<number>>(() => new Set());
+  const [brand, setBrand] = useState<PageBrand | null>(() => (communityName ? { name: communityName, sub: "" } : null));
+  // Tabs already loaded behind the open one (or tried): each is preloaded once per sign-in.
+  const preloaded = useRef(new Set<string>());
 
   const viewsRef = useRef(views);
   viewsRef.current = views;
@@ -121,6 +136,7 @@ export const PortalTabs = forwardRef<PortalHandle, PortalTabsProps>(function Por
   const showBarOf = useCallback((state: TabsState | undefined) => {
     if (!state) return;
     if (state.tabs.length) setTabs(state.tabs);
+    if (state.brand) setBrand(state.brand);
     setPageColors(state.colors);
     setBar({ isShown: state.isShown, isOverlayOpen: state.isOverlayOpen });
   }, []);
@@ -161,7 +177,7 @@ export const PortalTabs = forwardRef<PortalHandle, PortalTabsProps>(function Por
     (href: string, path?: string) => {
       const existing = viewsRef.current.find((view) => view.home === href);
       if (existing) {
-        if (path) handles.current.get(existing.id)?.runInPage(path === href ? buildGoScript(path) : buildNavigateScript(path));
+        if (path) handles.current.get(existing.id)?.runInPage(path === href ? buildGoScript(path) : buildMoveScript(path));
         activate(existing.id);
         return;
       }
@@ -178,6 +194,19 @@ export const PortalTabs = forwardRef<PortalHandle, PortalTabsProps>(function Por
       activate(view.id);
     },
     [origin, activate],
+  );
+
+  // Loads a tab behind the open one: it stays hidden, and its first visit slides in like any live tab's.
+  const preloadTab = useCallback(
+    (href: string) => {
+      if (viewsRef.current.some((view) => view.home === href) || viewsRef.current.length >= LIVE_TAB_LIMIT) return;
+      const view: TabView = { id: nextId.current++, home: href, startUrl: `${origin}${href}` };
+      // The least recently shown: a tab that has to go goes before the ones the member opened.
+      recent.current = [view.id, ...recent.current];
+      viewsRef.current = [...viewsRef.current, view];
+      setViews(viewsRef.current);
+    },
+    [origin],
   );
 
   // A tap on the open tab scrolls it to the top, or back to its own page from a page under it.
@@ -201,6 +230,7 @@ export const PortalTabs = forwardRef<PortalHandle, PortalTabsProps>(function Por
       for (const other of [...handles.current.keys()]) if (other !== id) handles.current.delete(other);
       for (const other of [...states.current.keys()]) if (other !== id) states.current.delete(other);
       recent.current = [id];
+      preloaded.current.clear();
       viewsRef.current = viewsRef.current.filter((view) => view.id === id);
       setViews(viewsRef.current);
       if (activeIdRef.current !== id) {
@@ -236,6 +266,22 @@ export const PortalTabs = forwardRef<PortalHandle, PortalTabsProps>(function Por
     },
     [keepOnly, tabHrefs, showBarOf],
   );
+
+  // Once every live tab has loaded, the next of the bar's tabs loads behind the open one, one at a time.
+  useEffect(() => {
+    if (IS_LOW_MEMORY || !bar.isShown || tabs.length === 0 || views.some((view) => !readyIds.has(view.id))) return;
+    const next = pickTabToPreload(
+      tabs.map((tab) => tab.href),
+      views.map((view) => view.home),
+      preloaded.current,
+    );
+    if (!next) return;
+    const timer = setTimeout(() => {
+      preloaded.current.add(next);
+      preloadTab(next);
+    }, PRELOAD_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [bar.isShown, tabs, views, readyIds, preloadTab]);
 
   const isBarShown = bar.isShown && !bar.isOverlayOpen && !isKeyboardShown && tabs.length > 0;
   const isSlotShown = !bar.isOverlayOpen && !isKeyboardShown;
@@ -324,6 +370,7 @@ export const PortalTabs = forwardRef<PortalHandle, PortalTabsProps>(function Por
 
   const onSlotLayout = (event: LayoutChangeEvent) => setSlotHeight(Math.round(event.nativeEvent.layout.height));
   const translateX = slide.interpolate({ inputRange: [0, 1], outputRange: [slideIn.from, 0] });
+  const opacity = slide.interpolate({ inputRange: [0, 1], outputRange: [SLIDE_START_OPACITY, 1] });
   const activeHome = homeOf(activeId);
 
   return (
@@ -339,7 +386,7 @@ export const PortalTabs = forwardRef<PortalHandle, PortalTabsProps>(function Por
             importantForAccessibility={isActive ? "auto" : "no-hide-descendants"}
             testID={`portal-tab-${view.home.slice(1)}`}
             // Hidden tabs keep their full size (so their page keeps its layout and scroll), drawn under the open one.
-            style={[StyleSheet.absoluteFill, { backgroundColor: theme.paper }, isActive ? { zIndex: 1, opacity: slide, transform: [{ translateX }] } : { zIndex: 0, opacity: 0 }]}
+            style={[StyleSheet.absoluteFill, { backgroundColor: theme.paper }, isActive ? { zIndex: 1, opacity, transform: [{ translateX }] } : { zIndex: 0, opacity: 0 }]}
           >
             <PortalView
               ref={(handle) => {
@@ -356,8 +403,11 @@ export const PortalTabs = forwardRef<PortalHandle, PortalTabsProps>(function Por
               onTabsMessage={(message) => onTabsMessage(view.id, message)}
             />
             {readyIds.has(view.id) ? null : (
-              <View pointerEvents="none" style={[styles.loading, { backgroundColor: theme.paper }]} testID="portal-tab-loading">
-                <ActivityIndicator color={theme.muted} />
+              <View pointerEvents="none" style={[styles.loading, { backgroundColor: pageColors.paper ?? theme.paper }]} testID="portal-tab-loading">
+                {brand ? <TopBarPlaceholder brand={brand} topInset={insets.top} colors={pageColors} theme={theme} /> : null}
+                <View style={styles.loadingBody}>
+                  <ActivityIndicator color={pageColors.inactive ?? theme.muted} />
+                </View>
               </View>
             )}
           </Animated.View>
@@ -373,8 +423,37 @@ export const PortalTabs = forwardRef<PortalHandle, PortalTabsProps>(function Por
   );
 });
 
+// The page's top bar as it will land (the community's mark and name, the face's place at the right), drawn while a
+// tab loads for the first time, in the page's own colours.
+function TopBarPlaceholder({ brand, topInset, colors, theme }: { brand: PageBrand; topInset: number; colors: PageColors; theme: ReturnType<typeof useColors> }) {
+  const rule = colors.rule ?? theme.line;
+  return (
+    <View style={[styles.topBar, { height: topInset + TOP_BAR_HEIGHT, paddingTop: topInset, borderBottomColor: rule }]} testID="portal-tab-top-bar">
+      <View style={[styles.topBarMark, { backgroundColor: rule }]} />
+      <View style={styles.topBarWords}>
+        <Text numberOfLines={1} style={[styles.topBarName, { color: colors.active ?? theme.ink }]}>
+          {brand.name}
+        </Text>
+        {brand.sub ? (
+          <Text numberOfLines={1} style={[styles.topBarSub, { color: colors.inactive ?? theme.muted }]}>
+            {brand.sub}
+          </Text>
+        ) : null}
+      </View>
+      <View style={[styles.topBarFace, { backgroundColor: rule }]} />
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   screen: { flex: 1, overflow: "hidden" },
   slot: { position: "absolute", left: 0, right: 0, zIndex: 2 },
-  loading: { position: "absolute", top: 0, right: 0, bottom: 0, left: 0, alignItems: "center", justifyContent: "center" },
+  loading: { position: "absolute", top: 0, right: 0, bottom: 0, left: 0 },
+  loadingBody: { flex: 1, alignItems: "center", justifyContent: "center" },
+  topBar: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 16, borderBottomWidth: StyleSheet.hairlineWidth },
+  topBarMark: { width: 30, height: 30, borderRadius: 6 },
+  topBarWords: { flex: 1, minWidth: 0 },
+  topBarName: { fontFamily: FONTS.sansSemiBold, fontSize: 16, lineHeight: 20 },
+  topBarSub: { fontFamily: FONTS.sans, fontSize: 12, lineHeight: 16 },
+  topBarFace: { width: 28, height: 28, borderRadius: 14 },
 });

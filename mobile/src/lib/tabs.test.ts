@@ -3,7 +3,7 @@ import { describe, it } from "node:test";
 import { runInNewContext } from "node:vm";
 
 import { isSignedOutPath } from "./links.ts";
-import { buildDarkScript, buildFrameScript, buildGoScript, buildTabsScript, findTabFor, findTabRoot, parseTabsMessage, pickTabsToDrop, readColor, readIcon, readSlideDirection, withStroke } from "./tabs.ts";
+import { buildDarkScript, buildFrameScript, buildGoScript, buildTabsScript, findTabFor, findTabRoot, parseTabsMessage, pickTabsToDrop, pickTabToPreload, readColor, readIcon, readSlideDirection, withStroke } from "./tabs.ts";
 
 const HREFS = ["/rooms", "/today", "/asks", "/people", "/inbox"];
 const ICON = '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2 10v3"></path></svg>';
@@ -37,6 +37,14 @@ describe("the page's tab messages", () => {
     assert.equal(message.isOverlayOpen, false);
     // A transparent colour and one React Native can't parse fall back to the app's theme.
     assert.deepEqual(message.colors, { bar: "rgb(255, 255, 255)", inactive: "#5f5d57" });
+  });
+
+  it("reads the community's name from the page's top bar, for a tab's first load", () => {
+    const message = parseTabsMessage(state({ brand: { name: " Northwind Founders ", sub: "Founder view" } }));
+    assert.ok(message && message.type === "tabs.state");
+    assert.deepEqual(message.brand, { name: "Northwind Founders", sub: "Founder view" });
+    const none = parseTabsMessage(state({ brand: { name: "" } }));
+    assert.equal(none?.type === "tabs.state" && none.brand, null);
   });
 
   it("shows no bar for a page without tabs, and refuses other sites' paths", () => {
@@ -93,6 +101,12 @@ describe("which tab a page belongs to", () => {
     assert.deepEqual(pickTabsToDrop([1, 2, 3], 3, 3), []);
     assert.deepEqual(pickTabsToDrop([1, 2, 3, 4], 4, 3), [1]);
     assert.deepEqual(pickTabsToDrop([4, 1, 2, 3, 5], 5, 3), [4, 1]);
+  });
+
+  it("preloads the bar's next tab that isn't alive or tried, and then none", () => {
+    assert.equal(pickTabToPreload(HREFS, ["/today"], new Set()), "/rooms");
+    assert.equal(pickTabToPreload(HREFS, ["/today", "/rooms"], new Set(["/asks"])), "/people");
+    assert.equal(pickTabToPreload(HREFS, HREFS, new Set()), null);
   });
 
   it("knows the signed-out pages", () => {

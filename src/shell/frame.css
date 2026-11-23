@@ -145,8 +145,9 @@
 
   /* A pushed screen (a page that calls BackLink): its back link moves into the bar, left, as iOS's back button: a
      44 px-tall button, a 24 px chevron and the page's label at 17 px. The community's mark goes; the page's h1 is
-     24 px. Not while a tapped tab's outline hides the page. */
-  .fh-app .fh-main .fh-back {
+     24 px. Not while a tapped tab's outline hides the page. Once the page runs, the bar holds its own copy of the link
+     (first in the keyboard order, back-link.tsx) and the page's copy hides. */
+  .fh-app :is(.fh-main, .fh-topbar) .fh-back {
     position: fixed;
     top: calc(var(--sat) + 6px);
     left: 4px;
@@ -161,13 +162,18 @@
     font: 400 17px/22px var(--sans);
   }
 
-  .fh-app .fh-main .fh-back svg {
+  .fh-app:has(.fh-topbar .fh-back) .fh-main .fh-back,
+  html[data-pending-tab] .fh-topbar .fh-back {
+    display: none;
+  }
+
+  .fh-app :is(.fh-main, .fh-topbar) .fh-back svg {
     width: 24px;
     height: 24px;
     stroke-width: 2;
   }
 
-  .fh-app .fh-main .fh-back > span {
+  .fh-app :is(.fh-main, .fh-topbar) .fh-back > span {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -309,6 +315,16 @@
     height: calc(100vh - var(--demo-h, 0px));
   }
 
+  /* Once the demo band has scrolled away, the sidebar grows back to the window's height, so its foot rests on the
+     window's bottom edge (the band's 34 px of scroll drive it; without scroll timelines it keeps the shorter height). */
+  @supports (animation-timeline: scroll()) {
+    html:has(body > .fh-demo-bar) .fh-side {
+      animation: fh-side-fill linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 34px;
+    }
+  }
+
   .fh-side nav {
     min-height: 0;
     overflow-y: auto;
@@ -321,6 +337,12 @@
   /* The dropdown never grows past the window. */
   [data-slot="account-menu"] {
     max-height: min(var(--radix-dropdown-menu-content-available-height, 100vh), calc(100vh - 80px));
+  }
+}
+
+@keyframes fh-side-fill {
+  to {
+    height: 100vh;
   }
 }
 
@@ -347,9 +369,28 @@ html:has(body > .fh-demo-bar) {
     display: none;
   }
 
-  /* A page with its own header has no community bar above the band. */
-  html[data-app]:has([data-own-header]) .fh-app .fh-demo-bar {
-    padding-top: calc(8px + var(--sat));
+  /* In the app, a page with its own header (a thread, a room) has no community bar above the band. A paper strip covers
+     the status bar; the band and the header start under it, and the header sticks right under it once the band has
+     scrolled away. So the header never adds the status bar a second time, scrolled or not. */
+  html[data-app]:has([data-own-header]) .fh-app:has(.fh-demo-bar) {
+    padding-top: var(--sat);
+  }
+
+  html[data-app]:has([data-own-header]) body:has(.fh-app .fh-demo-bar)::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: 45;
+    height: var(--sat);
+    background: var(--paper);
+  }
+
+  html[data-app]:has(.fh-app .fh-demo-bar) :is(.ib-thead, .vr-header) {
+    top: var(--sat);
+    min-height: 52px;
+    padding-top: 0;
   }
 }
 

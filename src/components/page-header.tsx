@@ -1,6 +1,8 @@
-import { ChevronLeft } from "lucide-react";
-import Link from "next/link";
 import type { ReactNode } from "react";
+
+import { BackLink } from "./back-link";
+
+export { BackLink };
 
 type PageHeaderProps = {
   title: ReactNode;
@@ -27,17 +29,6 @@ export function PageHeader({ title, description, action, eyebrow, back }: PageHe
       {description ? <p className="fh-lede">{description}</p> : null}
       {action ? <div className="fh-btn-row mt-3.5">{action}</div> : null}
     </header>
-  );
-}
-
-// Commonhall's back link (crop button-quiet-back.png): 500 Graphite, Vellum on hover. On a phone inside the app's
-// shell it moves into the top bar as iOS's back button (src/shell/frame.css); a page with its own header hides it.
-export function BackLink({ href, children }: { href: string; children: ReactNode }) {
-  return (
-    <Link href={href} data-slot="back-link" className="fh-back">
-      <ChevronLeft aria-hidden="true" className="fh-i fh-xs" strokeWidth={1.5} />
-      <span>{children}</span>
-    </Link>
   );
 }
 

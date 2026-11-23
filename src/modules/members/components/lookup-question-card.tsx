@@ -14,7 +14,8 @@ export function saveLookupChoice(allowsLookup: boolean) {
   return postRequest(API_ROUTES.profileLookupChoice, { allowsLookup }, acknowledgedResponseSchema);
 }
 
-// Shown when the admin chose to ask each member, until this member answers.
+// Shown when the admin chose to ask each member, until this member answers. Its buttons are the small ones every card
+// action uses (36 px, round 8).
 export function LookupQuestionCard({ communityName }: { communityName: string }) {
   const router = useRouter();
   const choice = useMutation({ mutationFn: saveLookupChoice, onSuccess: () => router.refresh() });
@@ -29,10 +30,10 @@ export function LookupQuestionCard({ communityName }: { communityName: string })
         you can hide any line it fills in.
       </p>
       <div className="flex flex-wrap gap-2">
-        <Button type="button" disabled={choice.isPending} onClick={() => choice.mutate(true)} className="max-sm:w-full">
+        <Button type="button" size="sm" disabled={choice.isPending} onClick={() => choice.mutate(true)} className="max-sm:w-full">
           Yes, fill it in
         </Button>
-        <Button type="button" variant="outline" disabled={choice.isPending} onClick={() => choice.mutate(false)} className="max-sm:w-full">
+        <Button type="button" variant="outline" size="sm" disabled={choice.isPending} onClick={() => choice.mutate(false)} className="max-sm:w-full">
           No, don&apos;t look me up
         </Button>
       </div>

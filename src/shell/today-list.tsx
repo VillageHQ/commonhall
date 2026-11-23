@@ -146,45 +146,44 @@ export function TodayPage({ today, member, memberName, dateLabel, allowance = nu
       {waitingCount ? (
         <section className="td-sec" aria-labelledby="td-waiting">
           <SectionLabel id="td-waiting">Waiting on you</SectionLabel>
-          {shownForYou.map((intro) => (
-            <TargetMemberAsk key={intro.id} intro={intro} ago={describeAgo(intro.createdAt, now)} />
-          ))}
-          {shownIntros.length || shownAnswered.length ? (
-            <div className="td-rows">
-              {shownIntros.map((intro) => {
-                const row = describeIntroRow(intro);
-                return (
-                  <ListRow
-                    key={intro.id}
-                    face={<Avatar stableId={intro.requester.id} name={intro.requester.name} imageUrl={intro.requester.avatarUrl} sizePx={48} />}
-                    title={row.title}
-                    meta={describeAgo(intro.createdAt, now)}
-                    line={row.line}
-                    lines={2}
-                    below={
-                      <Link className="fh-btn fh-btn-primary fh-btn-sm" href={`${ROUTES.intros}/${intro.id}`} aria-label={`Answer: ${row.title}`}>
-                        Answer
-                      </Link>
-                    }
-                  />
-                );
-              })}
-              {shownAnswered.map((post) => (
+          {/* One list, so every waiting row starts at the same x (the yes-or-no row too). */}
+          <div className="td-rows">
+            {shownForYou.map((intro) => (
+              <TargetMemberAsk key={intro.id} intro={intro} ago={describeAgo(intro.createdAt, now)} />
+            ))}
+            {shownIntros.map((intro) => {
+              const row = describeIntroRow(intro);
+              return (
                 <ListRow
-                  key={post.id}
-                  face={<Avatar stableId={composer.id} name={composer.name} imageUrl={composer.image ?? null} sizePx={48} />}
-                  title={`Your ask · ${describeAnswerCount(post.answerCount)}`}
-                  line={post.body}
+                  key={intro.id}
+                  face={<Avatar stableId={intro.requester.id} name={intro.requester.name} imageUrl={intro.requester.avatarUrl} sizePx={48} />}
+                  title={row.title}
+                  meta={describeAgo(intro.createdAt, now)}
+                  line={row.line}
                   lines={2}
                   below={
-                    <Link className="fh-btn fh-btn-secondary fh-btn-sm" href={toAskPage(post.id)} aria-label={`Read the answers to ${post.body}`}>
-                      Read
+                    <Link className="fh-btn fh-btn-primary fh-btn-sm" href={`${ROUTES.intros}/${intro.id}`} aria-label={`Answer: ${row.title}`}>
+                      Answer
                     </Link>
                   }
                 />
-              ))}
-            </div>
-          ) : null}
+              );
+            })}
+            {shownAnswered.map((post) => (
+              <ListRow
+                key={post.id}
+                face={<Avatar stableId={composer.id} name={composer.name} imageUrl={composer.image ?? null} sizePx={48} />}
+                title={`Your ask · ${describeAnswerCount(post.answerCount)}`}
+                line={post.body}
+                lines={2}
+                below={
+                  <Link className="fh-btn fh-btn-secondary fh-btn-sm" href={toAskPage(post.id)} aria-label={`Read the answers to ${post.body}`}>
+                    Read
+                  </Link>
+                }
+              />
+            ))}
+          </div>
         </section>
       ) : null}
       {liveRoom ? <LiveNowCard room={liveRoom} /> : null}

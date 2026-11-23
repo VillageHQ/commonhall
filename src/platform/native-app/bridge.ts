@@ -5,6 +5,9 @@
 export const NATIVE_APP_READY_EVENT = "commonhall-app-ready";
 // The app's room screen closed: `detail` is { roomId, reason }.
 export const NATIVE_ROOM_CLOSED_EVENT = "commonhall-room-closed";
+// The app asks a page that is already alive (a tab it keeps) to move to a path, as a link would: `detail` is { path }.
+// The shell moves and calls preventDefault; without that, the app loads the path (mobile/src/lib/bridge.ts).
+export const NATIVE_NAVIGATE_EVENT = "commonhall-navigate";
 
 export const ROOM_CLOSED_REASONS = { left: "left", ended: "ended", elsewhere: "elsewhere", failed: "failed" } as const;
 export type RoomClosedReason = (typeof ROOM_CLOSED_REASONS)[keyof typeof ROOM_CLOSED_REASONS];
@@ -72,6 +75,15 @@ export function subscribeToRoomClosed(roomId: string, onClosed: (reason: RoomClo
   };
   window.addEventListener(NATIVE_ROOM_CLOSED_EVENT, listener);
   return () => window.removeEventListener(NATIVE_ROOM_CLOSED_EVENT, listener);
+}
+
+// The path the app asked for, checked: only this site's own paths ("/inbox/abc"), never another site's.
+export function readNavigatePath(event: Event): string | null {
+  const detail = (event as CustomEvent<unknown>).detail;
+  if (!detail || typeof detail !== "object") return null;
+  const { path } = detail as Record<string, unknown>;
+  if (typeof path !== "string" || !path.startsWith("/") || path.startsWith("//") || path.includes("\\")) return null;
+  return path;
 }
 
 export function isInNativeApp() {

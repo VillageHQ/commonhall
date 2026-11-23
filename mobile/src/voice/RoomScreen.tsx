@@ -38,6 +38,8 @@ const COLUMN_MIN = 84;
 const FACE = 64;
 // The server's limit on a room's title (VOICE_LIMITS.titleLength in the web app).
 const MAXIMUM_TITLE_LENGTH = 120;
+// Said in the line under every room's title (the site's room page says it the same way).
+const NEVER_RECORDED = "Never recorded";
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
@@ -373,6 +375,21 @@ export const RoomScreen = forwardRef<RoomControls, RoomScreenProps>(function Roo
   const isClosed = phase === "ended" || phase === "left" || phase === "elsewhere" || phase === "failed";
   const isHost = myRole === "host";
 
+  // More holds what the room offers this person: Rename and Leave for the host, Back to listening on the stage.
+  const more: { label: string; onPress: () => void }[] = [];
+  if (isHost) {
+    more.push({
+      label: "Rename",
+      onPress: () => {
+        setDraft(title);
+        setPanel("rename");
+      },
+    });
+    more.push({ label: "Leave", onPress: () => void leave() });
+  } else if (isOnStage(myRole)) {
+    more.push({ label: "Back to listening", onPress: stepDown });
+  }
+
   const header = (
     <View style={styles.header} {...drag.panHandlers}>
       <Pressable accessibilityRole="button" accessibilityLabel="Minimise" testID="room-minimise" onPress={minimise} style={styles.iconButton}>
@@ -388,7 +405,8 @@ export const RoomScreen = forwardRef<RoomControls, RoomScreenProps>(function Roo
             <Text style={styles.headerTextLabel}>Leave</Text>
           </Pressable>
         )}
-        {isClosed ? null : (
+        {/* A listener's More would hold nothing: "Never recorded" is in the line under the title. */}
+        {isClosed || more.length === 0 ? null : (
           <Pressable accessibilityRole="button" accessibilityLabel="More" testID="room-more" onPress={() => setPanel("more")} style={styles.iconButton}>
             <Icon name="ellipsis" color={colors.ink} />
           </Pressable>
@@ -433,20 +451,6 @@ export const RoomScreen = forwardRef<RoomControls, RoomScreenProps>(function Roo
   const columns = Math.max(1, Math.floor(gridWidth / COLUMN_MIN));
   const tileWidth = gridWidth > 0 ? gridWidth / columns : COLUMN_MIN;
   const peopleWords = people.length === 1 ? "1 in the room" : `${people.length} in the room`;
-
-  const more: { label: string; onPress: () => void }[] = [];
-  if (isHost) {
-    more.push({
-      label: "Rename",
-      onPress: () => {
-        setDraft(title);
-        setPanel("rename");
-      },
-    });
-    more.push({ label: "Leave", onPress: () => void leave() });
-  } else if (isOnStage(myRole)) {
-    more.push({ label: "Back to listening", onPress: stepDown });
-  }
 
   function tile(person: Person) {
     const actions = readActions(myRole, person);
@@ -510,7 +514,7 @@ export const RoomScreen = forwardRef<RoomControls, RoomScreenProps>(function Roo
               </>
             ) : (
               <Text style={styles.sublineText} accessibilityLiveRegion="polite" testID="room-status">
-                {[hostName, peopleWords].filter(Boolean).join(" · ")}
+                {[hostName, peopleWords, NEVER_RECORDED].filter(Boolean).join(" · ")}
               </Text>
             )}
           </View>
@@ -620,7 +624,6 @@ export const RoomScreen = forwardRef<RoomControls, RoomScreenProps>(function Roo
                 }}
               />
             ))}
-            <Text style={styles.panelNote}>Never recorded.</Text>
           </Panel>
         ) : null}
         {panel === "rename" ? (
@@ -794,7 +797,6 @@ function makeStyles(colors: Colors) {
     panelTitle: { flex: 1, color: colors.ink, fontFamily: FONTS.sansSemiBold, fontSize: 17 },
     panelItem: { minHeight: 52, justifyContent: "center", paddingHorizontal: 16, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.line },
     panelItemText: { color: colors.ink, fontFamily: FONTS.sansMedium, fontSize: 16 },
-    panelNote: { color: colors.muted, fontFamily: FONTS.sans, fontSize: 13, paddingHorizontal: 16, paddingTop: 12 },
     renameBox: { gap: 12, paddingHorizontal: 16 },
     renameInput: { minHeight: 44, borderWidth: 1, borderColor: colors.muted, borderRadius: 6, paddingHorizontal: 12, color: colors.ink, backgroundColor: colors.sheet, fontFamily: FONTS.sans, fontSize: 16 },
     handRow: { flexDirection: "row", alignItems: "center", gap: 12, minHeight: 56, paddingHorizontal: 16 },

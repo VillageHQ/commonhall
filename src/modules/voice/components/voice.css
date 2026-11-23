@@ -63,9 +63,7 @@
 @media (max-width:999.98px){
   .vr-header{position:sticky;top:0;z-index:40;min-height:calc(52px + var(--sat));margin:-16px -16px 4px;padding:var(--sat) 6px 0 4px;background:var(--paper)}
   .vr-header-end{margin-right:0}
-  /* In the app, the demo band above it already clears the status bar (frame.css): no second gap. The room page in the
-     app is short (the room plays in the app's own sheet), so it doesn't scroll under the status bar. */
-  html[data-app]:has(.fh-app .fh-demo-bar) .vr-header{min-height:52px;padding-top:0}
+  /* In the app's demo, the header sits under the band and sticks under the status bar (frame.css). */
 }
 
 .vr-title-block{margin:8px 0 4px}
@@ -159,4 +157,3 @@
   .vr-face[data-speaking="true"]::after{animation:none}
   .vr-card,.vr-main-round{transition:none}
 }
-.vr-more-note{padding:12px 16px 4px;font-size:13px;line-height:18px;color:var(--graphite)}

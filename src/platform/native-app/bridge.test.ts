@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { hasAppActions, isNativeAppUserAgent, NATIVE_ROOM_CLOSED_EVENT, readNativeApp, readRoomClosed, runAppAction, subscribeToRoomClosed } from "./bridge";
+import { hasAppActions, isNativeAppUserAgent, NATIVE_NAVIGATE_EVENT, NATIVE_ROOM_CLOSED_EVENT, readNativeApp, readNavigatePath, readRoomClosed, runAppAction, subscribeToRoomClosed } from "./bridge";
 import { toViewport } from "./viewport";
 
 const ROOM_ID = "5f0c1b9e-4a7d-4c1e-9b2a-1d3e5f7a9c0b";
@@ -63,5 +63,20 @@ describe("the store app's own actions and pages", () => {
       expect(isNativeAppUserAgent(agent)).toBe(false);
       expect(toViewport(agent)).toEqual({ width: "device-width", initialScale: 1 });
     }
+  });
+});
+
+describe("the store app's 'move to a path' event", () => {
+  function navigate(detail: unknown) {
+    return new CustomEvent(NATIVE_NAVIGATE_EVENT, { detail });
+  }
+
+  it("takes only this site's own paths", () => {
+    expect(readNavigatePath(navigate({ path: "/inbox/abc?x=1" }))).toBe("/inbox/abc?x=1");
+    expect(readNavigatePath(navigate({ path: "//evil.example/x" }))).toBeNull();
+    expect(readNavigatePath(navigate({ path: "/\\evil.example" }))).toBeNull();
+    expect(readNavigatePath(navigate({ path: "https://evil.example/" }))).toBeNull();
+    expect(readNavigatePath(navigate({ path: 7 }))).toBeNull();
+    expect(readNavigatePath(navigate(null))).toBeNull();
   });
 });
