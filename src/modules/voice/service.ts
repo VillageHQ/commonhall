@@ -52,6 +52,9 @@ const DAY_MS = 24 * 60 * 60_000;
 const STALE_SCHEDULE_MS = DAY_MS;
 // The host has this long to connect after starting a room before the job counts them gone.
 const CONNECT_GRACE_MS = 30_000;
+// The minute job runs every 60 s, so the check after the one that first saw a room empty can land a moment short of a
+// minute; without this the room would wait a whole extra minute.
+const CHECK_SLACK_MS = 5_000;
 
 function notFound() {
   return new RequestError(NOT_FOUND_STATUS, VOICE_ERROR_CODES.notFound, VOICE_MESSAGES.notFound);
@@ -451,8 +454,8 @@ export async function checkRoom(database: Database, environment: Environment, ro
       await transaction.update(voiceRoom).set({ emptySince, emptyStageSince }).where(eq(voiceRoom.id, roomId));
     }
     const isEnding =
-      (emptySince !== null && now.getTime() - emptySince.getTime() >= VOICE_LIMITS.emptyRoomMs) ||
-      (emptyStageSince !== null && now.getTime() - emptyStageSince.getTime() >= VOICE_LIMITS.emptyStageMs);
+      (emptySince !== null && now.getTime() - emptySince.getTime() >= VOICE_LIMITS.emptyRoomMs - CHECK_SLACK_MS) ||
+      (emptyStageSince !== null && now.getTime() - emptyStageSince.getTime() >= VOICE_LIMITS.emptyStageMs - CHECK_SLACK_MS);
     return { changed, isEnding };
   });
   for (const memberId of outcome.changed) await pushSeat(database, environment, roomId, memberId);

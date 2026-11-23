@@ -306,11 +306,22 @@ describe("voice rooms", () => {
     expect((await readRooms(viewer)).live.find(({ id }) => id === roomId)?.count).toBe(0);
     expect((await readRooms(host)).live.find(({ id }) => id === roomId)?.count).toBe(0);
 
-    await checkRoom(database, process.env, roomId, new Date(left + VOICE_LIMITS.emptyRoomMs - 1_000));
+    await checkRoom(database, process.env, roomId, new Date(left + VOICE_LIMITS.emptyRoomMs / 2));
     expect(await readStatus(roomId)).toBe("live");
     await checkRoom(database, process.env, roomId, new Date(left + VOICE_LIMITS.emptyRoomMs + 1_000));
     expect(await readStatus(roomId)).toBe("ended");
     expect(livekit.calls.some(({ method, body }) => method === "DeleteRoom" && body.room === roomName)).toBe(true);
+  });
+
+  // The minute job runs every 60 s, so the check after the one that first saw a room empty can land a few ms short.
+  it("ends an empty room on the next minute check, even one that lands a moment early", async () => {
+    const host = await createSignedInMember(database);
+    const roomId = await openRoom(host);
+    const start = Date.now() + 60_000;
+
+    await checkRoom(database, process.env, roomId, new Date(start));
+    await checkRoom(database, process.env, roomId, new Date(start + VOICE_LIMITS.emptyRoomMs - 5));
+    expect(await readStatus(roomId)).toBe("ended");
   });
 
   it("keeps an empty room going when someone comes back within the minute, and never ends one while LiveKit is unreachable", async () => {
@@ -327,7 +338,7 @@ describe("voice rooms", () => {
 
     // Back with seconds to spare: the minute starts again the next time the room is seen empty.
     livekit.connect(roomName, listener.userId);
-    await checkRoom(database, process.env, roomId, new Date(start + VOICE_LIMITS.emptyRoomMs - 5_000));
+    await checkRoom(database, process.env, roomId, new Date(start + VOICE_LIMITS.emptyRoomMs - 10_000));
     livekit.disconnect(roomName, listener.userId);
     await checkRoom(database, process.env, roomId, new Date(start + VOICE_LIMITS.emptyRoomMs + 1_000));
     expect(await readStatus(roomId)).toBe("live");

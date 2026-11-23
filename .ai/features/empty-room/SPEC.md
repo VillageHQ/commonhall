@@ -4,7 +4,8 @@ From the [charter](CHARTER.md) (23 Nov 2026). Server side only; the store app ne
 
 ## What it does
 - A live room with nobody connected ends by itself a minute after it is first seen empty. The minute check runs every
-  minute and right after someone leaves, so the room ends one to two minutes after the last person goes.
+  minute and right after someone leaves, so the room ends one to two minutes after the last person goes. Both empty
+  rules allow 5 s of slack, so a minute check that lands a moment early still counts.
 - Someone joining, or connecting again, within that minute keeps the room going; the minute starts over the next
   time the room is seen empty.
 - A member who taps Leave stops counting on room cards (Rooms, Today's Live now) at once: the server removes them
@@ -19,4 +20,5 @@ From the [charter](CHARTER.md) (23 Nov 2026). Server side only; the store app ne
 
 ## Tests
 `src/modules/voice/voice.test.ts`: the leaver stops counting at once and the room ends after a minute, not before;
-someone back within the minute keeps it; never while the voice server is down.
+someone back within the minute keeps it; a check a moment early still ends it; never while the voice server is down.
+The separate check in a browser and the store app's web preview: [reports/verification.md](reports/verification.md).
