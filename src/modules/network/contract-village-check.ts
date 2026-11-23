@@ -4,6 +4,10 @@ export const VILLAGE_CHECK_KEYS = {
   ok: "ok",
   rejected: "rejected",
   mismatched: "mismatched",
+  // The app is set so each Village user pays: it can't make tokens for members, and this community pays for them.
+  membersPay: "members_pay",
+  // A live app that pays for its users, with no card on file yet: Village refuses its calls until one is added.
+  needsCard: "needs_card",
   missing: "missing",
   unreachable: "unreachable",
 } as const;

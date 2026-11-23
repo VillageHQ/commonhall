@@ -27,12 +27,17 @@ const NOT_LINKED_ERROR: FriendlyError = {
   message: "Your Village account isn't linked yet. Sync your network first.",
 };
 
+const KEYS_REJECTED_ERROR: FriendlyError = {
+  status: BAD_GATEWAY_STATUS,
+  code: VILLAGE_ERROR_CODES.keysRejected,
+  message: "Village rejected this community's keys. Ask an admin to check them.",
+};
+
 const FRIENDLY_VILLAGE_ERRORS: Partial<Record<VillageErrorCode, FriendlyError>> = {
-  unauthorized: {
-    status: BAD_GATEWAY_STATUS,
-    code: VILLAGE_ERROR_CODES.keysRejected,
-    message: "Village rejected this community's keys. Ask an admin to check them.",
-  },
+  unauthorized: KEYS_REJECTED_ERROR,
+  user_required: KEYS_REJECTED_ERROR,
+  test_mode_unsupported: KEYS_REJECTED_ERROR,
+  site_disabled: KEYS_REJECTED_ERROR,
   out_of_credits: {
     status: BAD_GATEWAY_STATUS,
     code: VILLAGE_ERROR_CODES.outOfCredits,

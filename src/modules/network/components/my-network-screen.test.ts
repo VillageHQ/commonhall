@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { MyNetworkScreen, type MyNetworkScreenProps } from "./my-network-screen";
 
-vi.mock("@villagehq/sdk", () => ({ openSyncModal: vi.fn() }));
+vi.mock("./village-sync", () => ({ openVillageSync: vi.fn() }));
 
 const PROPS: MyNetworkScreenProps = {
   communityName: "Northwind Founders",

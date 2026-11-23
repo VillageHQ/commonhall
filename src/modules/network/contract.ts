@@ -3,7 +3,7 @@ import { z } from "zod";
 import { MEMBER_ERROR_CODES } from "../members/contract-linkedin.ts";
 import { REQUEST_ERROR_CODES } from "../../platform/http/error-codes.ts";
 import { VILLAGE_ERROR_CODES } from "../../platform/village/error-codes.ts";
-import { CONNECTOR_ERROR_CODES, CONNECTOR_LIMITS, CREDIT_CALL_KINDS, ESTIMATED_CREDITS, USD_PER_CREDIT } from "../../platform/village/contract.ts";
+import { CONNECTOR_ERROR_CODES, CONNECTOR_LIMITS, readPathsCredits, readSearchCredits, USD_PER_CREDIT } from "../../platform/village/contract.ts";
 
 export { CONNECTOR_ERROR_CODES, CONNECTOR_LIMITS };
 
@@ -28,6 +28,7 @@ export const NETWORK_ERROR_CODES = {
   notConfigured: "not_configured",
   notReady: "network_not_ready",
   keysMismatched: "village_keys_mismatched",
+  keysMembersPay: "village_keys_members_pay",
   groupExists: "group_exists",
   linkMismatch: "village_link_mismatch",
   linkChanged: "village_link_changed",
@@ -57,7 +58,8 @@ const networkStageSchema = z.enum([
 export const networkStatusSchema = z.object({
   stage: networkStageSchema,
   isAdmin: z.boolean(),
-  sync: z.object({ appUrl: z.string() }).nullable(),
+  // Where the browser's Village client points for the sync step: VILLAGE_APP_URL and VILLAGE_API_URL (null: Village's own).
+  sync: z.object({ appUrl: z.string(), apiUrl: z.string().nullable() }).nullable(),
   // True when the member can search the networks now: their own network is in.
   canSearch: z.boolean(),
 });
@@ -203,9 +205,10 @@ export const GROUP_DEPARTURE_OUTCOMES = { left: "left", creatorRefused: "creator
 
 export { USD_PER_CREDIT };
 
-export const CREDITS_PER_PATH_LOOKUP = ESTIMATED_CREDITS[CREDIT_CALL_KINDS.path];
+// For estimates: one person with paths, and a full page of search results (Village's default page, 25 people).
+export const CREDITS_PER_PATH_LOOKUP = readPathsCredits(1);
 
-export const CREDITS_PER_FULL_SEARCH = ESTIMATED_CREDITS[CREDIT_CALL_KINDS.search];
+export const CREDITS_PER_FULL_SEARCH = readSearchCredits(25);
 
 export const departureResponseSchema = z.object({ message: z.string(), isGroupLeaveIncomplete: z.boolean() });
 

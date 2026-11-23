@@ -9,13 +9,15 @@ import { INSTANCE_SETTING_KEYS, instanceSettings } from "../settings/schema.ts";
 import { readSettings, saveSettings } from "../settings/store.ts";
 import { alertAdminsAboutVillageSafely } from "./trouble-alerts.ts";
 
-// Village counts as in trouble when it doesn't answer, or refuses this community's keys. Every other
+// Village counts as in trouble when it doesn't answer, or refuses this community's keys: wrong keys, an app set so each
+// user pays (user_required), test keys on a call test mode doesn't cover, or a site Village switched off. Every other
 // answer (out of credits, not found, busy) means Village is up and the keys work.
 export const VILLAGE_TROUBLES = { down: "down", keysRejected: "keys_rejected" } as const;
 
 export type VillageTrouble = (typeof VILLAGE_TROUBLES)[keyof typeof VILLAGE_TROUBLES];
 
 const DOWN_CODES: ReadonlySet<string> = new Set(["server", "timeout", "network", "invalid_response", "token_failed"]);
+const KEY_REFUSAL_CODES: ReadonlySet<string> = new Set(["unauthorized", "user_required", "test_mode_unsupported", "site_disabled"]);
 const OK_WRITE_EVERY_MS = 60_000;
 
 // Thrown before a call when its time budget is already spent. Village was never asked, so it says nothing about Village.
@@ -27,7 +29,7 @@ export class VillageDeadlineError extends VillageError {
 
 export function readVillageTrouble(error: unknown): VillageTrouble | null {
   if (!isVillageError(error) || error instanceof VillageDeadlineError) return null;
-  if (error.code === "unauthorized") return VILLAGE_TROUBLES.keysRejected;
+  if (KEY_REFUSAL_CODES.has(error.code)) return VILLAGE_TROUBLES.keysRejected;
   return DOWN_CODES.has(error.code) ? VILLAGE_TROUBLES.down : null;
 }
 

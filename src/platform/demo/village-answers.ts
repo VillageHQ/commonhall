@@ -14,6 +14,21 @@ const GROUP = { id: "00000000-0000-4000-8000-00000000d3e0", name: "Northwind Fou
 export const DEMO_VILLAGE_KEYS = { publicKey: "pk_demo_northwind", secretKey: "sk_demo_northwind_made_up" };
 export const DEMO_VILLAGE_GROUP = GROUP;
 
+const DEMO_APP = {
+  title: GROUP.name,
+  description: "Demo",
+  domain_name: "northwind.example",
+  logo: null,
+  public_key: DEMO_VILLAGE_KEYS.publicKey,
+  is_active: true,
+  capabilities: { is_live: true, has_server_access: true, needs_card: false },
+  payer: "app",
+  mode: "live",
+  trusted: false,
+  team_id: null,
+  has_users: true,
+};
+
 const CONNECTORS = DEMO_PEOPLE.filter(({ sharesNetwork }) => sharesNetwork);
 
 function json(status: number, body: unknown) {
@@ -233,12 +248,14 @@ export async function answerDemoVillage(request: Request): Promise<Response> {
     const token = encodeCaller(readField(body, "external_user_id"), readField(body, "email"));
     return data({ token, token_type: "Bearer", expires_in: 3600, expires_at: Math.floor(Date.now() / 1000) + 3600 });
   }
+  // The app answers to the secret key alone (createVillageAdmin's app.get), as well as to a member's token.
+  if (path === "/v2/app" && request.headers.has("secret-key")) return data(DEMO_APP);
   const callerEmail = readCallerEmail(request);
   if (callerEmail === null) return json(401, { error: { type: "authentication_error", title: "Demo", status: 401, detail: "demo", trace_id: "trace_demo" } });
 
   switch (path) {
     case "/v2/app":
-      return data({ title: GROUP.name, description: "Demo", domain_name: "northwind.example", logo: null, public_key: DEMO_VILLAGE_KEYS.publicKey, is_active: true });
+      return data(DEMO_APP);
     case "/v2/user/status":
       return data({
         status: "ready",

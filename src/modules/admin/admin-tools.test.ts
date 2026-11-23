@@ -1003,7 +1003,7 @@ describe("the admin tools", () => {
     });
 
     it("estimates at Village's path price and $0.02 a credit", () => {
-      expect(estimateCreditCost({ searches: 0, pathLookups: 10 })).toEqual({ credits: 50, dollars: 1 });
+      expect(estimateCreditCost({ searches: 0, pathLookups: 10 })).toEqual({ credits: 20, dollars: 0.4 });
     });
 
     it("doesn't talk about zero credits when nothing was spent", () => {

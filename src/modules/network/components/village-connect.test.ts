@@ -32,7 +32,7 @@ describe("Connect Village", () => {
 
   beforeEach(() => {
     vi.useFakeTimers();
-    fetchSpy = vi.fn(async () => answer(200, { message: "Village keys saved.", appName: "Northwind Founders" }));
+    fetchSpy = vi.fn(async () => answer(200, { message: "Village keys saved.", appName: "Northwind Founders", notice: null }));
     vi.stubGlobal("fetch", fetchSpy);
   });
 
@@ -122,7 +122,7 @@ describe("Connect Village", () => {
     await waitForCheck();
     paste("Paste the public key", "pk_other");
     await waitForCheck();
-    await act(async () => finishFirst(answer(200, { message: "Village keys saved.", appName: "Northwind Founders" })));
+    await act(async () => finishFirst(answer(200, { message: "Village keys saved.", appName: "Northwind Founders", notice: null })));
     await waitForCheck();
 
     expect(onConnected).toHaveBeenCalledWith("Northwind Founders");
@@ -130,6 +130,19 @@ describe("Connect Village", () => {
     expect(screen.getByRole("button", { name: "Keep the saved keys" })).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Keep the saved keys" }));
     expect(screen.getByRole("status").textContent).toBe("Connected to Northwind Founders");
+  });
+
+  it("shows what Village said about keys it accepted", async () => {
+    const notice = "These are test keys: members see a made-up network and nothing is charged.";
+    fetchSpy.mockResolvedValueOnce(answer(200, { message: "Village keys saved.", appName: "Northwind Founders", notice }));
+    render(createElement(VillageConnect, { appUrl: "https://village.ai", connectedAppName: null }));
+
+    paste("Paste the secret key", "sk_test_example");
+    paste("Paste the public key", "pk_test_example");
+    await waitForCheck();
+
+    expect(screen.getByRole("status").textContent).toBe("Connected to Northwind Founders");
+    expect(screen.getByText(notice)).toBeTruthy();
   });
 
   it("starts folded when keys are saved, and unfolds to replace them", () => {

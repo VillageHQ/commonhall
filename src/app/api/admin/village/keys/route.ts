@@ -13,8 +13,8 @@ export const POST = networkRoutes.member(
   "village-keys",
   keysBodySchema,
   async (context, body) => {
-    const { appName } = await verifyAndSaveVillageKeys(context, body);
-    return Response.json({ message: "Village keys saved.", appName } satisfies VillageKeysResponse);
+    const { appName, notice } = await verifyAndSaveVillageKeys(context, body);
+    return Response.json({ message: "Village keys saved.", appName, notice } satisfies VillageKeysResponse);
   },
   { adminOnly: true },
 );

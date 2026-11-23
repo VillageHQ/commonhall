@@ -5,7 +5,7 @@ import type { Environment } from "../environment.ts";
 import { logError } from "../observability/route-logging.ts";
 import { memberDailyUsage, villageCreditCall, villageMonthlyUsage } from "./schema.ts";
 import { isVillageErrorResponse } from "./client.ts";
-import { CREDIT_CALL_KINDS, ESTIMATED_CREDITS, NEAR_CAP_PERCENT, type CreditCallKind } from "./contract.ts";
+import { CREDIT_CALL_KINDS, NEAR_CAP_PERCENT, type CreditCallKind } from "./contract.ts";
 import { CREDIT_WARNING_LEVELS, warnAdminsAboutCredits, type CreditWarningLevel } from "./credit-warnings.ts";
 import { clearVillageOutOfCredits, readDailyLookupLimit, readMonthlyCreditCap } from "./settings.ts";
 
@@ -48,32 +48,32 @@ const SEARCH_INCREMENT: Record<CreditCallKind, number> = {
   [CREDIT_CALL_KINDS.fillIn]: 0,
 };
 
-function readFillInCredits(kind: CreditCallKind) {
-  return kind === CREDIT_CALL_KINDS.fillIn ? ESTIMATED_CREDITS[kind] : 0;
+function readFillInCredits(kind: CreditCallKind, credits: number) {
+  return kind === CREDIT_CALL_KINDS.fillIn ? credits : 0;
 }
 
 // The row exists first, so the reservation is one conditional UPDATE. Postgres locks the row for it,
 // so two calls at once see each other's credits, and only one of them can take the last ones.
-async function reserveMonthlyCredits(database: Database, usageMonth: string, cap: number, kind: CreditCallKind) {
-  const credits = ESTIMATED_CREDITS[kind];
+async function reserveMonthlyCredits(database: Database, usageMonth: string, cap: number, kind: CreditCallKind, credits: number) {
   await database.insert(villageMonthlyUsage).values({ usageMonth }).onConflictDoNothing();
   const [reserved] = await database
     .update(villageMonthlyUsage)
     .set({
       credits: sql`${villageMonthlyUsage.credits} + ${credits}`,
-      fillInCredits: sql`${villageMonthlyUsage.fillInCredits} + ${readFillInCredits(kind)}`,
+      fillInCredits: sql`${villageMonthlyUsage.fillInCredits} + ${readFillInCredits(kind, credits)}`,
     })
     .where(and(eq(villageMonthlyUsage.usageMonth, usageMonth), sql`${villageMonthlyUsage.credits} + ${credits} <= ${cap}`))
     .returning({ credits: villageMonthlyUsage.credits });
   return reserved?.credits ?? null;
 }
 
-async function releaseMonthlyCredits(database: Database, usageMonth: string, kind: CreditCallKind) {
+async function releaseMonthlyCredits(database: Database, usageMonth: string, kind: CreditCallKind, credits: number) {
+  if (credits <= 0) return;
   await database
     .update(villageMonthlyUsage)
     .set({
-      credits: sql`greatest(${villageMonthlyUsage.credits} - ${ESTIMATED_CREDITS[kind]}, 0)`,
-      fillInCredits: sql`greatest(${villageMonthlyUsage.fillInCredits} - ${readFillInCredits(kind)}, 0)`,
+      credits: sql`greatest(${villageMonthlyUsage.credits} - ${credits}, 0)`,
+      fillInCredits: sql`greatest(${villageMonthlyUsage.fillInCredits} - ${readFillInCredits(kind, credits)}, 0)`,
     })
     .where(eq(villageMonthlyUsage.usageMonth, usageMonth));
 }
@@ -157,12 +157,10 @@ async function warnSafely(spender: CreditSpender, usageMonth: string, cap: numbe
   }
 }
 
-const ALWAYS_CHARGED = () => true;
-
 // The call's line in Admin › Village's latest lookups. Bookkeeping only: it must never fail the call it records.
-async function recordCreditCall({ database, memberId }: CreditSpender, kind: CreditCallKind) {
+async function recordCreditCall({ database, memberId }: CreditSpender, kind: CreditCallKind, credits: number) {
   try {
-    await database.insert(villageCreditCall).values({ kind, credits: ESTIMATED_CREDITS[kind], userId: memberId });
+    await database.insert(villageCreditCall).values({ kind, credits, userId: memberId });
   } catch (error) {
     logError("village-credit-call", error);
   }
@@ -172,20 +170,20 @@ function readDailyMemberId({ memberId }: CreditSpender, kind: CreditCallKind) {
   return kind === CREDIT_CALL_KINDS.fillIn || kind === CREDIT_CALL_KINDS.pathsBulk ? null : memberId;
 }
 
-// Reserves the call's estimate against the month (and the member's day) before Village is called,
-// and gives it back when Village refuses or says nothing was charged.
-export async function withCreditCall<Result>(
-  spender: CreditSpender,
-  kind: CreditCallKind,
-  spendCredits: () => Promise<Result>,
-  wasCharged: (result: Result) => boolean = ALWAYS_CHARGED,
-) {
+// What a call costs: the most it can cost, reserved against the month before Village is called, and what its answer
+// cost by Village's prices (contract.ts), which the month keeps. Village charges per result and per person with paths.
+export type CreditCharge<Result> = { mostCredits: number; readCredits: (result: Result) => number };
+
+// Reserves the call's most against the month (and a lookup against the member's day) before Village is called. After,
+// the month keeps only what the answer cost; a refused call, or an answer that cost nothing, gives everything back.
+export async function withCreditCall<Result>(spender: CreditSpender, kind: CreditCallKind, spendCredits: () => Promise<Result>, charge: CreditCharge<Result>) {
   const { database } = spender;
   const usageMonth = readUsageMonth();
   const usageDate = readUsageDate();
   const cap = await readMonthlyCreditCap(database);
-  const reservedCredits = await reserveMonthlyCredits(database, usageMonth, cap, kind);
-  if (reservedCredits === null) {
+  const reserved = Math.max(charge.mostCredits, 0);
+  const monthCredits = await reserveMonthlyCredits(database, usageMonth, cap, kind, reserved);
+  if (monthCredits === null) {
     const { credits } = await readMonthlyCreditUsage(database);
     await warnSafely(spender, usageMonth, cap, readCrossedLevels(credits, cap));
     throw new MonthlyCapReachedError(cap);
@@ -195,13 +193,13 @@ export async function withCreditCall<Result>(
   if (dailyMemberId) {
     const limit = await readDailyLookupLimit(database);
     if (!(await reserveDailyCall(database, dailyMemberId, usageDate, limit, kind))) {
-      await releaseMonthlyCredits(database, usageMonth, kind);
+      await releaseMonthlyCredits(database, usageMonth, kind, reserved);
       throw new DailyLimitReachedError(limit);
     }
   }
 
-  const release = async () => {
-    await releaseMonthlyCredits(database, usageMonth, kind);
+  const releaseAll = async () => {
+    await releaseMonthlyCredits(database, usageMonth, kind, reserved);
     if (dailyMemberId) await releaseDailyCall(database, dailyMemberId, usageDate, kind);
   };
 
@@ -209,15 +207,18 @@ export async function withCreditCall<Result>(
   try {
     result = await spendCredits();
   } catch (error) {
-    if (isVillageErrorResponse(error)) await release();
+    if (isVillageErrorResponse(error)) await releaseAll();
     throw error;
   }
-  if (!wasCharged(result)) {
-    await release();
+  // Village answered, so it isn't out of credits.
+  await clearVillageOutOfCredits(database);
+  const credits = Math.min(Math.max(charge.readCredits(result), 0), reserved);
+  if (credits === 0) {
+    await releaseAll();
     return result;
   }
-  await recordCreditCall(spender, kind);
-  await clearVillageOutOfCredits(database);
-  await warnSafely(spender, usageMonth, cap, readCrossedLevels(reservedCredits, cap));
+  await releaseMonthlyCredits(database, usageMonth, kind, reserved - credits);
+  await recordCreditCall(spender, kind, credits);
+  await warnSafely(spender, usageMonth, cap, readCrossedLevels(monthCredits - (reserved - credits), cap));
   return result;
 }

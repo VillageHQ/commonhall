@@ -92,6 +92,8 @@ type FakeVillageState = {
   pathsByCaller: Map<string, Map<string, FakePaths>>;
   // When true, a group's creator is blocked from leaving only while someone else is still in the group.
   isCreatorBlockedOnlyWithOthers: boolean;
+  // What GET /v2/app says about the app: who pays, whether its live keys wait for a card, test or live keys.
+  app: { payer: "app" | "user"; needsCard: boolean; mode: "live" | "test" };
 };
 
 export function createFakeVillageState(): FakeVillageState {
@@ -123,6 +125,7 @@ export function createFakeVillageState(): FakeVillageState {
     mintedGrants: new Map(),
     pathsByCaller: new Map(),
     isCreatorBlockedOnlyWithOthers: false,
+    app: { payer: "app", needsCard: false, mode: "live" },
   };
 }
 
@@ -270,6 +273,24 @@ function toVillagePaths({ summary, paths, target = DEFAULT_FAKE_TARGET }: FakePa
   };
 }
 
+function toVillageApp({ app }: FakeVillageState) {
+  const isUserPaid = app.payer === "user";
+  return {
+    title: "Fake app",
+    description: "Fake",
+    domain_name: "community.test",
+    logo: null,
+    public_key: FAKE_VILLAGE_KEYS.publicKey,
+    is_active: !app.needsCard,
+    capabilities: { is_live: !app.needsCard, has_server_access: !isUserPaid, needs_card: app.needsCard && !isUserPaid },
+    payer: app.payer,
+    mode: app.mode,
+    trusted: false,
+    team_id: null,
+    has_users: false,
+  };
+}
+
 function respondToAuthenticated(
   state: FakeVillageState,
   { method, path }: Pick<RecordedRequest, "method" | "path">,
@@ -277,16 +298,7 @@ function respondToAuthenticated(
   externalId: string,
   response: ServerResponse,
 ) {
-  if (path === "/v2/app") {
-    return respondWithData(response, 200, {
-      title: "Fake app",
-      description: "Fake",
-      domain_name: "community.test",
-      logo: null,
-      public_key: FAKE_VILLAGE_KEYS.publicKey,
-      is_active: true,
-    });
-  }
+  if (path === "/v2/app") return respondWithData(response, 200, toVillageApp(state));
 
   if (path === "/v2/people/search" && !readObjectField(body, "prompt")) {
     return respondWithInvalidField(response, "prompt");
@@ -302,7 +314,7 @@ function respondToAuthenticated(
   if (path === "/v2/user/cancel" && method === "POST") {
     state.cancelledMembers.add(externalId);
     state.linkedMembers.delete(externalId);
-    return respondWithData(response, 200, { success: true, message: "User cancelled" });
+    return respondWithData(response, 200, { message: "User deactivated", external_user_id: externalId });
   }
   const linked = state.linkedMembers.get(externalId);
   if (path === "/v2/user/status") return respondWithData(response, 200, toVillageUserStatus(state, externalId, linked));
@@ -371,8 +383,9 @@ function respondToAuthenticated(
       const linkedinUrl = [...state.pathsByUrl.keys(), ...(state.pathsByCaller.get(externalId)?.keys() ?? [])].find((url) => url.replace(/\/+$/, "").endsWith(`/in/${id}`));
       const paths = linkedinUrl ? (state.pathsByCaller.get(externalId)?.get(linkedinUrl) ?? state.pathsByUrl.get(linkedinUrl)) : undefined;
       if (!paths || !linkedinUrl) return [];
-      const { summary, count, paths: villagePaths } = toVillagePaths(paths);
-      return [{ target: { linkedin_identifier: id, linkedin_url: linkedinUrl }, summary, count, paths: villagePaths }];
+      const { person, summary, count, paths: villagePaths } = toVillagePaths(paths);
+      const target = { first_name: person.first_name, last_name: person.last_name, full_name: person.full_name, id: `person-${id}`, identity_id: `identity-${id}`, linkedin_identifier: id, linkedin_url: linkedinUrl, avatar: person.avatar };
+      return [{ target, summary, count, paths: villagePaths }];
     });
     return respondWithData(response, 200, answered, { counts: { total: { value: answered.length } } });
   }
@@ -424,6 +437,12 @@ async function handleRequest(state: FakeVillageState, request: IncomingMessage, 
     state.mintedGrants.set(externalId, readObjectField(body, "grant"));
     const token = `${TOKEN_PREFIX}${externalId}`;
     return respondWithData(response, 200, { token, token_type: "Bearer", expires_in: 1, expires_at: 1 });
+  }
+
+  // The app answers to the secret key alone (createVillageAdmin's app.get), or to any member's token.
+  if (path === "/v2/app" && request.headers["secret-key"] !== undefined) {
+    if (request.headers["secret-key"] !== FAKE_VILLAGE_KEYS.secretKey) return respondWithError(response, 401, "authentication_error");
+    return respondWithData(response, 200, toVillageApp(state));
   }
 
   const callerId = readExternalId(request);

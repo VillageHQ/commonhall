@@ -523,10 +523,11 @@ describe("the review fixes", () => {
       expect(usage.members[0]).toMatchObject({ searches: 2, pathLookups: 3 });
     });
 
-    it("estimates a search far above a path lookup, and labels it an estimate", () => {
-      expect(estimateCreditCost({ searches: 1, pathLookups: 0 }).credits).toBeGreaterThanOrEqual(10);
-      expect(estimateCreditCost({ searches: 0, pathLookups: 1 }).credits).toBe(5);
-      expect(describeCreditEstimate({ searches: 1, pathLookups: 1 })).toBe("Estimate: about 16 credits, or $0.32");
+    // Village's prices: a full page of 25 results is 6 credits, a person with paths 2.
+    it("estimates a search above a path lookup, and labels it an estimate", () => {
+      expect(estimateCreditCost({ searches: 1, pathLookups: 0 }).credits).toBe(6);
+      expect(estimateCreditCost({ searches: 0, pathLookups: 1 }).credits).toBe(2);
+      expect(describeCreditEstimate({ searches: 1, pathLookups: 1 })).toBe("Estimate: about 8 credits, or $0.16");
     });
   });
 

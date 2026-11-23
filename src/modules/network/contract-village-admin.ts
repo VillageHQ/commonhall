@@ -5,8 +5,9 @@ import { villageSettingsBodySchema } from "./contract-village-settings.ts";
 
 // Admin › Village › "Limits and switches" (Commonhall's form): one Save for the caps, where search starts, the
 // service email, who can introduce, what members read on the connect screen and the nightly fill-in.
-// What saving the keys answers: the Village app's name, for "Connected to <name>".
-export const villageKeysResponseSchema = z.object({ message: z.string(), appName: z.string() });
+// What saving the keys answers: the Village app's name, for "Connected to <name>", and a line the admin should read
+// (test keys, or live keys waiting for a card), when there is one.
+export const villageKeysResponseSchema = z.object({ message: z.string(), appName: z.string(), notice: z.string().nullable() });
 export type VillageKeysResponse = z.infer<typeof villageKeysResponseSchema>;
 
 export const MAXIMUM_DATA_REGION_LENGTH = 80;

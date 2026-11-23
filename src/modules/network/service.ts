@@ -21,7 +21,10 @@ import {
   leaveVillageGroup,
   mintVillageToken,
   NETWORK_SOURCE,
+  PATHS_CHARGE,
+  readBulkPathsCharge,
   readVillageAppDetails,
+  SEARCH_CHARGE,
   readVillagePaths,
   readVillagePathsBulk,
   readVillageUser,
@@ -206,7 +209,7 @@ async function readNetworkProgress(context: RequestContext): Promise<NetworkProg
   const { session, network } = connected;
   const villageUser = await readVillageUser(session);
   const atSyncStage = (stage: NetworkStage) => ({
-    status: { ...describeStage(context, stage), sync: { appUrl: resolveVillageAppUrl(environment) } },
+    status: { ...describeStage(context, stage), sync: { appUrl: resolveVillageAppUrl(environment), apiUrl: resolveVillageApiUrl(environment) ?? null } },
     connected,
   });
   if (villageUser.email === null) return atSyncStage(NETWORK_STAGES.needsSync);
@@ -243,9 +246,9 @@ export async function mintSyncToken(context: RequestContext) {
   return { token: await mintVillageToken(connected.villageConnection, connected.identity) };
 }
 
-async function readAppOrExplain(session: VillageSession) {
+async function readAppOrExplain(connection: VillageConnection) {
   try {
-    return await readVillageAppDetails(session);
+    return await readVillageAppDetails(connection);
   } catch (error) {
     if (!isVillageError(error, "unauthorized")) throw error;
     throw new RequestError(
@@ -256,17 +259,33 @@ async function readAppOrExplain(session: VillageSession) {
   }
 }
 
+// What the admin should know about keys Village accepted: test keys reach a made-up network, and live keys of an app
+// with no card on file are refused until one is added.
+function readKeysNotice(app: Awaited<ReturnType<typeof readVillageAppDetails>>) {
+  if (app.isTest) return "These are test keys: members see a made-up network and nothing is charged. Swap in the live keys before members connect.";
+  if (app.needsCard) return "Village is waiting for a card on this app before its live keys work. Add one under Billing in Village.";
+  return null;
+}
+
 // Returns the Village app's name, so the screen can say "Connected to <name>" without another call.
 // The keys are tried before they're saved, so a mistyped key never marks this community's saved keys as refused.
+// They are asked about with the secret key alone: checking them makes no Village user.
 export async function verifyAndSaveVillageKeys(context: RequestContext, keys: VillageKeys) {
-  const { session } = await connectMember(context, keys, true);
-  const app = await readAppOrExplain(session);
+  const { villageConnection } = await connectMember(context, keys, true);
+  const app = await readAppOrExplain(villageConnection);
 
   if (app.publicKey !== keys.publicKey) {
     throw new RequestError(
       UNPROCESSABLE_STATUS,
       NETWORK_ERROR_CODES.keysMismatched,
       "This public key doesn't belong to the same Village app as the secret key.",
+    );
+  }
+  if (!app.canPayForMembers) {
+    throw new RequestError(
+      UNPROCESSABLE_STATUS,
+      NETWORK_ERROR_CODES.keysMembersPay,
+      "This Village app is set so each user pays. The community pays for its members: in Village's App Settings choose \"Your app pays\", then paste the keys again.",
     );
   }
 
@@ -276,7 +295,7 @@ export async function verifyAndSaveVillageKeys(context: RequestContext, keys: Vi
   });
   // Village just answered these keys, so an old "keys refused" notice no longer holds.
   await recordVillageOutcome(context.database, null);
-  return { appName: app.title };
+  return { appName: app.title, notice: readKeysNotice(app) };
 }
 
 export async function createCommunityGroup(context: RequestContext, name: string) {
@@ -472,7 +491,8 @@ async function readPagePaths(context: RequestContext, session: VillageSession, s
   if (slugs.length === 0) return { pagePaths: new Map<string, VillagePaths>(), pathsUnavailable: false };
   const spender = { database: context.database, environment: context.environment, memberId: context.member.id };
   try {
-    return { pagePaths: await withCreditCall(spender, CREDIT_CALL_KINDS.pathsBulk, () => readVillagePathsBulk(session, slugs)), pathsUnavailable: false };
+    const pagePaths = await withCreditCall(spender, CREDIT_CALL_KINDS.pathsBulk, () => readVillagePathsBulk(session, slugs), readBulkPathsCharge(slugs));
+    return { pagePaths, pathsUnavailable: false };
   } catch (error) {
     const { code, status } = isVillageError(error) ? error : { code: null, status: null };
     console.log(JSON.stringify({ level: "warn", scope: "village", event: "search_paths_skipped", reason: error instanceof Error ? error.name : "unknown", code, status }));
@@ -566,9 +586,7 @@ export async function searchMemberNetwork(
   // "Everywhere" shows people beyond the members' networks too. They name no path: paths come only from the paths
   // lookup, which keeps to members who share.
   const source = scope === SEARCH_WHERE.global ? GLOBAL_SOURCE : NETWORK_SOURCE;
-  const { people, source: answeredSource } = await withCreditCall(spender, CREDIT_CALL_KINDS.search, () =>
-    searchVillageNetwork(session, prompt, source),
-  ).catch((error: unknown) => {
+  const { people, source: answeredSource } = await withCreditCall(spender, CREDIT_CALL_KINDS.search, () => searchVillageNetwork(session, prompt, source), SEARCH_CHARGE).catch((error: unknown) => {
     throw toSearchCutOffError(error);
   });
   if (answeredSource !== NETWORK_SOURCE && source === NETWORK_SOURCE) {
@@ -656,10 +674,6 @@ async function readCachedPaths(database: Database, userId: string, linkedinSlug:
   return paths.person ? paths : undefined;
 }
 
-function isPersonKnown(villagePaths: VillagePaths | null) {
-  return villagePaths !== null;
-}
-
 function fetchVillagePathsOrNull(
   context: RequestContext,
   session: VillageSession,
@@ -669,7 +683,7 @@ function fetchVillagePathsOrNull(
     { database: context.database, environment: context.environment, memberId: context.member.id },
     CREDIT_CALL_KINDS.path,
     () => readVillagePaths(session, linkedinUrl(linkedinSlug)),
-    isPersonKnown,
+    PATHS_CHARGE,
   );
 }
 

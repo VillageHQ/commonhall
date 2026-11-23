@@ -2,13 +2,17 @@ import { isVillageError } from "@villagehq/sdk";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
+  cancelVillageUser,
   createVillageGroup,
+  createVillageLookupSession,
   createVillageSession,
   isVillageErrorResponse,
   joinVillageGroup,
   leaveVillageGroup,
-  readVillageAppPublicKey,
+  readVillageAppDetails,
   readVillagePaths,
+  readVillagePathsBulk,
+  readVillageProfileByEmail,
   readVillageUser,
   searchVillageNetwork,
   VillageGatewayError,
@@ -17,6 +21,7 @@ import { FAKE_VILLAGE_KEYS, readFetchedUrl, startFakeVillageServer } from "./fak
 import {
   type ResponseShape,
   VILLAGE_APP_SHAPE,
+  VILLAGE_BULK_PATHS_SHAPE,
   VILLAGE_CREATED_GROUP_SHAPE,
   VILLAGE_CREDITS_ERROR_SHAPE,
   VILLAGE_ERROR_SHAPE,
@@ -26,6 +31,7 @@ import {
   VILLAGE_RATE_LIMIT_ERROR_SHAPE,
   VILLAGE_SEARCH_SHAPE,
   VILLAGE_TOKEN_SHAPE,
+  VILLAGE_USER_CANCEL_SHAPE,
   VILLAGE_USER_STATUS_SHAPE,
   VILLAGE_VALIDATION_ERROR_SHAPE,
 } from "./village-recorded-responses.ts";
@@ -34,6 +40,7 @@ const MEMBER = { externalId: "member-1", email: "member@example.com" };
 const TARGET_URL = "https://linkedin.com/in/target-person";
 const TOKEN_PATH = "/v2/auth/tokens";
 const ONE_MINUTE_MS = 60_000;
+const CONNECTION = { apiUrl: "https://village.test", secretKey: "secret", deadlineAtMs: Date.now() + ONE_MINUTE_MS };
 
 function readValueType(value: unknown) {
   return value === null ? "null" : typeof value;
@@ -84,8 +91,30 @@ describe("the recorded Village responses", () => {
     return answerWith(() => Response.json(fillShape(shape)));
   }
 
-  it("parse into the app's public key", async () => {
-    await expect(readVillageAppPublicKey(session(VILLAGE_APP_SHAPE))).resolves.toBe("text");
+  it("parse into the app's details, asked with the secret key alone", async () => {
+    session(VILLAGE_APP_SHAPE);
+
+    await expect(readVillageAppDetails({ ...CONNECTION, deadlineAtMs: Date.now() + ONE_MINUTE_MS })).resolves.toEqual({
+      title: "text",
+      publicKey: "text",
+      payer: "text",
+      canPayForMembers: true,
+      needsCard: true,
+      isTest: false,
+    });
+  });
+
+  it("parse bulk paths, keyed by the LinkedIn slug Village answered for", async () => {
+    const answered = await readVillagePathsBulk(session(VILLAGE_BULK_PATHS_SHAPE), ["text"]);
+
+    expect([...answered.keys()]).toEqual(["text"]);
+    expect(answered.get("text")?.paths[0]?.introducer?.profile.linkedin_url).toBe("text");
+  });
+
+  it("parse a user cancel", async () => {
+    session(VILLAGE_USER_CANCEL_SHAPE);
+
+    await expect(cancelVillageUser({ ...CONNECTION, deadlineAtMs: Date.now() + ONE_MINUTE_MS }, MEMBER)).resolves.toBeUndefined();
   });
 
   it("parse into the member's Village status", async () => {
@@ -141,6 +170,53 @@ describe("the recorded Village responses", () => {
     });
   });
 
+  // Bulk paths, the email lookup and the user cancel have no SDK call: they read Village's errors themselves.
+  describe.each([
+    { name: "bulk paths", call: (village: ReturnType<typeof session>) => readVillagePathsBulk(village, ["target-person"]) },
+    { name: "the email lookup", call: (village: ReturnType<typeof session>) => readVillageProfileByEmail(village, "someone@example.com") },
+  ])("with an error for $name", ({ call }) => {
+    it.each([
+      { shape: VILLAGE_CREDITS_ERROR_SHAPE, status: 402, code: "out_of_credits" },
+      { shape: VILLAGE_RATE_LIMIT_ERROR_SHAPE, status: 429, code: "rate_limited" },
+      { shape: VILLAGE_ERROR_SHAPE, status: 500, code: "server" },
+    ])("surfaces a $status as $code", async ({ shape, status, code }) => {
+      const error = await call(answerWith(() => Response.json(fillShape(shape), { status }))).catch((failure: unknown) => failure);
+
+      expect(error).toMatchObject({ status, code });
+      expect(isVillageErrorResponse(error)).toBe(true);
+    });
+
+    // Bug: these calls mapped Village's answer by status alone, so a 409 network_not_synced read as a generic conflict.
+    it("surfaces a 409 network_not_synced as not_synced", async () => {
+      const notSynced = { error: { ...(fillShape(VILLAGE_ERROR_SHAPE) as { error: object }).error, type: "network_not_synced" } };
+      const error = await call(answerWith(() => Response.json(notSynced, { status: 409 }))).catch((failure: unknown) => failure);
+
+      expect(error).toMatchObject({ status: 409, code: "not_synced" });
+    });
+
+    it("keeps the top-up link from Village's 402", async () => {
+      const error = await call(answerWith(() => Response.json(fillShape(VILLAGE_CREDITS_ERROR_SHAPE), { status: 402 }))).catch((failure: unknown) => failure);
+
+      expect(error).toMatchObject({ topupUrl: "text" });
+    });
+
+    // Bug: `village.api` calls skip the SDK's onRequest hook, so their failures never reached the log (or Village's health).
+    it("logs a failed answer like the SDK's own calls", async () => {
+      const logged = vi.spyOn(console, "error").mockImplementation(() => undefined);
+      await call(answerWith(() => Response.json(fillShape(VILLAGE_ERROR_SHAPE), { status: 500 }))).catch(() => null);
+
+      expect(logged.mock.calls.map(([line]) => JSON.parse(String(line)) as { scope: string; status: number })).toContainEqual(expect.objectContaining({ scope: "village", status: 500 }));
+      logged.mockRestore();
+    });
+  });
+
+  it("reads an email nobody has as no one", async () => {
+    vi.stubGlobal("fetch", async () => Response.json(fillShape(VILLAGE_ERROR_SHAPE), { status: 404 }));
+    const lookup = createVillageLookupSession({ ...CONNECTION, deadlineAtMs: Date.now() + ONE_MINUTE_MS }, "service@example.com");
+
+    await expect(readVillageProfileByEmail(lookup, "nobody@example.com")).resolves.toBeNull();
+  });
+
   describe("with a page from a proxy instead of Village", () => {
     it.each([404, 502])("doesn't count a %i as Village's answer", async (status) => {
       const village = answerWith(() => new Response("<html>Bad gateway</html>", { status, headers: { "Content-Type": "text/html" } }));
@@ -191,6 +267,9 @@ describe("the fake Village server", () => {
     ["a wrong secret key", () => callFake("/v2/auth/tokens", { method: "POST", body: validMint, secretKey: "wrong" }), 401, VILLAGE_ERROR_SHAPE],
     ["a mint with no email", () => callFake("/v2/auth/tokens", { method: "POST", body: { external_user_id: "someone" }, secretKey: FAKE_VILLAGE_KEYS.secretKey }), 422, VILLAGE_VALIDATION_ERROR_SHAPE],
     ["the app", () => callFake("/v2/app"), 200, VILLAGE_APP_SHAPE],
+    ["the app, asked with the secret key", () => callFake("/v2/app", { bearer: "none", secretKey: FAKE_VILLAGE_KEYS.secretKey }), 200, VILLAGE_APP_SHAPE],
+    ["the app, asked with a wrong secret key", () => callFake("/v2/app", { bearer: "none", secretKey: "wrong" }), 401, VILLAGE_ERROR_SHAPE],
+    ["a user cancel", () => callFake("/v2/user/cancel", { method: "POST" }), 200, VILLAGE_USER_CANCEL_SHAPE],
     ["the linked user's status", () => callFake("/v2/user/status"), 200, VILLAGE_USER_STATUS_SHAPE],
     ["an unlinked user's status", () => callFake("/v2/user/status", { bearer: unlinkedBearer }), 200, VILLAGE_USER_STATUS_SHAPE],
     ["a bad bearer token", () => callFake("/v2/user/status", { bearer: "not-a-token" }), 401, VILLAGE_ERROR_SHAPE],
@@ -242,6 +321,18 @@ describe("the fake Village server", () => {
 
     expect(response.status).toBe(200);
     expect(findDrift(VILLAGE_PATHS_SHAPE, response.body)).toEqual([]);
+  });
+
+  it("answers bulk paths the way Village does", async () => {
+    village.state.pathsByUrl.set(TARGET_URL, {
+      summary: "Summary",
+      paths: [{ degree: 2, description: "Path", introducer: { first_name: "Dana", last_name: "Connector", linkedin_url: "https://linkedin.com/in/dana" }, starter: { first_name: "Dana", last_name: "Starter", linkedin_url: "https://linkedin.com/in/dana-starter" } }],
+    });
+
+    const response = await callFake("/v2/people/paths/bulk", { method: "POST", body: { linkedin_ids: ["target-person"] } });
+
+    expect(response.status).toBe(200);
+    expect(findDrift(VILLAGE_BULK_PATHS_SHAPE, response.body)).toEqual([]);
   });
 
   it.each([
