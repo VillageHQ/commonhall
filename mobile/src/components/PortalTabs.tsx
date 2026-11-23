@@ -334,6 +334,7 @@ export const PortalTabs = forwardRef<PortalHandle, PortalTabsProps>(function Por
           <Animated.View
             key={view.id}
             pointerEvents={isActive ? "auto" : "none"}
+            aria-hidden={!isActive}
             accessibilityElementsHidden={!isActive}
             importantForAccessibility={isActive ? "auto" : "no-hide-descendants"}
             testID={`portal-tab-${view.home.slice(1)}`}
