@@ -25,7 +25,8 @@ import { linkedinUrl } from "@villagehq/sdk";
 import { isAdminMember } from "@/platform/auth/roles";
 
 import { BlockMemberButton } from "@/modules/members/components/block-member-button";
-import { ProfileHead } from "@/modules/members/components/profile-head";
+import { PersonHead } from "@/modules/members/components/profile-head";
+import { ProfileActions, ProfileMore } from "@/modules/members/components/profile-actions";
 import { MemberConversationSlot } from "@/modules/members/slots";
 import { INBOX_QUERY_FILTER } from "@/modules/messages/queries";
 import { AdminMemberPanel } from "@/modules/members/components/admin-member-panel";
@@ -69,8 +70,9 @@ function ExternalLinkLine({ href, label }: { href: string; label: string }) {
   );
 }
 
-// A member's profile (round 6: buttons first, then the rest): the head with Message, Ask for an intro and Book a call,
-// the member's own words, their past roles from public profiles, and "Who <first name> can introduce you to".
+// A member's profile (round 8, ui-polish Part 5): the stacked head with one action row (two equal buttons and "More",
+// which holds the room alerts switch, Block and, when Book a call takes its place, Message), the member's own words,
+// their past roles from public profiles, and "Who <first name> can introduce you to".
 export default modulePage(membersManifest, async function MemberProfilePage({ params }: ProfilePageProps) {
   const viewer = await requireMember();
   const { memberId } = await params;
@@ -112,20 +114,39 @@ export default modulePage(membersManifest, async function MemberProfilePage({ pa
   const pastRolesLine = lookup.refusedAt === null ? lines.find((line) => line.field === FILL_IN_FIELDS.pastRoles && !line.isHidden) : undefined;
   const pastRoles = readPastRoles(pastRolesLine?.value);
   const companyJobs = isJobBoardOn ? await readCompanyJobs(database, { company: shown.company, memberId: profile.id }) : null;
+  // The action row (round 8): the primary is "Ask for an intro", or Message when asks can't be made; the outlined
+  // second is "Book a call" where it shows, else Message. A Message with no place in the row moves into "More".
+  const canAsk = showsAsk && acceptsAsks;
+  const askButton = canAsk ? (
+    <Button asChild variant="primary" size="sm">
+      <Link href={`${ROUTES.intros}/new?via=${encodeURIComponent(profile.id)}`} aria-label={`Ask for an intro via ${first}`}>
+        <ArrowLeftRight aria-hidden="true" className="fh-i fh-xs" strokeWidth={1.5} />
+        Ask for an intro
+      </Link>
+    </Button>
+  ) : null;
+  const messageButton = (variant: "primary" | "secondary") =>
+    isMessagingOn ? <MemberConversationSlot memberId={profile.id} label="Message" accessibleName={`Message ${profile.name}`} variant={variant} size="sm" showsIcon /> : null;
+  const bookButton = bookingUrl ? <BookCallButton memberId={profile.id} memberName={profile.name} bookingUrl={bookingUrl} variant="secondary" /> : null;
+  const secondButton = canAsk ? (bookButton ?? messageButton("secondary")) : bookButton;
+  const isMessageInMore = isMessagingOn && canAsk && bookButton !== null;
+  // With no ask to make, Message leads, and Book a call (where it shows) follows.
+  const leadButton = askButton ?? messageButton("primary");
 
   return (
-    <>
+    <div className="fh-profile-page">
       <BackLink href={ROUTES.members}>People</BackLink>
-      <ProfileHead
+      <PersonHead
         memberId={profile.id}
         name={profile.name}
         imageUrl={shown.imageUrl}
         companyLogoUrl={shown.companyLogoUrl}
         hasCompany={Boolean(shown.company)}
-        roleLine={toRoleLine(shown)}
+        headline={toRoleLine({ ...shown, location: null })}
+        place={shown.location}
       >
         {chips.length > 0 || roleChip ? (
-          <Tags className="mt-2">
+          <Tags className="fh-person-tags">
             {roleChip ? <Tag tone="accent">{roleChip}</Tag> : null}
             {chips.map((chip) => (
               <Tag key={chip}>{chip}</Tag>
@@ -133,38 +154,37 @@ export default modulePage(membersManifest, async function MemberProfilePage({ pa
           </Tags>
         ) : null}
         {isOwnProfile ? (
-          <div className="fh-btn-row mt-3.5">
+          <ProfileActions count={1}>
             <Button asChild variant="primary" size="sm">
               <Link href={ROUTES.editCard}>
                 <Pencil aria-hidden="true" className="fh-i fh-xs" strokeWidth={1.5} />
                 Edit my profile
               </Link>
             </Button>
-          </div>
+          </ProfileActions>
         ) : (
-          <div className="fh-btn-row mt-3.5">
-            <MemberConversationSlot memberId={profile.id} label="Message" accessibleName={`Message ${profile.name}`} variant={showsAsk && acceptsAsks ? "secondary" : "primary"} size="sm" showsIcon />
-            {showsAsk ? (
-              acceptsAsks ? (
-                <Button asChild variant="primary" size="sm">
-                  <Link href={`${ROUTES.intros}/new?via=${encodeURIComponent(profile.id)}`} aria-label={`Ask for an intro via ${first}`}>
-                    <ArrowLeftRight aria-hidden="true" className="fh-i fh-xs" strokeWidth={1.5} />
-                    Ask for an intro
-                  </Link>
-                </Button>
-              ) : (
-                <span className="fh-btn fh-btn-secondary fh-btn-sm" aria-disabled="true">
-                  {first} has paused intro asks
-                </span>
-              )
-            ) : null}
-            {bookingUrl ? <BookCallButton memberId={profile.id} memberName={profile.name} bookingUrl={bookingUrl} variant="secondary" /> : null}
-            {isRoomsOn ? <RoomMuteButton memberId={profile.id} firstName={first} isMuted={isRoomsMuted} /> : null}
-          </div>
+          <>
+            <ProfileActions
+              count={[leadButton, secondButton].filter(Boolean).length}
+              more={
+                <ProfileMore name={profile.name}>
+                  {isMessageInMore ? (
+                    <MemberConversationSlot memberId={profile.id} label="Message" accessibleName={`Message ${profile.name}`} variant="quiet" className="fh-person-menu-row" showsIcon />
+                  ) : null}
+                  {isRoomsOn ? <RoomMuteButton memberId={profile.id} firstName={first} isMuted={isRoomsMuted} /> : null}
+                  <BlockMemberButton memberId={profile.id} memberName={profile.name} isBlocked={isBlockedByViewer} refreshesAfterChange={INBOX_QUERY_FILTER} />
+                </ProfileMore>
+              }
+            >
+              {leadButton}
+              {secondButton}
+            </ProfileActions>
+            {showsAsk && !acceptsAsks ? <p className="fh-person-note">{first} has paused intro asks.</p> : null}
+          </>
         )}
-      </ProfileHead>
+      </PersonHead>
 
-      <div className="fh-prof fh-section">
+      <div className="fh-prof">
         <div>
           <section className="fh-sheet" aria-label={`In ${toPossessive(first)} own words`}>
             {ownWords.length > 0 || profile.tags.length > 0 || profile.linkedinSlug || profile.website ? (
@@ -195,7 +215,7 @@ export default modulePage(membersManifest, async function MemberProfilePage({ pa
             )}
           </section>
           {pastRoles.length > 0 ? (
-            <section className="fh-sheet mt-4" aria-label="Past roles, from public profiles">
+            <section className="fh-sheet" aria-label="Past roles, from public profiles">
               <div className="fh-source">
                 <RefreshCw aria-hidden="true" className="fh-i fh-xs" strokeWidth={1.5} />
                 Past roles · from public profiles
@@ -241,17 +261,11 @@ export default modulePage(membersManifest, async function MemberProfilePage({ pa
         </div>
       </div>
 
-      {isOwnProfile ? null : (
-        <div className="fh-section">
-          <BlockMemberButton memberId={profile.id} memberName={profile.name} isBlocked={isBlockedByViewer} refreshesAfterChange={INBOX_QUERY_FILTER} />
-        </div>
-      )}
-
       {isAdminMember(viewer) ? (
         <div className="fh-section">
           <AdminMemberPanel email={profile.email} isEmailConfirmed={profile.emailVerified} isLinkedinConfirmed={profile.isLinkedinConfirmed} />
         </div>
       ) : null}
-    </>
+    </div>
   );
 });

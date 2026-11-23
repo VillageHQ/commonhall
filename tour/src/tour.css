@@ -5,6 +5,8 @@
 /* Rooms keeps its styles beside its components (the app loads them with the screen). */
 @import "../../src/modules/voice/components/voice.css";
 @import "../../src/modules/asks/components/asks.css";
+/* People keeps its styles beside its components too (round 8). */
+@import "../../src/modules/members/components/people.css";
 @source "./";
 
 .tour-app {

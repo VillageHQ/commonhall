@@ -1,13 +1,12 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
-import { Waypoints } from "lucide-react";
+import { ChevronRight, Waypoints } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { QueryBoundary } from "@/components/query-boundary";
 import { useIsInBrowser } from "@/components/use-is-in-browser";
-import { Button } from "@/components/ui/button";
 import { cancelPendingSearch, MemberDirectory, type ElsewhereOffer } from "@/modules/members/components/member-directory";
 import { NetworkFailure } from "@/modules/network/components/network-failure";
 import { SearchResults } from "@/modules/network/components/search-results";
@@ -20,7 +19,7 @@ import { ROUTES } from "@/platform/http/routes";
 
 // People (round 7, less-choice Part 2): one box finds members as you type (any word), with no Village search spent.
 // The network search runs only when the member asks for it: one tap under the list, or the empty state's main action
-// when no member matches, with the words already in. Above the list: the box, Filter and "Mentors and experts".
+// when no member matches, with the words already in. Above the list: the box, Filter and the view chips.
 
 // What the network step can do for this member: search, ask them to connect their own network first, or nothing
 // (Network off, or Village not set up).
@@ -37,31 +36,25 @@ function readQuery(searchParams: Pick<URLSearchParams, "get">) {
   return (searchParams.get(SEARCH_PROMPT_PARAM) ?? "").trim().slice(0, SEARCH_PROMPT_MAX_LENGTH);
 }
 
-function ConnectOffer({ place }: { place: OfferPlace }) {
-  if (place === "empty") {
-    return (
-      <Link className="fh-btn fh-btn-secondary fh-btn-sm" href={ROUTES.myNetwork} data-slot="people-connect">
-        <Waypoints aria-hidden="true" />
-        Connect your network
-      </Link>
-    );
-  }
+// The step past the member list (round 8): a 56 px row with a 20 px icon, the words at 15 px and a chevron, under the
+// list or under the empty state alike.
+function ConnectOffer() {
   return (
-    <p className="fh-small fh-muted mt-3.5" data-slot="people-connect">
-      <Waypoints aria-hidden="true" className="fh-i fh-xs mr-1 inline align-[-2px]" strokeWidth={1.5} />
-      <Link href={ROUTES.myNetwork}>Connect your network</Link> to search who members know.
-    </p>
+    <Link className="fh-people-netrow" href={ROUTES.myNetwork} data-slot="people-connect">
+      <Waypoints aria-hidden="true" strokeWidth={1.5} />
+      <span>Connect your network to search who members know</span>
+      <ChevronRight aria-hidden="true" strokeWidth={1.5} />
+    </Link>
   );
 }
 
-// "Search their networks for “fintech investor”": one tap, the words already in.
+// "Not who you need? Search their networks for “fintech investor”": one tap, the words already in.
 function NetworkOffer({ search, words, place }: { search: SearchScreenProps; words: string; place: OfferPlace }) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   // Already searched for these words: the results show above.
   if (searchParams.get(NETWORK_STEP_PARAM) === "1" && readQuery(searchParams) === words) return null;
-  const label = `Search their networks for “${words}”`;
 
   const searchNetworks = () => {
     cancelPendingSearch();
@@ -70,22 +63,15 @@ function NetworkOffer({ search, words, place }: { search: SearchScreenProps; wor
     router.push(toNetworkSearchHref(words, search.defaultScope));
   };
 
-  if (place === "empty") {
-    return (
-      <Button type="button" variant="primary" size="sm" className="wrap-anywhere" onClick={searchNetworks} data-slot="people-network-offer">
-        <Waypoints aria-hidden="true" />
-        {label}
-      </Button>
-    );
-  }
   return (
-    <p className="fh-small fh-muted mt-3.5 flex flex-wrap items-center gap-x-1.5" data-slot="people-network-offer">
-      Not who you need?
-      <button type="button" className="fh-linkbtn wrap-anywhere py-0 text-left" onClick={searchNetworks}>
-        <Waypoints aria-hidden="true" className="fh-i fh-xs shrink-0" strokeWidth={1.5} />
-        {label}
-      </button>
-    </p>
+    <button type="button" className="fh-people-netrow" onClick={searchNetworks} data-slot="people-network-offer">
+      <Waypoints aria-hidden="true" strokeWidth={1.5} />
+      <span>
+        {place === "after" ? "Not who you need? " : null}
+        Search their networks for “{words}”
+      </span>
+      <ChevronRight aria-hidden="true" strokeWidth={1.5} />
+    </button>
   );
 }
 
@@ -114,8 +100,8 @@ function readElsewhere(network: NetworkStep): ElsewhereOffer | undefined {
     };
   }
   if (network?.state === "connect") {
-    return function offerConnecting(_words, place) {
-      return <ConnectOffer place={place} />;
+    return function offerConnecting() {
+      return <ConnectOffer />;
     };
   }
   return undefined;

@@ -35,3 +35,39 @@ export function ProfileHead({ memberId, name, imageUrl, companyLogoUrl, hasCompa
     </div>
   );
 }
+
+const PERSON_AVATAR_SIZE_PX = 96;
+
+type PersonHeadProps = {
+  memberId: string;
+  name: string;
+  imageUrl: string | null;
+  companyLogoUrl: string | null;
+  hasCompany: boolean;
+  // "Founder & CEO, Ledgerline" and "London", each on its own line.
+  headline: string;
+  place: string | null;
+  children?: ReactNode;
+};
+
+// A member's profile head (round 8, ui-polish Part 5; LinkedIn's and Instagram's): stacked and left-aligned on a
+// phone, the 96 px photo, then the serif name, the headline, the place, and what the page adds (tags, the action row).
+// From 1000 px the photo sits on the left and the words beside it (people.css).
+export function PersonHead({ memberId, name, imageUrl, companyLogoUrl, hasCompany, headline, place, children }: PersonHeadProps) {
+  return (
+    <div className="fh-person-head" data-slot="person-head">
+      <Avatar stableId={memberId} name={name} imageUrl={imageUrl} sizePx={PERSON_AVATAR_SIZE_PX} />
+      <div className="fh-person-text">
+        <h1 className="fh-person-name">{name}</h1>
+        {headline ? (
+          <p className="fh-person-headline">
+            {hasCompany ? <CompanyLogo url={companyLogoUrl} className="fh-colog mt-0" /> : null}
+            {headline}
+          </p>
+        ) : null}
+        {place ? <p className="fh-person-place">{place}</p> : null}
+        {children}
+      </div>
+    </div>
+  );
+}
