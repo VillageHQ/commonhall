@@ -2,18 +2,20 @@
 
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { cn } from "cn";
-import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { GraduationCap, SlidersHorizontal } from "lucide-react";
-import { useDeferredValue, useState, type ReactNode } from "react";
+import { Search, SlidersHorizontal } from "lucide-react";
+import { useDeferredValue, useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
 
 import { EmptyState } from "@/components/empty-state";
 import { QueryBoundary } from "@/components/query-boundary";
 import { CompanyLogo } from "@/components/company-name";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Chip, ChipRow } from "@/components/ui/chip";
+import { ListRow } from "@/components/ui/list-row";
 import { SearchBox } from "@/components/ui/search-box";
 import { Select } from "@/components/ui/select";
+import { Sheet } from "@/components/ui/sheet";
 import { Tag } from "@/components/ui/tag";
 import { EMPTY_DIRECTORY_FILTERS, hasDirectoryFilters, parseDirectoryFilters, readUpdatedWithinDays, toDirectoryQueryString } from "@/modules/members/rules-directory-url";
 import { PROFILE_LIMITS, UPDATED_WITHIN_DAYS, type Directory, type DirectoryFilters, type DirectoryMember } from "@/modules/members/contract-profile";
@@ -24,12 +26,16 @@ import { directoryQuery } from "@/modules/members/queries-directory";
 import { COMMUNITY_ROLE_LABELS, COMMUNITY_ROLES, EXPERT_ROLES } from "@/modules/members/contract-community-roles";
 import { BookCallButton } from "@/modules/members/components/book-call-button";
 
-// People's member search (round 6, SPEC "People"): one search box with "Filter" beside it (the view switch and the
-// selects fold behind it), the count, then two columns of ruled rows, 30 to a page. A row is one link to the
-// profile: photo, serif name, logo + "Role, Company · City", and at most a role and a hiring chip (15 words at most).
+import "./people.css";
+
+// People's member search (round 8, ui-polish Part 5): the search box and Filter on one 44 px row, the views as chips
+// under it ("Everyone", "Mentors and experts"), the count, then one column of ListRows, 30 to a page. A row is one
+// link to the profile: the 48 px photo, the name, the logo (or its letter) + "Role, Company · City", and at most two
+// tags. On a phone Filter is a 44×44 icon and its panel a bottom sheet ending "Clear all" · "Show N people".
 
 const SEARCH_DEBOUNCE_MS = 250;
-const MEMBER_AVATAR_SIZE_PX = 36;
+const MEMBER_AVATAR_SIZE_PX = 48;
+const MAX_ROW_TAGS = 2;
 const RESULTS_ID = "member-results";
 export const SEARCH_INPUT_ID = "member-search";
 const FILTERS_ID = "people-filters";
@@ -66,6 +72,11 @@ function clearFilters(setSearchDraft: (search: string) => void, isExpertsView: b
   document.getElementById(SEARCH_INPUT_ID)?.focus();
 }
 
+// The filter panel's "Clear all": every filter it counts, keeping the words typed and the view (it has its own chips).
+function clearPanelFilters(filters: DirectoryFilters) {
+  applyFilters({ ...EMPTY_DIRECTORY_FILTERS, search: filters.search, isExpertsView: filters.isExpertsView });
+}
+
 function goToPage(page: number, filters: DirectoryFilters) {
   applyFilters({ ...filters, page });
   document.getElementById(RESULTS_ID)?.focus();
@@ -89,75 +100,121 @@ function shortenHelpLine(text: string) {
   return text.length <= HELP_LINE_LENGTH ? text : `${text.slice(0, HELP_LINE_LENGTH).replace(/\s+\S*$/, "")}…`;
 }
 
-export function MemberRow({ member }: { member: DirectoryMember }) {
-  const { id, name, title, company, location, companyLogoUrl, avatarUrl } = member;
-  const hiringLabel = readHiringLabel(member.hiringJobCount);
+// Line 2: the company's 16 px logo, or a 16 px square with its first letter, so every company line starts at one x.
+function RoleLine({ member }: { member: DirectoryMember }) {
+  const { title, company, location, companyLogoUrl } = member;
   const roleLine = toRoleLine({ title, company, location });
-  const roleChip = readRoleChip(member);
+  if (!roleLine) return null;
+  const mark = company ? (
+    companyLogoUrl ? (
+      <CompanyLogo url={companyLogoUrl} className="fh-people-co" />
+    ) : (
+      <span aria-hidden="true" className="fh-people-co fh-people-co-letter">
+        {company.trim().charAt(0).toUpperCase()}
+      </span>
+    )
+  ) : null;
   return (
-    <Link href={`${ROUTES.people}/${id}`} className="fh-mcard">
-      <Avatar stableId={id} name={name} imageUrl={avatarUrl} sizePx={MEMBER_AVATAR_SIZE_PX} />
-      <div className="fh-who min-w-0">
-        <b>{name}</b>
-        <span className="wrap-anywhere">
-          {company ? <CompanyLogo url={companyLogoUrl} className="fh-colog mt-0" /> : null}
-          {roleLine || " "}
+    <>
+      {mark}
+      {roleLine}
+    </>
+  );
+}
+
+// At most two tags on one line; more shows "+1" as a third.
+function RowTags({ labels, children }: { labels: { label: string; tone: "accent" | "sage" }[]; children?: ReactNode }) {
+  if (labels.length === 0 && !children) return null;
+  const shown = labels.slice(0, MAX_ROW_TAGS);
+  const hidden = labels.length - shown.length;
+  return (
+    <>
+      {shown.length > 0 ? (
+        <span className="fh-people-tags">
+          {shown.map(({ label, tone }) => (
+            <Tag key={label} tone={tone}>
+              {label}
+            </Tag>
+          ))}
+          {hidden > 0 ? <Tag>{`+${hidden}`}</Tag> : null}
         </span>
-      </div>
-      {roleChip || hiringLabel ? (
-        <div className="fh-meta">
-          {roleChip ? <Tag tone="accent">{roleChip}</Tag> : null}
-          {hiringLabel ? <Tag tone="sage">{hiringLabel}</Tag> : null}
-        </div>
       ) : null}
-    </Link>
+      {children}
+    </>
   );
 }
 
-// "Experts and mentors": the role, a short "can help with", and "Book a call" where the viewer may see the link.
-// The card isn't one link here, since it holds a second action: the name opens the profile.
-export function ExpertRow({ member }: { member: DirectoryMember }) {
-  const { id, name, title, company, location, companyLogoUrl, avatarUrl, canHelpWith, bookingUrl } = member;
-  const roleLine = toRoleLine({ title, company, location });
+function readRowTags(member: DirectoryMember, roleLabel: string | null) {
+  const hiringLabel = readHiringLabel(member.hiringJobCount);
+  return [
+    ...(roleLabel ? [{ label: roleLabel, tone: "accent" as const }] : []),
+    ...(hiringLabel ? [{ label: hiringLabel, tone: "sage" as const }] : []),
+  ];
+}
+
+export function MemberRow({ member }: { member: DirectoryMember }) {
+  const { id, name, avatarUrl } = member;
+  const tags = readRowTags(member, readRoleChip(member));
   return (
-    <div className="fh-mcard" data-testid="expert-card">
-      <Avatar stableId={id} name={name} imageUrl={avatarUrl} sizePx={MEMBER_AVATAR_SIZE_PX} />
-      <div className="fh-who min-w-0">
-        <b>
-          <Link href={`${ROUTES.people}/${id}`}>{name}</Link>
-        </b>
-        <span className="wrap-anywhere">
-          {company ? <CompanyLogo url={companyLogoUrl} className="fh-colog mt-0" /> : null}
-          {roleLine || " "}
-        </span>
-      </div>
-      {canHelpWith ? <p className="fh-wo wrap-anywhere">{shortenHelpLine(canHelpWith)}</p> : null}
-      <div className="fh-meta">
-        <Tag tone="accent">{COMMUNITY_ROLE_LABELS[member.communityRole]}</Tag>
-        {bookingUrl ? <BookCallButton memberId={id} memberName={name} bookingUrl={bookingUrl} /> : null}
-      </div>
-    </div>
+    <ListRow
+      face={<Avatar stableId={id} name={name} imageUrl={avatarUrl} sizePx={MEMBER_AVATAR_SIZE_PX} />}
+      title={name}
+      href={`${ROUTES.people}/${id}`}
+      line={<RoleLine member={member} />}
+      below={tags.length > 0 ? <RowTags labels={tags} /> : undefined}
+    />
   );
 }
 
-// The words a member typed, looked for outside the member list (People's "Search their networks"): as the empty
-// state's main action when no member matches, and as one line under the list when some do.
+// "Experts and mentors": the role, a short "can help with", and "Book a call" where the viewer may see the link (at
+// the row's right on the web). The whole row opens the profile; Book a call sits above that link, not inside it.
+export function ExpertRow({ member }: { member: DirectoryMember }) {
+  const { id, name, avatarUrl, canHelpWith, bookingUrl } = member;
+  return (
+    <ListRow
+      data-testid="expert-card"
+      data-booking={bookingUrl ? "" : undefined}
+      face={<Avatar stableId={id} name={name} imageUrl={avatarUrl} sizePx={MEMBER_AVATAR_SIZE_PX} />}
+      title={name}
+      href={`${ROUTES.people}/${id}`}
+      line={<RoleLine member={member} />}
+      below={
+        <>
+          {canHelpWith ? <p className="fh-people-help wrap-anywhere">{shortenHelpLine(canHelpWith)}</p> : null}
+          <RowTags labels={[{ label: COMMUNITY_ROLE_LABELS[member.communityRole], tone: "accent" }]}>
+            {bookingUrl ? <BookCallButton memberId={id} memberName={name} bookingUrl={bookingUrl} /> : null}
+          </RowTags>
+        </>
+      }
+    />
+  );
+}
+
+// The words a member typed, looked for outside the member list (People's "Search their networks"): one row under the
+// empty state when no member matches, and under the list when some do.
 export type ElsewhereOffer = (search: string, place: "empty" | "after") => ReactNode;
 
 function DirectoryEmpty({ filters, onClear, elsewhere }: { filters: DirectoryFilters; onClear: () => void; elsewhere: ReactNode }) {
   if (filters.isExpertsView && !hasDirectoryFilters(filters)) {
-    return <EmptyState title="No experts or mentors yet" description="An admin marks who mentors, and they show here." />;
+    return <EmptyState icon={Search} title="No experts or mentors yet" description="An admin marks who mentors, and they show here." />;
   }
   if (!hasDirectoryFilters(filters)) {
-    return <EmptyState title="No members yet" description="Members show here once they accept their invite." />;
+    return <EmptyState icon={Search} title="No members yet" description="Members show here once they accept their invite." />;
   }
+  // The networks row ("Search their networks for …") sits under the empty state, as under a list.
   return (
-    <EmptyState title="No member matches" description={elsewhere ? "Nobody in the community matches those words." : "Try other words, or clear the filters."}>
+    <>
+      <EmptyState
+        icon={Search}
+        title={filters.search ? `No one matches “${filters.search}”` : "No one matches these filters"}
+        description={filters.search ? "Try a name, a company or a skill." : "Try other filters, or clear them."}
+      >
+        <Button type="button" variant="secondary" size="sm" onClick={onClear}>
+          Clear
+        </Button>
+      </EmptyState>
       {elsewhere}
-      <Button type="button" variant={elsewhere ? "quiet" : "secondary"} size="sm" onClick={onClear}>
-        Clear
-      </Button>
-    </EmptyState>
+    </>
   );
 }
 
@@ -255,37 +312,86 @@ function MoreLinks({ page, pageCount, filters }: { page: number; pageCount: numb
   );
 }
 
-type DirectoryResultsProps = { filters: DirectoryFilters; onClear: () => void; isStale: boolean; isFilterOpen: boolean; isEmptyQuiet: boolean; elsewhere?: ElsewhereOffer };
+// Where the filter panel opens: a bottom sheet on a phone, in place on the web, and in place inside the landing
+// page's tour too (its screens live in a shadow root, which a sheet's portal would leave).
+type FilterPanelPlace = "sheet" | "inline";
+const NARROW_QUERY = "(max-width: 999.98px)";
 
-function DirectoryResults({ filters, onClear, isStale, isFilterOpen, isEmptyQuiet, elsewhere }: DirectoryResultsProps) {
+function readFilterPanelPlace(trigger: HTMLElement | null): FilterPanelPlace {
+  const isInPage = trigger?.getRootNode() === document;
+  return isInPage && window.matchMedia(NARROW_QUERY).matches ? "sheet" : "inline";
+}
+
+function readShowLabel(count: number) {
+  return `Show ${count} ${count === 1 ? "person" : "people"}`;
+}
+
+// The panel's end, as Airbnb's: "Clear all" (an underlined text button) and "Show N people". Filters apply as they
+// change (as before), so "Show N people" closes the panel on the list they already give.
+function FilterPanelFoot({ filters, matchCount, onClose }: { filters: DirectoryFilters; matchCount: number; onClose: () => void }) {
+  return (
+    <>
+      <button type="button" className="fh-people-clear-all" onClick={() => clearPanelFilters(filters)}>
+        Clear all
+      </button>
+      <Button type="button" variant="primary" className="fh-people-show" onClick={onClose}>
+        {readShowLabel(matchCount)}
+      </Button>
+    </>
+  );
+}
+
+type FilterPanelProps = { place: FilterPanelPlace; filters: DirectoryFilters; options: Directory["filterOptions"]; matchCount: number; onClose: () => void };
+
+function FilterPanel({ place, filters, options, matchCount, onClose }: FilterPanelProps) {
+  const foot = <FilterPanelFoot filters={filters} matchCount={matchCount} onClose={onClose} />;
+  if (place === "sheet") {
+    return (
+      <Sheet isOpen onClose={onClose} title="Filters" footer={foot} className="fh-people-filter-sheet">
+        <div id={FILTERS_ID} data-slot="people-filters">
+          <DirectoryFilterMenus filters={filters} options={options} />
+        </div>
+      </Sheet>
+    );
+  }
+  return (
+    <div id={FILTERS_ID} data-slot="people-filters" className="fh-people-panel">
+      <DirectoryFilterMenus filters={filters} options={options} />
+      <div className="fh-people-panel-foot">{foot}</div>
+    </div>
+  );
+}
+
+type DirectoryResultsProps = {
+  filters: DirectoryFilters;
+  onClear: () => void;
+  isStale: boolean;
+  filterPlace: FilterPanelPlace | null;
+  onFilterClose: () => void;
+  isEmptyQuiet: boolean;
+  elsewhere?: ElsewhereOffer;
+};
+
+function DirectoryResults({ filters, onClear, isStale, filterPlace, onFilterClose, isEmptyQuiet, elsewhere }: DirectoryResultsProps) {
   const { data: directory } = useSuspenseQuery(directoryQuery(filters));
   const { members, matchCount, page, pageCount, filterOptions } = directory;
   const isFiltered = hasDirectoryFilters(filters);
   return (
     <>
-      {isFilterOpen ? (
-        <div id={FILTERS_ID} data-slot="people-filters" className="mt-3">
-          <DirectoryViewSwitch filters={filters} />
-          <DirectoryFilterMenus filters={filters} options={filterOptions} />
-        </div>
-      ) : null}
+      {filterPlace ? <FilterPanel place={filterPlace} filters={filters} options={filterOptions} matchCount={matchCount} onClose={onFilterClose} /> : null}
       <div id={RESULTS_ID} tabIndex={-1} aria-busy={isStale} className={cn("outline-none", isStale && "opacity-60")}>
         {members.length === 0 && isEmptyQuiet ? (
-          <p role="status" className="fh-small fh-muted mt-3.5">
+          <p role="status" className="fh-people-count">
             No member matches.
           </p>
         ) : null}
-        {members.length === 0 && !isEmptyQuiet ? (
-          <div className="mt-4">
-            <DirectoryEmpty filters={filters} onClear={onClear} elsewhere={filters.search && elsewhere ? elsewhere(filters.search, "empty") : null} />
-          </div>
-        ) : null}
+        {members.length === 0 && !isEmptyQuiet ? <DirectoryEmpty filters={filters} onClear={onClear} elsewhere={filters.search && elsewhere ? elsewhere(filters.search, "empty") : null} /> : null}
         {members.length > 0 ? (
           <>
-            <p role="status" className="fh-small fh-muted mt-3.5 mb-1">
+            <p role="status" className="fh-people-count">
               {readCountLine(matchCount, isFiltered)}
             </p>
-            <div className="fh-cards">
+            <div data-slot="people-list" className="fh-people-list">
               {members.map((member) => (filters.isExpertsView ? <ExpertRow key={member.id} member={member} /> : <MemberRow key={member.id} member={member} />))}
             </div>
           </>
@@ -297,37 +403,33 @@ function DirectoryResults({ filters, onClear, isStale, isFilterOpen, isEmptyQuie
   );
 }
 
-// Everyone, or the people founders most want to talk to. The role filter belongs to the second view only.
+// Everyone, or the people founders most want to talk to: one-tap chips (round 8; before, the panel's view switch and
+// the "Mentors and experts" link). The role filter belongs to the second view only.
 const DIRECTORY_VIEWS = [
-  { isExperts: false, label: "Everyone" },
-  { isExperts: true, label: "Experts and mentors" },
+  { isExperts: false, label: "Everyone", slot: "people-view-everyone" },
+  { isExperts: true, label: "Mentors and experts", slot: "people-view-link" },
 ] as const;
 
-function DirectoryViewSwitch({ filters }: { filters: DirectoryFilters }) {
+function DirectoryViewChips({ isExpertsView }: { isExpertsView: boolean }) {
   return (
-    <div className="fh-seg mb-3" role="group" aria-label="Who to list">
-      {DIRECTORY_VIEWS.map(({ isExperts, label }) => (
-        <button
-          key={label}
-          type="button"
-          aria-pressed={filters.isExpertsView === isExperts}
-          onClick={() => applyFilters({ ...filters, isExpertsView: isExperts, communityRole: "", updatedWithinDays: 0, page: 1 })}
-        >
+    <ChipRow role="group" aria-label="Who to list" className="fh-people-chips">
+      {DIRECTORY_VIEWS.map(({ isExperts, label, slot }) => (
+        <Chip key={label} isPressed={isExpertsView === isExperts} data-slot={slot} onClick={() => switchView(isExperts)}>
           {label}
-        </button>
+        </Chip>
       ))}
-    </div>
+    </ChipRow>
   );
 }
 
-// How many filters are set, the experts view counting as one: "Filter · 2" on the button.
+// How many of the panel's filters are set: the count pill on Filter. The view has its own chips, so it isn't counted.
 function countFilters(filters: DirectoryFilters) {
-  const { stage, sector, city, cohort, updatedWithinDays, hiring, communityRole, tag, isExpertsView } = filters;
-  return [stage, sector, city, cohort, updatedWithinDays, hiring, communityRole, tag, isExpertsView].filter(Boolean).length;
+  const { stage, sector, city, cohort, updatedWithinDays, hiring, communityRole, tag } = filters;
+  return [stage, sector, city, cohort, updatedWithinDays, hiring, communityRole, tag].filter(Boolean).length;
 }
 
 type MemberDirectoryProps = {
-  // Results found elsewhere for the same words (People's network search, once asked for): between the box and the
+  // Results found elsewhere for the same words (People's network search, once asked for): between the chips and the
   // members.
   between?: ReactNode;
   // Looking for the typed words elsewhere (People's "Search their networks"): see ElsewhereOffer.
@@ -337,14 +439,42 @@ type MemberDirectoryProps = {
   isEmptyQuiet?: boolean;
 };
 
-// "Mentors and experts" under the box (round 7: the only shortcut above the list); "Everyone" while that view shows.
-function ViewLink({ isExpertsView }: { isExpertsView: boolean }) {
+type FilterButtonProps = { count: number; isOpen: boolean; buttonRef: RefObject<HTMLButtonElement | null>; onToggle: () => void };
+
+// Filter: a 44×44 icon on a phone (its name stays "Filter"), the icon and "Filter" on the web; a count pill in the
+// community's colour at its top right while filters are on.
+function FilterButton({ count, isOpen, buttonRef, onToggle }: FilterButtonProps) {
   return (
-    <button type="button" className="fh-linkbtn mt-1.5" data-slot="people-view-link" onClick={() => switchView(!isExpertsView)}>
-      <GraduationCap aria-hidden="true" className="fh-i fh-xs" strokeWidth={1.5} />
-      {isExpertsView ? "Everyone" : "Mentors and experts"}
-    </button>
+    <Button ref={buttonRef} type="button" variant="secondary" className="fh-people-filter" aria-expanded={isOpen} aria-controls={FILTERS_ID} onClick={onToggle}>
+      <SlidersHorizontal aria-hidden="true" />
+      <span className="fh-people-filter-label">Filter</span>
+      {count ? (
+        <>
+          <span aria-hidden="true" className="fh-people-filter-count">
+            {count}
+          </span>
+          <span className="fh-sr">{`, ${count} on`}</span>
+        </>
+      ) : null}
+    </Button>
   );
+}
+
+// When the filter panel closes (Show N people, Escape, the backdrop, Filter again), the focus goes back to Filter, as a
+// sheet opened from its own trigger does; the panel's own buttons are gone by then. After the sheet's own return of the
+// focus, which runs once it has unmounted.
+function useFocusBackOnClose(isOpen: boolean, buttonRef: RefObject<HTMLButtonElement | null>) {
+  const wasOpen = useRef(false);
+  useEffect(() => {
+    if (isOpen) {
+      wasOpen.current = true;
+      return;
+    }
+    if (!wasOpen.current) return;
+    wasOpen.current = false;
+    const timer = setTimeout(() => buttonRef.current?.focus({ preventScroll: true }), 0);
+    return () => clearTimeout(timer);
+  }, [isOpen, buttonRef]);
 }
 
 export function MemberDirectory({ between, elsewhere, placeholder = "Name, company or skill", isEmptyQuiet = false }: MemberDirectoryProps) {
@@ -354,12 +484,13 @@ export function MemberDirectory({ between, elsewhere, placeholder = "Name, compa
   const filters = parseDirectoryFilters(Object.fromEntries(searchParams));
   const deferredFilters = parseDirectoryFilters(Object.fromEntries(new URLSearchParams(deferredQueryString)));
   const [searchDraft, setSearchDraft] = useState(filters.search);
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const filterCount = countFilters(filters);
+  const [filterPlace, setFilterPlace] = useState<FilterPanelPlace | null>(null);
+  const filterButtonRef = useRef<HTMLButtonElement>(null);
+  useFocusBackOnClose(filterPlace !== null, filterButtonRef);
 
   return (
-    <>
-      <div role="search" className="flex items-center gap-2">
+    <div className="fh-people-page">
+      <div role="search" className="fh-people-search">
         <SearchBox
           id={SEARCH_INPUT_ID}
           className="min-w-0 flex-1"
@@ -373,23 +504,26 @@ export function MemberDirectory({ between, elsewhere, placeholder = "Name, compa
             scheduleSearch(event.target.value, filters);
           }}
         />
-        <Button type="button" variant="secondary" aria-expanded={isFilterOpen} aria-controls={FILTERS_ID} onClick={() => setIsFilterOpen(!isFilterOpen)}>
-          <SlidersHorizontal aria-hidden="true" />
-          {filterCount ? `Filter · ${filterCount}` : "Filter"}
-        </Button>
+        <FilterButton
+          count={countFilters(filters)}
+          isOpen={filterPlace !== null}
+          buttonRef={filterButtonRef}
+          onToggle={() => setFilterPlace(filterPlace ? null : readFilterPanelPlace(filterButtonRef.current))}
+        />
       </div>
-      <ViewLink isExpertsView={filters.isExpertsView} />
+      <DirectoryViewChips isExpertsView={filters.isExpertsView} />
       {between}
       <QueryBoundary loadingMessage="Gathering everyone…">
         <DirectoryResults
           filters={deferredFilters}
           onClear={() => clearFilters(setSearchDraft, filters.isExpertsView)}
           isStale={queryString !== deferredQueryString}
-          isFilterOpen={isFilterOpen}
+          filterPlace={filterPlace}
+          onFilterClose={() => setFilterPlace(null)}
           isEmptyQuiet={isEmptyQuiet}
           elsewhere={elsewhere}
         />
       </QueryBoundary>
-    </>
+    </div>
   );
 }

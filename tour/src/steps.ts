@@ -106,7 +106,7 @@ export const TOUR_STEPS: readonly TourStep[] = [
       await hands.wait(200);
       await hands.go(`/people?sector=${DIRECTORY_SECTOR}`);
       await hands.wait(900);
-      await hands.point(".fh-cards .fh-mcard");
+      await hands.point("[data-slot='people-list'] [data-slot='list-row']");
       await hands.wait(2000);
     },
   },
@@ -122,7 +122,7 @@ export const TOUR_STEPS: readonly TourStep[] = [
       await hands.tap("[data-slot='people-view-link']");
       await hands.go(EXPERTS_VIEW_HREF);
       await hands.wait(900);
-      await hands.point("[data-testid='expert-card'] .fh-who");
+      await hands.point("[data-testid='expert-card'] .fh-lr-title");
       await hands.wait(1200);
       // A real click opens the booking page in a new tab and counts the call: the tour only presses.
       await hands.tap("[data-testid='expert-card'] [data-testid='book-call']");

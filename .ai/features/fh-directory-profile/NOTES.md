@@ -30,3 +30,6 @@
 ## Words
 Commonhall's words, from `fh-reference/copy/`. Your data says admins see who asked whom ("admins see names, states and
 dates"), the owner's decision of 2026-11-11; the delete sheet's words are Community's, since it deletes for real.
+
+Round 8 (ui-polish Part 5) changed People's and the profile's look: the search row, chips, rows, filter sheet, the
+profile's head, action row and More sheet. How they work now: `.ai/features/ui-polish/NOTES.md`.

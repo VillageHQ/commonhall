@@ -12,7 +12,8 @@ function readSeeAllLabel(total: number) {
 }
 
 // A member's profile: their company's open jobs, up to 5, then the board filtered to the company. A job with no apply
-// link shows Apply too when `applyByMessageHref` gives a message link, as on the members' board.
+// link shows Apply too when `applyByMessageHref` gives a message link, as on the members' board. On a profile
+// (round 8) Apply is a 36 px outlined button, full width in its tile (members' people.css, `.fh-company-jobs`).
 export function CompanyJobsCard({
   company,
   companyJobs,
@@ -25,7 +26,7 @@ export function CompanyJobsCard({
   const { jobs, total, companySlug } = companyJobs;
   if (total === 0) return null;
   return (
-    <Card>
+    <Card className="fh-company-jobs">
       <CardTitle>Open jobs at {company}</CardTitle>
       <ul className="mt-3.5 grid gap-2.5">
         {jobs.map((job) => (

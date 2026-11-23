@@ -112,18 +112,33 @@ function AsksOutline() {
   );
 }
 
-// The search and Filter, the Mentors and experts link, the count, then members.
+// The search and Filter (44 px; Filter a square on a phone, with its word from 1000 px), the two view chips, the count,
+// then ListRows (a 48 px face at x 16, the text at x 76) edge to edge on a phone, in the page's one column on the web.
 function PeopleOutline() {
   return (
     <PageOutline title="People">
       <div aria-hidden="true">
-        <div className="flex items-center gap-2">
-          <OutlineBox height={52} radius={10} className="flex-1" />
-          <OutlineBox width={97} height={40} />
+        <div className="flex gap-2">
+          <OutlineBox className="flex-1" />
+          <span className="block w-11 flex-none min-[1000px]:w-[97px]">
+            <OutlineBox />
+          </span>
         </div>
-        <OutlineLine width={140} className="mt-4" />
-        <OutlineLine width={84} className="mt-5 mb-2" />
-        <OutlineRows count={6} />
+        <OutlineChips widths={[84, 156]} className="mt-3" />
+        <div className="mt-2.5 mb-1 flex h-[18px] items-center">
+          <OutlineLine width={84} height={12} />
+        </div>
+        <div className="-mx-4 min-[1000px]:mx-0">
+          {Array.from({ length: 6 }, (_, index) => (
+            <div key={index} className="fh-lr">
+              <OutlineCircle size={48} />
+              <div className="grid gap-2.5 pt-1.5">
+                <OutlineLine width={`${58 - (index % 3) * 8}%`} height={14} />
+                <OutlineLine width={`${80 - (index % 2) * 14}%`} height={12} />
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </PageOutline>
   );

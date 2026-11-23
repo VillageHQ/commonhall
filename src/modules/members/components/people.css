@@ -1,0 +1,604 @@
+/* People and profiles (round 8, ui-polish Part 5: .ai/features/ui-polish/parts/5-people-profile.md). The search row,
+   the view chips, the results as ListRows, the filter panel, the profile's head, actions and cards. Sizes come from
+   Part 1's variables in globals.css; every rule is scoped under .fh-people-page or .fh-profile-page, so it never reaches another
+   screen and wins over the generated parts.css without !important. */
+
+/* ---- People: the search row, the chips, the count ---- */
+
+/* The box and Filter: one 44 px row, 8 px apart, sharing their top and bottom edges. */
+.fh-people-page .fh-people-search {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.fh-people-page .fh-people-filter {
+  position: relative;
+  flex: none;
+  width: var(--ctl-h);
+  min-width: var(--ctl-h);
+  padding: 0;
+}
+
+.fh-people-page .fh-people-filter svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* On a phone the word is for screen readers only: the button's name stays "Filter". */
+.fh-people-page .fh-people-filter-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.fh-people-page .fh-people-filter-count {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 9999px;
+  background: var(--fund);
+  color: var(--primary-foreground);
+  font: 600 11px/16px var(--sans);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 0 0 2px var(--paper);
+}
+
+.fh-people-page .fh-people-chips {
+  margin-top: 12px;
+}
+
+/* 12 px under the chips: their row already pads 2 px below. */
+.fh-people-page .fh-people-count {
+  margin: 10px 0 4px;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--graphite);
+}
+
+/* ---- People: the rows ---- */
+
+/* On a phone the rows run edge to edge, so the face sits at x 16 and the text at x 76 (the page pads 16 px). */
+.fh-people-page .fh-people-list {
+  margin-inline: -16px;
+}
+
+/* Line 2's company mark: the 16 px logo, or a 16 px square holding the company's first letter. */
+.fh-people-page .fh-lr-line .fh-people-co {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin: 0 6px 0 0;
+  vertical-align: -2px;
+  border-radius: 4px;
+}
+
+/* overflow: hidden puts its baseline at its bottom edge, as a logo picture's, so both sit at one height. */
+.fh-people-page .fh-people-co-letter {
+  overflow: hidden;
+  background: var(--vellum);
+  color: var(--ink);
+  font: 600 10px/16px var(--sans);
+  text-align: center;
+}
+
+/* At most two 24 px tags on one line. */
+.fh-people-page .fh-people-tags {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 6px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.fh-people-page .fh-people-list .fh-tag {
+  flex: none;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: var(--r-sm);
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.fh-people-page .fh-people-help {
+  flex-basis: 100%;
+  font-size: 15px;
+  line-height: 20px;
+  color: var(--ink);
+}
+
+.fh-people-page .fh-lr-slot {
+  align-items: center;
+}
+
+/* "Search their networks for …": a 56 px row, a 20 px icon, the words at 15 px, a chevron. */
+.fh-people-netrow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 56px;
+  margin-top: 8px;
+  padding: 8px 16px;
+  border: 0;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  background: transparent;
+  color: var(--ink);
+  font: 500 15px/20px var(--sans);
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.fh-people-netrow > span {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.fh-people-netrow > svg {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  color: var(--graphite);
+}
+
+.fh-people-netrow:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: -2px;
+}
+
+@media (hover: hover) {
+  .fh-people-netrow:hover {
+    background: var(--vellum);
+  }
+}
+
+@media (max-width: 999.98px) {
+  .fh-people-page .fh-people-netrow {
+    width: calc(100% + 32px);
+    margin-inline: -16px;
+  }
+}
+
+/* ---- The filter panel: a sheet on a phone, in place on the web ---- */
+
+.fh-people-filter-sheet .fh-filters {
+  flex-direction: column;
+  align-items: stretch;
+  margin-top: 4px;
+}
+
+.fh-people-filter-sheet .fh-filt {
+  flex: none;
+}
+
+.fh-people-filter-sheet .fh-bsheet-foot,
+.fh-people-page .fh-people-panel-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.fh-people-filter-sheet .fh-bsheet-foot > *,
+.fh-people-page .fh-people-panel-foot > * {
+  flex: 0 1 auto;
+}
+
+.fh-people-clear-all {
+  min-height: 44px;
+  padding: 0 4px;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font: 600 16px/20px var(--sans);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.fh-people-filter-sheet .fh-people-show,
+.fh-people-page .fh-people-show {
+  white-space: nowrap;
+}
+
+.fh-people-page .fh-people-panel {
+  margin-top: 12px;
+  padding: 4px 16px 12px;
+  border: 1px solid var(--rule);
+  border-radius: var(--r);
+  background: var(--leaf);
+}
+
+.fh-people-page .fh-people-panel-foot {
+  margin-top: 12px;
+}
+
+/* In People's column the selects wrap, two or three to a line, instead of squeezing their words. */
+.fh-people-page .fh-people-panel .fh-filters {
+  flex-wrap: wrap;
+}
+
+.fh-people-page .fh-people-panel .fh-filt {
+  flex: 1 1 180px;
+}
+
+/* ---- The web: Filter keeps its word, one column of rows ---- */
+
+@media (min-width: 1000px) {
+  .fh-people-page .fh-people-filter {
+    width: auto;
+    padding: 0 16px;
+  }
+
+  .fh-people-page .fh-people-filter-label {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+  }
+
+  .fh-people-page .fh-people-list {
+    margin-inline: 0;
+  }
+
+  /* Book a call at the row's right, as a 36 px outlined button. */
+  .fh-people-page [data-testid="expert-card"][data-booking] {
+    padding-right: 152px;
+  }
+
+  /* The slot lets go of its own frame, so the button is placed on the row, centred, 16 px from its right edge. */
+  .fh-people-page [data-testid="expert-card"] .fh-lr-slot {
+    position: static;
+  }
+
+  .fh-people-page [data-testid="expert-card"] [data-testid="book-call"] {
+    position: absolute;
+    z-index: 1;
+    top: 50%;
+    right: 16px;
+    transform: translateY(-50%);
+  }
+}
+
+/* ---- A profile: the head, the actions, the cards ---- */
+
+/* Stacked and left-aligned (LinkedIn, Instagram): the 96 px photo, then the name, the headline, the place, the tags. */
+/* On a phone the back button sits in the top bar (Part 2), so the photo starts at the page's own 16 px under it. */
+.fh-profile-page .fh-person-head {
+  display: grid;
+  justify-items: start;
+}
+
+.fh-profile-page .fh-person-text {
+  width: 100%;
+  min-width: 0;
+}
+
+.fh-profile-page .fh-person-head .fh-person-name {
+  margin-top: 12px;
+  font: 600 24px/30px var(--serif);
+  overflow-wrap: anywhere;
+}
+
+.fh-profile-page .fh-person-headline {
+  margin-top: 4px;
+  font-size: 16px;
+  line-height: 22px;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+.fh-profile-page .fh-person-headline .fh-colog {
+  margin-right: 6px;
+}
+
+.fh-profile-page .fh-person-place {
+  margin-top: 2px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--graphite);
+  overflow-wrap: anywhere;
+}
+
+.fh-profile-page .fh-person-tags {
+  margin-top: 12px;
+}
+
+.fh-profile-page .fh-person-note {
+  margin-top: 8px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--graphite);
+}
+
+/* One row: two equal 36 px buttons, then the 36×36 "More", 8 px apart. When the labels can't fit on one line each,
+   the two stack at full width with "More" beside the second (the page sets data-stacked; see profile-actions.tsx). */
+.fh-profile-page .fh-person-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) var(--ctl-sm-h);
+  gap: 8px;
+  width: 100%;
+  margin-top: 16px;
+}
+
+.fh-profile-page .fh-person-actions[data-count="1"] {
+  grid-template-columns: minmax(0, 1fr) var(--ctl-sm-h);
+}
+
+/* Your own profile: no "More", so its one button takes the row. */
+.fh-profile-page .fh-person-actions[data-count="1"]:not([data-more]) {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.fh-profile-page .fh-person-actions[data-count="0"] {
+  grid-template-columns: var(--ctl-sm-h);
+}
+
+.fh-profile-page .fh-person-actions[data-stacked][data-count="2"] {
+  grid-template-columns: minmax(0, 1fr) var(--ctl-sm-h);
+}
+
+.fh-profile-page .fh-person-actions[data-stacked][data-count="2"] > :first-child {
+  grid-column: 1 / -1;
+}
+
+.fh-profile-page .fh-person-actions > .fh-btn {
+  min-height: var(--ctl-sm-h);
+  padding-inline: 12px;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+/* The labels' icons stay on the web only: a phone's two buttons need the room. */
+.fh-profile-page .fh-person-actions > .fh-btn:not(.fh-person-more) svg {
+  display: none;
+}
+
+.fh-profile-page .fh-person-more {
+  width: var(--ctl-sm-h);
+  min-width: var(--ctl-sm-h);
+  padding: 0;
+  position: relative;
+}
+
+/* A 44 px tap area around the 36 px drawn button. */
+.fh-profile-page .fh-person-more::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+}
+
+/* The More sheet's rows: 56 px, a 20 px icon, the words at 16 px; a switch at the end where the row has one. */
+.fh-person-menu {
+  display: grid;
+  margin-inline: -16px;
+}
+
+.fh-person-menu-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 8px 16px;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font: 500 16px/22px var(--sans);
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.fh-person-menu-row > span {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.fh-person-menu-row > svg {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  color: var(--graphite);
+}
+
+.fh-person-menu-row[data-tone="danger"] {
+  color: var(--ribbon);
+}
+
+.fh-person-menu-row[data-tone="danger"] > svg {
+  color: var(--ribbon);
+}
+
+.fh-person-menu-row:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.fh-person-menu-row:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: -2px;
+}
+
+@media (hover: hover) {
+  .fh-person-menu-row:not(:disabled):hover {
+    background: var(--vellum);
+  }
+}
+
+.fh-person-menu-note {
+  padding: 0 16px 8px 48px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--graphite);
+}
+
+.fh-person-menu .fh-person-confirm {
+  padding: 8px 16px;
+}
+
+/* From 1000 px the popover pads nothing itself. */
+.fh-bpop .fh-person-menu {
+  margin-inline: 0;
+}
+
+/* The cards: an 8 px radius, 16 px of padding and 16 px between every two, in one column or two. */
+.fh-profile-page .fh-prof {
+  display: grid;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.fh-profile-page .fh-prof > div {
+  display: grid;
+  gap: 16px;
+  align-content: start;
+}
+
+.fh-profile-page .fh-prof .fh-sheet,
+.fh-profile-page .fh-prof [data-slot="card"] {
+  margin: 0;
+  padding: 16px;
+  border-radius: var(--r);
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.fh-profile-page .fh-prof .fh-stack > * + * {
+  margin-top: 0;
+}
+
+.fh-profile-page .fh-prof :is(.fh-h3, [data-slot="card-title"]) {
+  font: 600 19px/26px var(--serif);
+}
+
+/* Job tiles: Apply is a 36 px outlined button with a 6 px radius, full width inside its tile. */
+.fh-profile-page .fh-company-jobs li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  justify-content: stretch;
+  gap: 12px;
+}
+
+.fh-profile-page .fh-company-jobs li > a {
+  justify-content: center;
+  width: 100%;
+  min-height: var(--ctl-sm-h);
+  padding: 0 12px;
+  border: 1px solid var(--graphite);
+  border-radius: var(--r-sm);
+  background: var(--leaf);
+  box-shadow: none;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  text-decoration: none;
+}
+
+@media (hover: hover) {
+  .fh-profile-page .fh-company-jobs li > a:hover {
+    background: var(--vellum);
+  }
+}
+
+@media (min-width: 1000px) {
+  /* The photo on the left, the words and the actions beside it, 16 px under the back link (in the page here). */
+  .fh-profile-page .fh-person-head {
+    margin-top: 16px;
+    grid-template-columns: 96px minmax(0, 1fr);
+    column-gap: 24px;
+    align-items: start;
+  }
+
+  .fh-profile-page .fh-person-head .fh-person-name {
+    margin-top: 0;
+  }
+
+  /* Buttons sized to their words, the icons back. */
+  .fh-profile-page .fh-person-actions,
+  .fh-profile-page .fh-person-actions[data-count],
+  .fh-profile-page .fh-person-actions[data-stacked][data-count="2"] {
+    display: flex;
+    flex-wrap: wrap;
+    width: auto;
+  }
+
+  .fh-profile-page .fh-person-actions > .fh-btn:not(.fh-person-more) svg {
+    display: inline-block;
+  }
+
+  .fh-profile-page .fh-prof {
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    gap: 16px;
+    align-items: start;
+  }
+}
+
+/* The room alerts row's switch: drawn, not a control of its own (the row is the switch). 44×26, as the app's Switch. */
+.fh-person-switch {
+  position: relative;
+  flex: none;
+  width: 44px;
+  height: 26px;
+  border-radius: 13px;
+  background: #b5b4ad;
+  transition: background-color 200ms var(--ease-out);
+}
+
+.fh-person-switch::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 9999px;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  transition: transform 200ms var(--ease-out);
+}
+
+.fh-person-menu-row > .fh-person-switch {
+  flex: none;
+}
+
+.fh-person-switch[data-on] {
+  background: var(--fund);
+}
+
+.fh-person-switch[data-on]::after {
+  transform: translateX(18px);
+}
+
+/* Message, when it moves into "More": the button drawn as one of the sheet's rows. */
+.fh-person-menu .fh-person-menu-row.fh-btn {
+  justify-content: flex-start;
+  width: 100%;
+  min-height: 56px;
+  padding: 8px 16px;
+  border: 0;
+  border-radius: 0;
+  color: var(--ink);
+  font: 500 16px/22px var(--sans);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fh-person-switch,
+  .fh-person-switch::after {
+    transition: none;
+  }
+}
