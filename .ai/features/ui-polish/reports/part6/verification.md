@@ -7,7 +7,8 @@ preview. Demo people only: Sam Lee (member), Maya Ortiz (admin, host). Chromium 
 
 **Overall, first pass: FAIL** (three defects). **Re-check after the repairs (commit 612b2206): PASS. Re-check after
 the rebase onto Part 7's native tab bar (head 67a8e68c): PASS. Re-check after Part 2 (head 982ce3e1): PASS (its one
-new minor defect, demo mode in the store app, fixed and re-checked).** All three
+new minor defect, demo mode in the store app, fixed and re-checked). Re-check after Part 3 (head 6823c939):
+PASS, and check 7's thread half now passes too.** All three
 defects and the smaller ones I re-tested are fixed, and nothing new broke. The parts that need a real phone or Part 3
 are still NOT RUN. The rows below are the first pass; "Re-check" at the end replaces rows 1, 8 and 10 and defects 1–5
 and 7.
@@ -22,7 +23,7 @@ and 7.
 | 4 | App room (web preview, 390) | PASS | Title font Newsreader-SemiBold 22 px. Other text is IBMPlexSans-Regular or SemiBold. Every icon button draws an SVG: Minimise, More, Raise hand, React. "Leave" is a word. No emoji except in the reaction picker. Live dot rgb(156,78,34) = #9c4e22, and #e7a57e in dark. The sheet's top is at y 8 (16 px radius) and the dimmed page shows above it. Raise hand → line with Undo; Undo worked (Maya saw "Listener"). | after-app-room-390, after-app-react-390, after-app-more-390, after-app-hand-390, after-app-room-390-dark, after-app-room-360, after-app-room-300 |
 | 5 | Mini player (web preview, insets 0) | PASS; the store build 5 item is NOT RUN | On Today, the bar is 390×56 at y 732–788 and the tab bar is at y 788–844: a 0 px gap, with the tab bar fully visible. Same at 360 (628–684 / 684–740) and 300 (458–514 / 514–570). The main control and Leave are each 44×44, named "Raise hand"/"Lower hand" and "Leave"; the title area is named "Back to Maya's room". The dot is #9c4e22, and the fonts are Plex 15 px SemiBold / 13 px Regular. The hand button raised the hand: Maya saw "Hand up" and the chip. Tapping the title reopened the sheet (top 8). Leave on the room page showed "You left the room." with Join again, cleared --mini, and Maya's room count dropped to 1. | after-app-mini-today-390, after-app-mini-hand-390, after-app-left-390, after-app-mini-rooms-360, after-app-mini-rooms-300 |
 | 6 | Page padding | PASS | Today scrolled to the end: the last item ("Source code") ends at y 700 and the mini bar starts at y 732. Main's bottom padding is 144 px. | after-app-mini-today-end-390 |
-| 7 | On a pushed screen | PASS for the room page; NOT RUN for a thread | On the room page (data-pushed-screen) the bar sits at the bottom inset (y 788–844, tab bar hidden). On main, an Inbox thread is not a pushed screen yet (Part 3): it keeps the tab bar and its composer sits in the page (sticky, y 474–532), not pinned to the bottom. The mini bar sat correctly above the tab bar there. | after-app-mini-roompage-390, after-app-mini-thread-390 |
+| 7 | On a pushed screen | PASS for the room page; the thread half was NOT RUN at first; **PASS on the re-check after Part 3** | On the room page (data-pushed-screen) the bar sits at the bottom inset (y 788–844, tab bar hidden). On main, an Inbox thread is not a pushed screen yet (Part 3): it keeps the tab bar and its composer sits in the page (sticky, y 474–532), not pinned to the bottom. The mini bar sat correctly above the tab bar there. | after-app-mini-roompage-390, after-app-mini-thread-390 |
 | 8 | Sheets hide the mini bar | **FAIL** (the menu) at first; **PASS on re-check** | Real Sheets work. The room page's More sheet set html[data-sheet-open] and the bar hid; it came back when the sheet closed. The /parts sample sheet on a tab page did the same. **The avatar menu (the menu the check names) is a dropdown (role=menu), not a Sheet**: it never sets data-sheet-open, and the mini bar stays over it and covers the menu's lower rows (defect 3). | after-app-mini-sheet-open-390, after-app-mini-menu-390 |
 | 9 | Reduced motion | PASS (the app's speaking ring: code read, not seen) | App room sheet, normal: its top moves 852 → 313 → 99 → 36 → 14 → 8 over about 300 ms. Reduced: hidden, then at 8 in the next frame, with no slide. Web, reduced: no element on the page animates. The live dot's animation is "none", against "vr-pulse" normally. A speaking ring, forced on, shows "none" with a solid 2 px ink ring, against "vr-ring" normally. The fake microphone never triggered LiveKit's speaking detector, so I did not see a real speaking ring in either app. The app's SpeakingRing takes `isSteady` from reduced motion (code). | — |
 | 10 | Outline | PASS (at the limit); **re-check: exact match** | The Rooms tab, tapped from Today with the page's response held back 4 s, showed the outline. Outline against the real page: title (16,129) on both. Button 112×36 at x 262 against 106×36 at x 268; both right edges at 374. First card top 234 against 242 (**8 px**, the limit), with each row inside it 8 px higher too. The outline's section label is 8 px shorter than the real "Live now" label. | after-rooms-outline-390 |
@@ -164,6 +165,26 @@ I re-ran the same steps in the web preview: room page after minimising, with --s
   44×44, all at 56–100, title at 112, bar at 756–844. With --sat 47: header 52–151 (99 px, padding 47), row at
   103–147, bar at 722–810. Scrolled on a short screen, the header is stuck at 0–99 with its row at 51–95.
 - after-app-roompage-sat47-390.png was replaced and now shows the row right under the band.
+
+## Re-check after Part 3 (head 6823c939)
+
+Main now has Part 3: an Inbox thread is a pushed screen with its own header and a pinned reply bar. `.next` was
+rebuilt and `mobile/dist-web` is current. I ran it in the foreground and stopped every server and browser. Scripts:
+`.ai/tmp/verify-p6/recheck5-app.mjs` and `recheck5-web.mjs`.
+
+| Item | Result | Measured | Pictures |
+|---|---|---|---|
+| Check 7, the thread half (web preview, 390) | PASS | With the mini bar showing, Inbox → a thread (data-pushed-screen). The native tab bar is hidden and the mini bar sits at the bottom inset, 788–844. The reply bar (`.ib-compose`) is at 731–788, so it meets the mini bar with no gap and nothing covers it. The page has --mini 56px and --bottom-stack `calc(0px + 56px)`. Focusing the message box and typing a line (not sent) changes nothing: the reply bar stays at 731–788 and the box at 740–780. The newest message ends well above the reply bar. Back to the Inbox list: the mini bar returns to 732–788 above the native tab bar (788–844). | after-app-mini-thread-390 |
+| A thread in a plain phone browser (390) | PASS | Part 6 doesn't touch the thread. No data-mini-player, --mini 0px, no room styles on the page. Reply bar 787–844 and header 52–104, the same after typing, and no sideways scroll. With --sat 47 / --sab 34: reply bar 753–810, header 52–151. | — |
+| Check 10, the outline (390) | PASS (an exact match) | Outline against the page: title (16,125), the line under it (16,166) 26 px, "Live now" (16,212), first card (16,238) 358×132, and the rows inside the card at 255 / 281 / 313, all the same. Only the button's width differs (112 against 106), with both right edges at 374. | (unchanged) |
+| Rooms list at 390 and 1280, the web room at 390 | PASS (unchanged) | 390: Start a room 106×36, card 358×132, faces 40/28/28/28, Join 54×36, Room alerts at y 572, no footer. Tapping a face joins. 1280: 2 cards of 464 px. Web room: header 52–104 under the band (52–151 with --sat 47), Rooms 83×44, Leave 64×44, More 44×44, 4 columns, 64 px faces, bar at 756–844. On a short screen the header stays stuck at y 0. These are the same numbers as after Part 2. | (unchanged) |
+| App room and the mini bar on Today | PASS (unchanged) | Sheet top 8, Newsreader title, dot #9c4e22, SVG icons. On Today the mini bar is at 732–788 against the native tab bar's 788–844, a 0 px gap. Main control and Leave are 44×44. | (unchanged) |
+| Tests | PASS | `pnpm lint` (0 errors, the same old warning), `pnpm typecheck`, and the voice + shell + architecture tests (33 files, 819 tests). |
+
+A note for Part 3 (not Part 6): in the app's demo mode, the thread's own header (`.ib-thead`) has the same double
+status-bar gap the room header had. With --sat 47 the demo band is at 0–99 and the thread's header at 99–198, so there
+is a 47 px blank strip above "‹ Inbox". The same kind of rule fixes it:
+`html[data-app]:has(.fh-app .fh-demo-bar) .ib-thead{min-height:52px;padding-top:0}`.
 
 ## Undo after 4 s instead of 2.5 s
 4 s (about 4.5 s measured) is the right call. With a 44 px Undo target, 2.5 s is too short to read the line and reach
