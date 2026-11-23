@@ -11,6 +11,13 @@ export function toSafePath(value: unknown): string | null {
   return value;
 }
 
+// Pages a signed-out visitor sees (sign-in, invites, setup): no alerts to register there, and no tabs.
+const SIGNED_OUT_PATHS = /^\/(signin|auth|sign-up|invite|i\/|setup|forgot-password|reset-password|recover-admin|confirm-email)/;
+
+export function isSignedOutPath(path: string) {
+  return SIGNED_OUT_PATHS.test(path);
+}
+
 export function toPortalUrl(origin: string, path: string | null) {
   return `${origin}${toSafePath(path) ?? START_PATH}`;
 }
