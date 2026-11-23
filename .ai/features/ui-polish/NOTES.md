@@ -305,8 +305,8 @@ All of the frame's look is in `src/shell/frame.css`, loaded by `src/app/layout.t
   `.fh-company-jobs` class: 36 px, outlined, radius 6, full width.
 
 ### Left for the other parts and follow-ups
-- Part 2: People's column is capped at 720 px on the web in `people.css`; move it to Part 2's content width when that
-  lands. Pages still end with the footer (Part 2).
+- People's web column is Part 2's page width (936 px at 1280), as every tab's; on a phone the profile's photo starts
+  16 px under the bar, where Part 2 puts the back button.
 - The mute confirmation (a flash) shows under the More sheet's dimmed backdrop while the sheet is open.
 - The drawn switch's off colour is `#b5b4ad`, as the app's `Switch` part; neither is a token yet.
 - The "own words" card's first label starts lower than other cards' (FieldBlock's own top margin; already so on main).

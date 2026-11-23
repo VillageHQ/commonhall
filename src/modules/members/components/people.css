@@ -225,7 +225,7 @@
   margin-top: 12px;
 }
 
-/* In People's 720 px column the selects wrap, two or three to a line, instead of squeezing their words. */
+/* In People's column the selects wrap, two or three to a line, instead of squeezing their words. */
 .fh-people-page .fh-people-panel .fh-filters {
   flex-wrap: wrap;
 }
@@ -237,10 +237,6 @@
 /* ---- The web: Filter keeps its word, one column of rows ---- */
 
 @media (min-width: 1000px) {
-  .fh-people-page {
-    max-width: 720px;
-  }
-
   .fh-people-page .fh-people-filter {
     width: auto;
     padding: 0 16px;
@@ -280,10 +276,10 @@
 /* ---- A profile: the head, the actions, the cards ---- */
 
 /* Stacked and left-aligned (LinkedIn, Instagram): the 96 px photo, then the name, the headline, the place, the tags. */
+/* On a phone the back button sits in the top bar (Part 2), so the photo starts at the page's own 16 px under it. */
 .fh-profile-page .fh-person-head {
   display: grid;
   justify-items: start;
-  margin-top: 16px;
 }
 
 .fh-profile-page .fh-person-text {
@@ -520,8 +516,9 @@
 }
 
 @media (min-width: 1000px) {
-  /* The photo on the left, the words and the actions beside it. */
+  /* The photo on the left, the words and the actions beside it, 16 px under the back link (in the page here). */
   .fh-profile-page .fh-person-head {
+    margin-top: 16px;
     grid-template-columns: 96px minmax(0, 1fr);
     column-gap: 24px;
     align-items: start;

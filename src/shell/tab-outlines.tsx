@@ -113,11 +113,11 @@ function AsksOutline() {
 }
 
 // The search and Filter (44 px; Filter a square on a phone, with its word from 1000 px), the two view chips, the count,
-// then ListRows (a 48 px face at x 16, the text at x 76) edge to edge on a phone, in People's 720 px column on the web.
+// then ListRows (a 48 px face at x 16, the text at x 76) edge to edge on a phone, in the page's one column on the web.
 function PeopleOutline() {
   return (
     <PageOutline title="People">
-      <div aria-hidden="true" className="min-[1000px]:max-w-[720px]">
+      <div aria-hidden="true">
         <div className="flex gap-2">
           <OutlineBox className="flex-1" />
           <span className="block w-11 flex-none min-[1000px]:w-[97px]">
@@ -125,7 +125,7 @@ function PeopleOutline() {
           </span>
         </div>
         <OutlineChips widths={[86, 168]} className="mt-3" />
-        <div className="mt-3 mb-1 flex h-[18px] items-center">
+        <div className="mt-2.5 mb-1 flex h-[18px] items-center">
           <OutlineLine width={84} height={12} />
         </div>
         <div className="-mx-4 min-[1000px]:mx-0">
