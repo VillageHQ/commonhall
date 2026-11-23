@@ -1,13 +1,25 @@
-import { Platform, useColorScheme } from "react-native";
+import { useColorScheme } from "react-native";
 
-// The Commonhall kit (.ai/features/app-kit/NOTES.md): paper and ink, serif titles, rust only for warnings.
-const LIGHT = { paper: "#fafaf7", ink: "#111110", muted: "#5f5d57", line: "#e4e2dc", sheet: "#ffffff", rust: "#a4442a", live: "#1f7a4d" };
-const DARK = { paper: "#0e0e0d", ink: "#f4f2ec", muted: "#a5a29a", line: "#2a2926", sheet: "#171715", rust: "#e0805f", live: "#5cc28d" };
+// The Commonhall kit (.ai/features/app-kit/NOTES.md), with the site's own token values (src/app/globals.css): paper and
+// ink, hairlines, graphite for quiet text, and the live colour (the site's --ribbon) only for live and warnings.
+// `muted` and `line` keep their old names for the screens that read them; they hold graphite and the rule.
+const LIGHT = { paper: "#fafaf7", ink: "#111110", muted: "#4a4a46", line: "#d6d5cf", sheet: "#ffffff", vellum: "#f2f1ec", rust: "#9c4e22", live: "#9c4e22" };
+const DARK = { paper: "#0e0e0d", ink: "#f4f2ec", muted: "#b8b6ae", line: "#33332f", sheet: "#161615", vellum: "#1e1e1c", rust: "#e7a57e", live: "#e7a57e" };
 
 export type Colors = typeof LIGHT;
 
-export const SERIF = Platform.select({ ios: "Georgia", android: "serif", default: "Georgia, 'Times New Roman', serif" });
-export const SANS = Platform.select({ ios: "System", android: "sans-serif", default: "system-ui, -apple-system, 'Segoe UI', sans-serif" });
+// The site's faces, loaded with expo-font (useAppFonts, fonts.ts) from mobile/assets/fonts. Each weight is its own
+// family: Android can't pick a weight from one file, so never set fontWeight with these.
+export const FONTS = {
+  serif: "Newsreader-SemiBold",
+  sans: "IBMPlexSans-Regular",
+  sansMedium: "IBMPlexSans-Medium",
+  sansSemiBold: "IBMPlexSans-SemiBold",
+} as const;
+
+// Older screens read these two: the title face and the text face.
+export const SERIF = FONTS.serif;
+export const SANS = FONTS.sans;
 
 export function useColors(): Colors {
   return useColorScheme() === "dark" ? DARK : LIGHT;

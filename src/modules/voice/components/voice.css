@@ -1,73 +1,158 @@
-/* Rooms, in the Commonhall look: paper, ink, hairlines, serif titles. Kept out of parts.css so the landing tour's copy
-   of the app's styles doesn't change. */
+/* Rooms, in the Commonhall look: paper, ink, hairlines, serif titles; the live colour (--ribbon) only for live. Kept out
+   of parts.css so the landing tour's copy of the app's styles doesn't change. Sizes: ui-polish SPEC (the room card)
+   and parts/6-rooms.md. */
 
 .vr-live-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--ribbon);flex:none}
 .vr-live-dot[data-pulse="true"]{animation:vr-pulse 1.6s ease-in-out infinite}
 @keyframes vr-pulse{50%{opacity:.35}}
-@media (prefers-reduced-motion:reduce){.vr-live-dot[data-pulse="true"]{animation:none}}
 
-.vr-cards{display:grid;gap:12px;margin-top:12px}
-@media (min-width:760px){.vr-cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
-.vr-card{display:flex;flex-direction:column;gap:10px;padding:16px;border:1px solid var(--rule);border-radius:var(--r);background:var(--leaf);color:inherit;text-decoration:none;transition:border-color .18s var(--ease)}
-a.vr-card:hover{border-color:var(--graphite)}
-.vr-card-top{display:flex;align-items:center;gap:8px;font-size:12.5px;line-height:16px;color:var(--graphite)}
-.vr-card-title{font:600 19px/25px var(--serif);overflow-wrap:anywhere}
-.vr-faces{display:flex;align-items:center}
-.vr-faces > *{margin-left:-8px;box-shadow:0 0 0 2px var(--leaf);border-radius:50%}
-.vr-faces > *:first-child{margin-left:0}
-.vr-card-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--graphite)}
-
+/* ── The Rooms list ── */
+.vr-head{margin-bottom:4px}
+.vr-head-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.vr-head-row .fh-h1{margin:0;min-width:0}
+.vr-head-row .fh-btn{flex:none}
+.vr-start-note{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:6px;font-size:13px;line-height:18px;color:var(--graphite)}
+.vr-start-note .fh-linkbtn{font-size:13px}
 .vr-composer{margin-top:16px}
 
-/* The room */
+.vr-cards{display:grid;gap:8px}
+@media (min-width:760px){.vr-cards{grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:1fr}}
+.vr-card{position:relative;display:flex;flex-direction:column;gap:10px;padding:16px;border:1px solid var(--rule);border-radius:var(--r);background:var(--leaf);color:var(--ink);transition:border-color .18s var(--ease-out)}
+@media (hover:hover){.vr-card:hover{border-color:var(--graphite)}}
+.vr-card-top{display:flex;align-items:center;gap:6px;min-width:0;font-size:13px;line-height:16px;color:var(--graphite)}
+.vr-card-live{font-size:12px;font-weight:600;color:var(--ribbon)}
+.vr-card-host{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vr-card-time{font-size:13px;font-weight:600;color:var(--ink)}
+.vr-card-lock{display:inline-flex;margin-left:auto}
+.vr-card-title{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;font:600 17px/22px var(--sans);color:var(--ink);text-decoration:none;overflow-wrap:anywhere}
+/* The whole card joins: the title's link covers the card, under its button. */
+.vr-stretch::after{content:"";position:absolute;inset:0;border-radius:inherit}
+.vr-stretch:focus-visible{outline:none}
+.vr-stretch:focus-visible::after{outline:2px solid var(--ink);outline-offset:2px;border-radius:var(--r)}
+.vr-over{position:relative;z-index:1}
+.vr-card-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:auto}
+.vr-card-people{display:flex;align-items:center;gap:8px;min-width:0;font-size:14px;line-height:20px;color:var(--graphite)}
+.vr-card-people > span:last-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vr-faces{display:flex;align-items:center;flex:none}
+.vr-faces > *{box-shadow:0 0 0 2px var(--leaf);border-radius:50%}
+.vr-faces > * + *{margin-left:-8px}
+
+/* Room alerts: the page's last row. */
+.vr-alerts{display:flex;align-items:center;flex-wrap:wrap;gap:4px 12px;min-height:56px;margin-top:28px;padding:8px 0;border-top:1px solid var(--rule)}
+.vr-alerts-icon{width:20px;height:20px;flex:none;color:var(--ink)}
+.vr-alerts-text{display:flex;flex-direction:column;flex:1;min-width:0}
+.vr-alerts-label{font-size:15px;line-height:20px;font-weight:500;color:var(--ink);cursor:pointer}
+.vr-alerts-link{align-self:flex-start;font-size:13px;line-height:18px}
+
+/* ── One room ── */
 .vr-room{padding-bottom:8px}
-.vr-room-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.vr-section-label{margin-top:24px;font-size:12.5px;line-height:16px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--graphite)}
-.vr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:18px 8px;margin-top:12px}
-.vr-grid[data-stage="true"]{grid-template-columns:repeat(auto-fill,minmax(108px,1fr))}
-.vr-person{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;padding:6px 2px;border:0;border-radius:var(--r-sm);background:transparent;color:var(--ink);font:inherit;text-align:center}
-button.vr-person:hover{background:var(--vellum)}
-.vr-person[aria-pressed="true"]{background:var(--vellum)}
-.vr-ring{position:relative;border-radius:50%;padding:3px;box-shadow:0 0 0 2px transparent;transition:box-shadow .12s var(--ease)}
-.vr-ring[data-speaking="true"]{box-shadow:0 0 0 3px var(--ink)}
-.vr-person-name{font-size:13.5px;line-height:18px;font-weight:500;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.vr-person-role{font-size:12px;line-height:14px;color:var(--graphite)}
-.vr-badge{position:absolute;right:-2px;bottom:-2px;display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--leaf);border:1px solid var(--rule);font-size:13px;line-height:1}
-.vr-badge-hand{left:-2px;right:auto}
+.vr-header{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:44px;margin:-4px 0 4px -8px}
+.vr-header-back{display:inline-flex;align-items:center;gap:2px;min-height:44px;padding:0 8px 0 2px;border-radius:var(--r-sm);font-size:15px;line-height:20px;font-weight:500;color:var(--ink);text-decoration:none}
+.vr-header-back svg{width:24px;height:24px}
+.vr-header-end{display:flex;align-items:center;gap:0;margin-right:-10px}
+.vr-header-text{min-height:44px;padding:0 12px;border:0;border-radius:var(--r-sm);background:transparent;font:600 15px/20px var(--sans);color:var(--ribbon)}
+.vr-header-text:disabled{opacity:.45}
+.vr-iconbtn{display:inline-grid;place-items:center;width:44px;height:44px;flex:none;padding:0;border:0;border-radius:var(--r-sm);background:transparent;color:var(--ink)}
+.vr-iconbtn svg{width:24px;height:24px}
+@media (hover:hover){:is(.vr-iconbtn,.vr-header-back,.vr-header-text):hover{background:var(--vellum)}}
+.vr-iconbtn-round{border:1px solid var(--rule);border-radius:50%;background:var(--leaf)}
+.vr-iconbtn-round[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+
+/* On a phone the header replaces the community's bar: it sits under the status bar, across the screen. */
+@media (max-width:999.98px){
+  .vr-header{position:sticky;top:0;z-index:40;min-height:calc(52px + var(--sat));margin:-20px -16px 4px;padding:var(--sat) 6px 0 4px;background:var(--paper)}
+  .vr-header-end{margin-right:0}
+}
+
+.vr-title-block{margin:8px 0 4px}
+.vr-title{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;margin:0;font:600 22px/28px var(--serif);color:var(--ink);overflow-wrap:anywhere}
+.vr-subline{margin-top:4px;font-size:14px;line-height:20px;color:var(--graphite)}
+.vr-section-label{margin-top:24px}
+.vr-empty-stage{margin:0 0 8px;font-size:15px;line-height:22px;color:var(--graphite)}
+
+/* The face grid (X Spaces): columns at least 84 px, so 4 at 390 px and 3 at 360 px; 6 from 1000 px. */
+.vr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:16px 0}
+@media (min-width:1000px){
+  .vr-page{max-width:640px}
+  .vr-grid{grid-template-columns:repeat(6,minmax(84px,1fr))}
+}
+.vr-person{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0;padding:4px 2px;border:0;border-radius:var(--r-sm);background:transparent;color:var(--ink);font:inherit;text-align:center}
+@media (hover:hover){button.vr-person:hover{background:var(--vellum)}}
+.vr-face{position:relative;display:inline-flex;margin-bottom:6px;border-radius:50%}
+.vr-face::after{content:"";position:absolute;inset:-4px;border:2px solid transparent;border-radius:50%;pointer-events:none}
+.vr-face[data-speaking="true"]::after{border-color:var(--ink);animation:vr-ring 1.2s ease-in-out infinite}
+@keyframes vr-ring{50%{opacity:.35}}
+.vr-badge{position:absolute;right:-2px;bottom:-2px;display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--ink);color:var(--paper);box-shadow:0 0 0 2px var(--paper)}
+.vr-badge svg{width:12px;height:12px}
+.vr-person-name{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;line-height:18px;font-weight:600}
+.vr-person-role{max-width:100%;font-size:12px;line-height:16px;color:var(--graphite)}
+.vr-person-hand{display:inline-flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:2px;color:var(--ribbon);font-weight:600}
+.vr-person-hand svg{width:14px;height:14px}
 .vr-reaction{position:absolute;top:-6px;left:50%;transform:translateX(-50%);font-size:28px;line-height:1;animation:vr-float 2.4s ease-out forwards;pointer-events:none}
 @keyframes vr-float{0%{opacity:0;transform:translate(-50%,8px)}15%{opacity:1}100%{opacity:0;transform:translate(-50%,-34px)}}
-@media (prefers-reduced-motion:reduce){.vr-reaction{animation:none}}
 
-.vr-panel{margin-top:16px;padding:14px 16px;border:1px solid var(--rule);border-radius:var(--r);background:var(--leaf)}
-.vr-hands{display:grid;gap:8px;margin-top:8px}
-.vr-hand-row{display:flex;align-items:center;gap:10px}
-.vr-hand-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-
-.vr-bar{position:sticky;bottom:calc(var(--tab-h) + 8px);z-index:35;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:24px;padding:10px 12px;background:var(--leaf);border:1px solid var(--rule);border-radius:12px;box-shadow:var(--shadow)}
-@media (min-width:1000px){.vr-bar{bottom:16px}}
-.vr-bar-group{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.vr-round{display:inline-grid;place-items:center;width:44px;height:44px;border-radius:50%;border:1px solid var(--rule);background:var(--paper);color:var(--ink);font-size:20px;line-height:1}
-.vr-round[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
-.vr-reactions{display:flex;gap:4px;padding:6px;border:1px solid var(--rule);border-radius:999px;background:var(--leaf)}
-.vr-reactions button{width:38px;height:38px;border:0;border-radius:50%;background:transparent;font-size:20px;line-height:1}
-.vr-reactions button:hover{background:var(--vellum)}
-
-.vr-chat{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+/* Sheets: the More list, a person's actions, raised hands, reactions and chat. */
+.vr-more{display:grid}
+.vr-more-item{display:flex;align-items:center;width:100%;min-height:52px;padding:0 16px;border:0;border-bottom:1px solid var(--rule);background:transparent;font:500 16px/22px var(--sans);color:var(--ink);text-align:left}
+.vr-more-item:last-child{border-bottom:0}
+.vr-more-item:disabled{opacity:.45}
+@media (hover:hover){.vr-more-item:hover{background:var(--vellum)}}
+.vr-rename{display:grid;gap:12px;padding:4px 16px 16px}
+.fh-bsheet.vr-small-sheet{max-height:60dvh}
+.vr-hands{display:grid;gap:4px;padding:0 16px 12px}
+.vr-hand-row{display:flex;align-items:center;gap:12px;min-height:56px}
+.vr-hand-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:15px;font-weight:600}
+.vr-reactions{display:flex;flex-wrap:wrap;justify-content:center;gap:4px;padding:4px 12px 12px}
+.vr-reactions button{width:48px;height:48px;border:0;border-radius:50%;background:transparent;font-size:26px;line-height:1}
+@media (hover:hover){.vr-reactions button:hover{background:var(--vellum)}}
+.vr-chat{display:flex;flex-direction:column;gap:8px;padding:0 16px 12px}
 .vr-chat-list{display:flex;flex-direction:column;gap:6px;max-height:260px;overflow:auto;font-size:14px;line-height:20px}
 .vr-chat-list b{font-weight:600}
 .vr-chat form{display:flex;gap:8px}
+.vr-chat form > :first-child{flex:1;min-width:0}
+.vr-panel{margin-top:16px;padding:14px 16px;border:1px solid var(--rule);border-radius:var(--r);background:var(--leaf)}
+.vr-panel .vr-chat,.vr-panel .vr-reactions{padding:8px 0 0}
+.vr-panel-reactions .vr-reactions{justify-content:flex-start}
 
-/* A room control with its word under it (Leave, React, Chat, Raise hand). */
-.vr-tool{display:inline-flex;flex-direction:column;align-items:center;gap:4px;min-width:56px;padding:0;border:0;background:transparent;color:var(--ink);font:inherit}
-.vr-tool:disabled{opacity:.45}
-.vr-tool[aria-pressed="true"] .vr-round{background:var(--ink);color:var(--paper);border-color:var(--ink)}
-.vr-tool-label{font-size:12px;line-height:14px;font-weight:500;color:var(--graphite);white-space:nowrap}
-.vr-card-top .vr-card-title{flex:1;min-width:0;color:var(--ink)}
+/* The bottom bar: one main control (56 px, with its caption) at the left, React and Chat at the right. On a phone it is
+   pinned over the bottom of the screen (on the tab bar's place and the mini player); from 1000 px it closes the column. */
+.vr-dock{position:relative;z-index:35}
+.vr-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:88px;padding:0 16px;border-top:1px solid var(--rule);background:var(--paper)}
+.vr-bar-end{display:flex;align-items:center;gap:8px}
+.vr-main{display:inline-flex;flex-direction:column;align-items:center;gap:4px;min-width:64px;padding:0;border:0;background:transparent;color:var(--ink);font:inherit}
+.vr-main:disabled{opacity:.45}
+.vr-main-round{display:grid;place-items:center;width:56px;height:56px;border:1.5px solid var(--ink);border-radius:50%;background:var(--paper);color:var(--ink);transition:background-color .2s var(--ease-out),color .2s var(--ease-out)}
+.vr-main-round svg{width:24px;height:24px}
+.vr-main[aria-pressed="true"] .vr-main-round{background:var(--ink);color:var(--paper)}
+.vr-main-caption{font-size:12px;line-height:16px;font-weight:600;color:var(--ink);white-space:nowrap}
+.vr-hands-chip{position:absolute;bottom:calc(100% + 8px);left:50%;display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:0 12px;border:1px solid var(--rule);border-radius:var(--r-sm);background:var(--leaf);font:600 14px/18px var(--sans);color:var(--ink);white-space:nowrap;transform:translateX(-50%);box-shadow:var(--shadow)}
+.vr-hands-chip svg{width:16px;height:16px;color:var(--ribbon)}
+@media (max-width:999.98px){
+  .vr-room-live{padding-bottom:112px}
+  .vr-dock{position:fixed;right:0;bottom:var(--bottom-stack);left:0}
+}
+@media (min-width:1000px){
+  .vr-dock{position:sticky;bottom:0;margin-top:32px}
+  .vr-bar{padding:0}
+}
 
-/* Start a room: one button (full width on a phone), "Schedule for later" under it, then the Room alerts switch. */
-.vr-start{display:grid;gap:8px}
-.vr-start-button{width:100%}
-@media (min-width:640px){.vr-start-button{width:auto;justify-self:start}}
-.vr-start-note{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.vr-alerts{display:flex;align-items:center;justify-content:space-between;gap:8px 16px;flex-wrap:wrap;margin-top:16px;padding:10px 14px;border:1px solid var(--rule);border-radius:var(--r);background:var(--leaf)}
-.vr-alerts-label{display:flex;align-items:center;gap:10px;font-size:14px;line-height:20px;font-weight:500;cursor:pointer}
+/* Raise hand's line, with Undo, over the bar. */
+.vr-toast{position:fixed;left:50%;bottom:calc(var(--bottom-stack) + 100px);z-index:60;display:flex;align-items:center;gap:12px;max-width:calc(100vw - 32px);padding:2px 4px 2px 16px;border-radius:10px;background:var(--ink);color:var(--paper);font-size:14px;line-height:20px;white-space:nowrap;transform:translateX(-50%);box-shadow:0 10px 30px -10px rgba(0,0,0,.45)}
+.vr-toast-undo{min-height:44px;padding:0 12px;border:0;border-radius:var(--r-sm);background:transparent;font:600 14px/20px var(--sans);color:var(--paper);text-decoration:underline;text-underline-offset:3px}
+@media (min-width:1000px){.vr-toast{bottom:120px}}
+
+/* Brought on stage: a banner across the top for a few seconds. */
+.vr-banner{position:fixed;top:calc(var(--sat) + 8px);left:8px;right:8px;z-index:70;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px 12px;min-height:56px;padding:10px 12px 10px 16px;border-radius:var(--r);background:var(--ink);color:var(--paper);box-shadow:0 10px 30px -10px rgba(0,0,0,.45)}
+.vr-banner p{flex:1 1 200px;font-size:14px;line-height:20px}
+.vr-banner-actions{display:flex;align-items:center;gap:4px}
+.vr-banner-main{min-height:36px;padding:0 14px;border:0;border-radius:var(--r-sm);background:var(--paper);font:600 14px/18px var(--sans);color:var(--ink)}
+.vr-banner-quiet{min-height:36px;padding:0 10px;border:0;background:transparent;font:600 14px/18px var(--sans);color:var(--paper);text-decoration:underline;text-underline-offset:3px}
+@media (min-width:1000px){.vr-banner{left:50%;right:auto;width:min(600px,calc(100vw - 32px));transform:translateX(-50%)}}
+
+@media (prefers-reduced-motion:reduce){
+  .vr-live-dot[data-pulse="true"],.vr-reaction{animation:none}
+  /* The speaking ring shows solid. */
+  .vr-face[data-speaking="true"]::after{animation:none}
+  .vr-card,.vr-main-round{transition:none}
+}
+.vr-more-note{padding:12px 16px 4px;font-size:13px;line-height:18px;color:var(--graphite)}

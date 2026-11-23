@@ -14,7 +14,7 @@ const ROOM_ID = "5f0c1b9e-4a7d-4c1e-9b2a-1d3e5f7a9c0b";
 // The page as loaded in the store app: by a reload, or by a visit (a room card, an alert).
 function loadPage(type: "reload" | "navigate") {
   vi.spyOn(window.performance, "getEntriesByType").mockReturnValue([{ type } as unknown as PerformanceEntry]);
-  return render(createElement(LiveRoom, { roomId: ROOM_ID, title: "Pricing AMA" }));
+  return render(createElement(LiveRoom, { roomId: ROOM_ID, title: "Pricing AMA", hostName: "Maya Chen", isHost: false }));
 }
 
 function closeInApp(reason: string) {

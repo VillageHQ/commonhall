@@ -4,7 +4,7 @@ import "./voice.css";
 
 import { useMutation } from "@tanstack/react-query";
 import { DisconnectReason, Room, RoomEvent, Track, type Participant, type RemoteTrack } from "livekit-client";
-import { Hand, LogOut, MessageSquare, Mic, MicOff, Smile } from "lucide-react";
+import { Hand, MessageCircle, Mic, MicOff, SmilePlus } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type FormEvent, type ReactNode } from "react";
@@ -13,16 +13,25 @@ import { FlashNote, FLASH_KINDS } from "@/components/flash";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { SectionLabel } from "@/components/ui/list-row";
+import { Sheet } from "@/components/ui/sheet";
 import { readNativeApp, ROOM_CLOSED_REASONS, subscribeToNativeApp, subscribeToRoomClosed, type RoomClosedReason } from "@/platform/native-app/bridge";
 
 import { isModerator, isOnStage, ROLE_ACTIONS, ROOM_ROLES, VOICE_ATTRIBUTES, VOICE_DATA_TOPICS, VOICE_LIMITS, VOICE_PAGE, VOICE_REACTIONS, type RoleAction, type RoomRole } from "../contract";
 import { voiceRequests } from "../queries";
+import { RoomHeader, RoomTitle, type RoomMoreItem } from "./room-header";
 import { keepLeftMark, readLeftBeforeReload } from "./room-left-mark";
 
-const ROLE_WORDS: Record<RoomRole, string> = { host: "Host", cohost: "Co-host", speaker: "Speaker", listener: "" };
+// Every face's role line in the grid (X Spaces): nobody is left without one.
+const ROLE_WORDS: Record<RoomRole, string> = { host: "Host", cohost: "Co-host", speaker: "Speaker", listener: "Listener" };
 const ROLE_ORDER: Record<RoomRole, number> = { host: 0, cohost: 1, speaker: 2, listener: 3 };
 const REACTION_MS = 2400;
 const CHAT_KEEP = 100;
+// Raise hand is one tap; this line confirms it, with Undo (council, 23 Nov). Long enough to reach Undo.
+const HAND_TOAST_MS = 4000;
+// Brought on stage by a host: the banner says so for this long.
+const STAGE_BANNER_MS = 6000;
+const WIDE_QUERY = "(min-width: 1000px)";
 
 const PHASES = { connecting: "connecting", live: "live", ended: "ended", left: "left", elsewhere: "elsewhere", failed: "failed" } as const;
 type Phase = (typeof PHASES)[keyof typeof PHASES];
@@ -68,19 +77,30 @@ function readActions(viewer: RoomRole, target: Person): { action: RoleAction; la
   return actions;
 }
 
-function PersonTile({ person, reaction, isSelected, onSelect, size }: { person: Person; reaction: string | null; isSelected: boolean; onSelect: (() => void) | null; size: number }) {
+function subscribeToWidth(onChange: () => void) {
+  const query = window.matchMedia(WIDE_QUERY);
+  query.addEventListener("change", onChange);
+  return () => query.removeEventListener("change", onChange);
+}
+
+function useIsWide() {
+  return useSyncExternalStore(
+    subscribeToWidth,
+    () => window.matchMedia(WIDE_QUERY).matches,
+    () => false,
+  );
+}
+
+// One face of the grid: a 64 px face with its badges, the name, and the role line (or "Hand up").
+function PersonTile({ person, reaction, onSelect }: { person: Person; reaction: string | null; onSelect: (() => void) | null }) {
+  const isTalking = person.isSpeaking && !person.isMuted;
   const body = (
     <>
-      <span className="vr-ring" data-speaking={person.isSpeaking && !person.isMuted}>
-        <Avatar stableId={person.id} name={person.name} imageUrl={person.faceUrl} sizePx={size} />
+      <span className="vr-face" data-speaking={isTalking}>
+        <Avatar stableId={person.id} name={person.name} imageUrl={person.faceUrl} sizePx={64} />
         {isOnStage(person.role) && person.isMuted ? (
-          <span className="vr-badge" aria-label="Muted">
-            <MicOff aria-hidden="true" className="fh-i fh-xs" strokeWidth={1.5} />
-          </span>
-        ) : null}
-        {person.isHandRaised ? (
-          <span className="vr-badge vr-badge-hand" aria-label="Hand raised">
-            ✋
+          <span className="vr-badge" data-testid="muted-badge">
+            <MicOff aria-hidden="true" strokeWidth={1.75} />
           </span>
         ) : null}
         {reaction ? (
@@ -89,22 +109,36 @@ function PersonTile({ person, reaction, isSelected, onSelect, size }: { person: 
           </span>
         ) : null}
       </span>
-      <span className="vr-person-name">{person.name}</span>
-      {ROLE_WORDS[person.role] || person.isMe ? (
-        <span className="vr-person-role">{[ROLE_WORDS[person.role], person.isMe ? "You" : ""].filter(Boolean).join(" · ")}</span>
-      ) : null}
+      <span className="vr-person-name">{person.isMe ? `${person.name} (you)` : person.name}</span>
+      {person.isHandRaised ? (
+        <span className="vr-person-role vr-person-hand">
+          <Hand aria-hidden="true" strokeWidth={1.75} />
+          Hand up
+        </span>
+      ) : (
+        <span className="vr-person-role">{ROLE_WORDS[person.role]}</span>
+      )}
+      {isOnStage(person.role) && person.isMuted ? <span className="sr-only">, muted</span> : null}
     </>
   );
-  if (!onSelect) return <div className="vr-person" data-testid="room-person" data-role={person.role}>{body}</div>;
+  if (!onSelect) {
+    return (
+      <div className="vr-person" data-testid="room-person" data-role={person.role}>
+        {body}
+      </div>
+    );
+  }
   return (
-    <button type="button" className="vr-person" data-testid="room-person" data-role={person.role} aria-pressed={isSelected} onClick={onSelect}>
+    <button type="button" className="vr-person" data-testid="room-person" data-role={person.role} onClick={onSelect}>
       {body}
     </button>
   );
 }
 
-// notice: a line the host reads with the room (the quiet start), shown on the app's room screen too.
-type LiveRoomProps = { roomId: string; title: string; notice?: string };
+// notice: a line the host reads with the room (the quiet start), shown on the app's room screen too. hostName: the
+// room's host as the page read it (a co-host may take over; the room's own people win once it connects). isHost:
+// the viewer started it, so the page offers Rename. children: what the page shows under the title (the quiet start).
+type LiveRoomProps = { roomId: string; title: string; hostName: string; isHost: boolean; notice?: string; children?: ReactNode };
 
 const SERVER_SNAPSHOT = "unknown";
 
@@ -116,8 +150,15 @@ function readWhere() {
 // plays here. Nothing connects until the page knows which (the server can't tell).
 export function LiveRoom(props: LiveRoomProps) {
   const where = useSyncExternalStore(subscribeToNativeApp, readWhere, () => SERVER_SNAPSHOT);
-  if (where === SERVER_SNAPSHOT) return <p className="fh-small fh-muted">Joining {props.title}…</p>;
-  if (where === "app") return <AppRoomHandoff roomId={props.roomId} title={props.title} notice={props.notice} />;
+  if (where === SERVER_SNAPSHOT) {
+    return (
+      <>
+        <RoomHeader />
+        <RoomTitle title={props.title} line={`Joining ${props.title}…`} />
+      </>
+    );
+  }
+  if (where === "app") return <AppRoomHandoff {...props} />;
   return <BrowserRoom {...props} />;
 }
 
@@ -132,7 +173,7 @@ const APP_CLOSED_WORDS: Record<RoomClosedReason, string> = {
 // A reload after leaving says it again instead of opening the room (room-left-mark.ts).
 // `hasNotified` is always true: "Tell people I'm here" is gone, and app builds from before round 7 (TestFlight 3, the
 // Android test APK) hide their Tell people button only on that flag.
-function AppRoomHandoff({ roomId, title, notice }: { roomId: string; title: string; notice?: string }) {
+function AppRoomHandoff({ roomId, title, hostName, isHost, notice, children }: LiveRoomProps) {
   const router = useRouter();
   const [closedReason, setClosedReason] = useState<RoomClosedReason | null>(() => readLeftBeforeReload(roomId));
   const isLeftBeforeReload = useRef(closedReason !== null);
@@ -168,9 +209,18 @@ function AppRoomHandoff({ roomId, title, notice }: { roomId: string; title: stri
     [roomId, router],
   );
 
+  const head = (
+    <>
+      <RoomHeader rename={isHost && closedReason !== ROOM_CLOSED_REASONS.ended ? { roomId, title } : null} />
+      <RoomTitle title={title} line={hostName} />
+      {children}
+    </>
+  );
+
   if (closedReason) {
     return (
       <div className="vr-room" data-testid="room-closed" data-reason={closedReason}>
+        {head}
         <FlashNote kind={closedReason === ROOM_CLOSED_REASONS.failed ? FLASH_KINDS.needs : FLASH_KINDS.ok}>{APP_CLOSED_WORDS[closedReason]}</FlashNote>
         <div className="fh-btn-row mt-4">
           {closedReason === ROOM_CLOSED_REASONS.ended ? null : (
@@ -188,6 +238,7 @@ function AppRoomHandoff({ roomId, title, notice }: { roomId: string; title: stri
 
   return (
     <div className="vr-room" data-testid="room-in-app">
+      {head}
       <p className="fh-small fh-muted">Playing in the app.</p>
       <div className="fh-btn-row mt-4">
         <Button variant="ink" onClick={handOff}>
@@ -201,22 +252,9 @@ function AppRoomHandoff({ roomId, title, notice }: { roomId: string; title: stri
   );
 }
 
-type ToolProps = { icon: ReactNode; label: string; onClick: () => void; isPressed?: boolean; isDisabled?: boolean; testId?: string; accessibleName?: string };
-
-// A labelled room control: an icon with its word under it.
-function Tool({ icon, label, onClick, isPressed, isDisabled, testId, accessibleName }: ToolProps) {
-  return (
-    <button type="button" className="vr-tool" aria-pressed={isPressed} aria-label={accessibleName} disabled={isDisabled} onClick={onClick} data-testid={testId}>
-      <span className="vr-round" aria-hidden="true">
-        {icon}
-      </span>
-      <span className="vr-tool-label">{label}</span>
-    </button>
-  );
-}
-
-function BrowserRoom({ roomId, title }: LiveRoomProps) {
+function BrowserRoom({ roomId, title, hostName, children }: LiveRoomProps) {
   const router = useRouter();
+  const isWide = useIsWide();
   const roomRef = useRef<Room | null>(null);
   const audioRef = useRef<HTMLDivElement>(null);
   const [phase, setPhase] = useState<Phase>(PHASES.connecting);
@@ -226,16 +264,31 @@ function BrowserRoom({ roomId, title }: LiveRoomProps) {
   // "Tap for sound" only once there is something to hear: LiveKit reports audio as blocked for a moment while it starts.
   const [hasAudio, setHasAudio] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [isHandsOpen, setIsHandsOpen] = useState(false);
   const [reactions, setReactions] = useState<Record<string, string>>({});
   const [isReacting, setIsReacting] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chat, setChat] = useState<ChatLine[]>([]);
   const [draft, setDraft] = useState("");
+  const [isHandToast, setIsHandToast] = useState(false);
   const chatId = useRef(0);
+
+  const [isBroughtUp, setIsBroughtUp] = useState(false);
+  // The member's own role the last time the room named it: a host's Invite to speak puts a listener on stage at once
+  // (as before), and the banner only says so and offers the two next steps. Joining as the host doesn't count.
+  const lastRole = useRef<RoomRole | null>(null);
 
   const refresh = useCallback(() => {
     const room = roomRef.current;
-    if (room) setPeople(readPeople(room));
+    if (!room) return;
+    const next = readPeople(room);
+    setPeople(next);
+    const mine = next.find(({ isMe }) => isMe);
+    if (!mine) return;
+    const before = lastRole.current;
+    lastRole.current = mine.role;
+    if (before === ROOM_ROLES.listener && isOnStage(mine.role)) setIsBroughtUp(true);
+    if (!isOnStage(mine.role)) setIsBroughtUp(false);
   }, []);
 
   const showReaction = useCallback((identity: string, emoji: string) => {
@@ -291,8 +344,7 @@ function BrowserRoom({ roomId, title }: LiveRoomProps) {
           setPhase(PHASES.ended);
           // The page head says "Live" until the server renders it again.
           router.refresh();
-        }
-        else if (reason === DisconnectReason.DUPLICATE_IDENTITY) setPhase(PHASES.elsewhere);
+        } else if (reason === DisconnectReason.DUPLICATE_IDENTITY) setPhase(PHASES.elsewhere);
         else setPhase(PHASES.left);
       });
 
@@ -324,6 +376,8 @@ function BrowserRoom({ roomId, title }: LiveRoomProps) {
 
   const me = people.find(({ isMe }) => isMe) ?? null;
   const myRole = me?.role ?? ROOM_ROLES.listener;
+  const host = people.find((person) => person.role === ROOM_ROLES.host);
+  const hostWords = host?.name ?? hostName;
 
   // Someone moved off the stage loses the microphone; LiveKit unpublishes it, this keeps the button honest.
   useEffect(() => {
@@ -331,8 +385,22 @@ function BrowserRoom({ roomId, title }: LiveRoomProps) {
     if (room && !isOnStage(myRole) && room.localParticipant.isMicrophoneEnabled) void room.localParticipant.setMicrophoneEnabled(false).then(refresh, refresh);
   }, [myRole, refresh]);
 
+  useEffect(() => {
+    if (!isBroughtUp) return;
+    const timer = setTimeout(() => setIsBroughtUp(false), STAGE_BANNER_MS);
+    return () => clearTimeout(timer);
+  }, [isBroughtUp]);
+  useEffect(() => {
+    if (!isHandToast) return;
+    const timer = setTimeout(() => setIsHandToast(false), HAND_TOAST_MS);
+    return () => clearTimeout(timer);
+  }, [isHandToast]);
+
   const role = useMutation({ mutationFn: voiceRequests.role, onSuccess: () => setSelectedId(null) });
-  const hand = useMutation({ mutationFn: voiceRequests.hand });
+  const hand = useMutation({
+    mutationFn: voiceRequests.hand,
+    onSuccess: (_answer, body) => setIsHandToast(body.isRaised),
+  });
   const end = useMutation({ mutationFn: () => voiceRequests.end(roomId) });
   const [micError, setMicError] = useState<string | null>(null);
 
@@ -357,6 +425,11 @@ function BrowserRoom({ roomId, title }: LiveRoomProps) {
     }
   }
 
+  function stepDown() {
+    setIsBroughtUp(false);
+    if (me) role.mutate({ roomId, memberId: me.id, action: ROLE_ACTIONS.moveDown });
+  }
+
   function react(emoji: string) {
     const room = roomRef.current;
     if (!room) return;
@@ -375,7 +448,32 @@ function BrowserRoom({ roomId, title }: LiveRoomProps) {
     setDraft("");
   }
 
-  if (phase === PHASES.ended || phase === PHASES.left || phase === PHASES.elsewhere || phase === PHASES.failed) {
+  const isHostNow = myRole === ROOM_ROLES.host;
+  const isClosed = phase === PHASES.ended || phase === PHASES.left || phase === PHASES.elsewhere || phase === PHASES.failed;
+
+  // The header: Leave in the live colour; for the host, End room takes its place and Leave moves into More.
+  const more: RoomMoreItem[] = [];
+  if (!isClosed && isOnStage(myRole) && !isHostNow) more.push({ label: "Back to listening", onSelect: stepDown, isDisabled: role.isPending, testId: "step-down" });
+  if (!isClosed && isHostNow) more.push({ label: "Leave", onSelect: () => void leave(), testId: "leave" });
+  const headerEnd = isClosed ? null : isHostNow ? (
+    <button type="button" className="vr-header-text" disabled={end.isPending} onClick={() => end.mutate()} data-testid="end-room">
+      End room
+    </button>
+  ) : (
+    <button type="button" className="vr-header-text" onClick={() => void leave()} data-testid="leave">
+      Leave
+    </button>
+  );
+  const peopleWords = people.length === 1 ? "1 in the room" : `${people.length} in the room`;
+  const head = (
+    <>
+      <RoomHeader end={headerEnd} rename={isHostNow && !isClosed ? { roomId, title } : null} more={more} />
+      <RoomTitle title={title} line={phase === PHASES.live ? `${hostWords} · ${peopleWords}` : phase === PHASES.connecting ? `Joining ${title}…` : hostWords} />
+      {children}
+    </>
+  );
+
+  if (isClosed) {
     const CLOSED_WORDS: Record<string, string> = {
       [PHASES.ended]: "This room has ended.",
       [PHASES.left]: "You left the room.",
@@ -384,6 +482,7 @@ function BrowserRoom({ roomId, title }: LiveRoomProps) {
     const words = CLOSED_WORDS[phase] ?? failure ?? "We couldn't connect to the room.";
     return (
       <div className="vr-room" data-testid="room-closed">
+        {head}
         <FlashNote kind={phase === PHASES.failed ? FLASH_KINDS.needs : FLASH_KINDS.ok}>{words}</FlashNote>
         <div className="fh-btn-row mt-4">
           <Button asChild variant="ink">
@@ -400,12 +499,43 @@ function BrowserRoom({ roomId, title }: LiveRoomProps) {
   const selected = people.find(({ id }) => id === selectedId) ?? null;
   const selectedActions = selected ? readActions(myRole, selected) : [];
   const canSelect = isModerator(myRole);
-  const selectFor = (person: Person) => (canSelect && readActions(myRole, person).length > 0 ? () => setSelectedId((current) => (current === person.id ? null : person.id)) : null);
+  const selectFor = (person: Person) => (canSelect && readActions(myRole, person).length > 0 ? () => setSelectedId(person.id) : null);
+
+  const reactionButtons = (
+    <div className="vr-reactions" role="group" aria-label="Reactions">
+      {VOICE_REACTIONS.map((emoji) => (
+        <button key={emoji} type="button" onClick={() => react(emoji)} aria-label={`React ${emoji}`}>
+          {emoji}
+        </button>
+      ))}
+    </div>
+  );
+  const chatBody = (
+    <div className="vr-chat" data-testid="room-chat">
+      <div className="vr-chat-list" aria-live="polite">
+        {chat.length === 0 ? <p className="fh-muted">No messages yet.</p> : null}
+        {chat.map((line) => (
+          <p key={line.id}>
+            <b>{line.name}</b> {line.text}
+          </p>
+        ))}
+      </div>
+      <form onSubmit={sendChat}>
+        <Input aria-label="Message the room" value={draft} onChange={(event) => setDraft(event.target.value)} maxLength={VOICE_LIMITS.chatLength} placeholder="Say something to the room" />
+        <Button type="submit" variant="ink" disabled={!draft.trim()}>
+          Send
+        </Button>
+      </form>
+    </div>
+  );
+
+  const isMicOn = isOnStage(myRole) && me ? !me.isMuted : false;
 
   return (
-    <div className="vr-room" data-testid="live-room-page" data-phase={phase} data-my-role={myRole}>
+    <div className="vr-room vr-room-live" data-testid="live-room-page" data-phase={phase} data-my-role={myRole}>
       <div ref={audioRef} hidden />
-      <p className="fh-small fh-muted" role="status" data-testid="room-status">
+      {head}
+      <p className="sr-only" role="status" data-testid="room-status">
         {phase === PHASES.connecting ? `Joining ${title}…` : `You’re in · ${isOnStage(myRole) ? (me?.isMuted ? "on stage, muted" : "on stage") : "listening"}`}
       </p>
       {!canHear && hasAudio ? (
@@ -418,127 +548,156 @@ function BrowserRoom({ roomId, title }: LiveRoomProps) {
           {micError}
         </FlashNote>
       ) : null}
-
-      <h2 className="vr-section-label">On stage</h2>
-      {stage.length === 0 && phase === PHASES.live ? <p className="fh-small fh-muted mt-2">Nobody on stage yet.</p> : null}
-      <div className="vr-grid" data-stage="true" data-testid="stage">
-        {stage.map((person) => (
-          <PersonTile key={person.id} person={person} reaction={reactions[person.id] ?? null} isSelected={selectedId === person.id} onSelect={selectFor(person)} size={64} />
-        ))}
-      </div>
-
-      <h2 className="vr-section-label">{audience.length === 1 ? "1 listening" : `${audience.length} listening`}</h2>
-      <div className="vr-grid" data-testid="audience">
-        {audience.map((person) => (
-          <PersonTile key={person.id} person={person} reaction={reactions[person.id] ?? null} isSelected={selectedId === person.id} onSelect={selectFor(person)} size={48} />
-        ))}
-      </div>
-
-      {selected && selectedActions.length > 0 ? (
-        <div className="vr-panel" data-testid="person-actions">
-          <p className="fh-small font-semibold">{selected.name}</p>
-          <div className="fh-btn-row mt-2">
-            {selectedActions.map(({ action, label }) => (
-              <Button key={action} size="sm" variant={action === ROLE_ACTIONS.inviteUp ? "ink" : "secondary"} disabled={role.isPending} onClick={() => role.mutate({ roomId, memberId: selected.id, action })}>
-                {label}
-              </Button>
-            ))}
-          </div>
-        </div>
-      ) : null}
-
-      {isModerator(myRole) && hands.length > 0 ? (
-        <div className="vr-panel" data-testid="raised-hands">
-          <p className="fh-small font-semibold">Raised hands</p>
-          <div className="vr-hands">
-            {hands.map((person) => (
-              <div key={person.id} className="vr-hand-row">
-                <Avatar stableId={person.id} name={person.name} imageUrl={person.faceUrl} sizePx={28} />
-                <span className="vr-hand-name">{person.name}</span>
-                <Button size="sm" variant="ink" disabled={role.isPending} onClick={() => role.mutate({ roomId, memberId: person.id, action: ROLE_ACTIONS.inviteUp })}>
-                  Invite to speak
-                </Button>
-              </div>
-            ))}
-          </div>
-        </div>
-      ) : null}
-
       {role.error || hand.error || end.error ? (
         <FlashNote kind={FLASH_KINDS.needs} className="mt-3">
           {(role.error ?? hand.error ?? end.error)?.message}
         </FlashNote>
       ) : null}
 
-      {isChatOpen ? (
-        <div className="vr-panel vr-chat" data-testid="room-chat">
+      <SectionLabel className="vr-section-label">On stage</SectionLabel>
+      {stage.length === 0 && phase === PHASES.live ? <p className="vr-empty-stage">Nobody on stage yet.</p> : null}
+      <div className="vr-grid" data-testid="stage">
+        {stage.map((person) => (
+          <PersonTile key={person.id} person={person} reaction={reactions[person.id] ?? null} onSelect={selectFor(person)} />
+        ))}
+      </div>
+
+      {audience.length > 0 ? <SectionLabel className="vr-section-label">Listening</SectionLabel> : null}
+      <div className="vr-grid" data-testid="audience">
+        {audience.map((person) => (
+          <PersonTile key={person.id} person={person} reaction={reactions[person.id] ?? null} onSelect={selectFor(person)} />
+        ))}
+      </div>
+
+      {isWide && isChatOpen ? (
+        <div className="vr-panel">
           <p className="fh-small font-semibold">Room chat</p>
-          <div className="vr-chat-list" aria-live="polite">
-            {chat.length === 0 ? <p className="fh-muted">No messages yet.</p> : null}
-            {chat.map((line) => (
-              <p key={line.id}>
-                <b>{line.name}</b> {line.text}
-              </p>
-            ))}
-          </div>
-          <form onSubmit={sendChat}>
-            <Input aria-label="Message the room" value={draft} onChange={(event) => setDraft(event.target.value)} maxLength={VOICE_LIMITS.chatLength} placeholder="Say something to the room" />
-            <Button type="submit" size="sm" variant="ink" disabled={!draft.trim()}>
-              Send
-            </Button>
-          </form>
+          {chatBody}
         </div>
       ) : null}
+      {isWide && isReacting ? <div className="vr-panel vr-panel-reactions">{reactionButtons}</div> : null}
 
-      {isReacting ? (
-        <div className="vr-reactions mt-3 w-fit" role="group" aria-label="Reactions">
-          {VOICE_REACTIONS.map((emoji) => (
-            <button key={emoji} type="button" onClick={() => react(emoji)} aria-label={`React ${emoji}`}>
-              {emoji}
-            </button>
+      <Sheet isOpen={Boolean(selected && selectedActions.length > 0)} onClose={() => setSelectedId(null)} title={selected?.name ?? ""}>
+        <div className="vr-more" data-testid="person-actions">
+          {selected
+            ? selectedActions.map(({ action, label }) => (
+                <button key={action} type="button" className="vr-more-item" disabled={role.isPending} onClick={() => role.mutate({ roomId, memberId: selected.id, action })}>
+                  {label}
+                </button>
+              ))
+            : null}
+        </div>
+      </Sheet>
+
+      <Sheet isOpen={isHandsOpen && hands.length > 0} onClose={() => setIsHandsOpen(false)} title="Raised hands">
+        <div className="vr-hands" data-testid="raised-hands">
+          {hands.map((person) => (
+            <div key={person.id} className="vr-hand-row">
+              <Avatar stableId={person.id} name={person.name} imageUrl={person.faceUrl} sizePx={40} />
+              <span className="vr-hand-name">{person.name}</span>
+              <Button size="sm" variant="ink" disabled={role.isPending} onClick={() => role.mutate({ roomId, memberId: person.id, action: ROLE_ACTIONS.inviteUp })}>
+                Invite to speak
+              </Button>
+            </div>
           ))}
         </div>
+      </Sheet>
+
+      {isWide ? null : (
+        <>
+          <Sheet isOpen={isReacting} onClose={() => setIsReacting(false)} title="React" className="vr-small-sheet">
+            {reactionButtons}
+          </Sheet>
+          <Sheet isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} title="Room chat" className="vr-small-sheet">
+            {chatBody}
+          </Sheet>
+        </>
+      )}
+
+      {isBroughtUp ? (
+        <div className="vr-banner" role="status" data-testid="stage-banner">
+          <p>{hostWords} brought you on stage. Your mic is off.</p>
+          <div className="vr-banner-actions">
+            <button
+              type="button"
+              className="vr-banner-main"
+              onClick={() => {
+                setIsBroughtUp(false);
+                if (me?.isMuted) void toggleMic();
+              }}
+              data-testid="banner-unmute"
+            >
+              Unmute
+            </button>
+            <button type="button" className="vr-banner-quiet" onClick={stepDown} data-testid="banner-step-down">
+              Back to listening
+            </button>
+          </div>
+        </div>
       ) : null}
 
-      <div className="vr-bar" data-testid="room-bar">
-        <div className="vr-bar-group">
-          <Tool icon={<LogOut aria-hidden="true" className="fh-i" strokeWidth={1.5} />} label="Leave" onClick={() => void leave()} testId="leave" />
-          <Tool icon={<Smile aria-hidden="true" className="fh-i" strokeWidth={1.5} />} label="React" isPressed={isReacting} onClick={() => setIsReacting((value) => !value)} testId="react" />
-          <Tool icon={<MessageSquare aria-hidden="true" className="fh-i" strokeWidth={1.5} />} label="Chat" isPressed={isChatOpen} onClick={() => setIsChatOpen((value) => !value)} testId="chat" />
-          {isOnStage(myRole) ? (
-            <Tool
-              icon={me?.isMuted ? <MicOff aria-hidden="true" className="fh-i" strokeWidth={1.5} /> : <Mic aria-hidden="true" className="fh-i" strokeWidth={1.5} />}
-              label={me?.isMuted ? "Unmute" : "Mute"}
-              isPressed={!me?.isMuted}
-              onClick={() => void toggleMic()}
-              testId="mic"
-            />
-          ) : (
-            <Tool
-              icon={<Hand aria-hidden="true" className="fh-i" strokeWidth={1.5} />}
-              label={me?.isHandRaised ? "Lower hand" : "Raise hand"}
-              isPressed={Boolean(me?.isHandRaised)}
-              isDisabled={hand.isPending || phase !== PHASES.live}
-              onClick={() => hand.mutate({ roomId, isRaised: !me?.isHandRaised })}
-              testId="hand"
-            />
-          )}
+      {isHandToast ? (
+        <div className="vr-toast" role="status" data-testid="hand-toast">
+          <span>Hand raised. The host sees it.</span>
+          <button
+            type="button"
+            className="vr-toast-undo"
+            disabled={hand.isPending}
+            onClick={() => {
+              setIsHandToast(false);
+              hand.mutate({ roomId, isRaised: false });
+            }}
+          >
+            Undo
+          </button>
         </div>
-        {isOnStage(myRole) ? (
-          <div className="vr-bar-group">
-            {myRole === ROOM_ROLES.host ? (
-              <Button variant="secondary" size="sm" disabled={end.isPending} onClick={() => end.mutate()}>
-                End room
-              </Button>
-            ) : (
-              <Button variant="quiet" size="sm" disabled={role.isPending} onClick={() => me && role.mutate({ roomId, memberId: me.id, action: ROLE_ACTIONS.moveDown })}>
-                Move to audience
-              </Button>
-            )}
-          </div>
+      ) : null}
+
+      <div className="vr-dock">
+        {isModerator(myRole) && hands.length > 0 ? (
+          <button type="button" className="vr-hands-chip" onClick={() => setIsHandsOpen(true)} data-testid="raised-hands-chip">
+            <Hand aria-hidden="true" strokeWidth={1.75} />
+            Raised hands ({hands.length})
+          </button>
         ) : null}
+        <div className="vr-bar" data-testid="room-bar">
+          {isOnStage(myRole) ? (
+            <button type="button" className="vr-main" aria-pressed={isMicOn} aria-label={isMicOn ? "Mic on" : "Mic off"} onClick={() => void toggleMic()} data-testid="mic">
+              <span className="vr-main-round" aria-hidden="true">
+                {isMicOn ? <Mic strokeWidth={1.5} /> : <MicOff strokeWidth={1.5} />}
+              </span>
+              <span className="vr-main-caption" aria-hidden="true">
+                {isMicOn ? "Mic on" : "Mic off"}
+              </span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="vr-main"
+              aria-pressed={Boolean(me?.isHandRaised)}
+              aria-label={me?.isHandRaised ? "Lower hand" : "Raise hand"}
+              disabled={hand.isPending || phase !== PHASES.live}
+              onClick={() => hand.mutate({ roomId, isRaised: !me?.isHandRaised })}
+              data-testid="hand"
+            >
+              <span className="vr-main-round" aria-hidden="true">
+                <Hand strokeWidth={1.5} />
+              </span>
+              <span className="vr-main-caption" aria-hidden="true">
+                {me?.isHandRaised ? "Lower hand" : "Raise hand"}
+              </span>
+            </button>
+          )}
+          <div className="vr-bar-end">
+            <button type="button" className="vr-iconbtn vr-iconbtn-round" aria-label="React" aria-pressed={isReacting} onClick={() => setIsReacting((value) => !value)} data-testid="react">
+              <SmilePlus aria-hidden="true" strokeWidth={1.5} />
+            </button>
+            <button type="button" className="vr-iconbtn vr-iconbtn-round" aria-label="Chat" aria-pressed={isChatOpen} onClick={() => setIsChatOpen((value) => !value)} data-testid="chat">
+              <MessageCircle aria-hidden="true" strokeWidth={1.5} />
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
 }
-

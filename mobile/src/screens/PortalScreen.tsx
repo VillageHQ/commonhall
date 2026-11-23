@@ -4,12 +4,13 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import type { PortalHandle } from "../components/portal-types";
 import { PortalTabs } from "../components/PortalTabs";
-import type { AppAction, RoomClosedReason } from "../lib/bridge";
+import { useAppFonts } from "../fonts";
+import type { AppAction } from "../lib/bridge";
 import type { Community } from "../lib/community";
 import { isSignedOutPath, toPortalUrl } from "../lib/links";
 import { setUpPush } from "../push/push";
-import { SANS, SERIF, useColors, type Colors } from "../theme";
-import { RoomScreen } from "../voice/RoomScreen";
+import { FONTS, useColors, type Colors } from "../theme";
+import { useRoomDock } from "../voice/RoomDock";
 
 type PortalScreenProps = {
   community: Community;
@@ -19,10 +20,6 @@ type PortalScreenProps = {
   onSwitchCommunity: () => void;
 };
 
-// The page still sends `hasNotified` (always true since round 7, for app builds that offered "Tell people I'm here");
-// this build has no Tell people and ignores it. `notice` is the page's line for the host (a quiet start).
-type OpenRoom = { roomId: string; title: string; notice: string };
-
 export function PortalScreen({ community, startPath, openRequest, onSwitchCommunity }: PortalScreenProps) {
   const colors = useColors();
   const styles = makeStyles(colors);
@@ -30,9 +27,6 @@ export function PortalScreen({ community, startPath, openRequest, onSwitchCommun
   const portalRef = useRef<PortalHandle>(null);
   const [failure, setFailure] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
-  const [room, setRoom] = useState<OpenRoom | null>(null);
-  const [isRoomShown, setIsRoomShown] = useState(false);
-  const [roomStatus, setRoomStatus] = useState({ text: "Joining…", isLive: false });
   const [pushToken, setPushToken] = useState<string | null>(null);
   const isRegistered = useRef(false);
   const startUrl = useMemo(() => toPortalUrl(community.origin, startPath), [community.origin, startPath]);
@@ -52,6 +46,11 @@ export function PortalScreen({ community, startPath, openRequest, onSwitchCommun
   useEffect(() => {
     if (openRequest) portal.navigate(openRequest.path);
   }, [openRequest, portal]);
+
+  useAppFonts();
+  // The live room: its sheet over everything, and its mini bar in the tabs' slot above the tab bar. The page still
+  // sends `hasNotified` (always true since round 7) and this build ignores it; `notice` is the page's line for the host.
+  const dock = useRoomDock({ portal, origin: community.origin, onRenamed: portal.reload });
 
   const onPageLoaded = useCallback(
     (path: string) => {
@@ -76,25 +75,6 @@ export function PortalScreen({ community, startPath, openRequest, onSwitchCommun
     [portal],
   );
 
-  const roomRef = useRef<OpenRoom | null>(null);
-  useEffect(() => {
-    roomRef.current = room;
-  }, [room]);
-
-  const onOpenRoom = useCallback(
-    (roomId: string, title: string, notice: string) => {
-      const current = roomRef.current;
-      if (current?.roomId !== roomId) {
-        // One room at a time: opening another leaves the one playing.
-        if (current) void portal.call("POST", "/api/voice/leave", { roomId: current.roomId });
-        roomRef.current = { roomId, title: title || "Voice room", notice };
-        setRoom(roomRef.current);
-      }
-      setIsRoomShown(true);
-    },
-    [portal],
-  );
-
   // The avatar menu's "This app" group on the page.
   const onAppAction = useCallback(
     (action: AppAction) => {
@@ -107,49 +87,13 @@ export function PortalScreen({ community, startPath, openRequest, onSwitchCommun
     [portal, startUrl, onSwitchCommunity],
   );
 
-  const onRoomStatus = useCallback((text: string, isLive: boolean) => setRoomStatus({ text, isLive }), []);
-
-  // The host renamed the room on its screen: the mini bar follows, and the page under it reads the new title.
-  const onRenamed = useCallback(
-    (title: string) => {
-      setRoom((current) => (current ? { ...current, title } : current));
-      if (roomRef.current) roomRef.current = { ...roomRef.current, title };
-      portal.reload();
-    },
-    [portal],
-  );
-
-  // The page under the room learns why it closed (it says so and offers Join again).
-  const closeRoom = useCallback(
-    (reason: RoomClosedReason) => {
-      const closing = roomRef.current;
-      roomRef.current = null;
-      setRoom(null);
-      setIsRoomShown(false);
-      if (closing) portal.roomClosed(closing.roomId, reason);
-    },
-    [portal],
-  );
-
-  // The room's mini bar docks in the tabs' slot, right above the tab bar (above the home indicator where it hides).
-  const miniBar =
-    room && !isRoomShown ? (
-      <Pressable accessibilityRole="button" testID="room-mini-bar" accessibilityLabel={`Back to ${room.title}`} onPress={() => setIsRoomShown(true)} style={styles.miniBar}>
-        <View style={[styles.liveDot, roomStatus.isLive ? null : styles.closedDot]} />
-        <Text style={styles.miniTitle} numberOfLines={1}>
-          {room.title}
-        </Text>
-        <Text style={styles.miniStatus}>{roomStatus.text}</Text>
-      </Pressable>
-    ) : null;
-
   return (
     <View style={styles.screen}>
       {/* No native top bar: the web views reach the top edge and the site pads its own bar under the status bar
           (smooth-app; the viewport is viewport-fit=cover for the app). The tab bar is native (PortalTabs). Reload, Open
           in the browser and Switch community are the avatar menu's "This app" group, arriving through onAppAction. */}
       <View style={styles.portal}>
-        <PortalTabs key={attempt} ref={portalRef} origin={community.origin} startUrl={startUrl} pushToken={pushToken} onOpenRoom={onOpenRoom} onAppAction={onAppAction} onPageLoaded={onPageLoaded} onFailed={setFailure} bottomSlot={miniBar} />
+        <PortalTabs key={attempt} ref={portalRef} origin={community.origin} startUrl={startUrl} pushToken={pushToken} onOpenRoom={dock.openRoom} onAppAction={onAppAction} onPageLoaded={onPageLoaded} onFailed={setFailure} bottomSlot={dock.miniBar} />
         {failure ? (
           <View style={[styles.failure, { paddingTop: insets.top + 24 }]} testID="portal-failure">
             <Text style={styles.failureTitle}>We couldn&apos;t open {community.name}</Text>
@@ -171,21 +115,7 @@ export function PortalScreen({ community, startPath, openRequest, onSwitchCommun
         ) : null}
       </View>
 
-      {room ? (
-        <RoomScreen
-          key={room.roomId}
-          portal={portal}
-          origin={community.origin}
-          roomId={room.roomId}
-          title={room.title}
-          notice={room.notice}
-          isShown={isRoomShown}
-          onMinimize={() => setIsRoomShown(false)}
-          onClose={closeRoom}
-          onStatus={onRoomStatus}
-          onRenamed={onRenamed}
-        />
-      ) : null}
+      {dock.sheet}
     </View>
   );
 }
@@ -195,16 +125,11 @@ function makeStyles(colors: Colors) {
     screen: { flex: 1, backgroundColor: colors.paper },
     portal: { flex: 1 },
     failure: { position: "absolute", top: 0, right: 0, bottom: 0, left: 0, backgroundColor: colors.paper, padding: 24, justifyContent: "center" },
-    failureTitle: { color: colors.ink, fontFamily: SERIF, fontSize: 24, fontWeight: "500" },
-    failureBody: { color: colors.muted, fontFamily: SANS, fontSize: 15, lineHeight: 22, marginTop: 10, marginBottom: 20 },
+    failureTitle: { color: colors.ink, fontFamily: FONTS.serif, fontSize: 24 },
+    failureBody: { color: colors.muted, fontFamily: FONTS.sans, fontSize: 15, lineHeight: 22, marginTop: 10, marginBottom: 20 },
     button: { height: 48, borderRadius: 6, backgroundColor: colors.ink, alignItems: "center", justifyContent: "center" },
-    buttonText: { color: colors.paper, fontFamily: SANS, fontSize: 15, fontWeight: "600" },
+    buttonText: { color: colors.paper, fontFamily: FONTS.sansSemiBold, fontSize: 15 },
     linkButton: { paddingVertical: 14, alignItems: "center" },
-    linkText: { color: colors.ink, fontFamily: SANS, fontSize: 15, textDecorationLine: "underline" },
-    miniBar: { flexDirection: "row", alignItems: "center", gap: 10, minHeight: 56, paddingHorizontal: 16, paddingVertical: 10, backgroundColor: colors.ink },
-    liveDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.live },
-    closedDot: { backgroundColor: colors.muted },
-    miniTitle: { flex: 1, color: colors.paper, fontFamily: SANS, fontSize: 15, fontWeight: "600" },
-    miniStatus: { color: colors.paper, opacity: 0.75, fontFamily: SANS, fontSize: 13 },
+    linkText: { color: colors.ink, fontFamily: FONTS.sans, fontSize: 15, textDecorationLine: "underline" },
   });
 }

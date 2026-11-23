@@ -55,27 +55,53 @@ function OutlinePromptRow({ marginTop = 16 }: { marginTop?: number }) {
   );
 }
 
-// The full-width "Start a room" button and its line, the Room alerts switch, then Live now and Coming up.
+// A room card's outline (the room card: 16 px padding, Live · host, a 17 px title, the faces with the 36 px Join).
+function RoomCardOutline() {
+  return (
+    <div aria-hidden="true" className="grid gap-2.5 rounded-[var(--r)] border border-rule bg-leaf p-4">
+      <div className="flex h-4 items-center">
+        <OutlineLine width="46%" height={11} />
+      </div>
+      <div className="flex h-[22px] items-center">
+        <OutlineLine width="82%" height={14} />
+      </div>
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <OutlineCircle size={40} />
+          <OutlineLine width={90} height={12} />
+        </div>
+        <OutlineBox width={64} height={36} className="flex-none" />
+      </div>
+    </div>
+  );
+}
+
+// The title with "Start a room" (36 px) at the right of its row, the 13 px line under it, then Live now and its cards.
 function RoomsOutline() {
   return (
-    <PageOutline title="Rooms">
-      <div aria-hidden="true">
-        <OutlineBox height={40} />
-        <OutlineLine width="62%" className="mt-3" />
-        <div className="mt-5 flex items-center justify-between">
-          <OutlineBox width={150} height={24} radius={9999} />
-          <OutlineLine width={84} />
+    <div data-slot="page-outline" aria-busy="true">
+      <header data-slot="page-header" className="fh-pagehead" style={{ marginBottom: 4 }}>
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="fh-h1 m-0">Rooms</h1>
+          <OutlineBox width={112} height={36} className="flex-none" />
         </div>
-        <section className="fh-section">
-          <OutlineSectionHead width={110} />
-          <OutlineCard lines={2} hasButton />
-        </section>
-        <section className="fh-section">
-          <OutlineSectionHead width={130} />
-          <OutlineCard lines={3} hasButton />
-        </section>
+        <div aria-hidden="true" className="mt-1.5 flex h-[18px] items-center">
+          <OutlineLine width="72%" height={11} />
+        </div>
+      </header>
+      <p role="status" className="fh-sr">
+        Loading…
+      </p>
+      <div aria-hidden="true">
+        <div className="fh-section-label flex h-[18px] items-center">
+          <OutlineLine width={64} height={12} />
+        </div>
+        <div className="grid gap-2 min-[760px]:grid-cols-2">
+          <RoomCardOutline />
+          <RoomCardOutline />
+        </div>
       </div>
-    </PageOutline>
+    </div>
   );
 }
 
