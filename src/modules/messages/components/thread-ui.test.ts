@@ -111,7 +111,7 @@ describe("the thread on screen", () => {
         disconnect() {}
       },
     );
-    vi.stubGlobal("matchMedia", (query: string) => ({ matches: query === "(pointer: fine)" }));
+    vi.stubGlobal("matchMedia", (query: string) => ({ matches: query === "(pointer: fine)", addEventListener() {}, removeEventListener() {} }));
     stubApi();
   });
 
@@ -388,6 +388,60 @@ describe("the thread on screen", () => {
     });
   });
 
+  describe("a message's own line", () => {
+    it("opens on a tap with its moment and Report, and closes on a second tap", () => {
+      renderThread([makePage([makeMessage(1)])]);
+      const message = screen.getByRole("button", { name: /^Noor Haddad, Today, \d\d:\d\d$/ });
+
+      expect(screen.queryByRole("button", { name: "Report Noor's message" })).toBeNull();
+      fireEvent.click(screen.getByText("Message 1"));
+      expect(message.getAttribute("aria-expanded")).toBe("true");
+      expect(screen.getByRole("button", { name: "Report Noor's message" })).toBeTruthy();
+
+      fireEvent.click(message);
+      expect(message.getAttribute("aria-expanded")).toBe("false");
+      expect(screen.queryByRole("button", { name: "Report Noor's message" })).toBeNull();
+    });
+
+    it("offers Delete on your own message", () => {
+      renderThread([makePage([makeMessage(1, { isMine: true })])]);
+
+      fireEvent.click(screen.getByRole("button", { name: /^You, / }));
+
+      expect(screen.getByRole("button", { name: "Delete your message" })).toBeTruthy();
+      expect(screen.queryByRole("button", { name: /^Report/ })).toBeNull();
+    });
+
+    it("names the sender once for a run of messages, as flat rows", () => {
+      renderThread([makePage([makeMessage(1), makeMessage(2), makeMessage(3, { isMine: true })])]);
+
+      const log = screen.getByRole("group", { name: "Messages with Noor Haddad" });
+      expect(log.querySelectorAll("[data-group-start]")).toHaveLength(2);
+      expect(within(log).getAllByText("Noor Haddad")).toHaveLength(1);
+    });
+  });
+
+  describe("the reply bar", () => {
+    it("keeps Send off until there are words", () => {
+      renderThread([makePage([])]);
+      const send = screen.getByRole("button", { name: SEND_NAME });
+
+      expect(send.hasAttribute("disabled")).toBe(true);
+      typeMessage("Hi");
+      expect(send.hasAttribute("disabled")).toBe(false);
+    });
+  });
+
+  describe("the header", () => {
+    it("links the name to the profile and offers Block in More", async () => {
+      renderThread([makePage([makeMessage(1)])]);
+
+      expect(screen.getByRole("link", { name: /Noor Haddad/ }).getAttribute("href")).toBe("/people/noor");
+      fireEvent.click(screen.getByRole("button", { name: "More" }));
+      expect(await screen.findByRole("button", { name: "Block Noor Haddad" })).toBeTruthy();
+    });
+  });
+
   describe("blocking", () => {
     it("replaces the composer and offers an unblock", () => {
       renderThread([makePage([makeMessage(1)], { isBlockedByMe: true })]);
@@ -422,6 +476,7 @@ describe("the thread on screen", () => {
 
     describe("reporting", () => {
       async function openReportPanel() {
+        fireEvent.click(screen.getByRole("button", { name: /^Noor Haddad, / }));
         fireEvent.click(screen.getByRole("button", { name: "Report Noor's message" }));
       }
 
@@ -443,7 +498,7 @@ describe("the thread on screen", () => {
         await openReportPanel();
         fireEvent.click(await screen.findByRole("button", { name: "Report" }));
 
-        expect(await screen.findByText(/ · reported$/)).toBeTruthy();
+        expect(await screen.findByText("Reported")).toBeTruthy();
         expect(screen.getByText("Report saved for this community's admins.")).toBeTruthy();
       });
     });

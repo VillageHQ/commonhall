@@ -11,7 +11,8 @@ Direct messages between two members. Toggleable.
 - Pages: `/inbox`, `/inbox/<id>`, `/messages/new?to=` (Message links there; the first Send starts it).
 - `rules-thread-*.ts`: pure client cache and thread logic.
 - `service-erasure.ts`: a deleted account's messages show as deleted; the other member keeps the conversation.
-- `queries.ts`: client requests. `components/`: the UI.
+- `queries.ts`: client requests. `components/`: the UI; the Inbox's frame, list and thread (two panes on the web) are
+  explained in `.ai/features/ui-polish/NOTES.md` (Part 3).
 
 Rules:
 

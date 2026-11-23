@@ -2,6 +2,7 @@ import { dehydrate, HydrationBoundary, QueryClient } from "@tanstack/react-query
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import { readAvatarUrl } from "@/modules/members/service-profile";
 import { Thread } from "@/modules/messages/components/thread";
 import { conversationIdSchema, MESSAGE_DRAFT_PARAM, readMessageDraft } from "@/modules/messages/contract";
 import { messagesManifest } from "@/modules/messages/manifest";
@@ -19,25 +20,31 @@ async function readPage(requestedId: string) {
   const member = await requireMember();
   const conversationId = conversationIdSchema.safeParse(requestedId);
   if (!conversationId.success) return null;
-  return readThreadPage(getDatabase(), { viewerId: member.id, conversationId: conversationId.data, beforeSequence: null });
+  const database = getDatabase();
+  const [page, avatarUrl] = await Promise.all([
+    readThreadPage(database, { viewerId: member.id, conversationId: conversationId.data, beforeSequence: null }),
+    readAvatarUrl(database, member.id),
+  ]);
+  return page ? { page, me: { id: member.id, name: member.name, avatarUrl } } : null;
 }
 
 // Commonhall titles a thread with the other member's name.
 export async function generateMetadata({ params }: ConversationPageProps): Promise<Metadata> {
   const page = await readPage((await params).conversationId);
-  return { title: page?.peer.name ?? PAGE_TITLES.messages };
+  return { title: page?.page.peer.name ?? PAGE_TITLES.messages };
 }
 
 export default modulePage(messagesManifest, async function ConversationPage({ params, searchParams }: ConversationPageProps) {
-  const [page, community, query] = await Promise.all([readPage((await params).conversationId), readBrandingForPage(), searchParams]);
-  if (!page) notFound();
+  const [read, community, query] = await Promise.all([readPage((await params).conversationId), readBrandingForPage(), searchParams]);
+  if (!read) notFound();
+  const { page, me } = read;
 
   const queryClient = new QueryClient();
   queryClient.setQueryData(threadQuery(page.conversationId).queryKey, { pages: [page], pageParams: [null] });
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <Thread conversationId={page.conversationId} communityName={community.name} draft={readMessageDraft(query[MESSAGE_DRAFT_PARAM])} />
+      <Thread conversationId={page.conversationId} communityName={community.name} draft={readMessageDraft(query[MESSAGE_DRAFT_PARAM])} me={me} />
     </HydrationBoundary>
   );
 });

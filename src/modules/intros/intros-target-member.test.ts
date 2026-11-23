@@ -113,7 +113,8 @@ describe("a member who is the person asked for", () => {
     const list = createElement(IntrosList, { board: await readIntroBoard(database, marcus.userId), forYou: [forMarcus!] });
     const html = renderToStaticMarkup(createElement(QueryClientProvider, { client: new QueryClient() }, createElement(FlashProvider, null, list as ReactNode)));
     expect(html).toContain("Jonas Lindqvist would like to introduce you to Amara Osei");
-    expect(html).toContain("Yes, introduce us");
+    // Answered in place: "Answer" opens "Yes, introduce us" and "No thanks" in the row (intros-ui.test.ts).
+    expect(html).toContain(">Answer<");
 
     const answered = await call(postMemberAnswer, marcus, { introId, answer: CONSENT_ANSWERS.yes });
     expect(answered.status).toBe(OK_STATUS);

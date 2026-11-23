@@ -58,27 +58,39 @@ describe("the conversation list", () => {
     vi.unstubAllGlobals();
   });
 
-  it("links each conversation to its thread in the Inbox, with Commonhall's date", () => {
+  function readRow(name: RegExp) {
+    return screen.getByRole("link", { name }).closest<HTMLElement>("[data-conversation-row]")!;
+  }
+
+  it("links each conversation to its thread in the Inbox, with the time on the row (a date before this week)", () => {
     renderList([makeSummary(NOOR_ID, "Noor Haddad"), makeSummary(JONAS_ID, "Jonas Lindqvist", { lastMessage: { preview: "Hi", isMine: false, isDeleted: false, createdAt: "2026-11-09T10:00:00.000Z" } })]);
 
     expect(screen.getByRole("link", { name: /Noor Haddad/ }).getAttribute("href")).toBe(`${ROUTES.messages}/${NOOR_ID}`);
-    expect(within(screen.getByRole("link", { name: /Jonas Lindqvist/ })).getByText("9 Nov")).toBeTruthy();
+    expect(within(readRow(/Jonas Lindqvist/)).getByText("9 Nov")).toBeTruthy();
   });
 
   it("marks a conversation with something unread", () => {
     renderList([makeSummary(NOOR_ID, "Noor Haddad", { unreadCount: 2 })]);
 
-    const noor = screen.getByRole("link", { name: /Noor Haddad, 2 unread messages/ });
-    expect(noor.className).toContain("fh-unread");
+    const noor = readRow(/Noor Haddad, 2 unread messages/);
+    expect(noor.hasAttribute("data-unread")).toBe(true);
+    expect(within(noor).getByLabelText("2 unread").textContent).toBe("2");
   });
 
-  it("shows the last line, and a deleted one", () => {
+  it("marks one unread message with a dot, and a read row with nothing", () => {
+    renderList([makeSummary(NOOR_ID, "Noor Haddad", { unreadCount: 1 }), makeSummary(JONAS_ID, "Jonas Lindqvist")]);
+
+    expect(within(readRow(/Noor Haddad/)).getByRole("img", { name: "Unread" })).toBeTruthy();
+    expect(readRow(/Jonas Lindqvist/).hasAttribute("data-unread")).toBe(false);
+  });
+
+  it("shows the last line, starting \"You: \" when it's yours, and a deleted one", () => {
     renderList([
       makeSummary(NOOR_ID, "Noor Haddad", { lastMessage: { preview: "See you\nThursday", isMine: true, isDeleted: false, createdAt: CREATED_AT } }),
       makeSummary(JONAS_ID, "Jonas Lindqvist", { lastMessage: { preview: null, isMine: false, isDeleted: true, createdAt: CREATED_AT } }),
     ]);
 
-    expect(screen.getByText("See you")).toBeTruthy();
+    expect(screen.getByText("You: See you")).toBeTruthy();
     expect(screen.getByText("Message deleted")).toBeTruthy();
   });
 
